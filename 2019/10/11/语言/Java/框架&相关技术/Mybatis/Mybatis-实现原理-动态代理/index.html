@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：https:&#x2F;&#x2F;blog.csdn.net&#x2F;zzti_erlie&#x2F;article&#x2F;details&#x2F;94396113 mybatis 利用动态代理帮我们生成了接口的实现类，这个类就是 org.apache.ibatis.binding.MapperProxy 静态代理又是一年毕业季，很多小伙伴开始去大城市打拼。来大城市第一件事就是租房，免不了和中介打交道，因为很多房东很忙，你根本找不到他。从这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mybatis-实现原理-动态代理.md">
+<meta property="og:url" content="https://wetts.github.io/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;blog.csdn.net&#x2F;zzti_erlie&#x2F;article&#x2F;details&#x2F;94396113 mybatis 利用动态代理帮我们生成了接口的实现类，这个类就是 org.apache.ibatis.binding.MapperProxy 静态代理又是一年毕业季，很多小伙伴开始去大城市打拼。来大城市第一件事就是租房，免不了和中介打交道，因为很多房东很忙，你根本找不到他。从这">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/1.png">
+<meta property="og:image" content="https://wetts.github.io/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/2.png">
+<meta property="og:image" content="https://wetts.github.io/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/3.png">
+<meta property="article:published_time" content="2019-10-11T11:01:29.000Z">
+<meta property="article:modified_time" content="2021-07-11T11:14:38.102Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Mybatis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/1.png">
+
+<link rel="canonical" href="https://wetts.github.io/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Mybatis-实现原理-动态代理.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Mybatis-实现原理-动态代理.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-11 19:01:29" itemprop="dateCreated datePublished" datetime="2019-10-11T19:01:29+08:00">2019-10-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-11 19:14:38" itemprop="dateModified" datetime="2021-07-11T19:14:38+08:00">2021-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/94396113">https://blog.csdn.net/zzti_erlie/article/details/94396113</a></p>
+<p>mybatis 利用动态代理帮我们生成了接口的实现类，这个类就是 org.apache.ibatis.binding.MapperProxy</p>
+<h2 id="静态代理"><a href="#静态代理" class="headerlink" title="静态代理"></a>静态代理</h2><p>又是一年毕业季，很多小伙伴开始去大城市打拼。来大城市第一件事就是租房，免不了和中介打交道，因为很多房东很忙，你根本找不到他。从这个场景中就可以抽象出来代理模式</p>
+<ul>
+<li>ISubject: 被访问者资源的抽象</li>
+<li>SubjectImpl: 被访问者具体实现类（房东）</li>
+<li>SubjectProxy: 被访问者的代理实现类（中介）</li>
+</ul>
+<p>UML图如下</p>
+<p><img src="/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/1.png" alt="1"></p>
+<p>举个例子来理解一下这个设计模式</p>
+<p>老板让记录一下用户服务的响应时间，用代理模式来实现这个功能。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface IUserService &#123;</span><br><span class="line">    public void request();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class UserServiceImpl implements IUserService &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void request() &#123;</span><br><span class="line">        System.out.println(&quot;this is userService&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class UserServiceProxy implements IUserService &#123;</span><br><span class="line"></span><br><span class="line">    private IUserService userService;</span><br><span class="line"></span><br><span class="line">    public UserServiceProxy(IUserService userService) &#123;</span><br><span class="line">        this.userService = userService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void request() &#123;</span><br><span class="line">        long startTime = System.currentTimeMillis();</span><br><span class="line">        userService.request();</span><br><span class="line">        System.out.println(&quot;reques cost :&quot; + (System.currentTimeMillis() - startTime));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        IUserService userService = new UserServiceImpl();</span><br><span class="line">        UserServiceProxy userServiceProxy = new UserServiceProxy(userService);</span><br><span class="line">        // this is userService</span><br><span class="line">        // reques cost :0</span><br><span class="line">        userServiceProxy.request();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一切看起来都非常的美好，老板又发话了，把产品服务的响应时间也记录一下吧。又得写如下 3 个类</p>
+<ul>
+<li>IProductService </li>
+<li>ProductServiceImpl </li>
+<li>ProductServiceProxy </li>
+</ul>
+<p>UserServiceProxy 和 ProductServiceProxy 这两个代理类的逻辑都差不多，却还得写 2 次。其实这个还好，如果老板说，把现有系统的几十个服务的响应时间都记录一下吧，你是不是要疯了？这得写多少代理类啊？</p>
+<h2 id="动态代理"><a href="#动态代理" class="headerlink" title="动态代理"></a>动态代理</h2><blockquote>
+<p>黑暗总是暂时的，终究会迎来黎明，在 JDK1.3 之后引入了一种称之为动态代理（Dynamic Proxy）的机制。使用该机制，我们可以为指定的接口在系统运行期间动态地生成代理对象，从而帮助我们走出最初使用静态代理实现 AOP 的窘境</p>
+</blockquote>
+<p>动态代理的实现主要由一个类和一个接口组成，即 java.lang.reflect.Proxy 类和 java.lang.reflect.InvocationHandler 接口。</p>
+<p>让我们用动态代理来改造一下上面记录系统响应时间的功能。虽然要为 IUserService 和 IProductService 两种服务提供代理对象，但因为代理对象中要添加的横切逻辑是一样的。所以我们只需要实现一个 InvocationHandler 就可以了。代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">public class RequestCostInvocationHandler implements InvocationHandler &#123;</span><br><span class="line"></span><br><span class="line">    private Object target;</span><br><span class="line"></span><br><span class="line">    public RequestCostInvocationHandler(Object target) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	/** 被代理对象的任何方法被执行时，都会先进入这个方法 */</span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">        if (method.getName().equals(&quot;request&quot;)) &#123;</span><br><span class="line">            long startTime = System.currentTimeMillis();</span><br><span class="line">            // 执行目标对象的方法</span><br><span class="line">            method.invoke(target, args);</span><br><span class="line">            System.out.println(&quot;reques cost :&quot; + (System.currentTimeMillis() - startTime));</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">        // 3个参数解释如下</span><br><span class="line">        // classloader,生成代理类</span><br><span class="line">        // 代理类应该实现的接口</span><br><span class="line">        // 实现InvocationHandler的切面类</span><br><span class="line">        IUserService userService = (IUserService) Proxy.newProxyInstance(IUserService.class.getClassLoader(),</span><br><span class="line">                new Class[]&#123;IUserService.class&#125;, new RequestCostInvocationHandler(new UserServiceImpl()));</span><br><span class="line"></span><br><span class="line">        IProductService productService = (IProductService) Proxy.newProxyInstance(IProductService.class.getClassLoader(),</span><br><span class="line">                new Class[]&#123;IProductService.class&#125;, new RequestCostInvocationHandler(new ProductServiceImpl()));</span><br><span class="line"></span><br><span class="line">        // this is userService</span><br><span class="line">        // reques cost :0</span><br><span class="line">        userService.request();</span><br><span class="line"></span><br><span class="line">        // this is productService</span><br><span class="line">        // reques cost :0</span><br><span class="line">        productService.request();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>UML 图如下。恭喜你，你现在已经理解了 Spring AOP 是怎么回事了，就是这么简单，今天先不展开谈 Spring</p>
+<p><img src="/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/2.png" alt="2"></p>
+<p>先简单谈谈动态代理在 Mybatis 中是如何被大佬玩的出神入化的</p>
+<h2 id="Mybatis-核心设计思路"><a href="#Mybatis-核心设计思路" class="headerlink" title="Mybatis 核心设计思路"></a>Mybatis 核心设计思路</h2><p>相信用过 mybatis 的小伙伴都能理解下面这段代码，通过 roleMapper 这个接口直接从数据库中拿到一个对象</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Role role = roleMapper.getRole(3L);</span><br></pre></td></tr></table></figure>
+
+<p>直觉告诉我，一个接口是不能运行的啊，一定有接口的实现类，可是这个实现类我自己没写啊，难道 mybatis 帮我们生成了？你猜的没错，mybatis 利用动态代理帮我们生成了接口的实现类，这个类就是 org.apache.ibatis.binding.MapperProxy，我先画一下 UML 图，MapperProxy 就是下图中的 SubjectProxy 类</p>
+<p><img src="/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/3.png" alt="3"><br>和上面的 UML 类图对比一下，发现不就少了一个 SubjectImpl 类吗？那应该就是 SubjectProxy 类把 SubjectImple 类要做的事情做了呗，猜对了。SubjectProxy 通过 SubjectImple 和 SubjectImple.xml 之间的映射关系知道自己应该执行什么 SQL。所以 mybatis 最核心的思路就是这么个意思，细节之类的可以看源码，理清最主要的思路，看源码就能把握住重点。</p>
+<h2 id="Mybatis插件原理"><a href="#Mybatis插件原理" class="headerlink" title="Mybatis插件原理"></a>Mybatis插件原理</h2><p>mybatis 的插件也用到了动态代理，还用到了责任链模式，我就不从源码角度分析了。说一下大概实现，我们用插件肯定是为了在原先的基础上增加新功能。增加一个插件，mybatis 就在原先类的基础上用动态代理生成一个代理对象，如果有多个插件，就在代理对象的基础上再生成代理对象，形式和如下函数差不多</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">plugin2( plugin1( start() ) )</span><br></pre></td></tr></table></figure>
+<p>我再给你写个例子，你再看看相关的源码分析文章（也许我以后会写），很快就能理解了。</p>
+<p>在 mybatis 中要想用插件，有如下 2 个步骤</p>
+<ol>
+<li>在 mybatis-config.xml 中配置插件，如下所示<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;plugins&gt;</span><br><span class="line">	&lt;plugin interceptor=&quot;org.xrq.mybatis.plugin.FirstInterceptor&quot; /&gt;</span><br><span class="line">	&lt;plugin interceptor=&quot;org.xrq.mybatis.plugin.SecondInterceptor&quot; /&gt;</span><br><span class="line">&lt;/plugins&gt;</span><br></pre></td></tr></table></figure></li>
+<li>插件类还得实现 Interceptor 接口</li>
+</ol>
+<p>我现在给一个需求，一个应用返回字符串 0，我加一个插件在字符串的左右两边加 plugin1，再加一个插件在字符串的左右两边加 plugin2，开写</p>
+<p>返回字符串的接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public interface IGetStr &#123;</span><br><span class="line">    public String getStrZero();</span><br><span class="line">    public String getStrOne();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回字符串的实现类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class GetStrImpl implements IGetStr &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String getStrZero() &#123;</span><br><span class="line">        return &quot;0&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String getStrOne() &#123;</span><br><span class="line">        return &quot;1&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义拦截器接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public interface Interceptor &#123;</span><br><span class="line"></span><br><span class="line">    /** 执行拦截逻辑的方法 */</span><br><span class="line">    Object intercept(Invocation invocation);</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * target是被拦截的对象，它的作用是给被拦截对象生成一个代理对象，并返回它。</span><br><span class="line">     * 为了方便，可以直接使用Mybatis中org.apache.ibatis.plugin类的wrap方法（是静态方法）生成代理对象</span><br><span class="line">     * 我这里也写了一个Plugin方法</span><br><span class="line">     */</span><br><span class="line">    Object plugin(Object target);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到一个不认识的类Invocation，定义如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class Invocation &#123;</span><br><span class="line"></span><br><span class="line">    private final Object target;</span><br><span class="line">    private final Method method;</span><br><span class="line">    private final Object[] args;</span><br><span class="line"></span><br><span class="line">    public Invocation(Object target, Method method, Object[] args) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">        this.method = method;</span><br><span class="line">        this.args = args;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Object proceed() throws InvocationTargetException, IllegalAccessException &#123;</span><br><span class="line">        return method.invoke(target, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>就是简单的封装了一下目标对象，目标方法和目标方法的参数。proceed方法就是执行目标对象的目标方法</p>
+<p>Plugin 算是一个工具类，生成代理对象</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public class Plugin implements InvocationHandler &#123;</span><br><span class="line"></span><br><span class="line">    /** 目标对象 */</span><br><span class="line">    private final Object target;</span><br><span class="line">    /** Interceptor对象 */</span><br><span class="line">    private final Interceptor interceptor;</span><br><span class="line"></span><br><span class="line">    public Plugin(Object target, Interceptor interceptor) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">        this.interceptor = interceptor;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	/** 生成代理对象 */</span><br><span class="line">    public static Object wrap(Object target, Interceptor interceptor) &#123;</span><br><span class="line">        return Proxy.newProxyInstance(target.getClass().getClassLoader(),</span><br><span class="line">                new Class[]&#123;IGetStr.class&#125;,</span><br><span class="line">                new Plugin(target, interceptor));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	/** 被代理对象的方法执行时，这个方法会被执行 */</span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">    	// 只为方法getStrZero生成代理对象</span><br><span class="line">        if (method.getName().equals(&quot;getStrZero&quot;)) &#123;</span><br><span class="line">            return interceptor.intercept(new Invocation(target, method, args));</span><br><span class="line">        &#125;</span><br><span class="line">        return method.invoke(target, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>写第一个插件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">public class FirstInterceptor implements Interceptor &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /** 执行拦截逻辑的方法 */</span><br><span class="line">    @Override</span><br><span class="line">    public Object intercept(Invocation invocation) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            return &quot;plugin1 &quot; + invocation.proceed() + &quot; plugin1&quot;;</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            return null;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /** 为原先的类生成代理对象 */</span><br><span class="line">    @Override</span><br><span class="line">    public Object plugin(Object target) &#123;</span><br><span class="line">        return Plugin.wrap(target, this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>有 2 个方法</p>
+<p>plugin 是为插件生成代理对象，用了我自己写的 Plugin 工具类<br>intercept 是增加拦截逻辑，invocation.proceed() 是执行目标对象的目标方法，前文说过了哈，这里我们只对输出做了改变</p>
+<p>第二个插件和第一个插件类似</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class SecondInterceptor implements Interceptor &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object intercept(Invocation invocation) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            return &quot;plugin2 &quot; + invocation.proceed() + &quot; plugin2&quot;;</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            return null;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object plugin(Object target) &#123;</span><br><span class="line">        return Plugin.wrap(target, this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用一个容器保存插件，这里用到了责任链模式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class InterceptorChain &#123;</span><br><span class="line"></span><br><span class="line">    /** 放拦截器 */</span><br><span class="line">    private final List&lt;Interceptor&gt; interceptors = new ArrayList&lt;Interceptor&gt;();</span><br><span class="line"></span><br><span class="line">    public Object pluginAll(Object target) &#123;</span><br><span class="line">        for (Interceptor interceptor : interceptors) &#123;</span><br><span class="line">            target = interceptor.plugin(target);</span><br><span class="line">        &#125;</span><br><span class="line">        return target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void addInterceptor(Interceptor interceptor) &#123;</span><br><span class="line">        interceptors.add(interceptor);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>pluginAll 方法是精髓，为每个插件一层一层的生成代理对象，就像套娃娃一样。</p>
+<p>验证一下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">public class Main &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">        // 配置插件</span><br><span class="line">        InterceptorChain interceptorChain = new InterceptorChain();</span><br><span class="line">        interceptorChain.addInterceptor(new FirstInterceptor());</span><br><span class="line">        interceptorChain.addInterceptor(new SecondInterceptor());</span><br><span class="line"></span><br><span class="line">        // 获得代理对象</span><br><span class="line">        IGetStr getStr = new GetStrImpl();</span><br><span class="line">        getStr = (IGetStr) interceptorChain.pluginAll(getStr);</span><br><span class="line"></span><br><span class="line">        String result = getStr.getStrZero();</span><br><span class="line">        // plugin2 plugin1 0 plugin1 plugin2</span><br><span class="line">        System.out.println(result);</span><br><span class="line"></span><br><span class="line">        result = getStr.getStrOne();</span><br><span class="line">        // 1</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>大功告成，可以看到先定义的插件先执行。</p>
+<p>类有点多，如果看的有点晕，多看几次，你就很容易理解了，我这里还是精简了很多。</p>
+<p>一个 InvocationHandler 接口被大佬玩出了新境界，果然编程这件事还得靠想象力</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/Mybatis/" rel="tag"># Mybatis</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/10/06/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/A%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" rel="prev" title="A基本概念">
+      <i class="fa fa-chevron-left"></i> A基本概念
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/10/11/%E5%B7%A5%E5%85%B7/VSCode/VSCode%E4%B8%AD%E6%B7%BB%E5%8A%A0%E4%BB%A3%E7%A0%81%E7%89%87%E6%AE%B5/" rel="next" title="VSCode中添加代码片段">
+      VSCode中添加代码片段 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E4%BB%A3%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">静态代理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">动态代理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mybatis-%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="nav-number">3.</span> <span class="nav-text">Mybatis 核心设计思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mybatis%E6%8F%92%E4%BB%B6%E5%8E%9F%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">Mybatis插件原理</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '23f73422f28b0739d2e9398ca32855cd',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="session在web开发中是一个非常重要的概念，这个概念很抽象，很难定义，也是最让人迷惑的一个名词，也是最多被滥用的名字之一，在不同的场合，session一次的含义也很不相同。这里只探讨HTTP Session。 为了说明问题，这里基于Java Servlet理解Session的概念与原理，这里所说Servlet已经涵盖了JSP技术，因为JSP最终也会被编译为Servlet，两者有着相同的本质。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JavaEE-深入理解HTTPSession">
+<meta property="og:url" content="https://wetts.github.io/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="session在web开发中是一个非常重要的概念，这个概念很抽象，很难定义，也是最让人迷惑的一个名词，也是最多被滥用的名字之一，在不同的场合，session一次的含义也很不相同。这里只探讨HTTP Session。 为了说明问题，这里基于Java Servlet理解Session的概念与原理，这里所说Servlet已经涵盖了JSP技术，因为JSP最终也会被编译为Servlet，两者有着相同的本质。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/1.png">
+<meta property="og:image" content="https://wetts.github.io/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/2.png">
+<meta property="og:image" content="https://wetts.github.io/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/3.png">
+<meta property="article:published_time" content="2014-09-15T07:43:57.000Z">
+<meta property="article:modified_time" content="2021-07-10T15:53:26.125Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="HTTP">
+<meta property="article:tag" content="Session">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/1.png">
+
+<link rel="canonical" href="https://wetts.github.io/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JavaEE-深入理解HTTPSession | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JavaEE-深入理解HTTPSession
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-09-15 15:43:57" itemprop="dateCreated datePublished" datetime="2014-09-15T15:43:57+08:00">2014-09-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-10 23:53:26" itemprop="dateModified" datetime="2021-07-10T23:53:26+08:00">2021-07-10</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>session在web开发中是一个非常重要的概念，这个概念很抽象，很难定义，也是最让人迷惑的一个名词，也是最多被滥用的名字之一，在不同的场合，session一次的含义也很不相同。这里只探讨HTTP Session。<br> <br>为了说明问题，这里基于Java Servlet理解Session的概念与原理，这里所说Servlet已经涵盖了JSP技术，因为JSP最终也会被编译为Servlet，两者有着相同的本质。<br> <br>在Java中，HTTP的Session对象用javax.servlet.http.HttpSession来表示。
+ </p>
+<h2 id="概念："><a href="#概念：" class="headerlink" title="概念："></a>概念：</h2><p>Session代表服务器与浏览器的一次会话过程，这个过程是连续的，也可以时断时续的。在Servlet中，session指的是HttpSession类的对象，这个概念到此结束了，也许会很模糊，但只有看完本文，才能真正有个深刻理解。
+ </p>
+<h2 id="Session创建的时间是："><a href="#Session创建的时间是：" class="headerlink" title="Session创建的时间是："></a>Session创建的时间是：</h2><p>一个常见的误解是以为session在有客户端访问时就被创建，然而事实是直到某server端程序调用 <code>HttpServletRequest.getSession(true)</code>这样的语句时才被创建，注意如果JSP没有显示的使用 <code>&lt;% @page session=&quot;false&quot;%&gt;</code> 关闭session，则JSP文件在编译成Servlet时将会自动加上这样一条语句 <code>HttpSession session = HttpServletRequest.getSession(true);</code>这也是JSP中隐含的 session对象的来历。<br>由于session会消耗内存资源，因此，如果不打算使用session，应该在所有的JSP中关闭它。<br> <br>引申：</p>
+<ol>
+<li>访问*.html的静态资源因为不会被编译为Servlet，也就不涉及session的问题。</li>
+<li>当JSP页面没有显式禁止session的时候，在打开浏览器第一次请求该jsp的时候，服务器会自动为其创建一个session，并赋予其一个sessionID，发送给客户端的浏览器。以后客户端接着请求本应用中其他资源的时候，会自动在请求头上添加：</li>
+</ol>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie:JSESSIONID=客户端第一次拿到的session ID</span><br></pre></td></tr></table></figure>
+
+<p>  这样，服务器端在接到请求时候，就会收到session ID，并根据ID在内存中找到之前创建的session对象，提供给请求使用。这也是session使用的基本原理—-搞不懂这个，就永远不明白session的原理。<br>下面是两次请求同一个jsp，请求头信息：</p>
+<p><img src="/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/1.png" alt="1"></p>
+<p><img src="/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/2.png" alt="2"></p>
+<p>通过图可以清晰发现，第二次请求的时候，已经添加session ID的信息。  </p>
+<h2 id="Session删除的时间是："><a href="#Session删除的时间是：" class="headerlink" title="Session删除的时间是："></a>Session删除的时间是：</h2><ol>
+<li>Session超时：超时指的是连续一定时间服务器没有收到该Session所对应客户端的请求，并且这个时间超过了服务器设置的Session超时的最大时间。</li>
+<li>程序调用HttpSession.invalidate()</li>
+<li>服务器关闭或服务停止</li>
+</ol>
+<p> </p>
+<h2 id="session存放在哪里："><a href="#session存放在哪里：" class="headerlink" title="session存放在哪里："></a>session存放在哪里：</h2><p>服务器端的内存中。不过session可以通过特殊的方式做持久化管理。
+ </p>
+<h2 id="session的id是从哪里来的，sessionID是如何使用的："><a href="#session的id是从哪里来的，sessionID是如何使用的：" class="headerlink" title="session的id是从哪里来的，sessionID是如何使用的："></a>session的id是从哪里来的，sessionID是如何使用的：</h2><p>当客户端第一次请求session对象时候，服务器会为客户端创建一个session，并将通过特殊算法算出一个session的ID，用来标识该session对象，当浏览器下次（session继续有效时）请求别的资源的时候，浏览器会偷偷地将sessionID放置到请求头中，服务器接收到请求后就得到该请求的sessionID，服务器找到该id的session返还给请求者（Servlet）使用。一个会话只能有一个session对象，对session来说是只认id不认人。
+ </p>
+<h2 id="session会因为浏览器的关闭而删除吗？"><a href="#session会因为浏览器的关闭而删除吗？" class="headerlink" title="session会因为浏览器的关闭而删除吗？"></a>session会因为浏览器的关闭而删除吗？</h2><p>不会，session只会通过上面提到的方式去关闭。
+ </p>
+<h2 id="同一客户端机器多次请求同一个资源，session一样吗？"><a href="#同一客户端机器多次请求同一个资源，session一样吗？" class="headerlink" title="同一客户端机器多次请求同一个资源，session一样吗？"></a>同一客户端机器多次请求同一个资源，session一样吗？</h2><p>一般来说，每次请求都会新创建一个session。</p>
+<p><img src="/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/3.png" alt="3"></p>
+<p>其实，这个也不一定的，总结下：对于多标签的浏览器（比如360浏览器）来说，在一个浏览器窗口中，多个标签同时访问一个页面，session是一个。对于多个浏览器窗口之间，同时或者相隔很短时间访问一个页面，session是多个的，和浏览器的进程有关。对于一个同一个浏览器窗口，直接录入url访问同一应用的不同资源，session是一样的。
+ </p>
+<h2 id="session是一个容器，可以存放会话过程中的任何对象。"><a href="#session是一个容器，可以存放会话过程中的任何对象。" class="headerlink" title="session是一个容器，可以存放会话过程中的任何对象。"></a>session是一个容器，可以存放会话过程中的任何对象。</h2><p> </p>
+<h2 id="session因为请求（request对象）而产生，同一个会话中多个request共享了一session对象，可以直接从请求中获取到session对象。"><a href="#session因为请求（request对象）而产生，同一个会话中多个request共享了一session对象，可以直接从请求中获取到session对象。" class="headerlink" title="session因为请求（request对象）而产生，同一个会话中多个request共享了一session对象，可以直接从请求中获取到session对象。"></a>session因为请求（request对象）而产生，同一个会话中多个request共享了一session对象，可以直接从请求中获取到session对象。</h2><p> </p>
+<h2 id="其实，session的创建和使用总在服务端，而浏览器从来都没得到过session对象。但浏览器可以请求Servlet（jsp也是Servlet）来获取session的信息。客户端浏览器真正紧紧拿到的是session-ID，而这个对于浏览器操作的人来说，是不可见的，并且用户也无需关心自己处于哪个会话过程中。"><a href="#其实，session的创建和使用总在服务端，而浏览器从来都没得到过session对象。但浏览器可以请求Servlet（jsp也是Servlet）来获取session的信息。客户端浏览器真正紧紧拿到的是session-ID，而这个对于浏览器操作的人来说，是不可见的，并且用户也无需关心自己处于哪个会话过程中。" class="headerlink" title="其实，session的创建和使用总在服务端，而浏览器从来都没得到过session对象。但浏览器可以请求Servlet（jsp也是Servlet）来获取session的信息。客户端浏览器真正紧紧拿到的是session ID，而这个对于浏览器操作的人来说，是不可见的，并且用户也无需关心自己处于哪个会话过程中。"></a>其实，session的创建和使用总在服务端，而浏览器从来都没得到过session对象。但浏览器可以请求Servlet（jsp也是Servlet）来获取session的信息。客户端浏览器真正紧紧拿到的是session ID，而这个对于浏览器操作的人来说，是不可见的，并且用户也无需关心自己处于哪个会话过程中。</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/HTTP/" rel="tag"># HTTP</a>
+              <a href="/tags/Session/" rel="tag"># Session</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/09/13/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-@RequestMapping/" rel="prev" title="Spring-注解-@RequestMapping">
+      <i class="fa fa-chevron-left"></i> Spring-注解-@RequestMapping
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/09/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/Oracle%E7%9A%84%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84/" rel="next" title="Oracle从入门到精通-Oracle的物理存储结构">
+      Oracle从入门到精通-Oracle的物理存储结构 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">概念：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Session%E5%88%9B%E5%BB%BA%E7%9A%84%E6%97%B6%E9%97%B4%E6%98%AF%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">Session创建的时间是：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Session%E5%88%A0%E9%99%A4%E7%9A%84%E6%97%B6%E9%97%B4%E6%98%AF%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">Session删除的时间是：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#session%E5%AD%98%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">session存放在哪里：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#session%E7%9A%84id%E6%98%AF%E4%BB%8E%E5%93%AA%E9%87%8C%E6%9D%A5%E7%9A%84%EF%BC%8CsessionID%E6%98%AF%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E7%9A%84%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">session的id是从哪里来的，sessionID是如何使用的：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#session%E4%BC%9A%E5%9B%A0%E4%B8%BA%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E5%85%B3%E9%97%AD%E8%80%8C%E5%88%A0%E9%99%A4%E5%90%97%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">session会因为浏览器的关闭而删除吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8C%E4%B8%80%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%9C%BA%E5%99%A8%E5%A4%9A%E6%AC%A1%E8%AF%B7%E6%B1%82%E5%90%8C%E4%B8%80%E4%B8%AA%E8%B5%84%E6%BA%90%EF%BC%8Csession%E4%B8%80%E6%A0%B7%E5%90%97%EF%BC%9F"><span class="nav-number">7.</span> <span class="nav-text">同一客户端机器多次请求同一个资源，session一样吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#session%E6%98%AF%E4%B8%80%E4%B8%AA%E5%AE%B9%E5%99%A8%EF%BC%8C%E5%8F%AF%E4%BB%A5%E5%AD%98%E6%94%BE%E4%BC%9A%E8%AF%9D%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%BB%BB%E4%BD%95%E5%AF%B9%E8%B1%A1%E3%80%82"><span class="nav-number">8.</span> <span class="nav-text">session是一个容器，可以存放会话过程中的任何对象。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#session%E5%9B%A0%E4%B8%BA%E8%AF%B7%E6%B1%82%EF%BC%88request%E5%AF%B9%E8%B1%A1%EF%BC%89%E8%80%8C%E4%BA%A7%E7%94%9F%EF%BC%8C%E5%90%8C%E4%B8%80%E4%B8%AA%E4%BC%9A%E8%AF%9D%E4%B8%AD%E5%A4%9A%E4%B8%AArequest%E5%85%B1%E4%BA%AB%E4%BA%86%E4%B8%80session%E5%AF%B9%E8%B1%A1%EF%BC%8C%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E4%BB%8E%E8%AF%B7%E6%B1%82%E4%B8%AD%E8%8E%B7%E5%8F%96%E5%88%B0session%E5%AF%B9%E8%B1%A1%E3%80%82"><span class="nav-number">9.</span> <span class="nav-text">session因为请求（request对象）而产生，同一个会话中多个request共享了一session对象，可以直接从请求中获取到session对象。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E5%AE%9E%EF%BC%8Csession%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E6%80%BB%E5%9C%A8%E6%9C%8D%E5%8A%A1%E7%AB%AF%EF%BC%8C%E8%80%8C%E6%B5%8F%E8%A7%88%E5%99%A8%E4%BB%8E%E6%9D%A5%E9%83%BD%E6%B2%A1%E5%BE%97%E5%88%B0%E8%BF%87session%E5%AF%B9%E8%B1%A1%E3%80%82%E4%BD%86%E6%B5%8F%E8%A7%88%E5%99%A8%E5%8F%AF%E4%BB%A5%E8%AF%B7%E6%B1%82Servlet%EF%BC%88jsp%E4%B9%9F%E6%98%AFServlet%EF%BC%89%E6%9D%A5%E8%8E%B7%E5%8F%96session%E7%9A%84%E4%BF%A1%E6%81%AF%E3%80%82%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9C%9F%E6%AD%A3%E7%B4%A7%E7%B4%A7%E6%8B%BF%E5%88%B0%E7%9A%84%E6%98%AFsession-ID%EF%BC%8C%E8%80%8C%E8%BF%99%E4%B8%AA%E5%AF%B9%E4%BA%8E%E6%B5%8F%E8%A7%88%E5%99%A8%E6%93%8D%E4%BD%9C%E7%9A%84%E4%BA%BA%E6%9D%A5%E8%AF%B4%EF%BC%8C%E6%98%AF%E4%B8%8D%E5%8F%AF%E8%A7%81%E7%9A%84%EF%BC%8C%E5%B9%B6%E4%B8%94%E7%94%A8%E6%88%B7%E4%B9%9F%E6%97%A0%E9%9C%80%E5%85%B3%E5%BF%83%E8%87%AA%E5%B7%B1%E5%A4%84%E4%BA%8E%E5%93%AA%E4%B8%AA%E4%BC%9A%E8%AF%9D%E8%BF%87%E7%A8%8B%E4%B8%AD%E3%80%82"><span class="nav-number">10.</span> <span class="nav-text">其实，session的创建和使用总在服务端，而浏览器从来都没得到过session对象。但浏览器可以请求Servlet（jsp也是Servlet）来获取session的信息。客户端浏览器真正紧紧拿到的是session ID，而这个对于浏览器操作的人来说，是不可见的，并且用户也无需关心自己处于哪个会话过程中。</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'f5502c93c80cdb3aec8c75df14951e6c',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

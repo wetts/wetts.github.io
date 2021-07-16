@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;deeper&#x2F;p&#x2F;7565571.html 迭代器是访问集合元素的一种方式。迭代器对象从集合的第一个元素开始访问，直到所有的元素被访问完结束。迭代器只能往前不会后退，不过这也没什么，因为人们很少在迭代途中往后退。另外，迭代器的一大优点是不要求事先准备好整个迭代过程中所有的元素。迭代器仅仅在迭代到某个元素时才计算该元素，而在这之前或之后，元素可以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python中的迭代器">
+<meta property="og:url" content="https://wetts.github.io/2019/07/06/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84%E8%BF%AD%E4%BB%A3%E5%99%A8/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;deeper&#x2F;p&#x2F;7565571.html 迭代器是访问集合元素的一种方式。迭代器对象从集合的第一个元素开始访问，直到所有的元素被访问完结束。迭代器只能往前不会后退，不过这也没什么，因为人们很少在迭代途中往后退。另外，迭代器的一大优点是不要求事先准备好整个迭代过程中所有的元素。迭代器仅仅在迭代到某个元素时才计算该元素，而在这之前或之后，元素可以">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/07/06/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84%E8%BF%AD%E4%BB%A3%E5%99%A8/1.png">
+<meta property="article:published_time" content="2019-07-06T03:22:32.000Z">
+<meta property="article:modified_time" content="2019-08-18T15:43:34.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="迭代器">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/07/06/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84%E8%BF%AD%E4%BB%A3%E5%99%A8/1.png">
+
+<link rel="canonical" href="https://wetts.github.io/2019/07/06/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84%E8%BF%AD%E4%BB%A3%E5%99%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Python中的迭代器 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/06/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84%E8%BF%AD%E4%BB%A3%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python中的迭代器
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-06 11:22:32" itemprop="dateCreated datePublished" datetime="2019-07-06T11:22:32+08:00">2019-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-08-18 23:43:34" itemprop="dateModified" datetime="2019-08-18T23:43:34+08:00">2019-08-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/deeper/p/7565571.html">https://www.cnblogs.com/deeper/p/7565571.html</a></p>
+<p>迭代器是访问集合元素的一种方式。迭代器对象从集合的第一个元素开始访问，直到所有的元素被访问完结束。迭代器只能往前不会后退，不过这也没什么，因为人们很少在迭代途中往后退。另外，迭代器的一大优点是不要求事先准备好整个迭代过程中所有的元素。迭代器仅仅在迭代到某个元素时才计算该元素，而在这之前或之后，元素可以不存在或者被销毁。这个特点使得它特别适合用于遍历一些巨大的或是无限的集合，比如几个G的文件。</p>
+<p>特点：</p>
+<ol>
+<li>访问者不需要关心迭代器内部的结构，仅需通过next()方法或不断去取下一个内容</li>
+<li>不能随机访问集合中的某个值 ，只能从头到尾依次访问</li>
+<li>访问到一半时不能往回退</li>
+<li>便于循环比较大的数据集合，节省内存</li>
+<li>也不能复制一个迭代器。如果要再次（或者同时）迭代同一个对象，只能去创建另一个迭代器对象。enumerate()的返回值就是一个迭代器，我们以enumerate为例：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">a = enumerate([&#x27;a&#x27;,&#x27;b&#x27;])</span><br><span class="line"></span><br><span class="line">for i in range(2):    #迭代两次enumerate对象</span><br><span class="line">     for x, y in a:</span><br><span class="line">         print(x,y)</span><br><span class="line">     print(&#x27;&#x27;.center(50,&#x27;-&#x27;)) </span><br></pre></td></tr></table></figure>
+结果：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0 a</span><br><span class="line">1 b</span><br><span class="line">--------------------------------------------------</span><br><span class="line">--------------------------------------------------</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>可以看到再次迭代enumerate对象时，没有返回值；</p>
+<p>我们可以用linux的文件处理命令vim和cat来理解一下：</p>
+<ol>
+<li>读取很大的文件时，vim需要很久，cat是毫秒级；因为vim是一次性把文件全部加载到内存中读取；而cat是加载一行显示一行</li>
+<li>vim读写文件时可以前进，后退，可以跳转到任意一行；而cat只能向下翻页，不能倒退，不能直接跳转到文件的某一页（因为读取的时候这个“某一页“可能还没有加载到内存中）</li>
+</ol>
+<p>正式进入python迭代器之前，我们先要区分两个容易混淆的概念：可迭代对象和迭代器；</p>
+<ul>
+<li>可以直接作用于for循环的对象统称为 __可迭代对象(Iterable)__。</li>
+<li>可以被next()函数调用并不断返回下一个值的对象称为 __迭代器(Iterator)__。</li>
+</ul>
+<p>所有的Iterable均可以通过内置函数iter()来转变为Iterator。</p>
+<h4 id="可迭代对象"><a href="#可迭代对象" class="headerlink" title="可迭代对象"></a>可迭代对象</h4><p>首先，可迭代对象是一个对象，不是一个函数；是一个什么样的对象呢？就是只要它定义了可以返回一个迭代器的<code>__iter__</code>方法，或者定义了可以支持下标索引的<code>__getitem__</code>方法，那么它就是一个可迭代对象。</p>
+<p>python中大部分对象都是可迭代的，比如list，tuple等。如果给一个准确的定义的话，看一下list，tuple类的源码，都有<code>__iter__(self)</code>方法。</p>
+<p>常见的可迭代对象：</p>
+<ol>
+<li>集合数据类型，如list、tuple、dict、set、str等；</li>
+<li>generator，包括生成器和带yield的generator function。</li>
+</ol>
+<p>注意：生成器都是Iterator对象，但list、dict、str虽然是Iterable，却不是Iterator</p>
+<p>如何判断一个对象是可迭代对象呢？可以通过collections模块的Iterable类型判断：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; from collections import Iterable</span><br><span class="line">&gt;&gt;&gt; isinstance([], Iterable)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; isinstance(&#123;&#125;, Iterable)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; isinstance(&#x27;abc&#x27;, Iterable)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; isinstance((x for x in range(10)), Iterable)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; isinstance(100, Iterable)</span><br><span class="line">False</span><br></pre></td></tr></table></figure>
+
+<h4 id="迭代器"><a href="#迭代器" class="headerlink" title="迭代器"></a>迭代器</h4><p>一个可迭代对象是不能独立进行迭代的，Python中，迭代是通过for … in来完成的。</p>
+<p>for循环在迭代一个可迭代对象的过程中都做了什么呢？</p>
+<ol>
+<li>当for循环迭代一个可迭代对象时，首先会调用可迭代对象的<code>__iter__()</code>方法，然我们看看源码中关于list类的<code>__iter__()</code>方法的定义：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">def __iter__(self, *args, **kwargs): # real signature unknown</span><br><span class="line">    &quot;&quot;&quot; Implement iter(self). &quot;&quot;&quot;</span><br><span class="line">    pass</span><br></pre></td></tr></table></figure>
+<code>__iter__()</code>方法调用了<code>iter(self)</code>函数，我们再来看一下iter()函数的定义：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">def iter(source, sentinel=None): # known special case of iter</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    iter(iterable) -&gt; iterator</span><br><span class="line">    iter(callable, sentinel) -&gt; iterator</span><br><span class="line">    </span><br><span class="line">    Get an iterator from an object.  In the first form, the argument must</span><br><span class="line">    supply its own iterator, or be a sequence.</span><br><span class="line">    In the second form, the callable is called until it returns the sentinel.</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    pass</span><br></pre></td></tr></table></figure>
+<p><code>iter()</code>函数的参数是一个可迭代对象，最终返回一个迭代器</p>
+<ol start="2">
+<li>for循环会不断调用迭代器对象的<code>__next__()</code>方法(python2.x中是next()方法)，每次循环，都返回迭代器对象的下一个值，直到遇到StopIteration异常。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; lst_iter = iter([1,2,3])</span><br><span class="line">&gt;&gt;&gt; lst_iter.__next__()</span><br><span class="line">1</span><br><span class="line">&gt;&gt;&gt; lst_iter.__next__()</span><br><span class="line">2</span><br><span class="line">&gt;&gt;&gt; lst_iter.__next__()</span><br><span class="line">3</span><br><span class="line">&gt;&gt;&gt; lst_iter.__next__()</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;</span><br><span class="line">StopIteration</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+<p>这里注意：这里的<code>__next__()</code>方法和内置函数<code>next(iterator, default=None)</code>不是一个东西；(内置函数<code>next(iterator, default=None)</code>也可以返回迭代器的下一个值）</p>
+<ol start="3">
+<li>而for循环可以捕获StopIteration异常并结束循环；</li>
+</ol>
+<p>总结一下：</p>
+<ol>
+<li>for….in iterable，会通过调用<code>iter(iterable)</code>函数（实际上，首先调用的对象的<code>__iter__()</code>方法），返回一个迭代器iterator;</li>
+<li>每次循环，调用一次对象的<code>__next__(self)</code>，直到最后一个值，再次调用会触发StopIteration</li>
+<li>for循环捕捉到StopIteration，从而结束循环</li>
+</ol>
+<p>上面说了这么多，到底什么是迭代器Iterator呢？</p>
+<p>任何实现了<code>__iter__</code>和<code>__next__()</code>（python2中实现<code>next()</code>）方法的对象都是迭代器，<code>__iter__</code>返回迭代器自身，<code>__next__</code>返回容器中的下一个值；</p>
+<p>既然知道了什么迭代器，那我们自定义一个迭代器玩玩：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">class Iterator_test(object):</span><br><span class="line">    def __init__(self, data):</span><br><span class="line">        self.data = data</span><br><span class="line">        self.index = len(data)</span><br><span class="line"></span><br><span class="line">    def __iter__(self):</span><br><span class="line">        return self</span><br><span class="line"></span><br><span class="line">    def __next__(self):</span><br><span class="line">        if self.index &lt;= 0 :</span><br><span class="line">            raise StopIteration</span><br><span class="line">        self.index -= 1</span><br><span class="line">        return self.data[self.index]</span><br><span class="line"></span><br><span class="line">iterator_winter = Iterator_test(&#x27;abcde&#x27;)</span><br><span class="line"></span><br><span class="line">for item in iterator_winter:</span><br><span class="line">    print(item)</span><br></pre></td></tr></table></figure>
+<p>如何判断一个对象是一个迭代器对象呢？两个方法：</p>
+<ol>
+<li>通过内置函数next(iterator, default=None)，可以看到next的第一个参数必须是迭代器；所以迭代器也可以认为是可以被next()函数调用的对象</li>
+<li>通过collection中的Iterator类型判断<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; from collections import Iterator</span><br><span class="line">&gt;&gt;&gt;</span><br><span class="line">&gt;&gt;&gt; isinstance([1,2,3], Iterator)</span><br><span class="line">False</span><br><span class="line">&gt;&gt;&gt; isinstance(iter([1,2,3]), Iterator)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt; isinstance([1,2,3].__iter__(), Iterator)</span><br><span class="line">True</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>这里大家会不会有个疑问：</p>
+<p>对于迭代器而言，看上去作用的不就是<code>__next__</code>方法嘛，<code>__iter__</code>好像没什么卵用，干嘛还需要<code>__iter__</code>方法呢？</p>
+<p>我们知道，python中迭代是通过for循环实现的，而for循环的循环对象必须是一个可迭代对象Iterable，而Iterable必须是一个实现了__iter__方法的对象；知道为什么需要<code>__iter__</code>魔术方法了吧；</p>
+<p>那么我就是想自定义一个没有实现<code>__iter__</code>方法的迭代器可以吗？可以，像下面这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">class Iterable_test(object):</span><br><span class="line">    def __init__(self, data):</span><br><span class="line">        self.data = data</span><br><span class="line"></span><br><span class="line">    def __iter__(self):</span><br><span class="line">        return Iterator_test(self.data)</span><br><span class="line"></span><br><span class="line">class Iterator_test(object):</span><br><span class="line">    def __init__(self, data):</span><br><span class="line">        self.data = data</span><br><span class="line">        self.index = len(data)</span><br><span class="line"></span><br><span class="line">    def __next__(self):</span><br><span class="line">        if self.index &lt;= 0 :</span><br><span class="line">            raise StopIteration</span><br><span class="line">        self.index -= 1</span><br><span class="line">        return self.data[self.index]</span><br><span class="line"></span><br><span class="line">iterator_winter = Iterable_test(&#x27;abcde&#x27;)</span><br><span class="line"></span><br><span class="line">for item in iterator_winter:</span><br><span class="line">    print(item)</span><br></pre></td></tr></table></figure>
+
+<p>先定义一个可迭代对象（包含<code>__iter__</code>方法），然后该对象返回一个迭代器；这样看上去是不是很麻烦？是不是同时带有<code>__iter__</code>和<code>__next__</code>魔术方法的迭代器更好呢！</p>
+<p>同时，这里要纠正之前的一个迭代器概念：只要<code>__next__()</code>（python2中实现next()）方法的对象都是迭代器；</p>
+<p>既然这样，只需要迭代器Iterator接口就够了，为什么还要设计可迭代对象Iterable呢？</p>
+<p>这个和迭代器不能重复使用有关，下面统一讲解：</p>
+<h4 id="总结和一些重要知识点"><a href="#总结和一些重要知识点" class="headerlink" title="总结和一些重要知识点"></a>总结和一些重要知识点</h4><h5 id="如何复制迭代器"><a href="#如何复制迭代器" class="headerlink" title="如何复制迭代器"></a>如何复制迭代器</h5><p>之前在使用enumerate时，我们说过enumerate对象通过for循环迭代一次后就不能再被迭代：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; e = enumerate([1,2,3])</span><br><span class="line">&gt;&gt;&gt;</span><br><span class="line">&gt;&gt;&gt; for x,y in e:</span><br><span class="line">...   print(x,y)</span><br><span class="line">...</span><br><span class="line">0 1</span><br><span class="line">1 2</span><br><span class="line">2 3</span><br><span class="line">&gt;&gt;&gt; for x,y in e:</span><br><span class="line">...   print(x,y)</span><br><span class="line">...</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+<p>这是因为enumerate是一个迭代器；</p>
+<p>迭代器是一次性消耗品，当循环以后就空了。不能再次使用；通过深拷贝可以解决；</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; import copy</span><br><span class="line">&gt;&gt;&gt;</span><br><span class="line">&gt;&gt;&gt; e = enumerate([1,2,3])</span><br><span class="line">&gt;&gt;&gt;</span><br><span class="line">&gt;&gt;&gt; e_deepcopy = copy.deepcopy(e)</span><br><span class="line">&gt;&gt;&gt;</span><br><span class="line">&gt;&gt;&gt; for x,y in e:</span><br><span class="line">...   print(x,y)</span><br><span class="line">...</span><br><span class="line">0 1</span><br><span class="line">1 2</span><br><span class="line">2 3</span><br><span class="line">&gt;&gt;&gt; for x,y in e_deepcopy:</span><br><span class="line">...   print(x,y)</span><br><span class="line">...</span><br><span class="line">0 1</span><br><span class="line">1 2</span><br><span class="line">2 3</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="为什么不只保留Iterator的接口而还需要设计Iterable呢？"><a href="#为什么不只保留Iterator的接口而还需要设计Iterable呢？" class="headerlink" title="为什么不只保留Iterator的接口而还需要设计Iterable呢？"></a>为什么不只保留Iterator的接口而还需要设计Iterable呢？</h5><p>因为迭代器迭代一次以后就空了，那么如果list，dict也是一个迭代器，迭代一次就不能再继续被迭代了，这显然是反人类的；所以通过<code>__iter__</code>每次返回一个独立的迭代器，就可以保证不同的迭代过程不会互相影响。而生成器表达式之类的结果往往是一次性的，不可以重复遍历，所以直接返回一个Iterator就好。让Iterator也实现Iterable的兼容就可以很灵活地选择返回哪一种。</p>
+<p>总结说，Iterator实现的<code>__iter__</code>是为了兼容Iterable的接口，从而让Iterator成为Iterable的一种实现。</p>
+<p>另外，迭代器是惰性的，只有在需要返回下一个数据时它才会计算。就像一个懒加载的工厂，等到有人需要的时候才给它生成值返回，没调用的时候就处于休眠状态等待下一次调用。所以，Iterator甚至可以表示一个无限大的数据流，例如全体自然数。而使用list是永远不可能存储全体自然数的。</p>
+<h5 id="通过-getitem-来实现for循环"><a href="#通过-getitem-来实现for循环" class="headerlink" title="通过__getitem__来实现for循环"></a>通过<code>__getitem__</code>来实现for循环</h5><p>前面关于可迭代对象的定义是这样的：定义了可以返回一个迭代器的<code>__iter__</code>方法，或者定义了可以支持下标索引的<code>__getitem__</code>方法，那么它就是一个可迭代对象。</p>
+<p>但是如果对象没有<code>__iter__</code>，但是实现了<code>__getitem__</code>，会改用下标迭代的方式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">class NoIterable(object):</span><br><span class="line">    def __init__(self, data):</span><br><span class="line">        self.data = data</span><br><span class="line">    def __getitem__(self, item):</span><br><span class="line">        return self.data[item]</span><br><span class="line"></span><br><span class="line">no_iter = NoIterable(&#x27;abcde&#x27;)</span><br><span class="line">for item in no_iter:</span><br><span class="line">    print(item)</span><br></pre></td></tr></table></figure>
+<p>当for发现没有<code>__iter__</code>但是有<code>__getitem__</code>的时候，会从0开始依次读取相应的下标，直到发生IndexError为止，这是一种旧的迭代方法。iter方法也会处理这种情况，在不存在<code>__iter__</code>的时候，返回一个下标迭代的iterator对象来代替。</p>
+<h4 id="一张图总结迭代器"><a href="#一张图总结迭代器" class="headerlink" title="一张图总结迭代器"></a>一张图总结迭代器</h4><p><img src="/2019/07/06/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84%E8%BF%AD%E4%BB%A3%E5%99%A8/1.png" alt="迭代器"></p>
+<h4 id="使用迭代器来实现一个斐波那契数列"><a href="#使用迭代器来实现一个斐波那契数列" class="headerlink" title="使用迭代器来实现一个斐波那契数列"></a>使用迭代器来实现一个斐波那契数列</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">class Fib(object):</span><br><span class="line">    def __init__(self, limit):</span><br><span class="line">        self.a, self.b = 0, 1</span><br><span class="line">        self.limit = limit</span><br><span class="line"></span><br><span class="line">    def __iter__(self):</span><br><span class="line">        return self</span><br><span class="line"></span><br><span class="line">    def __next__(self):</span><br><span class="line">        self.a, self.b = self.b, self.a+self.b</span><br><span class="line">        while self.a &gt; self.limit:</span><br><span class="line">            raise StopIteration</span><br><span class="line">        return self.a</span><br><span class="line"></span><br><span class="line">for n in Fib(1000):</span><br><span class="line">    print(n)</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"># Python</a>
+              <a href="/tags/%E8%BF%AD%E4%BB%A3%E5%99%A8/" rel="tag"># 迭代器</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/07/06/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3yield/" rel="prev" title="Python-深入理解yield">
+      <i class="fa fa-chevron-left"></i> Python-深入理解yield
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/07/06/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84%E7%94%9F%E6%88%90%E5%99%A8/" rel="next" title="Python中的生成器">
+      Python中的生成器 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%AF%E8%BF%AD%E4%BB%A3%E5%AF%B9%E8%B1%A1"><span class="nav-number">1.</span> <span class="nav-text">可迭代对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">迭代器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%E5%92%8C%E4%B8%80%E4%BA%9B%E9%87%8D%E8%A6%81%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="nav-number">3.</span> <span class="nav-text">总结和一些重要知识点</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%8D%E5%88%B6%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="nav-number">3.1.</span> <span class="nav-text">如何复制迭代器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E5%8F%AA%E4%BF%9D%E7%95%99Iterator%E7%9A%84%E6%8E%A5%E5%8F%A3%E8%80%8C%E8%BF%98%E9%9C%80%E8%A6%81%E8%AE%BE%E8%AE%A1Iterable%E5%91%A2%EF%BC%9F"><span class="nav-number">3.2.</span> <span class="nav-text">为什么不只保留Iterator的接口而还需要设计Iterable呢？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%80%9A%E8%BF%87-getitem-%E6%9D%A5%E5%AE%9E%E7%8E%B0for%E5%BE%AA%E7%8E%AF"><span class="nav-number">3.3.</span> <span class="nav-text">通过__getitem__来实现for循环</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E5%BC%A0%E5%9B%BE%E6%80%BB%E7%BB%93%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="nav-number">4.</span> <span class="nav-text">一张图总结迭代器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%9D%A5%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91%E6%95%B0%E5%88%97"><span class="nav-number">5.</span> <span class="nav-text">使用迭代器来实现一个斐波那契数列</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '8feba03caee4a4698ebb1e0a8b2ea406',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

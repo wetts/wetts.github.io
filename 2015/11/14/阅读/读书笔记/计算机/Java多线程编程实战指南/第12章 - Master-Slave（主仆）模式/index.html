@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="读书笔记 - Java 多线程编程实战指南 第十二章 Master-Slave（主仆）模式模式介绍 Master-Slave 模式是一个基于分而治之（Divide and conquer）思想的设计模式。其核心思想是将一个任务（原始任务）分解为若干个语义等同（Semantically-identical）的子任务，并由专门的工作者线程来并行执行这些子任务。原始任务的处理结果是通过整合各个子任务的处">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java多线程编程实战指南-第12章-Master-Slave（主仆）模式">
+<meta property="og:url" content="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC12%E7%AB%A0%20-%20Master-Slave%EF%BC%88%E4%B8%BB%E4%BB%86%EF%BC%89%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="读书笔记 - Java 多线程编程实战指南 第十二章 Master-Slave（主仆）模式模式介绍 Master-Slave 模式是一个基于分而治之（Divide and conquer）思想的设计模式。其核心思想是将一个任务（原始任务）分解为若干个语义等同（Semantically-identical）的子任务，并由专门的工作者线程来并行执行这些子任务。原始任务的处理结果是通过整合各个子任务的处">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-11-14T09:21:38.000Z">
+<meta property="article:modified_time" content="2017-03-11T03:12:50.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="Java多线程编程实战指南">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC12%E7%AB%A0%20-%20Master-Slave%EF%BC%88%E4%B8%BB%E4%BB%86%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java多线程编程实战指南-第12章-Master-Slave（主仆）模式 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC12%E7%AB%A0%20-%20Master-Slave%EF%BC%88%E4%B8%BB%E4%BB%86%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java多线程编程实战指南-第12章-Master-Slave（主仆）模式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-14 17:21:38" itemprop="dateCreated datePublished" datetime="2015-11-14T17:21:38+08:00">2015-11-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第十二章-Master-Slave（主仆）模式"><a href="#第十二章-Master-Slave（主仆）模式" class="headerlink" title="第十二章 Master-Slave（主仆）模式"></a>第十二章 Master-Slave（主仆）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>Master-Slave 模式是一个基于分而治之（Divide and conquer）思想的设计模式。其核心思想是将一个任务（原始任务）分解为若干个语义等同（Semantically-identical）的子任务，并由专门的工作者线程来并行执行这些子任务。原始任务的处理结果是通过整合各个子任务的处理结果而形成的。而这些与分而治之相关的处理细节对于原始任务的提交方来说又是不可见的，因此，Master-Slave 模式既提高计算效率，又实现了信息隐藏。<span id="more"></span></li>
+</ul>
+<p>-</p>
+<h4 id="模式架构"><a href="#模式架构" class="headerlink" title="模式架构"></a>模式架构</h4><p>-</p>
+<h4 id="实战案例"><a href="#实战案例" class="headerlink" title="实战案例"></a>实战案例</h4><p>某基于 Web Service 的电信系统需要一个系统流量统计工具。该工具的统计依据是该系统运行过程中产生的接口日志文件。接口日志文件记录了该系统接收到的请求、该系统返回给客户端的相应以及该系统调用外部系统时涉及的请求和响应的相关数据。<br>另外，流量统计工具要支持统计指定时间端内的系统流量。因此，我们把该工具分为两个模块：Linux Shell 脚本模块和 Java 模块。Linux Shell 脚本模块根据指定的时间段查找相应的接口日志文件，并将所有符合要求的接口日志文件的文件名通过标准输出传递给 Java 模块。Java 模块根据其标准输入（System.in）中指定的接口日志文件名读取相应的接口日志文件进行流量统计。<br>实现上述统计工具需要考虑一下几个问题：</p>
+<ul>
+<li>首先，该系统的接口日志文件被统一存储在日志文件服务器上。有时我们可能需要在日志服务器上直接统计系统流量。因此，我们系统统计工具占用的系统资源（CPU 时间和内存）尽可能地低，以免其运行干扰了日志服务器。</li>
+<li>其次，统计工具的统计依据－接口日志文件可能包含大量的纪录。以该系统单节点的流量为 100 TPS（Transaction per second，即 1s 内系统能够处理的请求数量），平均某个请求的处理会产生 4 条接口日志记录为例，那么 1h 会产生上千万条接口日志记录（100 * 3600 * 4 = 1440000）。因此，统计工具的统计速率要尽可能快，以免在急需统计结果的时候等待过久。</li>
+<li>当然，上述两个需求时矛盾的。我们只能在统计速率和资源消耗之间寻求一个平衡点。这里，我们可以使用 Master-Slave 模式：某个时间段内涉及的接口日志记录总数可能达上千万，因此原始任务的规模比较大。考虑到每个接口日志文件包含的纪录个数最多为 N 条（如 N 为10000），我们可以以文件为单位进行任务分解，将若干个日志文件合为一个子任务，并利用专门的工作者线程去执行这些子任务。再汇总各个子任务的统计结果并可得到我们所需要的最终结果。</li>
+</ul>
+<p><em><strong>本案例 Demo 详见 multithreading 工程的 com.Master_Slave 包</strong></em></p>
+<p>-</p>
+<h4 id="Master-Slave-模式的评价与现实考量"><a href="#Master-Slave-模式的评价与现实考量" class="headerlink" title="Master-Slave 模式的评价与现实考量"></a>Master-Slave 模式的评价与现实考量</h4><ul>
+<li>Master-Slave 模式的应用场景包括一下 3 个：</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>并行计算（Parallel Computation）。</strong> 该场景使用 Master-Slave 模式是为了提升计算性能。本章案例就属于该运用场景。在此情景下，原始任务的处理结果是通过组合每个 Slave 实例的处理结果形成的。</li>
+<li><strong>容错处理（Fault Tolerance）。</strong> 该场景使用 Master-Slave 模式是为了提高计算的可靠性。在此情形下，原始任务的处理结果是任意一个 Slave 实例的成功处理结果（那些处理失败的 Slave 实例无法为 Master 返回结果）。</li>
+<li><strong>计算精度（Computational Accuracy）。</strong> 该场景使用 Master-Slave 模式是为了提高计算的精确程度。在此情形下，原始任务的处理结果是所有 Slave 实例中处理结果不精确性最低的一个结果。</li>
+</ul>
+</blockquote>
+<ul>
+<li>Master-Slave 模式需要考虑一下几个问题：</li>
+</ul>
+<blockquote>
+<ul>
+<li>子任务的处理结果的收集</li>
+</ul>
+<blockquote>
+<p>Master 参与者需要收集各个子任务的处理结果，才能生成原始任务的处理结果。收集子任务的处理结果通常有两种方法。一个是使用存储仓库（Repository）。所谓的存储仓库是一个 Master 参与者和 Slave 参与者都能够访问的数据结构。Slave 参与者实例将其子任务的处理结果存入存储仓库。Master 参与者可以等待各个 Slave 参与者处理完毕后从存储仓库中获取各个子任务的处理结果。另外一种方法是使用 Promise 模式。这里，我们可以使 Slave 参与者的 subService 方法的返回值为 Promise 模式中的 Promise 参与者实例。通常可以使 subService 方法的返回值为一个 java.util.concurrent.Future 实例。这样，Master 参与者可以通过调用各个 Slave 参与者实例的 subService 方法的返回值的 get() 方法来获取子任务的处理结果。</p>
+</blockquote>
+<ul>
+<li>Slave 参与者实例的负载均衡与工作窃取</li>
+</ul>
+<blockquote>
+<p>在并行计算的场景中，为了使各个 Slave 参与者实例能够充分发挥其作用又不至于使其中某个负载过重，在子任务派发的时候我们需要注意各个 Slave 参与者实例所得到的子任务的规模和数量是否均衡。<br>如果原始任务的规模实现可知，那么 Master 参与者可以根据原始任务的规模和 Slave 参与者实例的个数算出的平均数进行子任务的派发。这时，每个 Slave 参与者实例被分配到的子任务的总规模是相等的。在并行计算场景中，一个 Slave 参与者实例通常就是一个线程。为了避免增加 JVM 线程调度的负担，Slave 线程的数量一般要根据 JVM 所在主机的 CPU 个数来定。通常，Slave 线程数量只比 CPU 个数大一点。<br>如果原始任务的规模事先不可知，则 Master 参与者在派发子任务的时候可能要采用某种负载均衡算法来使得各个 Slave 线程所分配到的子任务的规模和数量是均衡的。本章案例使用了简单的轮询（Round-Robin）算法来保持各个 Slave 线程的子任务负载均衡。<br>我们可以使用 Producer-Consumer 模式中介绍的工作窃取算法来动态调整各个 Slave 实例的计算负载。</p>
+</blockquote>
+<ul>
+<li>可靠性与异常处理</li>
+</ul>
+<blockquote>
+<p>Master 参与者的实现类需要注意处理其与 Slave 参与者的通信异常以及 Slave 参与者对子任务处理的异常。<br>Master 参与者与 Slave 参与的通信异常指 Master 参与者实例调用 Slave 参与者实例的 subService 方法时出现的异常。<br>由于 Slave 参与者是运行在工作中线程中的，而 Master 参与者实例是运行在客户端线程中的，后者要获取前者抛出的异常有点困难。如果 Master 参与者利用上文所述的基于 Promise 模式的方法来获取子任务的处理结果，那么获取 Slave 参与者实例的处理异常就变得非常简单：Master 参与者实例调用 subService 返回值的 get() 方法获取子任务处理结果的时候，如果 get() 方法抛出异常则说明相应的子任务处理失败。<br>为了提高计算的可靠性，Master 参与者在侦测到上述异常时可以考虑由其自身重新执行处理失败的子任务，即让处理失败的子任务运行在客户端线程中，而不是在 Slave 参与者的工作者线程中。这类似于 ThreadPoolExecutor 提供的 java.util.ThreadPoolExecutor.CallerRunsPolicy 这个任务提交失败处理策略。</p>
+</blockquote>
+<ul>
+<li>Slave 线程的停止</li>
+</ul>
+<blockquote>
+<p>在并行计算场景中，每个 Slave 参与者实例就是一个线程。通常，这些线程会使用阻塞队列（BlockingQueue）来接受子任务，而线程则从阻塞队列中取出子任务（即调用 BlockingQueue 的 take() 方法）进行执行。而 BlockingQueue 的 take() 在队列为空时会使当前线程一直处于等待状态，因此当 Slave 线程处理完分配给其的所有子任务时，Slave 线程仍然未停止。此时，我们可以使用 Two-phase Termination 模式来实现 Slave 线程在处理完分配给其的子任务后停止。</p>
+</blockquote>
+</blockquote>
+<p>-</p>
+<h4 id="Java-标准库实例"><a href="#Java-标准库实例" class="headerlink" title="Java 标准库实例"></a>Java 标准库实例</h4><p>Java 标准库中没有使用 Master-Slave 模式</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+              <a href="/tags/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/" rel="tag"># Java多线程编程实战指南</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC11%E7%AB%A0%20-%20Serial%20Thread%20Confinement%EF%BC%88%E4%B8%B2%E8%A1%8C%E7%BA%BF%E7%A8%8B%E5%B0%81%E9%97%AD%EF%BC%89%E6%A8%A1%E5%BC%8F/" rel="prev" title="Java多线程编程实战指南-第11章-Serial Thread Confinement（串行线程封闭）模式">
+      <i class="fa fa-chevron-left"></i> Java多线程编程实战指南-第11章-Serial Thread Confinement（串行线程封闭）模式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/11/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC13%E7%AB%A0%20-%20Pipeline%EF%BC%88%E6%B5%81%E6%B0%B4%E7%BA%BF%EF%BC%89%E6%A8%A1%E5%BC%8F/" rel="next" title="Java多线程编程实战指南-第13章-Pipeline（流水线）模式">
+      Java多线程编程实战指南-第13章-Pipeline（流水线）模式 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0-Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97"><span class="nav-number">1.</span> <span class="nav-text">读书笔记 - Java 多线程编程实战指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%8D%81%E4%BA%8C%E7%AB%A0-Master-Slave%EF%BC%88%E4%B8%BB%E4%BB%86%EF%BC%89%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.1.</span> <span class="nav-text">第十二章 Master-Slave（主仆）模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">模式介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.0.2.</span> <span class="nav-text">模式架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B"><span class="nav-number">1.1.0.3.</span> <span class="nav-text">实战案例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Master-Slave-%E6%A8%A1%E5%BC%8F%E7%9A%84%E8%AF%84%E4%BB%B7%E4%B8%8E%E7%8E%B0%E5%AE%9E%E8%80%83%E9%87%8F"><span class="nav-number">1.1.0.4.</span> <span class="nav-text">Master-Slave 模式的评价与现实考量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java-%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.1.0.5.</span> <span class="nav-text">Java 标准库实例</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'b05fa560e3d6aa264d13321a9cac1c5e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

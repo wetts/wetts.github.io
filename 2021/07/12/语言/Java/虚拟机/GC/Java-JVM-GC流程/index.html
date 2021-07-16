@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;shuiyj&#x2F;p&#x2F;12640692.html  挤满新生代的最后一个对象我们应当知道，新创建的对象一般会被分配在新生代中。常用的新生代的垃圾回收器是 ParNew 垃圾回收器，它按照 8:1:1 将新生代分成 Eden 区，以及两个 Survivor 区。 某一时刻，我们创建的对象将 Eden 区全部挤满，这个对象就是「挤满新生代的最后一个对象">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java-JVM-GC流程.md">
+<meta property="og:url" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;shuiyj&#x2F;p&#x2F;12640692.html  挤满新生代的最后一个对象我们应当知道，新创建的对象一般会被分配在新生代中。常用的新生代的垃圾回收器是 ParNew 垃圾回收器，它按照 8:1:1 将新生代分成 Eden 区，以及两个 Survivor 区。 某一时刻，我们创建的对象将 Eden 区全部挤满，这个对象就是「挤满新生代的最后一个对象">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/1.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/2.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/3.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/4.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/5.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/6.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/7.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/8.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/9.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/10.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/11.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/12.png">
+<meta property="og:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/13.png">
+<meta property="article:published_time" content="2021-07-11T18:56:32.000Z">
+<meta property="article:modified_time" content="2021-07-11T19:22:36.438Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/1.png">
+
+<link rel="canonical" href="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java-JVM-GC流程.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java-JVM-GC流程.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-07-12 02:56:32 / 修改时间：03:22:36" itemprop="dateCreated datePublished" datetime="2021-07-12T02:56:32+08:00">2021-07-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/shuiyj/p/12640692.html">https://www.cnblogs.com/shuiyj/p/12640692.html</a></p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/1.png" alt="1"></p>
+<h2 id="挤满新生代的最后一个对象"><a href="#挤满新生代的最后一个对象" class="headerlink" title="挤满新生代的最后一个对象"></a>挤满新生代的最后一个对象</h2><p>我们应当知道，新创建的对象一般会被分配在新生代中。常用的新生代的垃圾回收器是 ParNew 垃圾回收器，它按照 8:1:1 将新生代分成 Eden 区，以及两个 Survivor 区。</p>
+<p>某一时刻，我们创建的对象将 Eden 区全部挤满，这个对象就是「挤满新生代的最后一个对象」。此时，Minor GC 就触发了。</p>
+<h2 id="正式-Minor-GC-前的检查"><a href="#正式-Minor-GC-前的检查" class="headerlink" title="正式 Minor GC 前的检查"></a>正式 Minor GC 前的检查</h2><p>在正式 Minor GC 前，JVM 会先检查新生代中对象，是比老年代中剩余空间大还是小。<strong>为什么要做这样的检查呢？</strong>原因很简单，假如 Minor GC 之后 Survivor 区放不下剩余对象，这些对象就要进入到老年代，所以要提前检查老年代是不是够用。这样就有两种情况：</p>
+<ol>
+<li>老年代剩余空间大于新生代中的对象大小，那就直接 Minor GC，GC 完 survivor 不够放，老年代也绝对够放</li>
+<li>老年代剩余空间小于新生代中的对象大小，这个时候就要查看是否启用了「老年代空间分配担保规则」，具体来说就是看 <code>-XX:-HandlePromotionFailure</code> 参数是否设置了（一般都会设置）</li>
+</ol>
+<p>老年代空间分配担保规则是这样的。如果老年代中剩余空间大小，大于历次 Minor GC 之后剩余对象的大小，那就允许进行 Minor GC。因为从概率上来说，以前的放的下，这次的也应该放的下。那就有两种情况：</p>
+<ol>
+<li>老年代中剩余空间大小，大于历次 Minor GC 之后剩余对象的大小，进行 Minor GC</li>
+<li>老年代中剩余空间大小，小于历次 Minor GC 之后剩余对象的大小，进行 Full GC，把老年代空出来再检查</li>
+</ol>
+<h2 id="Minor-GC-后的处境"><a href="#Minor-GC-后的处境" class="headerlink" title="Minor GC 后的处境"></a>Minor GC 后的处境</h2><p>前面说了，开启<strong>老年代空间分配担保规则</strong>只能说是大概率上来说，Minor GC 剩余后的对象够放到老年代，所以当然也会有万一，Minor GC 后会有这样三种情况：</p>
+<ol>
+<li>Minor GC 之后的对象足够放到 Survivor 区，皆大欢喜，GC 结束</li>
+<li>Minor GC 之后的对象不够放到 Survivor 区，接着进入到老年代，老年代能放下，那也可以，GC 结束</li>
+<li>Minor GC 之后的对象不够放到 Survivor 区，老年代也放不下，那就只能 Full GC</li>
+</ol>
+<h2 id="实在不行只能-OOM"><a href="#实在不行只能-OOM" class="headerlink" title="实在不行只能 OOM"></a>实在不行只能 OOM</h2><p>前面都是成功 GC 的例子，还有 3 种情况，会导致 GC 失败，报 OOM：</p>
+<ol>
+<li>紧接上一节 Full GC 之后，老年代任然放不下剩余对象，就只能 OOM</li>
+<li>未开启老年代分配担保机制，且一次 Full GC 后，老年代任然放不下剩余对象，也只能 OOM</li>
+<li>开启老年代分配担保机制，但是担保不通过，一次 Full GC 后，老年代任然放不下剩余对象，也是能 OOM</li>
+</ol>
+<hr>
+<p>转自：<a target="_blank" rel="noopener" href="https://www.modb.pro/db/26526">https://www.modb.pro/db/26526</a></p>
+<h2 id="堆内存结构"><a href="#堆内存结构" class="headerlink" title="堆内存结构"></a>堆内存结构</h2><p>我们以 Java 官方的 HotSpot JVM 为例，在描述 GC 过程前，先了解一下堆内存的结构。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/2.png" alt="2"><br>JVM 将堆内存分为了三部分：新生代(Young Generation)，老年代(Old Generation)，永久代(Permanent Generation)。其中新生代又分为三部分：伊甸园区(Eden)，和两个幸存区S0和S1。</p>
+<p>注：JDK1.8之后，Java官方的HotSpot JVM去掉了永久代，取而代之的是元数据区Metaspace。Metaspace使用的是本地内存，而不是堆内存，也就是说在默认情况下Metaspace的大小只与本地内存的大小有关。因此JDK1.8之后，就见不到java.lang.OutOfMemoryError: PermGen space这种由于永久代空间不足导致的内存溢出的问题了。</p>
+<h2 id="垃圾回收全过程"><a href="#垃圾回收全过程" class="headerlink" title="垃圾回收全过程"></a>垃圾回收全过程</h2><p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/3.png" alt="3"><br>新创建的对象会先被分配到到Eden区。JVM刚启动时，Eden区对象数量较少，两个Survivor区S0、S1几乎是空的。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/4.png" alt="4"><br>随着时间的推移，Eden区的对象越来越多。当Eden区放不下时(占用空间达到容量阈值)，新生代就会发生垃圾回收，我们称之为Minor GC或者Young GC。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/5.png" alt="5"><br>发生GC时，第一步会通过可达性分析算法找到可达对象。如上图，蓝色为可达对象，其他紫色为不可达对象。第二步，被标示的可达对象会被转移到S0(此时S0是From Survivor)，此时存活对象年龄加1，三个对象年龄都变为1。第三步，清除Eden区所有对象。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/6.png" alt="6"><br>GC后各区域对象占用情况，如上图所示。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/7.png" alt="7"><br>程序继续运行，Eden区再次达到容量阈值时，会再次发生GC。这时S0(From Survivor)已经有了对象。还是同样的步骤，通过可达性分析算法找到可达对象，然后再将Eden和S0中的可达对象转移到S1(To Survivor)，各存活对象年龄加1。最后将Eden和S0中的所有对象清除。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/8.png" alt="8"><br>GC后S0区域被清空。如上图所示。S0和S1发生了互换，S1变成了From Survivor，S0变成了To Survivor。</p>
+<p>注意，To Survivor区永远都为空。这实际上是垃圾回收算法-复制算法在年轻代的实际应用。把年轻代分为Eden，S0，S1三个区域，每次垃圾回收时把可达对象复制到S0或S1，然后再清除掉Eden和(S1或S0)中的所有对象。由于每次GC时，新生代的可达对象非常少(绝大部分对象要被回收掉)，一般不会超过新生代总体空间的10%，所以搜寻可达对象以及复制对象的成本都会非常低。而且这种复制的方式还能避免产生堆内存碎片，提高内存利用率。很多年轻代垃圾收集器都采用复制算法，如ParNew。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/9.png" alt="9"><br>在程序运行过程中，新生代GC会反复发生，长寿对象会在S0和S1之间反复交换，年龄也会越来越大，当对象达到年龄上限时，会被晋升到老年代。这个年龄上限默认是15，可以通过参数-XX:MaxTenuringThreshold设置。如下图，有些年轻代对象年龄达到了上限15，被转移到了老年代。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/10.png" alt="10"><br><strong>其他晋升方式</strong>。新生代对象晋升到老年代，除了根据年龄正常晋升外。为了提高JVM的性能，JVM设计者还考虑了其他晋升方式。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/11.png" alt="11"><br><strong>大对象直接晋升</strong>。大对象会跨过年轻代直接分配到老年代。可以通过-XX:PretenureSizeThreshold参数设置对象大小。如果参数被设置成5MB，超过5MB的大对象会直接分配到老年代。这样做的目的，是为了避免大对象在Eden区及两个Survivor区之间大量的内存复制，大对象的内存复制耗时比普通对象要高很多。</p>
+<p>注意：PretenureSizeThreshold参数只对Serial和ParNew两种回收器有效。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/12.png" alt="12"><br><strong>动态对象年龄判定</strong>。如果在Survivor空间中相同年龄对象大小的总和大于Survivor空间的一半，年龄大于或等于该年龄的对象会直接进入老年代，而不用等到MaxTenuringThreshold中设置的年龄上限。上图，年龄为1的对象超过了Survivor空间的一半，所以这几个对象会直接进入老年代。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/13.png" alt="13"><br>实际上，上面对动态对象年龄判定的描述并不精确。上图的场景也会导致相关对象晋升到老年代。年龄为1的对象加上年龄为2的对象超过了半数，这时包括年龄为2的对象以及年龄更大的对象都会被晋升到老年代。所以上图中年龄为2和3的对象都会被晋升到老年代。</p>
+<p><strong>老年代垃圾回收</strong>。随着年轻代对象的不断晋升，老年代的对象变得越来越多，达到容量阈值后老年代也会发生垃圾回收，我们称之为Major GC或者Full GC，Full GC并不是全局GC，它只发生在老年代。</p>
+<p>虽然年轻代和老年代都会发生GC，但是每次GC的时间和成本却大不相同。由于老年代空间大小一般是年轻代的几倍，再加上老年代对象存活率很高，所以整个标记过程比较慢，GC成本也非常高。我们经常说的JVM调优，主要是为了尽量减少老年代Full GC的时间和频次。</p>
+<p>老年代垃圾回收器，很少使用复制算法，主要为了避免大量对象的内存复制带来的时间和空间上的开销，一般采用标记清除、标记整理算法，就地标记回收。例如，老年代垃圾收集器CMS就采用了标记清除算法。对于标记清除算法带来的内存碎片问题，CMS提供了两个参数做碎片整理，-XX:+UseCMSCompactAtFullCollection和-XX:CMSFullGCsBeforeCompaction。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/JVM/" rel="tag"># JVM</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/11/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81-Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" rel="prev" title="分布式锁-Redis分布式锁.md">
+      <i class="fa fa-chevron-left"></i> 分布式锁-Redis分布式锁.md
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%A4%E6%BB%A1%E6%96%B0%E7%94%9F%E4%BB%A3%E7%9A%84%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E5%AF%B9%E8%B1%A1"><span class="nav-number">1.</span> <span class="nav-text">挤满新生代的最后一个对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E5%BC%8F-Minor-GC-%E5%89%8D%E7%9A%84%E6%A3%80%E6%9F%A5"><span class="nav-number">2.</span> <span class="nav-text">正式 Minor GC 前的检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Minor-GC-%E5%90%8E%E7%9A%84%E5%A4%84%E5%A2%83"><span class="nav-number">3.</span> <span class="nav-text">Minor GC 后的处境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E5%9C%A8%E4%B8%8D%E8%A1%8C%E5%8F%AA%E8%83%BD-OOM"><span class="nav-number">4.</span> <span class="nav-text">实在不行只能 OOM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A0%86%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84"><span class="nav-number">5.</span> <span class="nav-text">堆内存结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%85%A8%E8%BF%87%E7%A8%8B"><span class="nav-number">6.</span> <span class="nav-text">垃圾回收全过程</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '24c2ddc642a1ad30a8494119fbb15595',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="参考：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;36173202  单前导下划线：_var 单末尾下划线：var_ 双前导下划线：__var 双前导和末尾下划线：__var__ 单下划线：_  单前导下划线 _var下划线前缀的含义是告知其他程序员：以单个下划线开头的变量或方法仅供内部使用。 该约定在PEP 8中有定义。 这不是Python强制规定的。 Python不像Java那样">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python-下划线">
+<meta property="og:url" content="https://wetts.github.io/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="参考：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;36173202  单前导下划线：_var 单末尾下划线：var_ 双前导下划线：__var 双前导和末尾下划线：__var__ 单下划线：_  单前导下划线 _var下划线前缀的含义是告知其他程序员：以单个下划线开头的变量或方法仅供内部使用。 该约定在PEP 8中有定义。 这不是Python强制规定的。 Python不像Java那样">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/1.png">
+<meta property="article:published_time" content="2019-08-16T06:13:40.000Z">
+<meta property="article:modified_time" content="2019-10-11T13:21:38.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="命名规则">
+<meta property="article:tag" content="下划线">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/1.png">
+
+<link rel="canonical" href="https://wetts.github.io/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Python-下划线 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python-下划线
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-16 14:13:40" itemprop="dateCreated datePublished" datetime="2019-08-16T14:13:40+08:00">2019-08-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-11 21:21:38" itemprop="dateModified" datetime="2019-10-11T21:21:38+08:00">2019-10-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/36173202">https://zhuanlan.zhihu.com/p/36173202</a></p>
+<ul>
+<li>单前导下划线：<code>_var</code></li>
+<li>单末尾下划线：<code>var_</code></li>
+<li>双前导下划线：<code>__var</code></li>
+<li>双前导和末尾下划线：<code>__var__</code></li>
+<li>单下划线：<code>_</code></li>
+</ul>
+<h3 id="单前导下划线-var"><a href="#单前导下划线-var" class="headerlink" title="单前导下划线 _var"></a>单前导下划线 <code>_var</code></h3><p>下划线前缀的含义是告知其他程序员：以单个下划线开头的变量或方法仅供内部使用。 该约定在PEP 8中有定义。</p>
+<p>这不是Python强制规定的。 Python不像Java那样在“私有”和“公共”变量之间有很强的区别。</p>
+<p>看看下面的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">class Test:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.foo = 11</span><br><span class="line">       self._bar = 23</span><br></pre></td></tr></table></figure>
+<p>如果你实例化此类，并尝试访问在<code>__init__</code>构造函数中定义的foo和_bar属性，会发生什么情况？ 让我们来看看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t = Test()</span><br><span class="line">&gt;&gt;&gt; t.foo</span><br><span class="line">11</span><br><span class="line">&gt;&gt;&gt; t._bar</span><br><span class="line">23</span><br></pre></td></tr></table></figure>
+<p>你会看到_bar中的单个下划线并没有阻止我们“进入”类并访问该变量的值。</p>
+<p>这是因为Python中的单个下划线前缀仅仅是一个约定 - 至少相对于变量和方法名而言。</p>
+<p>但是，前导下划线的确会影响从模块中导入名称的方式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># This is my_module.py:</span><br><span class="line"></span><br><span class="line">def external_func():</span><br><span class="line">   return 23</span><br><span class="line"></span><br><span class="line">def _internal_func():</span><br><span class="line">   return 42</span><br></pre></td></tr></table></figure>
+<p>现在，如果使用通配符从模块中导入所有名称，则Python不会导入带有前导下划线的名称（除非模块定义了覆盖此行为的<code>__all__</code>列表）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; from my_module import *</span><br><span class="line">&gt;&gt;&gt; external_func()</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; _internal_func()</span><br><span class="line">NameError: &quot;name &#x27;_internal_func&#x27; is not defined&quot;</span><br></pre></td></tr></table></figure>
+<p>顺便说一下，应该避免通配符导入，因为它们使名称空间中存在哪些名称不清楚。 为了清楚起见，坚持常规导入更好。</p>
+<p>与通配符导入不同，常规导入不受前导单个下划线命名约定的影响：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; import my_module</span><br><span class="line">&gt;&gt;&gt; my_module.external_func()</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; my_module._internal_func()</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>我知道这一点可能有点令人困惑。 如果你遵循PEP 8推荐，避免通配符导入，那么你真正需要记住的只有这个：</p>
+<blockquote>
+<p>单个下划线是一个Python命名约定，表示这个名称是供内部使用的。 它通常不由Python解释器强制执行，仅仅作为一种对程序员的提示。</p>
+</blockquote>
+<h3 id="单末尾下划线-var"><a href="#单末尾下划线-var" class="headerlink" title="单末尾下划线 var_"></a>单末尾下划线 <code>var_</code></h3><p>有时候，一个变量的最合适的名称已经被一个关键字所占用。 因此，像class或def这样的名称不能用作Python中的变量名称。 在这种情况下，你可以附加一个下划线来解决命名冲突：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; def make_object(name, class):</span><br><span class="line">SyntaxError: &quot;invalid syntax&quot;</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; def make_object(name, class_):</span><br><span class="line">...    pass</span><br></pre></td></tr></table></figure>
+<p>总之，单个末尾下划线（后缀）是一个约定，用来避免与Python关键字产生命名冲突。 PEP 8解释了这个约定。</p>
+<h3 id="双前导下划线-var"><a href="#双前导下划线-var" class="headerlink" title="双前导下划线 __var"></a>双前导下划线 <code>__var</code></h3><p>双下划线前缀会导致Python解释器重写属性名称，以避免子类中的命名冲突。</p>
+<p>这也叫做名称修饰（name mangling） - 解释器更改变量的名称，以便在类被扩展的时候不容易产生冲突。</p>
+<p>我知道这听起来很抽象。 因此，我组合了一个小小的代码示例来予以说明：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Test:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.foo = 11</span><br><span class="line">       self._bar = 23</span><br><span class="line">       self.__baz = 23</span><br></pre></td></tr></table></figure>
+<p>让我们用内置的dir()函数来看看这个对象的属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t = Test()</span><br><span class="line">&gt;&gt;&gt; dir(t)</span><br><span class="line">[&#x27;_Test__baz&#x27;, &#x27;__class__&#x27;, &#x27;__delattr__&#x27;, &#x27;__dict__&#x27;, &#x27;__dir__&#x27;,</span><br><span class="line">&#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;, &#x27;__getattribute__&#x27;,</span><br><span class="line">&#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__init__&#x27;, &#x27;__le__&#x27;, &#x27;__lt__&#x27;, &#x27;__module__&#x27;,</span><br><span class="line">&#x27;__ne__&#x27;, &#x27;__new__&#x27;, &#x27;__reduce__&#x27;, &#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;,</span><br><span class="line">&#x27;__setattr__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__str__&#x27;, &#x27;__subclasshook__&#x27;,</span><br><span class="line">&#x27;__weakref__&#x27;, &#x27;_bar&#x27;, &#x27;foo&#x27;]</span><br></pre></td></tr></table></figure>
+<p>以上是这个对象属性的列表。 让我们来看看这个列表，并寻找我们的原始变量名称<code>foo</code>，<code>_bar</code>和<code>__baz</code> - 我保证你会注意到一些有趣的变化。</p>
+<ul>
+<li><code>self.foo</code>变量在属性列表中显示为未修改为<code>foo</code>。</li>
+<li><code>self._bar</code>的行为方式相同 - 它以<code>_bar</code>的形式显示在类上。 就像我之前说过的，在这种情况下，前导下划线仅仅是一个约定。 给程序员一个提示而已。</li>
+<li>然而，对于<code>self.__baz</code>而言，情况看起来有点不同。 当你在该列表中搜索<code>__baz</code>时，你会看不到有这个名字的变量。<br><code>__baz</code>出什么情况了？</li>
+</ul>
+<p>如果你仔细观察，你会看到此对象上有一个名为<code>_Test__baz</code>的属性。 这就是Python解释器所做的名称修饰。 它这样做是为了防止变量在子类中被重写。</p>
+<p>让我们创建另一个扩展Test类的类，并尝试重写构造函数中添加的现有属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class ExtendedTest(Test):</span><br><span class="line">   def __init__(self):</span><br><span class="line">       super().__init__()</span><br><span class="line">       self.foo = &#x27;overridden&#x27;</span><br><span class="line">       self._bar = &#x27;overridden&#x27;</span><br><span class="line">       self.__baz = &#x27;overridden&#x27;</span><br></pre></td></tr></table></figure>
+<p>现在，你认为<code>foo</code>，<code>_bar</code>和<code>__baz</code>的值会出现在这个ExtendedTest类的实例上吗？ 我们来看一看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2 = ExtendedTest()</span><br><span class="line">&gt;&gt;&gt; t2.foo</span><br><span class="line">&#x27;overridden&#x27;</span><br><span class="line">&gt;&gt;&gt; t2._bar</span><br><span class="line">&#x27;overridden&#x27;</span><br><span class="line">&gt;&gt;&gt; t2.__baz</span><br><span class="line">AttributeError: &quot;&#x27;ExtendedTest&#x27; object has no attribute &#x27;__baz&#x27;&quot;</span><br></pre></td></tr></table></figure>
+<p>等一下，当我们尝试查看<code>t2.__baz</code>的值时，为什么我们会得到AttributeError？ 名称修饰被再次触发了！ 事实证明，这个对象甚至没有<code>__baz</code>属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; dir(t2)</span><br><span class="line">[&#x27;_ExtendedTest__baz&#x27;, &#x27;_Test__baz&#x27;, &#x27;__class__&#x27;, &#x27;__delattr__&#x27;,</span><br><span class="line">&#x27;__dict__&#x27;, &#x27;__dir__&#x27;, &#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;,</span><br><span class="line">&#x27;__getattribute__&#x27;, &#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__init__&#x27;, &#x27;__le__&#x27;,</span><br><span class="line">&#x27;__lt__&#x27;, &#x27;__module__&#x27;, &#x27;__ne__&#x27;, &#x27;__new__&#x27;, &#x27;__reduce__&#x27;,</span><br><span class="line">&#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;, &#x27;__setattr__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__str__&#x27;,</span><br><span class="line">&#x27;__subclasshook__&#x27;, &#x27;__weakref__&#x27;, &#x27;_bar&#x27;, &#x27;foo&#x27;, &#x27;get_vars&#x27;]</span><br></pre></td></tr></table></figure>
+<p>正如你可以看到<code>__baz</code>变成<code>_ExtendedTest__baz</code>以防止意外修改：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2._ExtendedTest__baz</span><br><span class="line">&#x27;overridden&#x27;</span><br></pre></td></tr></table></figure>
+<p>但原来的<code>_Test__baz</code>还在：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2._Test__baz</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>双下划线名称修饰对程序员是完全透明的。 下面的例子证实了这一点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class ManglingTest:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.__mangled = &#x27;hello&#x27;</span><br><span class="line"></span><br><span class="line">   def get_mangled(self):</span><br><span class="line">       return self.__mangled</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; ManglingTest().get_mangled()</span><br><span class="line">&#x27;hello&#x27;</span><br><span class="line">&gt;&gt;&gt; ManglingTest().__mangled</span><br><span class="line">AttributeError: &quot;&#x27;ManglingTest&#x27; object has no attribute &#x27;__mangled&#x27;&quot;</span><br></pre></td></tr></table></figure>
+<p>名称修饰是否也适用于方法名称？ 是的，也适用。名称修饰会影响在一个类的上下文中，以两个下划线字符（”dunders”）开头的所有名称：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class MangledMethod:</span><br><span class="line">   def __method(self):</span><br><span class="line">       return 42</span><br><span class="line"></span><br><span class="line">   def call_it(self):</span><br><span class="line">       return self.__method()</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; MangledMethod().__method()</span><br><span class="line">AttributeError: &quot;&#x27;MangledMethod&#x27; object has no attribute &#x27;__method&#x27;&quot;</span><br><span class="line">&gt;&gt;&gt; MangledMethod().call_it()</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>这是另一个也许令人惊讶的运用名称修饰的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">_MangledGlobal__mangled = 23</span><br><span class="line"></span><br><span class="line">class MangledGlobal:</span><br><span class="line">   def test(self):</span><br><span class="line">       return __mangled</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; MangledGlobal().test()</span><br><span class="line">23</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，我声明了一个名为<code>_MangledGlobal__mangled</code>的全局变量。然后我在名为MangledGlobal的类的上下文中访问变量。由于名称修饰，我能够在类的test()方法内，以<code>__mangled</code>来引用<code>_MangledGlobal__mangled</code>全局变量。</p>
+<p>Python解释器自动将名称<code>__mangled</code>扩展为<code>_MangledGlobal__mangled</code>，因为它以两个下划线字符开头。这表明名称修饰不是专门与类属性关联的。它适用于在类上下文中使用的两个下划线字符开头的任何名称。</p>
+<h3 id="双前导和双末尾下划线-var"><a href="#双前导和双末尾下划线-var" class="headerlink" title="双前导和双末尾下划线 __var__"></a>双前导和双末尾下划线 <code>__var__</code></h3><p>也许令人惊讶的是，如果一个名字同时以双下划线开始和结束，则不会应用名称修饰。 由双下划线前缀和后缀包围的变量不会被Python解释器修改：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class PrefixPostfixTest:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.__bam__ = 42</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; PrefixPostfixTest().__bam__</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>但是，Python保留了有双前导和双末尾下划线的名称，用于特殊用途。 这样的例子有，<code>__init__</code>对象构造函数，或<code>__call__</code> — 它使得一个对象可以被调用。</p>
+<p>这些dunder方法通常被称为神奇方法。</p>
+<p>最好避免在自己的程序中使用以双下划线（“dunders”）开头和结尾的名称，以避免与将来Python语言的变化产生冲突。</p>
+<h3 id="单下划线"><a href="#单下划线" class="headerlink" title="单下划线 _"></a>单下划线 <code>_</code></h3><p>按照习惯，有时候单个独立下划线是用作一个名字，来表示某个变量是临时的或无关紧要的。</p>
+<p>例如，在下面的循环中，我们不需要访问正在运行的索引，我们可以使用“_”来表示它只是一个临时值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; for _ in range(32):</span><br><span class="line">...    print(&#x27;Hello, World.&#x27;)</span><br></pre></td></tr></table></figure>
+<p>你也可以在拆分(unpacking)表达式中将单个下划线用作“不关心的”变量，以忽略特定的值。 同样，这个含义只是“依照约定”，并不会在Python解释器中触发特殊的行为。 单个下划线仅仅是一个有效的变量名称，会有这个用途而已。</p>
+<p>在下面的代码示例中，我将汽车元组拆分为单独的变量，但我只对颜色和里程值感兴趣。 但是，为了使拆分表达式成功运行，我需要将包含在元组中的所有值分配给变量。 在这种情况下，“_”作为占位符变量可以派上用场：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; car = (&#x27;red&#x27;, &#x27;auto&#x27;, 12, 3812.4)</span><br><span class="line">&gt;&gt;&gt; color, _, _, mileage = car</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; color</span><br><span class="line">&#x27;red&#x27;</span><br><span class="line">&gt;&gt;&gt; mileage</span><br><span class="line">3812.4</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">12</span><br></pre></td></tr></table></figure>
+<p>除了用作临时变量之外，“_”是大多数Python REPL中的一个特殊变量，它表示由解释器评估的最近一个表达式的结果。</p>
+<p>这样就很方便了，比如你可以在一个解释器会话中访问先前计算的结果，或者，你是在动态构建多个对象并与它们交互，无需事先给这些对象分配名字：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; 20 + 3</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; print(_)</span><br><span class="line">23</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; list()</span><br><span class="line">[]</span><br><span class="line">&gt;&gt;&gt; _.append(1)</span><br><span class="line">&gt;&gt;&gt; _.append(2)</span><br><span class="line">&gt;&gt;&gt; _.append(3)</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">[1, 2, 3]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Python下划线命名模式-小结"><a href="#Python下划线命名模式-小结" class="headerlink" title="Python下划线命名模式 - 小结"></a>Python下划线命名模式 - 小结</h3><p><img src="/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/1.png" alt="1"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"># Python</a>
+              <a href="/tags/%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99/" rel="tag"># 命名规则</a>
+              <a href="/tags/%E4%B8%8B%E5%88%92%E7%BA%BF/" rel="tag"># 下划线</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/" rel="prev" title="统计学系方法-第2章-感知机">
+      <i class="fa fa-chevron-left"></i> 统计学系方法-第2章-感知机
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/" rel="next" title="统计学系方法-第3章-k近邻法">
+      统计学系方法-第3章-k近邻法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E5%89%8D%E5%AF%BC%E4%B8%8B%E5%88%92%E7%BA%BF-var"><span class="nav-number">1.</span> <span class="nav-text">单前导下划线 _var</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E6%9C%AB%E5%B0%BE%E4%B8%8B%E5%88%92%E7%BA%BF-var"><span class="nav-number">2.</span> <span class="nav-text">单末尾下划线 var_</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8C%E5%89%8D%E5%AF%BC%E4%B8%8B%E5%88%92%E7%BA%BF-var"><span class="nav-number">3.</span> <span class="nav-text">双前导下划线 __var</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8C%E5%89%8D%E5%AF%BC%E5%92%8C%E5%8F%8C%E6%9C%AB%E5%B0%BE%E4%B8%8B%E5%88%92%E7%BA%BF-var"><span class="nav-number">4.</span> <span class="nav-text">双前导和双末尾下划线 __var__</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E4%B8%8B%E5%88%92%E7%BA%BF"><span class="nav-number">5.</span> <span class="nav-text">单下划线 _</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Python%E4%B8%8B%E5%88%92%E7%BA%BF%E5%91%BD%E5%90%8D%E6%A8%A1%E5%BC%8F-%E5%B0%8F%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">Python下划线命名模式 - 小结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '195d116cd9b214c23b61f26d17d0cb82',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

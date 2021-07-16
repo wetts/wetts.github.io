@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;wlzy&#x2F;p&#x2F;8007045.html 前提及说明第一次遇见矩阵求导，大多数人都是一头雾水，而搜了维基百科看也还是云里雾里，一堆的名词和一堆的表格到底都是什么呢？这里总结了我个人的学习经验，并且通过一个例子可以让你感受如何进行矩阵求导，下次再遇到需要进行矩阵求导的地方就不会措手不及。 在进行概念的解说之前，首先大家需要先知道下面的这个前提：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="矩阵求导实例">
+<meta property="og:url" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;wlzy&#x2F;p&#x2F;8007045.html 前提及说明第一次遇见矩阵求导，大多数人都是一头雾水，而搜了维基百科看也还是云里雾里，一堆的名词和一堆的表格到底都是什么呢？这里总结了我个人的学习经验，并且通过一个例子可以让你感受如何进行矩阵求导，下次再遇到需要进行矩阵求导的地方就不会措手不及。 在进行概念的解说之前，首先大家需要先知道下面的这个前提：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E5%90%91%E9%87%8F.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E6%A0%87%E9%87%8F.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E5%90%91%E9%87%8F.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E7%9F%A9%E9%98%B5.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E7%9F%A9%E9%98%B5d%E6%A0%87%E9%87%8F.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E5%90%91%E9%87%8F.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E6%A0%87%E9%87%8F.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E5%90%91%E9%87%8F.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E7%9F%A9%E9%98%B5.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E9%97%AE%E9%A2%98.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%96.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%962.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%963.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%964.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC1.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC2.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC3.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC4.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%95%B4%E5%90%88.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC1.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC2.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC3.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC4.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC5.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC6.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC7.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC8.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC9.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC10.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC11.png">
+<meta property="article:published_time" content="2019-09-05T09:30:48.000Z">
+<meta property="article:modified_time" content="2019-10-11T12:29:14.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="矩阵">
+<meta property="article:tag" content="求导">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E5%90%91%E9%87%8F.png">
+
+<link rel="canonical" href="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>矩阵求导实例 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          矩阵求导实例
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-05 17:30:48" itemprop="dateCreated datePublished" datetime="2019-09-05T17:30:48+08:00">2019-09-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-11 20:29:14" itemprop="dateModified" datetime="2019-10-11T20:29:14+08:00">2019-10-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/wlzy/p/8007045.html">https://www.cnblogs.com/wlzy/p/8007045.html</a></p>
+<h2 id="前提及说明"><a href="#前提及说明" class="headerlink" title="前提及说明"></a>前提及说明</h2><p>第一次遇见矩阵求导，大多数人都是一头雾水，而搜了维基百科看也还是云里雾里，一堆的名词和一堆的表格到底都是什么呢？这里总结了我个人的学习经验，并且通过一个例子可以让你感受如何进行矩阵求导，下次再遇到需要进行矩阵求导的地方就不会措手不及。</p>
+<p>在进行概念的解说之前，首先大家需要先知道下面的这个前提：</p>
+<blockquote>
+<p>前提： 若 x 为向量，则默认 x 为列向量， xT 为行向量</p>
+</blockquote>
+<h2 id="布局的概念"><a href="#布局的概念" class="headerlink" title="布局的概念"></a>布局的概念</h2><p>布局简单地理解就是分子 y 、分母 x 是行向量还是列向量。</p>
+<ul>
+<li>分子布局（Numerator-layout）：分子为 y 或者分母为 xT (即，分子为列向量或者分母为行向量)</li>
+<li>分母布局（Denominator-layout）：分子为 yT 或者分母为 x (即，分子为行向量或者分母为列向量)</li>
+</ul>
+<p>为了更加深刻地理解两种布局的特点和区别，下面是从维基百科中布局部分拿来的例子</p>
+<h3 id="分子布局"><a href="#分子布局" class="headerlink" title="分子布局"></a>分子布局</h3><ul>
+<li>标量/向量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E5%90%91%E9%87%8F.png" alt="分子布局-标量d向量">（分母的向量为行向量）</li>
+<li>向量/标量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E6%A0%87%E9%87%8F.png" alt="分子布局-向量d标量">（分子的向量为列向量）</li>
+<li>向量/向量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E5%90%91%E9%87%8F.png" alt="分子布局-向量d向量">（分子为列向量横向平铺，分母为行向量纵向平铺）</li>
+<li>标量/矩阵：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E7%9F%A9%E9%98%B5.png" alt="分子布局-标量d矩阵">（注意这个矩阵部分是转置的，而下面的分母布局是非转置的）</li>
+<li>矩阵/标量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E7%9F%A9%E9%98%B5d%E6%A0%87%E9%87%8F.png" alt="分子布局-矩阵d标量"></li>
+</ul>
+<h3 id="分母布局"><a href="#分母布局" class="headerlink" title="分母布局"></a>分母布局</h3><ul>
+<li>标量/向量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E5%90%91%E9%87%8F.png" alt="分母布局-标量d向量">（分母的向量为列向量）</li>
+<li>向量/标量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E6%A0%87%E9%87%8F.png" alt="分母布局-向量d标量">（分子的向量为行向量）</li>
+<li>向量/向量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E5%90%91%E9%87%8F.png" alt="分母布局-向量d向量">（分子为行向量纵向平铺，分母为列向量横向平铺）</li>
+<li>标量/矩阵：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E7%9F%A9%E9%98%B5.png" alt="分母布局-标量d矩阵">（矩阵部分为原始矩阵）</li>
+</ul>
+<h2 id="一个求导的例子"><a href="#一个求导的例子" class="headerlink" title="一个求导的例子"></a>一个求导的例子</h2><h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E9%97%AE%E9%A2%98.png" alt="问题"></p>
+<blockquote>
+<p>说明： y、w为列向量，X为矩阵</p>
+</blockquote>
+<h3 id="式子演化"><a href="#式子演化" class="headerlink" title="式子演化"></a>式子演化</h3><p>看到这个例子不要急着去查表求导，先看看它的形式，是 <img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%96.png" alt="式子演化"> 的形式，这种形式一般求导较为复杂，因此为了简化运算，我们先把式子展开成下面的样子（注意：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%962.png" alt="式子演化2"> ： ）</p>
+<p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%963.png" alt="式子演化3"></p>
+<p>然后就可以写成四个部分求导的形式如下（累加后求导=求导后累加）： </p>
+<p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%964.png" alt="式子演化4"></p>
+<h3 id="求导"><a href="#求导" class="headerlink" title="求导"></a>求导</h3><ul>
+<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC1.png" alt="求导1"></li>
+</ul>
+<p>说明：分子部分为标量，分母部分为向量，找到维基百科中的Scalar-by-vector identities表格，在表格中匹配形式到第1行的位置，因为分母为列向量，因此为分母布局，对应的求导结果就是 0 。</p>
+<ul>
+<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC2.png" alt="求导2"></li>
+</ul>
+<p>说明：同样的，在维基百科中的Scalar-by-vector identities表格，在表格中匹配形式到第11行的位置。</p>
+<ul>
+<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC3.png" alt="求导3"></li>
+</ul>
+<p>说明：因为分子为标量，标量的转置等于本身，所以对分子进行转置操作，其等价于第二部分。</p>
+<ul>
+<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC4.png" alt="求导4"></li>
+</ul>
+<p>说明：同样的，在维基百科中的Scalar-by-vector identities表格，在表格中匹配形式到第13行的位置。</p>
+<h3 id="整合"><a href="#整合" class="headerlink" title="整合"></a>整合</h3><p>把四个部分求导结果进行相应的加减就可以得到最终的结果： </p>
+<ul>
+<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%95%B4%E5%90%88.png" alt="整合"></li>
+</ul>
+<hr>
+<ul>
+<li><p>分子布局，即按照 y 和xT (相比较于x)的布局。（求导结果中分子保持原始形式，分母为转置形式）</p>
+</li>
+<li><p>分母布局, 即按照 yT 和 x (相比较于y)。（求导结果中分子为转置形式，分母保持原始形式）</p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC1.png" alt="表格1"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC2.png" alt="表格2"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC3.png" alt="表格3"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC4.png" alt="表格4"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC5.png" alt="表格5"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC6.png" alt="表格6"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC7.png" alt="表格7"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC8.png" alt="表格8"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC9.png" alt="表格9"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC10.png" alt="表格10"></p>
+</li>
+<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC11.png" alt="表格11"></p>
+</li>
+</ul>
+<hr>
+<h2 id="附录：公式推导"><a href="#附录：公式推导" class="headerlink" title="附录：公式推导"></a>附录：公式推导</h2><h3 id="公式一"><a href="#公式一" class="headerlink" title="公式一"></a>公式一</h3><p>对任意行向量 $\mathbf{w} = (w_1, w_2, \cdots w_n)$ 都有<br>$$<br>\left.\frac{\partial(\mathbf{w} \mathbf{x})}{\partial \mathbf{x}}=\left[\begin{array}{c}{\frac{\partial(\mathbf{w} \mathbf{x})}{x_{1}}} \ {\frac{\partial(\mathbf{w} \mathbf{x})}{x_{2}}} \ {\vdots} \ {\frac{\partial(\mathbf{w} \mathbf{x})}{x_{n}}}\end{array}\right]=\left[\begin{array}{c}{\frac{\partial\left(w_1 x_1+w_2 x_{2}+\cdots+w_{n} x_{n}\right)}{x_{1}}} \ {\frac{\partial\left(w_{1} x_{1}+w_{2} x_{2}+\cdots+w_{n} x_{n}\right)}{x_{2}}} \ {\vdots} \ {\frac{\partial\left(w_1 x_1+w_2 x_{2}+\cdots+w_{n} x_{n}\right)}{x_{n}}}\end{array}\right]=\left[\begin{array}{c}{w_{1}} \ {w_{2}} \ {\vdots} \ {w_{n}}\end{array}\right]=\mathbf{w}^{T}\right.<br>$$<br>同时注意,如果 $\mathbf{w}$ 表示一个列向量，则<br>$$<br>\frac{\partial\left(\mathbf{x}^{\mathrm{T}} \mathbf{w}\right)}{\partial \mathbf{x}}=\mathbf{w}<br>$$</p>
+<h3 id="公式二"><a href="#公式二" class="headerlink" title="公式二"></a>公式二</h3><p>$\mathbf{A}$ 表示一个矩阵，其中 $\mathbf{a_1, a_2, \cdots a_n}$ 表示行向量<br>$$<br>\mathbf{A}=\left(\mathbf{a}<em>{\mathbf{1}}, \mathbf{a}</em>{2}, \cdots, \mathbf{a}<em>{\mathbf{n}}\right)^{T}<br>$$<br>都有<br>$$<br>\frac{\partial(\mathbf{A} \mathbf{x})}{\partial \mathbf{x}}=\frac{\partial\left(\mathbf{a}</em>{1} \mathbf{x}, \mathbf{a}<em>{2} \mathbf{x}, \cdots, \mathbf{a}</em>{\mathbf{n}} \mathbf{x}\right)^{T}}{\partial \mathbf{x}}=\left(\mathbf{a}<em>{1}^{T}, \mathbf{a}</em>{2}^{T}, \cdots, \mathbf{a}<em>{\mathbf{n}}^{T}\right)=\mathbf{A}^{T}<br>$$<br>$\mathbf{B}$ 表示一个矩阵，其中 $\mathbf{b_1, b_2, \cdots b_n}$ 表示列向量<br>$$<br>\mathbf{B}=\left(\mathbf{b}</em>{\mathbf{1}}, \mathbf{b}<em>{2}, \cdots, \mathbf{b}</em>{\mathbf{n}}\right)<br>$$<br>都有<br>$$<br>\frac{\partial\left(\mathbf{x}^{\mathrm{T}} \mathbf{B}\right)}{\partial \mathbf{x}}=\frac{\partial\left(\mathbf{x}^{\mathrm{T}} \mathbf{b}<em>{1}, \mathbf{x}^{\mathrm{T}} \mathbf{b}</em>{2}, \cdots, \mathbf{x}^{\mathrm{T}} \mathbf{b}<em>{\mathbf{n}}\right)}{\partial \mathbf{x}}=\left(\mathbf{b}</em>{1}, \mathbf{b}<em>{2}, \cdots, \mathbf{b}</em>{\mathbf{n}}\right)=\mathbf{B}<br>$$</p>
+<h3 id="公式三"><a href="#公式三" class="headerlink" title="公式三"></a>公式三</h3><p>$$<br>\frac{\partial\left(\mathbf{x}^{\mathrm{T}} \mathbf{x}\right)}{\partial \mathbf{x}}=\left[\begin{array}{c}{\frac{\partial \mathbf{x}^{\mathrm{T}} \mathbf{x}}{x_{1}}} \ {\frac{\partial \mathbf{x}^{\mathrm{T}} \mathbf{x}}{x_2}} \ {\vdots} \ {\frac{\partial \mathbf{x}^{\mathrm{T}} \mathbf{x}}{x_{n}}}\end{array}\right]=\left[\begin{array}{c}{\frac{\partial\left(x_{1}^{2}+x_{2}^{2}+\cdots+x_{n}^{2}\right)}{x_{1}}} \ {\frac{\partial\left(x_{1}^{2}+x_{2}^{2}+\cdots+x_{n}^{2}\right)}{x_{2}}} \ {\vdots} \ {\frac{\partial\left(x_{1}^{2}+x_{2}^{2}+\cdots+x_{n}^{2}\right)}{x_{n}}}\end{array}\right]=\left[\begin{array}{c}{2 x_{1}} \ {2 x_{2}} \ {\vdots} \ {2 x_{n}}\end{array}\right]=2 \mathbf{x}<br>$$</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%9F%A9%E9%98%B5/" rel="tag"># 矩阵</a>
+              <a href="/tags/%E6%B1%82%E5%AF%BC/" rel="tag"># 求导</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/" rel="prev" title="微积分-拉格朗日乘子法">
+      <i class="fa fa-chevron-left"></i> 微积分-拉格朗日乘子法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/" rel="next" title="微积分-拉格朗日对偶性">
+      微积分-拉格朗日对偶性 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E6%8F%90%E5%8F%8A%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">前提及说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%83%E5%B1%80%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">布局的概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80"><span class="nav-number">2.1.</span> <span class="nav-text">分子布局</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80"><span class="nav-number">2.2.</span> <span class="nav-text">分母布局</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%B1%82%E5%AF%BC%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="nav-number">3.</span> <span class="nav-text">一个求导的例子</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98"><span class="nav-number">3.1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%96"><span class="nav-number">3.2.</span> <span class="nav-text">式子演化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B1%82%E5%AF%BC"><span class="nav-number">3.3.</span> <span class="nav-text">求导</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B4%E5%90%88"><span class="nav-number">3.4.</span> <span class="nav-text">整合</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E5%BD%95%EF%BC%9A%E5%85%AC%E5%BC%8F%E6%8E%A8%E5%AF%BC"><span class="nav-number">4.</span> <span class="nav-text">附录：公式推导</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E5%BC%8F%E4%B8%80"><span class="nav-number">4.1.</span> <span class="nav-text">公式一</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E5%BC%8F%E4%BA%8C"><span class="nav-number">4.2.</span> <span class="nav-text">公式二</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E5%BC%8F%E4%B8%89"><span class="nav-number">4.3.</span> <span class="nav-text">公式三</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '56ca3f77f744e96a8fb144867897c818',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

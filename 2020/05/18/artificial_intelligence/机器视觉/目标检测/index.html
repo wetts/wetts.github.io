@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="滑动窗口目标检测 缺点：计算成本    评价对象检测算法 一般约定，在计算机检测任务中，如果 $IoU \geq 0.5$，就说检测正确，如果预测器和实际边界框完美重叠，$IoU$ 就是 1，因为交集就等于并集。但一般来说只要 $IoU \geq 0.5$，那么结果是可以接受的，看起来还可以。一般约定，0.5 是阈值，用来判断预测的边界框是否正确。 非极大值抑制（Non-max suppress">
+<meta property="og:type" content="article">
+<meta property="og:title" content="目标检测.md">
+<meta property="og:url" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="滑动窗口目标检测 缺点：计算成本    评价对象检测算法 一般约定，在计算机检测任务中，如果 $IoU \geq 0.5$，就说检测正确，如果预测器和实际边界框完美重叠，$IoU$ 就是 1，因为交集就等于并集。但一般来说只要 $IoU \geq 0.5$，那么结果是可以接受的，看起来还可以。一般约定，0.5 是阈值，用来判断预测的边界框是否正确。 非极大值抑制（Non-max suppress">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E4%BA%A4%E5%B9%B6%E6%AF%94.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B6.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B62.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B63.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B6%E7%AE%97%E6%B3%95.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes2.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes3.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes%E7%AE%97%E6%B3%95.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E5%80%99%E9%80%89%E5%8C%BA%E5%9F%9F.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E5%80%99%E9%80%89%E5%8C%BA%E5%9F%9F2.png">
+<meta property="og:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/RCNN.png">
+<meta property="article:published_time" content="2020-05-18T14:36:32.000Z">
+<meta property="article:modified_time" content="2020-05-20T16:23:25.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="机器视觉">
+<meta property="article:tag" content="目标检测">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E4%BA%A4%E5%B9%B6%E6%AF%94.png">
+
+<link rel="canonical" href="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>目标检测.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          目标检测.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-18 22:36:32" itemprop="dateCreated datePublished" datetime="2020-05-18T22:36:32+08:00">2020-05-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-05-21 00:23:25" itemprop="dateModified" datetime="2020-05-21T00:23:25+08:00">2020-05-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li>滑动窗口目标检测<ul>
+<li>缺点：计算成本</li>
+</ul>
+</li>
+</ul>
+<h3 id="评价对象检测算法"><a href="#评价对象检测算法" class="headerlink" title="评价对象检测算法"></a>评价对象检测算法</h3><p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E4%BA%A4%E5%B9%B6%E6%AF%94.png" alt="交并比"></p>
+<p>一般约定，在计算机检测任务中，如果 $IoU \geq 0.5$，就说检测正确，如果预测器和实际边界框完美重叠，$IoU$ 就是 1，因为交集就等于并集。但一般来说只要 $IoU \geq 0.5$，那么结果是可以接受的，看起来还可以。一般约定，0.5 是阈值，用来判断预测的边界框是否正确。</p>
+<h3 id="非极大值抑制（Non-max-suppression）"><a href="#非极大值抑制（Non-max-suppression）" class="headerlink" title="非极大值抑制（Non-max suppression）"></a>非极大值抑制（Non-max suppression）</h3><p>算法可能对同一个对象做出多次检测，所以算法不是对某个对象检测出一次，而是检测出多次。非极大值抑制这个方法可以确保你的算法对每个对象只检测一次。</p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B6.png" alt="非极大抑制"></p>
+<p>这个 $p_c$ 检测概率，首先看概率最大的那个，这个例子（右边车辆）中是 0.9，然后就说这是最可靠的检测，所以我们就用高亮标记，就说我这里找到了一辆车。这么做之后，非极大值抑制就会逐一审视剩下的矩形，所有和这个最大的边框有很高交并比，高度重叠的其他边界框，那么这些输出就会被抑制。所以这两个矩形 $p_c$ 分别是 0.6 和 0.7，这两个矩形和淡蓝色矩形重叠程度很高，所以会被抑制，变暗，表示它们被抑制了。</p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B62.png" alt="非极大抑制2"></p>
+<p>接下来，逐一审视剩下的矩形，找出概率最高，$p_c$ 最高的一个，在这种情况下是 0.8，我们就认为这里检测出一辆车（左边车辆），然后非极大值抑制算法就会去掉其他 $IoU$ 值很高的矩形。所以现在每个矩形都会被高亮显示或者变暗，如果你直接抛弃变暗的矩形，那就剩下高亮显示的那些，这就是最后得到的两个预测结果。</p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B63.png" alt="非极大抑制3"></p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B6%E7%AE%97%E6%B3%95.png" alt="非极大抑制算法"></p>
+<h3 id="Anchor-Boxes"><a href="#Anchor-Boxes" class="headerlink" title="Anchor Boxes"></a>Anchor Boxes</h3><p>对象检测中存在的一个问题是每个格子只能检测出一个对象，如果你想让一个格子检测出多个对象，你可以这么做，就是使用 anchor box 这个概念。</p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes.png" alt="AnchorBoxes"></p>
+<p>对于这个例子，我们继续使用3×3网格，注意行人的中点和汽车的中点几乎在同一个地方，两者都落入到同一个格子中。所以对于那个格子，如果 $y$ 输出这个向量$y= \ \begin{bmatrix} p_{c} \ b_{x} \ b_{y} \ b_{h} \ b_{w} \ c_{1} \ c_{2}\ c_{3} \\end{bmatrix}$，你可以检测这三个类别，行人、汽车和摩托车，它将无法输出检测结果，所以我必须从两个检测结果中选一个。</p>
+<p>而<strong>anchor box</strong>的思路是，这样子，预先定义两个不同形状的<strong>anchor box</strong>，或者<strong>anchor box</strong>形状，你要做的是把预测结果和这两个<strong>anchor box</strong>关联起来。一般来说，你可能会用更多的<strong>anchor box</strong>，可能要5个甚至更多，但对于这个视频，我们就用两个<strong>anchor box</strong>，这样介绍起来简单一些。</p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes2.png" alt="AnchorBoxes2"></p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes3.png" alt="AnchorBoxes3"></p>
+<p>你要做的是定义类别标签，用的向量不再是上面这个$\begin{bmatrix} p_{c} &amp; b_{x} &amp;b_{y} &amp; b_{h} &amp; b_{w} &amp; c_{1} &amp; c_{2} &amp; c_{3} \\end{bmatrix}^{T}$，而是重复两次，$y=  \begin{bmatrix} p_{c} &amp; b_{x} &amp; b_{y} &amp;b_{h} &amp; b_{w} &amp; c_{1} &amp; c_{2} &amp; c_{3} &amp; p_{c} &amp; b_{x} &amp; b_{y} &amp; b_{h} &amp; b_{w} &amp;c_{1} &amp; c_{2} &amp; c_{3} \\end{bmatrix}^{T}$，前面的$p_{c},b_{x},b_{y},b_{h},b_{w},c_{1},c_{2},c_{3}$（绿色方框标记的参数）是和<strong>anchor box 1</strong>关联的8个参数，后面的8个参数（橙色方框标记的元素）是和<strong>anchor box 2</strong>相关联。因为行人的形状更类似于<strong>anchor box 1</strong>的形状，而不是<strong>anchor box 2</strong>的形状，所以你可以用这8个数值（前8个参数），这么编码$p_{c} =1$，是的，代表有个行人，用$b_{x},b_{y},b_{h}$和$b_{w}$来编码包住行人的边界框，然后用$c_{1},c_{2},c_{3}$($c_{1}= 1,c_{2} = 0,c_{3} = 0$)来说明这个对象是个行人。</p>
+<p>然后是车子，因为车子的边界框比起<strong>anchor box 1</strong>更像<strong>anchor box 2</strong>的形状，你就可以这么编码，这里第二个对象是汽车，然后有这样的边界框等等，这里所有参数都和检测汽车相关($p_{c}= 1,b_{x},b_{y},b_{h},b_{w},c_{1} = 0,c_{2} = 1,c_{3} = 0$)。</p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes%E7%AE%97%E6%B3%95.png" alt="AnchorBoxes算法"></p>
+<p>总结一下，用<strong>anchor box</strong>之前，你做的是这个，对于训练集图像中的每个对象，都根据那个对象中点位置分配到对应的格子中，所以输出$y$就是3×3×8，因为是3×3网格，对于每个网格位置，我们有输出向量，包含$p_{c}$，然后边界框参数$b_{x},b_{y},b_{h}$和$b_{w}$，然后$c_{1},c_{2},c_{3}$。</p>
+<p>现在用到<strong>anchor box</strong>这个概念，是这么做的。现在每个对象都和之前一样分配到同一个格子中，分配到对象中点所在的格子中，以及分配到和对象形状交并比最高的<strong>anchor box</strong>中。所以这里有两个<strong>anchor box</strong>，你就取这个对象，如果你的对象形状是这样的（编号1，红色框），你就看看这两个<strong>anchor box</strong>，<strong>anchor box 1</strong>形状是这样（编号2，紫色框），<strong>anchor box 2</strong>形状是这样（编号3，紫色框），然后你观察哪一个<strong>anchor box</strong>和实际边界框（编号1，红色框）的交并比更高，不管选的是哪一个，这个对象不只分配到一个格子，而是分配到一对，即（<strong>grid cell，anchor box</strong>）对，这就是对象在目标标签中的编码方式。所以现在输出 $y$ 就是3×3×16，上一张幻灯片中你们看到 $y$ 现在是16维的，或者你也可以看成是3×3×2×8，因为现在这里有2个<strong>anchor box</strong>，而 $y$ 是8维的。$y$ 维度是8，因为我们有3个对象类别，如果你有更多对象，那么$y$ 的维度会更高。</p>
+<h3 id="YOLO-算法（Putting-it-together-YOLO-algorithm）"><a href="#YOLO-算法（Putting-it-together-YOLO-algorithm）" class="headerlink" title="YOLO 算法（Putting it together: YOLO algorithm）"></a>YOLO 算法（Putting it together: YOLO algorithm）</h3><h3 id="候选区域（Region-proposals）"><a href="#候选区域（Region-proposals）" class="headerlink" title="候选区域（Region proposals）"></a>候选区域（Region proposals）</h3><p>滑动窗法，使用训练过的分类器，在这些窗口中全部运行一遍，然后运行一个检测器，看看里面是否有车辆，行人和摩托车。现在也可以运行一下卷积算法，这个算法的其中一个缺点是，它在显然没有任何对象的区域浪费时间。</p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E5%80%99%E9%80%89%E5%8C%BA%E5%9F%9F.png" alt="候选区域"></p>
+<p>所以这里这个矩形区域（编号1）基本是空的，显然没有什么需要分类的东西。也许算法会在这个矩形上（编号2）运行，而你知道上面没有什么有趣的东西。</p>
+<p><strong>R-CNN</strong>的算法，意思是带区域的卷积网络，或者说带区域的<strong>CNN</strong>。这个算法尝试选出一些区域，在这些区域上运行卷积网络分类器是有意义的，所以这里不再针对每个滑动窗运行检测算法，而是只选择一些窗口，在少数窗口上运行卷积网络分类器。</p>
+<p>选出候选区域的方法是运行图像分割算法，分割的结果是下边的图像，为了找出可能存在对象的区域。比如说，分割算法在这里得到一个色块，所以你可能会选择这样的边界框（编号1），然后在这个色块上运行分类器，就像这个绿色的东西（编号2），在这里找到一个色块，接下来我们还会在那个矩形上（编号2）运行一次分类器，看看有没有东西。在这种情况下，如果在蓝色色块上（编号3）运行分类器，希望你能检测出一个行人，如果你在青色色块(编号4)上运行算法，也许你可以发现一辆车，我也不确定。</p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E5%80%99%E9%80%89%E5%8C%BA%E5%9F%9F2.png" alt="候选区域2"></p>
+<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/RCNN.png" alt="RCNN"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" rel="tag"># 机器视觉</a>
+              <a href="/tags/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/" rel="tag"># 目标检测</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/15/%E8%AF%AD%E8%A8%80/Python/%E7%8E%AF%E5%A2%83/Python-%E6%8D%A2pip%E6%BA%90/" rel="prev" title="Python-换pip源.md">
+      <i class="fa fa-chevron-left"></i> Python-换pip源.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/05/19/%E5%B7%A5%E5%85%B7/VSCode/VSCode-%E5%BF%AB%E6%8D%B7%E9%94%AE/" rel="next" title="VSCode-快捷键.md">
+      VSCode-快捷键.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BB%B7%E5%AF%B9%E8%B1%A1%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">评价对象检测算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E6%9E%81%E5%A4%A7%E5%80%BC%E6%8A%91%E5%88%B6%EF%BC%88Non-max-suppression%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">非极大值抑制（Non-max suppression）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Anchor-Boxes"><span class="nav-number">3.</span> <span class="nav-text">Anchor Boxes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#YOLO-%E7%AE%97%E6%B3%95%EF%BC%88Putting-it-together-YOLO-algorithm%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">YOLO 算法（Putting it together: YOLO algorithm）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%80%99%E9%80%89%E5%8C%BA%E5%9F%9F%EF%BC%88Region-proposals%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">候选区域（Region proposals）</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'c19332388c2c477192b4d143363da583',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

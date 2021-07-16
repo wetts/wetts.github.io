@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="常用Java注释标签（Java comment tags）@author  作者适用范围：文件、类、方法 （多个作者使用多个@author标签标识，java doc中显示按输入时间顺序罗列。） 例： 1* @author Leo. Yao   @param  输入参数的名称  说明适用范围：方法 例： 1* @param str the String用来存放输出信息。   @return 输出参数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java-注释-注释中的标签">
+<meta property="og:url" content="https://wetts.github.io/2015/04/12/%E8%AF%AD%E8%A8%80/Java/%E8%A7%84%E8%8C%83/Java-%E6%B3%A8%E9%87%8A-%E6%B3%A8%E9%87%8A%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="常用Java注释标签（Java comment tags）@author  作者适用范围：文件、类、方法 （多个作者使用多个@author标签标识，java doc中显示按输入时间顺序罗列。） 例： 1* @author Leo. Yao   @param  输入参数的名称  说明适用范围：方法 例： 1* @param str the String用来存放输出信息。   @return 输出参数">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-04-12T15:24:13.000Z">
+<meta property="article:modified_time" content="2017-07-29T07:14:43.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="注释">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2015/04/12/%E8%AF%AD%E8%A8%80/Java/%E8%A7%84%E8%8C%83/Java-%E6%B3%A8%E9%87%8A-%E6%B3%A8%E9%87%8A%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java-注释-注释中的标签 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/12/%E8%AF%AD%E8%A8%80/Java/%E8%A7%84%E8%8C%83/Java-%E6%B3%A8%E9%87%8A-%E6%B3%A8%E9%87%8A%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java-注释-注释中的标签
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-04-12 23:24:13" itemprop="dateCreated datePublished" datetime="2015-04-12T23:24:13+08:00">2015-04-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-07-29 15:14:43" itemprop="dateModified" datetime="2017-07-29T15:14:43+08:00">2017-07-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="常用Java注释标签（Java-comment-tags）"><a href="#常用Java注释标签（Java-comment-tags）" class="headerlink" title="常用Java注释标签（Java comment tags）"></a>常用Java注释标签（Java comment tags）</h2><h3 id="author-作者"><a href="#author-作者" class="headerlink" title="@author  作者"></a>@author  作者</h3><p>适用范围：文件、类、方法</p>
+<p>（<em>多个作者使用多个@author标签标识，java doc中显示按输入时间顺序罗列。</em>）</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @author Leo. Yao</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="param-输入参数的名称-说明"><a href="#param-输入参数的名称-说明" class="headerlink" title="@param  输入参数的名称  说明"></a>@param  输入参数的名称  说明</h3><p>适用范围：方法</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @param str the String用来存放输出信息。</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="return-输出参数说明"><a href="#return-输出参数说明" class="headerlink" title="@return 输出参数说明"></a>@return 输出参数说明</h3><p>适用范围：方法</p>
+<p>例：     </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">* @return    &lt;code&gt;true&lt;/code&gt;执行成功;</span><br><span class="line">*            &lt;code&gt;false&lt;/code&gt;执行失败.</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="since-JDK版本"><a href="#since-JDK版本" class="headerlink" title="@since JDK版本"></a>@since JDK版本</h3><p>用于标识编译该文件所需要的JDK环境。</p>
+<p>适用范围：文件、类</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @since JDK1.6</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="version-版本号"><a href="#version-版本号" class="headerlink" title="@version 版本号"></a>@version 版本号</h3><p>用于标识注释对象的版本号</p>
+<p>适用范围：文件、类、方法</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @version 1.0</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="see-链接目标"><a href="#see-链接目标" class="headerlink" title="@see 链接目标"></a>@see 链接目标</h3><p>表示参考。会在java 文档中生成一个超链接，链接到参考的类容。使用中的感觉是@see不需要包路径，对我这种懒人比较喜欢，相对{@link }这种既要加大括号，有需要包路径，我还是选择偷懒，当然你要是不介意使用import导入要link的类，那就可以达到@see的效果，所以总体来说，还是选择@see，当然两个在特殊场合下还是用法不一样的</p>
+<p>用法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">@see #field</span><br><span class="line">@see #Constructor(Type, Type...)</span><br><span class="line">@see #Constructor(Type id, Type id...)</span><br><span class="line">@see #method(Type, Type,...)</span><br><span class="line">@see #method(Type id, Type, id...)</span><br><span class="line">@see Class</span><br><span class="line">@see Class#field</span><br><span class="line">@see Class#Constructor(Type, Type...)</span><br><span class="line">@see Class#Constructor(Type id, Type id)</span><br><span class="line">@see Class#method(Type, Type,...)</span><br><span class="line">@see Class#method(Type id, Type id,...)</span><br><span class="line">@see package.Class</span><br><span class="line">@see package.Class#field</span><br><span class="line">@see package.Class#Constructor(Type, Type...)</span><br><span class="line">@see package.Class#Constructor(Type id, Type id)</span><br><span class="line">@see package.Class#method(Type, Type,...)</span><br><span class="line">@see package.Class#method(Type id, Type, id)</span><br><span class="line">@see package</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="throws-异常"><a href="#throws-异常" class="headerlink" title="@throws 异常"></a>@throws 异常</h3><p>标识出方法可能抛出的异常</p>
+<p>适用范围：方法<br>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @throws IOException  If an input or output exception occurred</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="deprecated-解释"><a href="#deprecated-解释" class="headerlink" title="@deprecated 解释"></a>@deprecated 解释</h3><p>标识对象过期</p>
+<p>适用范围：文件、类、方法
+ </p>
+<h3 id="link-链接地址"><a href="#link-链接地址" class="headerlink" title="@link 链接地址"></a>@link 链接地址</h3><p>链接到一个目标，用法类似@see。但常放在注释的解释中形如{@link …}</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * @deprecated      As of JDK 1.1, replaced by</span><br><span class="line"> *                         &#123;@link #setBounds(int,int,int,int)&#125;</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<h2 id="Java注释的使用顺序"><a href="#Java注释的使用顺序" class="headerlink" title="Java注释的使用顺序"></a>Java注释的使用顺序</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">* @author      (classes and interfaces only, required)</span><br><span class="line">* @version     (classes and interfaces only, required. See footnote 1)</span><br><span class="line">* @param       (methods and constructors only)</span><br><span class="line">* @return      (methods only)</span><br><span class="line">* @exception   (@throws is a synonym added in Javadoc 1.2)</span><br><span class="line">* @see        </span><br><span class="line">* @since      </span><br><span class="line">* @serial      (or @serialField or @serialData)</span><br><span class="line">* @deprecated  (see How and When To Deprecate APIs)</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h2 id="简单常见的HTML嵌入"><a href="#简单常见的HTML嵌入" class="headerlink" title="简单常见的HTML嵌入"></a>简单常见的HTML嵌入</h2><h3 id="lt-P-gt"><a href="#lt-P-gt" class="headerlink" title="&lt;P&gt;"></a><code>&lt;P&gt;</code></h3><p>用于分段</p>
+<h3 id="lt-code-gt"><a href="#lt-code-gt" class="headerlink" title="&lt;code&gt;"></a><code>&lt;code&gt;</code></h3><p>标签用于表示计算机源代码或者其他机器可以阅读的文本内容。<code>&lt;code&gt;</code> 标签就是为软件代码的编写者设计的。包含在该标签内的文本将用等宽、类似电传打字机样式的字体（Courier）显示出来只应该在表示计算机程序源代码或者其他机器可以阅读的文本内容上使用 <code>&lt;code&gt;</code> 标签。虽然<code>&lt;code&gt;</code> 标签通常只是把文本变成等宽字体，但它暗示着这段文本是源程序代码。将来的浏览器有可能会加入其他显示效果。例如，程序员的浏览器可能会寻找 <code>&lt;code&gt;</code> 片段，并执行某些额外的文本格式化处理，如循环和条件判断语句的特殊缩进等。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E6%B3%A8%E9%87%8A/" rel="tag"># 注释</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/04/10/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5-%E4%B8%89%E5%B1%82%E6%A8%A1%E5%BC%8F%E4%B8%A4%E7%BA%A7%E6%98%A0%E5%83%8F/" rel="prev" title="数据库-基本概念-三层模式两级映像">
+      <i class="fa fa-chevron-left"></i> 数据库-基本概念-三层模式两级映像
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/04/13/%E8%AF%AD%E8%A8%80/web/JavaScript-%E5%8A%A0%E8%BD%BD%E4%BA%8B%E4%BB%B6/" rel="next" title="JavaScript-加载事件">
+      JavaScript-加载事件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8Java%E6%B3%A8%E9%87%8A%E6%A0%87%E7%AD%BE%EF%BC%88Java-comment-tags%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">常用Java注释标签（Java comment tags）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#author-%E4%BD%9C%E8%80%85"><span class="nav-number">1.1.</span> <span class="nav-text">@author  作者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#param-%E8%BE%93%E5%85%A5%E5%8F%82%E6%95%B0%E7%9A%84%E5%90%8D%E7%A7%B0-%E8%AF%B4%E6%98%8E"><span class="nav-number">1.2.</span> <span class="nav-text">@param  输入参数的名称  说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#return-%E8%BE%93%E5%87%BA%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E"><span class="nav-number">1.3.</span> <span class="nav-text">@return 输出参数说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#since-JDK%E7%89%88%E6%9C%AC"><span class="nav-number">1.4.</span> <span class="nav-text">@since JDK版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#version-%E7%89%88%E6%9C%AC%E5%8F%B7"><span class="nav-number">1.5.</span> <span class="nav-text">@version 版本号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#see-%E9%93%BE%E6%8E%A5%E7%9B%AE%E6%A0%87"><span class="nav-number">1.6.</span> <span class="nav-text">@see 链接目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#throws-%E5%BC%82%E5%B8%B8"><span class="nav-number">1.7.</span> <span class="nav-text">@throws 异常</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#deprecated-%E8%A7%A3%E9%87%8A"><span class="nav-number">1.8.</span> <span class="nav-text">@deprecated 解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#link-%E9%93%BE%E6%8E%A5%E5%9C%B0%E5%9D%80"><span class="nav-number">1.9.</span> <span class="nav-text">@link 链接地址</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java%E6%B3%A8%E9%87%8A%E7%9A%84%E4%BD%BF%E7%94%A8%E9%A1%BA%E5%BA%8F"><span class="nav-number">2.</span> <span class="nav-text">Java注释的使用顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%B8%B8%E8%A7%81%E7%9A%84HTML%E5%B5%8C%E5%85%A5"><span class="nav-number">3.</span> <span class="nav-text">简单常见的HTML嵌入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#lt-P-gt"><span class="nav-number">3.1.</span> <span class="nav-text">&lt;P&gt;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lt-code-gt"><span class="nav-number">3.2.</span> <span class="nav-text">&lt;code&gt;</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'd6383cc298b904a37b617512b6f76f9a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

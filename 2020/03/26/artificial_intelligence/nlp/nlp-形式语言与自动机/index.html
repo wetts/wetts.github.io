@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="形式语言概述乔姆斯基(Noam Chomsky)曾经把语言定义为：按照一定规律构成的句子和符号串的有限或无限的集合。 一般地，描述一种语言可以有三种途径 [刘颖，2002;石青云 (译)，1987]：  穷举法：把语言中的所有句子都枚举出来。显然，这种方法只适合句子数目有限的语言。 文法（产生式系统）描述：语言中的每个句子用严格定义的规则来构造，利用规则生成语言中合法的句子。 自动机法：通过对输入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nlp-形式语言与自动机.md">
+<meta property="og:url" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="形式语言概述乔姆斯基(Noam Chomsky)曾经把语言定义为：按照一定规律构成的句子和符号串的有限或无限的集合。 一般地，描述一种语言可以有三种途径 [刘颖，2002;石青云 (译)，1987]：  穷举法：把语言中的所有句子都枚举出来。显然，这种方法只适合句子数目有限的语言。 文法（产生式系统）描述：语言中的每个句子用严格定义的规则来构造，利用规则生成语言中合法的句子。 自动机法：通过对输入">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%951.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%952.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%95.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/DFA.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/DFA2.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/PDA.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%AF%86%E5%88%AB%E5%99%A8%E7%9A%84%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB.png">
+<meta property="article:published_time" content="2020-03-26T14:27:52.000Z">
+<meta property="article:modified_time" content="2020-03-27T09:21:51.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="nlp">
+<meta property="article:tag" content="自然语言处理">
+<meta property="article:tag" content="形式语言">
+<meta property="article:tag" content="自动机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%951.png">
+
+<link rel="canonical" href="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>nlp-形式语言与自动机.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          nlp-形式语言与自动机.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-26 22:27:52" itemprop="dateCreated datePublished" datetime="2020-03-26T22:27:52+08:00">2020-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-27 17:21:51" itemprop="dateModified" datetime="2020-03-27T17:21:51+08:00">2020-03-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="形式语言"><a href="#形式语言" class="headerlink" title="形式语言"></a>形式语言</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>乔姆斯基(Noam Chomsky)曾经把语言定义为：按照一定规律构成的句子和符号串的有限或无限的集合。</p>
+<p>一般地，描述一种语言可以有三种途径 <code>[刘颖，2002;石青云 (译)，1987]</code>：</p>
+<ol>
+<li>穷举法：把语言中的所有句子都枚举出来。显然，这种方法只适合句子数目有限的语言。</li>
+<li>文法（产生式系统）描述：语言中的每个句子用严格定义的规则来构造，利用规则生成语言中合法的句子。</li>
+<li>自动机法：通过对输入的句子进行合法性检验，区别哪些是语言中的句子，哪些不是语言中的句子。</li>
+</ol>
+<p>文法用来精确地描述语言和其结构，自动机则是用来机械地刻画对输入字符串的识别过程。用文法来定义语言的优点是：由文法给予语言中的句子以结构，各成分之间的结构关系清楚、明了。但是，如果要直接用这些规则来确定一个字符串是否属于这套规则所定义的语言似乎并不十分明确。而由自动机来识别一个字符串是否属于该语言则相对简单，但自动机很难描述语言的结构。所以自然语言处理中的识别和分析算法，大多兼取两者之长。</p>
+<h3 id="形式语法的定义"><a href="#形式语法的定义" class="headerlink" title="形式语法的定义"></a>形式语法的定义</h3><p>形式语言是用来精确地描述语言（包括人工语言和自然语言）及其结构的手段。形式语言学也称代数语言学。</p>
+<p>形式语法是一个4元组 $G=(N, \Sigma, P, S)$，其中 $N$ 是非终结符的有限集合（有时也叫变量集或句法种类集）；$\Sigma$ 是终结符的有限集合，$N \cap \Sigma = \emptyset$；$V = N \cup \Sigma$ 称总词汇表；$P$ 是一组重写规则的有限集合：$P={ \alpha \rightarrow \beta }$，其中，$\alpha, \beta$ 是 $V$ 中元素构成的串，但 $\alpha$ 中至少应含有一个非终结符号；$S \in N$，称为句子符或初始符。</p>
+<ul>
+<li>如果每步推导中只改写最左边的那个非终结符，这种推导称为“最左推导”。</li>
+<li>如果每次都只改写最右边的非终结符，则为最右推导。__最右推导又称规范推导__。</li>
+</ul>
+<h3 id="形式语法的类型"><a href="#形式语法的类型" class="headerlink" title="形式语法的类型"></a>形式语法的类型</h3><h4 id="正则文法"><a href="#正则文法" class="headerlink" title="正则文法"></a>正则文法</h4><p>如果文法 $G=(N, \Sigma, P, S)$ 的 $P$ 中的规则满足如下形式：$A \rightarrow Bx$，或 $A \rightarrow x$，其中$A, B \in N, x \in \Sigma$，则称该文法为正则文法或称 3 型文法。(左线性正则文法)</p>
+<p>如果 $A \rightarrow x B$，则该文法称为右线性正则文法。</p>
+<h4 id="上下文无关文法-context-free-grammar-CFG"><a href="#上下文无关文法-context-free-grammar-CFG" class="headerlink" title="上下文无关文法(context-free grammar, CFG)"></a>上下文无关文法(context-free grammar, CFG)</h4><p>如果 $P$ 中的规则满足如下形式：$A \rightarrow \alpha$，其中 $A \in N，\alpha \in (N \cup \Sigma)*$，则称该文法为上下文无关文法（CFG）或称 2 型文法。</p>
+<h4 id="上下文有关文法-context-sensitive-grammar-CSG"><a href="#上下文有关文法-context-sensitive-grammar-CSG" class="headerlink" title="上下文有关文法(context-sensitive grammar, CSG)"></a>上下文有关文法(context-sensitive grammar, CSG)</h4><p>如果 $P$ 中的规则满足如下形式：$\alpha A \beta \rightarrow \alpha \gamma \beta$, 其中 $A \in N, \alpha, \beta, \gamma \in (N \cup \Sigma)*$，且 $\gamma$ 至少包含一个字符，则称该文法为上下文有关文法（CSG）或称 1 型文法。</p>
+<p>另一种定义：$if \  x \rightarrow y, x \in (N \cup \Sigma)+, y \in (N \cup Sigma)*$，并且 $|y| \geq |x|$。</p>
+<h4 id="无约束文法（无限制重写系统）"><a href="#无约束文法（无限制重写系统）" class="headerlink" title="无约束文法（无限制重写系统）"></a>无约束文法（无限制重写系统）</h4><p>如果 $P$ 中的规则满足如下形式：$\alpha \rightarrow \beta$，$\alpha, \beta$ 是字符串，则称 $G$ 为无约束文法，或称 0 型文法。</p>
+<blockquote>
+<p>显然，每一个正则文法都是上下文无关文法，每一个上下无关文法都是上下文有关文法，而每一个上下文有关文法都是 0 型文法，即：$L(G3) \subseteq L(G2) \subseteq L(G1) \subseteq L(G0)$。</p>
+</blockquote>
+<h3 id="语言与文法类型的约定"><a href="#语言与文法类型的约定" class="headerlink" title="语言与文法类型的约定"></a>语言与文法类型的约定</h3><p>如果一种语言能由几种文法所产生，则把这种语言称为在这几种文法中受限制最多的那种文法所产生的语言。</p>
+<h3 id="CFG-识别句子的派生树表示"><a href="#CFG-识别句子的派生树表示" class="headerlink" title="CFG 识别句子的派生树表示"></a>CFG 识别句子的派生树表示</h3><p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%951.png" alt="二义性文法1"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%952.png" alt="二义性文法2"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%95.png" alt="二义性文法"></p>
+<p>一个文法 $G$，如果存在某个句子有不只一棵分析树与之对应，那么称这个文法是二义的。</p>
+<h2 id="自动机理论"><a href="#自动机理论" class="headerlink" title="自动机理论"></a>自动机理论</h2><h3 id="有限自动机"><a href="#有限自动机" class="headerlink" title="有限自动机"></a>有限自动机</h3><p>有限自动机又分为确定性有限自动机（definite automata, DFA）和不确定性有限自动机（non-definite automata, NFA）两种。</p>
+<h4 id="确定的有限自动机-definite-automata-DFA"><a href="#确定的有限自动机-definite-automata-DFA" class="headerlink" title="确定的有限自动机(definite automata, DFA)"></a>确定的有限自动机(definite automata, DFA)</h4><p>确定的有限自动机 $M$ 是一个五元组：$M = (\Sigma, Q, \delta, q_0, F)$</p>
+<ul>
+<li>$\Sigma$ 是输入符号的有穷集合；</li>
+<li>$Q$ 是状态的有限集合；</li>
+<li>$q_0 \in Q$ 是初始状态；</li>
+<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
+<li>$\delta$ 是 $Q$ 与 $\Sigma$ 的直积 $Q×\Sigma$ 到 $Q$ （下一个状态）的映射。它支配着有限状态控制的行为，有时也称为状态转移函数。</li>
+</ul>
+<p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/DFA.png" alt="DFA"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/DFA2.png" alt="DFA2"></p>
+<h5 id="DFA-定义的语言"><a href="#DFA-定义的语言" class="headerlink" title="DFA 定义的语言"></a>DFA 定义的语言</h5><p>如果一个句子 $x$ 使得有限自动机 $M$ 有 $\delta(q_0, x) = p, p \in F$，那么，称句子 $x$ 被 $M$ 接受。由 $M$ 定义的语言 $T(M)$ 就是被 $M$ 接受的句子的全集。即：$T(M) = {x | \delta(q_0, x) \in F }$</p>
+<h4 id="不确定的有限自动机-non-definite-automata-NFA"><a href="#不确定的有限自动机-non-definite-automata-NFA" class="headerlink" title="不确定的有限自动机(non-definite automata, NFA)"></a>不确定的有限自动机(non-definite automata, NFA)</h4><p>不确定的有限自动机 $M$ 是一个五元组 $M = (\Sigma, Q, \delta, q_0, F)$</p>
+<ul>
+<li>$\Sigma$ 是输入符号的有穷集合；</li>
+<li>$Q$ 是状态的有限集合；</li>
+<li>$q_0 \in Q$ 是初始状态；</li>
+<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
+<li>$\delta$ 是 $Q$ 与 $\Sigma$ 的直积 $Q×\Sigma$ 到Q的幂集 $2^Q$ 的映射。</li>
+</ul>
+<h4 id="NFA-与-DFA-的关系和区别"><a href="#NFA-与-DFA-的关系和区别" class="headerlink" title="NFA 与 DFA 的关系和区别"></a>NFA 与 DFA 的关系和区别</h4><p>NFA 与 DFA 的唯一区别是：在 NFA 中 $\delta(q, a)$ 是一个状态集合，而在 DFA 中 $\delta(q, a)$ 是一个状态。</p>
+<p>设 $L$ 是一个被 NFA 所接受的句子的集合，则存在一个 DFA，它能够接受 $L$。</p>
+<h4 id="正则文法与有限自动机的关系"><a href="#正则文法与有限自动机的关系" class="headerlink" title="正则文法与有限自动机的关系"></a>正则文法与有限自动机的关系</h4><p>若 $G = (V_N, V_T, P, S )$ 是一个正则文法，则存在一个有限自动机 $M=(\Sigma, Q, \delta, q_0, F)$，使得: $T(M) = L(G)$。</p>
+<p>由 $G$ 构造 $M$ 的一般步骤：</p>
+<ol>
+<li>令 $\Sigma =V_T, Q=V_N \cup {T}, q_0=S$，其中，$T$ 是一个新增加的非终结符。</li>
+<li>如果在 $P$ 中有产生式 $S \rightarrow \epsilon$，则 $F={S, T}$，否则 $F={T}$。</li>
+<li>如果在 $P$ 中有产生式 $B \rightarrow a, B \in V_N, a \in V_T$，则 $T \in \delta(B, a)$。</li>
+<li>如果在 $P$ 中有产生式 $B \rightarrow aC, B, C\in V_N，a \in V_T$，则 $C \in \delta(B, a)$。</li>
+<li>对于每一个 $a \in V_T$，有 $\delta(T, a) = \emptyset$。</li>
+</ol>
+<p>若 $M=(\Sigma, Q, \delta, q_0, F$ 是一有限自动机，则存在正则文法 $G = (V_N, V_T, P, S )$ 使 $L(G)=T(M)$。</p>
+<p>由 $M$ 构造 $G$ 的一般步骤：</p>
+<ol>
+<li>令 $V_N = Q, V_T = \Sigma, S = q_0$；</li>
+<li>如果 $C \in \delta(B, a), B, C \in Q, a \in \delta$，则在 $P$ 中有产生式 $B \rightarrow aC$；</li>
+<li>如果 $C \in \delta(B, a), C \in F$，则在 $P$ 中有产生式 $B \rightarrow a$。</li>
+</ol>
+<h3 id="下推自动机"><a href="#下推自动机" class="headerlink" title="下推自动机"></a>下推自动机</h3><h4 id="下推自动机-push-down-automata-PDA"><a href="#下推自动机-push-down-automata-PDA" class="headerlink" title="下推自动机(push-down automata, PDA)"></a>下推自动机(push-down automata, PDA)</h4><p>PDA 可以看成是一个带有附加的下推存储器的有限自动机，下推存储器是一个栈。</p>
+<p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/PDA.png" alt="PDA"></p>
+<p>一个不确定的 PDA 可以表达成一个 7 元组：$M = (\Sigma, Q, \Gamma, \delta, q_0, Z_0, F)$</p>
+<ul>
+<li>$\Sigma$ 是输入符号的有穷集合；</li>
+<li>$Q$ 是状态的有限集合；</li>
+<li>$q_0 \in Q$ 是初始状态；</li>
+<li>$\Gamma$ 为下推存储器符号的有穷集合；</li>
+<li>$Z_0 \in \Gamma$ 为最初出现在下推存储器顶端的符号；</li>
+<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
+<li>$\delta$ 是从 $Q×(\Sigma \cup {\epsilon})×\Gamma$ 到 $Q×\Gamma*$ 子集的映射。</li>
+</ul>
+<blockquote>
+<p>映射关系 $\delta$ 的解释</p>
+<p>映射关系 $\delta(q, a, Z)={(q_1, \gamma_1), (q_2, \gamma_2),…,(q_m, \gamma_m)}$</p>
+<p>其中, $q_1, q_2, …, q_m \in Q, a \in \Sigma, Z \in \Gamma, \gamma_1, \gamma_2,…,\gamma_m \in \Gamma*$。</p>
+<p>该映射的意思是：当 PDA 处于状态 $q$，面临输入符号 $a$ 时，自动机将进入 $q_i, i = 1, 2, …, m$ 状态，并以 $\gamma_i$ 来代替下推存储器（栈）顶端符号 $Z$，同时将输入头指向下一个字符。当 $Z$ 被 $\gamma_i$ 取代时，$\gamma_i$ 的符号按照从左到右的顺序依次从下向上推入到存储器。</p>
+</blockquote>
+<p>特殊情况下，当 $\delta(q, a, Z)={(q_1, \gamma_1), (q_2, \gamma_2),…,(q_m, \gamma_m)}$ 时，输入头位置不移动，只用于处理下推存储器内部的操作，叫作“$\epsilon$ 移动”。</p>
+<h3 id="另外两种自动机"><a href="#另外两种自动机" class="headerlink" title="另外两种自动机"></a>另外两种自动机</h3><h4 id="图灵机"><a href="#图灵机" class="headerlink" title="图灵机"></a>图灵机</h4><ul>
+<li>图灵机与 0 型文法等价；</li>
+<li>图灵机与有限自动机（FA）的区别：图灵机可以通过其读/写头改变输入带的字符。</li>
+</ul>
+<h4 id="线性带限自动机"><a href="#线性带限自动机" class="headerlink" title="线性带限自动机"></a>线性带限自动机</h4><ul>
+<li>线性带限自动机与 1 型文法等价；</li>
+<li>线性带限自动机是一个确定的单带图灵机，其读写头不能超越原输入带上字符串的初始和终止位置，即线性带限自动机的存储空间被输入符号串的长度所限制。</li>
+</ul>
+<h3 id="语言与识别器的对应关系"><a href="#语言与识别器的对应关系" class="headerlink" title="语言与识别器的对应关系"></a>语言与识别器的对应关系</h3><p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%AF%86%E5%88%AB%E5%99%A8%E7%9A%84%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB.png" alt="语言与识别器的对应关系"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/nlp/" rel="tag"># nlp</a>
+              <a href="/tags/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" rel="tag"># 自然语言处理</a>
+              <a href="/tags/%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80/" rel="tag"># 形式语言</a>
+              <a href="/tags/%E8%87%AA%E5%8A%A8%E6%9C%BA/" rel="tag"># 自动机</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%9F%BA%E7%A1%80/" rel="prev" title="nlp-基础.md">
+      <i class="fa fa-chevron-left"></i> nlp-基础.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Variance%E4%B8%8E%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%86%E5%B8%83%E4%BC%98%E5%8C%96/" rel="next" title="Bias、Variance与数据集分布优化.md">
+      Bias、Variance与数据集分布优化.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">形式语言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%A2%E5%BC%8F%E8%AF%AD%E6%B3%95%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="nav-number">1.2.</span> <span class="nav-text">形式语法的定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%A2%E5%BC%8F%E8%AF%AD%E6%B3%95%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.3.</span> <span class="nav-text">形式语法的类型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A3%E5%88%99%E6%96%87%E6%B3%95"><span class="nav-number">1.3.1.</span> <span class="nav-text">正则文法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%97%A0%E5%85%B3%E6%96%87%E6%B3%95-context-free-grammar-CFG"><span class="nav-number">1.3.2.</span> <span class="nav-text">上下文无关文法(context-free grammar, CFG)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%9C%89%E5%85%B3%E6%96%87%E6%B3%95-context-sensitive-grammar-CSG"><span class="nav-number">1.3.3.</span> <span class="nav-text">上下文有关文法(context-sensitive grammar, CSG)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A0%E7%BA%A6%E6%9D%9F%E6%96%87%E6%B3%95%EF%BC%88%E6%97%A0%E9%99%90%E5%88%B6%E9%87%8D%E5%86%99%E7%B3%BB%E7%BB%9F%EF%BC%89"><span class="nav-number">1.3.4.</span> <span class="nav-text">无约束文法（无限制重写系统）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E8%A8%80%E4%B8%8E%E6%96%87%E6%B3%95%E7%B1%BB%E5%9E%8B%E7%9A%84%E7%BA%A6%E5%AE%9A"><span class="nav-number">1.4.</span> <span class="nav-text">语言与文法类型的约定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CFG-%E8%AF%86%E5%88%AB%E5%8F%A5%E5%AD%90%E7%9A%84%E6%B4%BE%E7%94%9F%E6%A0%91%E8%A1%A8%E7%A4%BA"><span class="nav-number">1.5.</span> <span class="nav-text">CFG 识别句子的派生树表示</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%90%86%E8%AE%BA"><span class="nav-number">2.</span> <span class="nav-text">自动机理论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E9%99%90%E8%87%AA%E5%8A%A8%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">有限自动机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A1%AE%E5%AE%9A%E7%9A%84%E6%9C%89%E9%99%90%E8%87%AA%E5%8A%A8%E6%9C%BA-definite-automata-DFA"><span class="nav-number">2.1.1.</span> <span class="nav-text">确定的有限自动机(definite automata, DFA)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#DFA-%E5%AE%9A%E4%B9%89%E7%9A%84%E8%AF%AD%E8%A8%80"><span class="nav-number">2.1.1.1.</span> <span class="nav-text">DFA 定义的语言</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8D%E7%A1%AE%E5%AE%9A%E7%9A%84%E6%9C%89%E9%99%90%E8%87%AA%E5%8A%A8%E6%9C%BA-non-definite-automata-NFA"><span class="nav-number">2.1.2.</span> <span class="nav-text">不确定的有限自动机(non-definite automata, NFA)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NFA-%E4%B8%8E-DFA-%E7%9A%84%E5%85%B3%E7%B3%BB%E5%92%8C%E5%8C%BA%E5%88%AB"><span class="nav-number">2.1.3.</span> <span class="nav-text">NFA 与 DFA 的关系和区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A3%E5%88%99%E6%96%87%E6%B3%95%E4%B8%8E%E6%9C%89%E9%99%90%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">2.1.4.</span> <span class="nav-text">正则文法与有限自动机的关系</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8B%E6%8E%A8%E8%87%AA%E5%8A%A8%E6%9C%BA"><span class="nav-number">2.2.</span> <span class="nav-text">下推自动机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8B%E6%8E%A8%E8%87%AA%E5%8A%A8%E6%9C%BA-push-down-automata-PDA"><span class="nav-number">2.2.1.</span> <span class="nav-text">下推自动机(push-down automata, PDA)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%A6%E5%A4%96%E4%B8%A4%E7%A7%8D%E8%87%AA%E5%8A%A8%E6%9C%BA"><span class="nav-number">2.3.</span> <span class="nav-text">另外两种自动机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9B%BE%E7%81%B5%E6%9C%BA"><span class="nav-number">2.3.1.</span> <span class="nav-text">图灵机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E5%B8%A6%E9%99%90%E8%87%AA%E5%8A%A8%E6%9C%BA"><span class="nav-number">2.3.2.</span> <span class="nav-text">线性带限自动机</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%AF%86%E5%88%AB%E5%99%A8%E7%9A%84%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB"><span class="nav-number">2.4.</span> <span class="nav-text">语言与识别器的对应关系</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '0cf6ed03e4ce14fdfa83a7769448c06e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

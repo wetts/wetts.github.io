@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="读书笔记 - Java 多线程编程实战指南 第四章 Guarded Suspension（保护性暂挂）模式模式简介 多线程编程中，为了提高并发率，往往将一个任务分解为不同的部分，将其交由不同的线程来执行。这些线程间相互协作时，仍然可能会出现一个线程去等待另外一个线程完成一定的操作，其自身才能继续运行的情形。 Guarded Suspension 模式可以帮组完美解决上述的等待问题。该模式的核心思想">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java多线程编程实战指南-第4章-Guarded Suspension（保护性暂挂）模式">
+<meta property="og:url" content="https://wetts.github.io/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC4%E7%AB%A0%20-%20Guarded%20Suspension%EF%BC%88%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E6%8C%82%EF%BC%89%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="读书笔记 - Java 多线程编程实战指南 第四章 Guarded Suspension（保护性暂挂）模式模式简介 多线程编程中，为了提高并发率，往往将一个任务分解为不同的部分，将其交由不同的线程来执行。这些线程间相互协作时，仍然可能会出现一个线程去等待另外一个线程完成一定的操作，其自身才能继续运行的情形。 Guarded Suspension 模式可以帮组完美解决上述的等待问题。该模式的核心思想">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-11-12T14:11:03.000Z">
+<meta property="article:modified_time" content="2017-03-11T03:12:50.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="Java多线程编程实战指南">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC4%E7%AB%A0%20-%20Guarded%20Suspension%EF%BC%88%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E6%8C%82%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java多线程编程实战指南-第4章-Guarded Suspension（保护性暂挂）模式 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC4%E7%AB%A0%20-%20Guarded%20Suspension%EF%BC%88%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E6%8C%82%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java多线程编程实战指南-第4章-Guarded Suspension（保护性暂挂）模式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-12 22:11:03" itemprop="dateCreated datePublished" datetime="2015-11-12T22:11:03+08:00">2015-11-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第四章-Guarded-Suspension（保护性暂挂）模式"><a href="#第四章-Guarded-Suspension（保护性暂挂）模式" class="headerlink" title="第四章 Guarded Suspension（保护性暂挂）模式"></a>第四章 Guarded Suspension（保护性暂挂）模式</h2><h4 id="模式简介"><a href="#模式简介" class="headerlink" title="模式简介"></a>模式简介</h4><ul>
+<li>多线程编程中，为了提高并发率，往往将一个任务分解为不同的部分，将其交由不同的线程来执行。这些线程间相互协作时，仍然可能会出现一个线程去等待另外一个线程完成一定的操作，其自身才能继续运行的情形。</li>
+<li>Guarded Suspension 模式可以帮组完美解决上述的等待问题。该模式的核心思想是如果某个线程执行特定的操作前需要满足一定的条件，则在该条件未满足时将该线程暂停运行（即暂挂线程，使其处于等待（WAITING）状态，直到该条件满足时才继续该线程的运行）。</li>
+<li>wait／notify 可以用来实现 Guarded Suspension 模式。但是，Guarded Suspension 模式还要解决 wait／notify 所解决的问题之外的问题。<span id="more"></span></li>
+</ul>
+<p>-</p>
+<h4 id="模式架构"><a href="#模式架构" class="headerlink" title="模式架构"></a>模式架构</h4><p>Guarded Suspension 模式的核心时一个受保护方法（Guarded Method）。该方法执行其所要真正执行的操作时需要满足特定的条件（Predicate，以下简称为保护条件）。当该条件不满足时，执行受保护方法的线程会被挂起进入等待（WAITING）状态，直到该条件满足时该线程才会继续运行。此时，受保护方法才会真正执行其所要执行的操作。</p>
+<p>-</p>
+<h4 id="模式案例"><a href="#模式案例" class="headerlink" title="模式案例"></a>模式案例</h4><p>某系统有个告警功能模块。该模块的主要功能是将其接收到的警告信息发送给告警服务器。该模块中的类 AlarmAgent 负责与告警服务器进行对接。AlarmAgent 的 sendAlarm 方法负责通过网络连接（Socket 连接）将告警信息发送到告警服务器。AlarmAgent 创建了一个专门的线程用于其与告警服务器建立网络连接。因此，sendAlarm 方法被调用的时候，连接线程可能还没有完成网络连接的建立。此时，sendAlarm 方法应该等待连接线程建立好网络连接。另外，即便连接线程建立好了网络连接，中途也可能由于某些原因出现与告警服务器断连的情况。此时，sendAlarm 方法需要等待心跳（Heartbeat）任务重新建立好才能上报告警信息。<br><em><strong>本案例 Demo 详见 multithreading 工程的 com.GuardedSuspension 包</strong></em></p>
+<p>-</p>
+<h4 id="Guarded-Suspension-模式的评价和现实考量"><a href="#Guarded-Suspension-模式的评价和现实考量" class="headerlink" title="Guarded Suspension 模式的评价和现实考量"></a>Guarded Suspension 模式的评价和现实考量</h4><ul>
+<li>Guarded Suspension 模式使应用程序避免了样板式代码。Guarded Suspension 模式的 Blocker 参与者所实现的线程挂起与唤醒功能固然可以由应用代码直接使用 wait／notify 活着 java.util.concurrent.locks.Condition 来实现，但是这里设计几个比较容易犯错的重要技术细节。</li>
+<li>关注点分离（Separation of Concern）。Guarded Suspension 模式中的各个参与者各自仅关注本模式所要解决的问题中的一个方面，各个参与者的职责时高内聚（Cohesive）的。应用开发人员只需要根据应用的需要实现 GuardedObject、ConcretePredicate 和 ConcreteGuardedAction 这几个必须由应用是喜爱呢的参与者即可，而其他的参与者的实现都是可以复用的。</li>
+<li>可能增加 JVM 垃圾回收的负担。每次保护方法被调用的时候都会有个新的 GuardedAction 实例被创建。</li>
+<li>可能增加上下文切换（Context Switch）。如果频繁出现保护方法被调用时保护条件不成立，那么保护方法的执行线程就会频繁地被暂挂和唤醒，而导致频繁地上下文切换。</li>
+<li>Blocker 实现类中封装了几个易错的重要技术细节：</li>
+</ul>
+<blockquote>
+<p><strong>内存可见性和锁泄漏（Lock Leak）</strong></p>
+<blockquote>
+<ul>
+<li>保护条件中涉及的变量牵涉读线程和写线程进行共享访问</li>
+<li>使用锁时需要注意临界区的代码无论是否正常执行，进入临界区前获得的锁实例都应该被释放</li>
+</ul>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><strong>线程过早被唤醒</strong></p>
+<blockquote>
+<p>await 方法时放在一个 while 循环中，而不是 if 语句中。Condition 实例的 await 方法使得当前线程暂挂后，其他线程调用了 Condition 实例的 signal 或者 signalAll 方法固然可以唤醒被暂挂的线程，但是这并不能保证此时保护条件就是成立的。因此这个时候 callWithGuard 方法应该继续检测保护条件，直到保护条件成立</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><strong>嵌套监视器锁死</strong></p>
+<blockquote>
+<p>conditionVarBlocker 实例的 callWithGuard 方法和 signalAfter／signal／broadcastAfter／broadcast 方法本身涉及了由 java.util.concurrent.locks.Lock 实例实现的同步块。如果这些方法又在另外一个同步块代码中被调用，那么这就形成了嵌套同步。而嵌套同步可能产生锁死的问题。<br>如果我们能够避免不必要的嵌套同步，那么嵌套监视器锁死的问题也就可以避免。ConditionVarBlocker 的构造器支持传入一个 java.util.concurrent.locks.Lock 实例正是出于避免不必要的嵌套同步的考虑。</p>
+</blockquote>
+</blockquote>
+<h4 id="Java-标准库实例"><a href="#Java-标准库实例" class="headerlink" title="Java 标准库实例"></a>Java 标准库实例</h4><ul>
+<li>JDK 1.5 开始提供的阻塞队列类 java.util.concurrent.LinkedBlockingQueue 就用了 GuardedSuspension 模式。该类的 take 方法用于从队列中取出一个元素。如果 take 方法被调用时，队列时空的，则当前线程就会被阻塞；直到队列不为空时，该方法才返回一个出队列的元素。</li>
+<li>只不过 LinkedBlockingQueue 在实现 Guarded Suspension 模式时，直接使用了 java.concurrent.locks.Condition。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+              <a href="/tags/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/" rel="tag"># Java多线程编程实战指南</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/11/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC2%E7%AB%A0%20-%20%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D/" rel="prev" title="Java多线程编程实战指南-第2章-设计模式介绍">
+      <i class="fa fa-chevron-left"></i> Java多线程编程实战指南-第2章-设计模式介绍
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC5%E7%AB%A0%20-%20Two-phase%20Termination%EF%BC%88%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BB%88%E6%AD%A2%EF%BC%89%E6%A8%A1%E5%BC%8F/" rel="next" title="Java多线程编程实战指南-第5章-Two-phase Termination（两阶段终止）模式">
+      Java多线程编程实战指南-第5章-Two-phase Termination（两阶段终止）模式 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0-Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97"><span class="nav-number">1.</span> <span class="nav-text">读书笔记 - Java 多线程编程实战指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0-Guarded-Suspension%EF%BC%88%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E6%8C%82%EF%BC%89%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.1.</span> <span class="nav-text">第四章 Guarded Suspension（保护性暂挂）模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">模式简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E6%9E%B6%E6%9E%84"><span class="nav-number">1.1.0.2.</span> <span class="nav-text">模式架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E6%A1%88%E4%BE%8B"><span class="nav-number">1.1.0.3.</span> <span class="nav-text">模式案例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Guarded-Suspension-%E6%A8%A1%E5%BC%8F%E7%9A%84%E8%AF%84%E4%BB%B7%E5%92%8C%E7%8E%B0%E5%AE%9E%E8%80%83%E9%87%8F"><span class="nav-number">1.1.0.4.</span> <span class="nav-text">Guarded Suspension 模式的评价和现实考量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java-%E6%A0%87%E5%87%86%E5%BA%93%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.1.0.5.</span> <span class="nav-text">Java 标准库实例</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '2f314eb3df2b323eac0894a3e46b248c',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

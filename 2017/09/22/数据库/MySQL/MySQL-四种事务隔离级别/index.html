@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;huanongying&#x2F;p&#x2F;7021555.html 一本文实验的测试环境：Windows 10+cmd+MySQL5.6.36+InnoDB 事务的基本要素（ACID） 原子性（Atomicity）：事务开始后所有操作，要么全部做完，要么全部不做，不可能停滞在中间环节。事务执行过程中出错，会回滚到事务开始前的状态，所有的操作就像没有发生一样。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL-四种事务隔离级别.md">
+<meta property="og:url" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;huanongying&#x2F;p&#x2F;7021555.html 一本文实验的测试环境：Windows 10+cmd+MySQL5.6.36+InnoDB 事务的基本要素（ACID） 原子性（Atomicity）：事务开始后所有操作，要么全部做完，要么全部不做，不可能停滞在中间环节。事务执行过程中出错，会回滚到事务开始前的状态，所有的操作就像没有发生一样。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/1.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/2.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/3.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/4.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/5.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/6.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/7.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/8.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/9.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/10.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/11.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/12.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/13.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/14.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/15.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/16.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/17.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/18.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/19.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/20.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/21.png">
+<meta property="og:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/22.png">
+<meta property="article:published_time" content="2017-09-22T05:24:38.000Z">
+<meta property="article:modified_time" content="2021-07-15T04:12:13.973Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="事物隔离">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/1.png">
+
+<link rel="canonical" href="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySQL-四种事务隔离级别.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL-四种事务隔离级别.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-09-22 13:24:38" itemprop="dateCreated datePublished" datetime="2017-09-22T13:24:38+08:00">2017-09-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-15 12:12:13" itemprop="dateModified" datetime="2021-07-15T12:12:13+08:00">2021-07-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/huanongying/p/7021555.html">https://www.cnblogs.com/huanongying/p/7021555.html</a></p>
+<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><p>本文实验的测试环境：Windows 10+cmd+MySQL5.6.36+InnoDB</p>
+<h2 id="事务的基本要素（ACID）"><a href="#事务的基本要素（ACID）" class="headerlink" title="事务的基本要素（ACID）"></a>事务的基本要素（ACID）</h2><ol>
+<li>原子性（Atomicity）：事务开始后所有操作，要么全部做完，要么全部不做，不可能停滞在中间环节。事务执行过程中出错，会回滚到事务开始前的状态，所有的操作就像没有发生一样。也就是说事务是一个不可分割的整体，就像化学中学过的原子，是物质构成的基本单位。</li>
+<li>一致性（Consistency）：事务开始前和结束后，数据库的完整性约束没有被破坏 。比如A向B转账，不可能A扣了钱，B却没收到。</li>
+<li>隔离性（Isolation）：同一时间，只允许一个事务请求同一数据，不同的事务之间彼此没有任何干扰。比如A正在从一张银行卡中取钱，在A取钱的过程结束前，B不能向这张卡转账。</li>
+<li>持久性（Durability）：事务完成后，事务对数据库的所有更新将被保存到数据库，不能回滚。</li>
+</ol>
+<h2 id="事务的并发问题"><a href="#事务的并发问题" class="headerlink" title="事务的并发问题"></a>事务的并发问题</h2><ol>
+<li>脏读：事务A读取了事务B更新的数据，然后B回滚操作，那么A读取到的数据是脏数据</li>
+<li>不可重复读：事务 A 多次读取同一数据，事务 B 在事务A多次读取的过程中，对数据作了更新并提交，导致事务A多次读取同一数据时，结果 不一致。</li>
+<li>幻读：系统管理员A将数据库中所有学生的成绩从具体分数改为ABCDE等级，但是系统管理员B就在这个时候插入了一条具体分数的记录，当系统管理员A改结束后发现还有一条记录没有改过来，就好像发生了幻觉一样，这就叫幻读。</li>
+</ol>
+<p>小结：不可重复读的和幻读很容易混淆，不可重复读侧重于修改，幻读侧重于新增或删除。解决不可重复读的问题只需锁住满足条件的行，解决幻读需要锁表</p>
+<h2 id="MySQL事务隔离级别"><a href="#MySQL事务隔离级别" class="headerlink" title="MySQL事务隔离级别"></a>MySQL事务隔离级别</h2><table>
+<thead>
+<tr>
+<th>事务隔离级别</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>读未提交（read-uncommitted）</td>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>不可重复读（read-committed）</td>
+<td>否</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>可重复读（repeatable-read）</td>
+<td>否</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>串行化（serializable）</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+</tr>
+</tbody></table>
+<p>mysql默认的事务隔离级别为repeatable-read<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/1.png" alt="1"></p>
+<h2 id="用例子说明各个隔离级别的情况"><a href="#用例子说明各个隔离级别的情况" class="headerlink" title="用例子说明各个隔离级别的情况"></a>用例子说明各个隔离级别的情况</h2><h3 id="读未提交："><a href="#读未提交：" class="headerlink" title="读未提交："></a>读未提交：</h3><ol>
+<li><p>打开一个客户端A，并设置当前事务模式为read uncommitted（未提交读），查询表account的初始值：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/2.png" alt="2"></p>
+</li>
+<li><p>在客户端A的事务提交之前，打开另一个客户端B，更新表account：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/3.png" alt="3"></p>
+</li>
+<li><p>这时，虽然客户端B的事务还没提交，但是客户端A就可以查询到B已经更新的数据：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/4.png" alt="4"></p>
+</li>
+<li><p>一旦客户端B的事务因为某种原因回滚，所有的操作都将会被撤销，那客户端A查询到的数据其实就是脏数据：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/5.png" alt="5"></p>
+</li>
+<li><p>在客户端A执行更新语句update account set balance = balance - 50 where id =1，lilei的balance没有变成350，居然是400，是不是很奇怪，数据不一致啊，<strong>如果你这么想就太天真 了，在应用程序中，我们会用400-50=350，并不知道其他会话回滚了，要想解决这个问题可以采用读已提交的隔离级别</strong><br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/6.png" alt="6"></p>
+</li>
+</ol>
+<h3 id="读已提交"><a href="#读已提交" class="headerlink" title="读已提交"></a>读已提交</h3><ol>
+<li><p>打开一个客户端A，并设置当前事务模式为read committed（未提交读），查询表account的所有记录：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/7.png" alt="7"></p>
+</li>
+<li><p>在客户端A的事务提交之前，打开另一个客户端B，更新表account：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/8.png" alt="8"></p>
+</li>
+<li><p>这时，客户端B的事务还没提交，客户端A不能查询到B已经更新的数据，解决了脏读问题：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/9.png" alt="9"></p>
+</li>
+<li><p>客户端B的事务提交<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/10.png" alt="10"></p>
+</li>
+<li><p>客户端A执行与上一步相同的查询，结果 与上一步不一致，即产生了不可重复读的问题<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/11.png" alt="11"></p>
+</li>
+</ol>
+<h2 id="可重复读"><a href="#可重复读" class="headerlink" title="可重复读"></a>可重复读</h2><ol>
+<li><p>打开一个客户端A，并设置当前事务模式为repeatable read，查询表account的所有记录<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/12.png" alt="12"></p>
+</li>
+<li><p>在客户端A的事务提交之前，打开另一个客户端B，更新表account并提交<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/13.png" alt="13"></p>
+</li>
+<li><p>在客户端A查询表account的所有记录，与步骤（1）查询结果一致，没有出现不可重复读的问题<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/14.png" alt="14"></p>
+</li>
+<li><p><strong>在客户端A，接着执行update balance = balance - 50 where id = 1，balance没有变成400-50=350，lilei的balance值用的是步骤（2）中的350来算的，所以是300，数据的一致性倒是没有被破坏。可重复读的隔离级别下使用了MVCC机制，select操作不会更新版本号，是快照读（历史版本）；insert、update和delete会更新版本号，是当前读（当前版本）。</strong><br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/15.png" alt="15"></p>
+</li>
+<li><p>重新打开客户端B，插入一条新数据后提交<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/16.png" alt="16"></p>
+</li>
+<li><p>在客户端A查询表account的所有记录，没有 查出 新增数据，所以没有出现幻读<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/17.png" alt="17"></p>
+</li>
+</ol>
+<h2 id="串行化"><a href="#串行化" class="headerlink" title="串行化"></a>串行化</h2><ol>
+<li><p>打开一个客户端A，并设置当前事务模式为serializable，查询表account的初始值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set session transaction isolation level serializable;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; start transaction;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from account;</span><br><span class="line">+------+--------+---------+</span><br><span class="line">| id   | name   | balance |</span><br><span class="line">+------+--------+---------+</span><br><span class="line">|    1 | lilei  |   10000 |</span><br><span class="line">|    2 | hanmei |   10000 |</span><br><span class="line">|    3 | lucy   |   10000 |</span><br><span class="line">|    4 | lily   |   10000 |</span><br><span class="line">+------+--------+---------+</span><br><span class="line">4 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure></li>
+<li><p>打开一个客户端B，并设置当前事务模式为serializable，插入一条记录报错，表被锁了插入失败，mysql中事务隔离级别为serializable时会锁表，因此不会出现幻读的情况，这种隔离级别并发性极低，开发中很少会用到。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set session transaction isolation level serializable;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; start transaction;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into account values(5,&#x27;tom&#x27;,0);</span><br><span class="line">ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>补充：</p>
+<ol>
+<li>事务隔离级别为读提交时，写数据只会锁住相应的行</li>
+<li>事务隔离级别为可重复读时，如果检索条件有索引（包括主键索引）的时候，默认加锁方式是next-key 锁；如果检索条件没有索引，更新数据时会锁住整张表。一个间隙被事务加了锁，其他事务是不能在这个间隙插入记录的，这样可以防止幻读。</li>
+<li>事务隔离级别为串行化时，读写数据都会锁住整张表</li>
+<li>隔离级别越高，越能保证数据的完整性和一致性，但是对并发性能的影响也越大。</li>
+<li>MYSQL MVCC实现机制参考链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/whoamiyang/article/details/51901888">https://blog.csdn.net/whoamiyang/article/details/51901888</a></li>
+<li>关于next-key 锁可以参考链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/bigtree_3721/article/details/73731377">https://blog.csdn.net/bigtree_3721/article/details/73731377</a></li>
+</ol>
+<hr>
+<p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/rjzheng/p/9955395.html">https://www.cnblogs.com/rjzheng/p/9955395.html</a></p>
+<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>大家在面试中一定碰到过</p>
+<blockquote>
+<p>说说事务的隔离级别吧？</p>
+</blockquote>
+<p>老实说，事务隔离级别这个问题，无论是校招还是社招，面试官都爱问！然而目前网上很多文章，说句实在话啊，我看了后我都怀疑作者弄懂没!因为他们对可重复读(Repeatable Read)和串行化（serializable）的解析实在是看的我一头雾水！</p>
+<p>再加上很多书都说可重复读解决了幻读问题，比如《mysql技术内幕–innodb存储引擎》等，不一一列举了，因此网上关于事务隔离级别的文章大多是有问题的，所以再开一文说明！</p>
+<p>本文所讲大部分内容，皆有官网作为佐证，因此对本文内容你可以看完后，你完全可以当概念记在脑海里，除非官网的开发手册是错的，否则应当无误！<br>另外，本文会重点说一下</p>
+<blockquote>
+<p>可重复读(Repeatable Read)是否真的解决幻读的问题！</p>
+</blockquote>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>开始我先提一下，根据事务的隔离级别不同，会有三种情况发生。即脏读、不可重复读、幻读。这里我先不提这三种情况的定义，后面在讲隔离级别的时候会补上。</p>
+<p>这里，大家记住一点，根据脏读、不可重复读、幻读定义来看(自己总结，官网没有)，有如下包含关系:<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/18.png" alt="18"></p>
+<p>那么，这张图怎么理解呢？</p>
+<p>即，如果发生了脏读，那么不可重复读和幻读是一定发生的。因为拿脏读的现象，用不可重复读，幻读的定义也能解释的通。但是反过来，拿不可重复读的现象，用脏读的定义就不一定解释的通了！</p>
+<p>假设有表tx_tb如下，pId为主键</p>
+<table>
+<thead>
+<tr>
+<th>pId</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>zhangsan</td>
+</tr>
+</tbody></table>
+<h3 id="读未提交-READ-UNCOMMITTED"><a href="#读未提交-READ-UNCOMMITTED" class="headerlink" title="读未提交(READ_UNCOMMITTED)"></a>读未提交(READ_UNCOMMITTED)</h3><p>其实这个从隔离名字就可以看出来，一个事务可以读到另一个事务未提交的数据！为了便于说明，我简单的画图说明！<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/19.png" alt="19"></p>
+<p>如图所示，一个事务检索的数据被另一个未提交的事务给修改了。</p>
+<p>官网对脏读定义的地址为<code>https://dev.mysql.com/doc/refman/5.7/en/glossary.html#glos_dirty_read</code></p>
+<p>其内容为</p>
+<blockquote>
+<p>**dirty read</p>
+<p>An operation that retrieves unreliable data, data that was updated by another transaction but not yet committed.</p>
+<p>**</p>
+</blockquote>
+<p>翻译过来就是</p>
+<blockquote>
+<p>检索操作出来的数据是不可靠的，是可以被另一个未提交的事务修改的！</p>
+</blockquote>
+<p>你会发现，我们的演示结果和官网对脏读的定义一致。根据我们最开始的推理，如果存在脏读，那么不可重复读和幻读一定是存在的。</p>
+<h3 id="读已提交-READ-COMMITTED"><a href="#读已提交-READ-COMMITTED" class="headerlink" title="读已提交(READ_COMMITTED)"></a>读已提交(READ_COMMITTED)</h3><p>这个也能看的出来，一个事务能读到另一个事务已提交的数据！为了便于说明，我简单的画图说明！<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/20.png" alt="20"></p>
+<p>如图所示，一个事务检索的数据只能被另一个已提交的事务修改。</p>
+<p>官网对不可重复读定义的地址为<code>https://dev.mysql.com/doc/refman/5.7/en/glossary.html#glos_non_repeatable_read</code></p>
+<p>其内容为</p>
+<blockquote>
+<p>**non-repeatable read</p>
+<p>The situation when a query retrieves data, and a later query within the same transaction retrieves what should be the same data, but the queries return different results (changed by another transaction committing in the meantime).</p>
+<p>**</p>
+</blockquote>
+<p>翻译过来就是</p>
+<blockquote>
+<p>一个查询语句检索数据，随后又有一个查询语句在同一个事务中检索数据，两个数据应该是一样的，但是实际情况返回了不同的结果。！</p>
+</blockquote>
+<p>ps:作者注，这里的不同结果，指的是在行不变的情况下(专业点说，主键索引没变)，主键索引指向的磁盘上的数据内容变了。如果主键索引变了，比如新增一条数据或者删除一条数据，就不是不可重复读。</p>
+<p>显然，我们这个现象符合不可重复读的定义。下面，大家做一个思考:</p>
+<ul>
+<li>这个不可重复读的定义，放到脏读的现象里是不是也可以说的通。显然脏读的现象，也就是读未提交(READ_UNCOMMITTED)的那个例子，是不是也符合在同一个事务中返回了不同结果！</li>
+<li>但是反过来就不一定通了，一个事务A中查询两次的结果在被另一个事务B改变的情况下，如果事务B未提交就改变了事务A的结果，就属于脏读，也属于不可重复读。如果该事务B提交了才改变事务A的结果，就不属于脏读，但属于不可重复读。</li>
+</ul>
+<h3 id="可重复读-REPEATABLE-READ"><a href="#可重复读-REPEATABLE-READ" class="headerlink" title="可重复读(REPEATABLE_READ)"></a>可重复读(REPEATABLE_READ)</h3><p>这里，我改变一下顺序，先上幻读的定义</p>
+<p>官网对幻读定义的地址为<code>https://dev.mysql.com/doc/refman/5.7/en/glossary.html#glos_phantom</code></p>
+<blockquote>
+<p>phantom</p>
+<p>A row that appears in the result set of a query, but not in the result set of an earlier query. For example, if a query is run twice within a transaction, and in the meantime, another transaction commits after inserting a new row or updating a row so that it matches the WHERE clause of the query.</p>
+</blockquote>
+<p>翻译过来就是</p>
+<blockquote>
+<p>在一次查询的结果集里出现了某一行数据，但是该数据并未出现在更早的查询结果集里。例如，在一次事务里进行了两次查询，同时另一个事务插入某一行或更新某一行数据后(该数据符合查询语句里where后的条件)，并提交了！</p>
+</blockquote>
+<p>好了，接下来上图，大家自己评定该现象是否符合幻读的定义<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/21.png" alt="21"></p>
+<p>显然，该现象是符合幻读的定义的。同一事务的两次相同查询出现不同行。下面，大家做一个思考:</p>
+<ul>
+<li>这个幻读的定义，放到不可重复读的现象里是不是也可以说的通。大家自行思考！</li>
+<li>反过来就不一定通了。事务第二次查询出了一个数据，但是该数据并未出现在第一次查询的结果集里。如果该数据是修改数据，那么该现象既属于不可重复读，也属于幻读。如果该数据是新增或删除的数据，那该现象就不属于不可重复读，但属于幻读。</li>
+</ul>
+<p>接下来说一下，为什么很多文章都产生误传，说是可重复读可以解决幻读问题！原因出自官网的一句话(地址是:<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html#innodb-record-locks">https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html#innodb-record-locks</a>)</p>
+<p>原文内容如下</p>
+<blockquote>
+<p>By default, InnoDB operates in REPEATABLE READ transaction isolation level. In this case, InnoDB uses next-key locks for searches and index scans, which prevents phantom rows (see Section 14.7.4, “Phantom Rows”).</p>
+</blockquote>
+<p>按照原本这句话的意思，应该是</p>
+<p><strong>InnoDB默认用了REPEATABLE READ。在这种情况下，使用next-key locks解决幻读问题！</strong></p>
+<p>结果估计，某个国内翻译人员翻着翻着变成了</p>
+<p><strong>InnoDB默认用了REPEATABLE READ。在这种情况下，可以解决幻读问题！</strong></p>
+<p>然后大家继续你抄我，我抄你，结果你懂的！</p>
+<p>显然，漏了”使用了next-key locks！”这个条件后，意思完全改变，我们在该隔离级别下执行语句</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select *  from tx_tb where pId &gt;= 1;</span><br></pre></td></tr></table></figure>
+<p>是快照读，是不加任何锁的，根本不能解决幻读问题，除非你用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select *  from tx_tb where pId &gt;= 1 lock in share mode;</span><br></pre></td></tr></table></figure>
+<p>这样，你就用上了next-key locks，解决了幻读问题！</p>
+<h3 id="串行读-SERIALIZABLE-READ"><a href="#串行读-SERIALIZABLE-READ" class="headerlink" title="串行读(SERIALIZABLE_READ)"></a>串行读(SERIALIZABLE_READ)</h3><p>在该隔离级别下，所有的select语句后都自动加上lock in share mode。因此，在该隔离级别下，无论你如何进行查询，都会使用next-key locks。所有的select操作均为当前读!<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/22.png" alt="22"></p>
+<p>OK,注意看上表红色部分！就是因为使用了next-key locks,innodb将PiD=1这条索引记录，和(1,++∞)这个间隙锁住了。其他事务要在这个间隙上插数据，就会阻塞，从而防止幻读发生!<br>有的人会说，你这第二次查询的结果，也变了啊，明显和第一次查询结果不一样啊?对此，我只能说，请看清楚啊。这是被自己的事务改的，不是被其他事物修改的。这不算是幻读，也不是不可重复读。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>上面罗里吧嗦一大堆，最后来一个表格做总结吧，你面试答这个表就行。上面的一切是为了这张表做准备！</p>
+<table>
+<thead>
+<tr>
+<th>隔离级别</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>读未提交</td>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>不可重复读</td>
+<td>否</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>可重复读</td>
+<td>否</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>串行化</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/%E4%BA%8B%E7%89%A9%E9%9A%94%E7%A6%BB/" rel="tag"># 事物隔离</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/10/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%B7%A5%E5%85%B7-expect%E4%BA%A4%E4%BA%92%E8%84%9A%E6%9C%AC/" rel="prev" title="Linux-工具-expect交互脚本">
+      <i class="fa fa-chevron-left"></i> Linux-工具-expect交互脚本
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/11/03/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6&%E9%87%8D%E5%AE%9A%E5%90%91/" rel="next" title="Linux-文件描述符&重定向">
+      Linux-文件描述符&重定向 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80"><span class="nav-number">1.</span> <span class="nav-text">一</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%9F%BA%E6%9C%AC%E8%A6%81%E7%B4%A0%EF%BC%88ACID%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">事务的基本要素（ACID）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%B9%B6%E5%8F%91%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.</span> <span class="nav-text">事务的并发问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="nav-number">1.3.</span> <span class="nav-text">MySQL事务隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E4%BE%8B%E5%AD%90%E8%AF%B4%E6%98%8E%E5%90%84%E4%B8%AA%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">1.4.</span> <span class="nav-text">用例子说明各个隔离级别的情况</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E6%9C%AA%E6%8F%90%E4%BA%A4%EF%BC%9A"><span class="nav-number">1.4.1.</span> <span class="nav-text">读未提交：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E5%B7%B2%E6%8F%90%E4%BA%A4"><span class="nav-number">1.4.2.</span> <span class="nav-text">读已提交</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB"><span class="nav-number">1.5.</span> <span class="nav-text">可重复读</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%B2%E8%A1%8C%E5%8C%96"><span class="nav-number">1.6.</span> <span class="nav-text">串行化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C"><span class="nav-number">2.</span> <span class="nav-text">二</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">2.1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">2.2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E6%9C%AA%E6%8F%90%E4%BA%A4-READ-UNCOMMITTED"><span class="nav-number">2.2.1.</span> <span class="nav-text">读未提交(READ_UNCOMMITTED)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E5%B7%B2%E6%8F%90%E4%BA%A4-READ-COMMITTED"><span class="nav-number">2.2.2.</span> <span class="nav-text">读已提交(READ_COMMITTED)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB-REPEATABLE-READ"><span class="nav-number">2.2.3.</span> <span class="nav-text">可重复读(REPEATABLE_READ)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%B2%E8%A1%8C%E8%AF%BB-SERIALIZABLE-READ"><span class="nav-number">2.2.4.</span> <span class="nav-text">串行读(SERIALIZABLE_READ)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'bce4d156775ea0a4fa8cf43b949104d2',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

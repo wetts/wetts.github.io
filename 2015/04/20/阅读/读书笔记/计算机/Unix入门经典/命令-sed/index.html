@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Sed简介sed 是一种在线编辑器，它一次处理一行内容。处理时，把当前处理的行存储在临时缓冲区中，称为“模式空间”（pattern space），接着用sed命令处理缓冲区中的内容，处理完成后，把缓冲区的内容送往屏幕。接着处理下一行，这样不断重复，直到文件末尾。文件内容并没有改变，除非你使用重定向存储输出。Sed主要用来自动编辑一个或多个文件；简化对文件的反复操作；编写转换程序等。以下介绍的是Gn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="命令-awk">
+<meta property="og:url" content="https://wetts.github.io/2015/04/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Unix%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8/%E5%91%BD%E4%BB%A4-sed/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="Sed简介sed 是一种在线编辑器，它一次处理一行内容。处理时，把当前处理的行存储在临时缓冲区中，称为“模式空间”（pattern space），接着用sed命令处理缓冲区中的内容，处理完成后，把缓冲区的内容送往屏幕。接着处理下一行，这样不断重复，直到文件末尾。文件内容并没有改变，除非你使用重定向存储输出。Sed主要用来自动编辑一个或多个文件；简化对文件的反复操作；编写转换程序等。以下介绍的是Gn">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-04-20T12:06:17.000Z">
+<meta property="article:modified_time" content="2017-08-08T06:26:01.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Unix">
+<meta property="article:tag" content="Unix入门经典">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2015/04/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Unix%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8/%E5%91%BD%E4%BB%A4-sed/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>命令-awk | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Unix%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8/%E5%91%BD%E4%BB%A4-sed/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          命令-awk
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-04-20 20:06:17" itemprop="dateCreated datePublished" datetime="2015-04-20T20:06:17+08:00">2015-04-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-08-08 14:26:01" itemprop="dateModified" datetime="2017-08-08T14:26:01+08:00">2017-08-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Sed简介"><a href="#Sed简介" class="headerlink" title="Sed简介"></a>Sed简介</h2><p>sed 是一种在线编辑器，它一次处理一行内容。处理时，把当前处理的行存储在临时缓冲区中，称为“模式空间”（pattern space），接着用sed命令处理缓冲区中的内容，处理完成后，把缓冲区的内容送往屏幕。接着处理下一行，这样不断重复，直到文件末尾。文件内容并没有改变，除非你使用重定向存储输出。Sed主要用来自动编辑一个或多个文件；简化对文件的反复操作；编写转换程序等。以下介绍的是Gnu版本的Sed 3.02。</p>
+<h2 id="定址"><a href="#定址" class="headerlink" title="定址"></a>定址</h2><p>可以通过定址来定位你所希望编辑的行，该地址用数字构成，用逗号分隔的两个行数表示以这两行为起止的行的范围（包括行数表示的那两行）。如1，3表示1，2，3行，美元符号($)表示最后一行。范围可以通过数据，正则表达式或者二者结合的方式确定 。</p>
+<h2 id="Sed命令"><a href="#Sed命令" class="headerlink" title="Sed命令"></a>Sed命令</h2><p>调用sed命令有两种形式：  </p>
+<ul>
+<li>sed [options] ‘command’ file(s)  </li>
+<li>sed [options] -f scriptfile file(s)  </li>
+</ul>
+<p>参数：</p>
+<ul>
+<li><code>a\</code>：在当前行后面加入一行文本。  </li>
+<li>b lable：分支到脚本中带有标记的地方，如果分支不存在则分支到脚本的末尾。  </li>
+<li><code>c\</code>：用新的文本改变本行的文本。  </li>
+<li>d：从模板块（Pattern space）位置删除行。  </li>
+<li>D：删除模板块的第一行。  </li>
+<li><code>i\</code>：在当前行上面插入文本。  </li>
+<li>h：拷贝模板块的内容到内存中的缓冲区。  </li>
+<li>H：追加模板块的内容到内存中的缓冲区  </li>
+<li>g：获得内存缓冲区的内容，并替代当前模板块中的文本。  </li>
+<li>G：获得内存缓冲区的内容，并追加到当前模板块文本的后面。  </li>
+<li>l：列表不能打印字符的清单。  </li>
+<li>n：读取下一个输入行，用下一个命令处理新的行而不是用第一个命令。</li>
+<li>N：追加下一个输入行到模板块后面并在二者间嵌入一个新行，改变当前行号码。  </li>
+<li>p：打印模板块的行。  </li>
+<li>P（大写）：打印模板块的第一行。  </li>
+<li>q：退出Sed。  </li>
+<li>r file：从file中读行。  </li>
+<li>t label：if分支，从最后一行开始，条件一旦满足或者T，t命令，将导致分支到带有标号的命令处，或者到脚本的末尾。  </li>
+<li>T label：错误分支，从最后一行开始，一旦发生错误或者T，t命令，将导致分支到带有标号的命令处，或者到脚本的末尾。  </li>
+<li>w file：写并追加模板块到file末尾。  </li>
+<li>W file：写并追加模板块的第一行到file末尾。  </li>
+<li>!：表示后面的命令对所有没有被选定的行发生作用。  </li>
+<li>s/re/string：用string替换正则表达式re。  </li>
+<li>=：打印当前行号码。  </li>
+<li>#：把注释扩展到下一个换行符以前。  </li>
+</ul>
+<p>以下的是替换标记  </p>
+<ul>
+<li>g表示行内全面替换。  </li>
+<li>p表示打印行。  </li>
+<li>w表示把行写入一个文件。  </li>
+<li>x表示互换模板块中的文本和缓冲区中的文本。  </li>
+<li>y表示把一个字符翻译为另外的字符（但是不用于正则表达式）</li>
+</ul>
+<h2 id="选项"><a href="#选项" class="headerlink" title="选项"></a>选项</h2><ul>
+<li>-e command, –expression=command：允许多台编辑。  </li>
+<li>-h, –help：打印帮助，并显示bug列表的地址。  </li>
+<li>-n, –quiet, –silent：取消默认输出。  </li>
+<li>-f, –filer=script-file：引导sed脚本文件名。  </li>
+<li>-V, –version：打印版本和版权信息。    </li>
+</ul>
+<h2 id="元字符集"><a href="#元字符集" class="headerlink" title="元字符集"></a>元字符集</h2><ul>
+<li>^：锚定行的开始 如：<code>/^sed/</code>匹配所有以sed开头的行。   </li>
+<li>$：锚定行的结束 如：<code>/sed$/</code>匹配所有以sed结尾的行。   </li>
+<li>.：匹配一个非换行符的字符 如：<code>/s.d/</code>匹配s后接一个任意字符，然后是d。   </li>
+<li><code>*</code>：匹配零或多个字符 如：<code>/*sed/</code>匹配所有模板是一个或多个空格后紧跟sed的行。  </li>
+<li>[]：匹配一个指定范围内的字符，如<code>/[Ss]ed/</code>匹配sed和Sed。  </li>
+<li>[^]：匹配一个不在指定范围内的字符，如：<code>/[^A-RT-Z]ed/</code>匹配不包含A-R和T-Z的一个字母开头，紧跟ed的行。  </li>
+<li><code>\(..\)</code>：保存匹配的字符，如<code>s/\(love\)able/\1rs</code>，loveable被替换成lovers。  </li>
+<li>&amp;：保存搜索字符用来替换其他字符，如<code>s/love/**&amp;**/</code>，love这成<strong>love</strong>。   </li>
+<li><code>\&lt;</code>：锚定单词的开始，如:<code>/\&lt;love/</code>匹配包含以love开头的单词的行。   </li>
+<li><code>\&gt;</code>：锚定单词的结束，如<code>/love\&gt;/</code>匹配包含以love结尾的单词的行。   </li>
+<li><code>x\&#123;m\&#125;</code>：重复字符x，m次，如：<code>/o\&#123;5\&#125;/</code>匹配包含5个o的行。   </li>
+<li><code>x\&#123;m,\&#125;</code>：重复字符x,至少m次，如：<code>/o\&#123;5,\&#125;/</code>匹配至少有5个o的行。   </li>
+<li><code>x\&#123;m,n\&#125;</code>：重复字符x，至少m次，不多于n次，如：<code>/o\&#123;5,10\&#125;/</code>匹配5–10个o的行。  </li>
+</ul>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><h3 id="删除：d命令"><a href="#删除：d命令" class="headerlink" title="删除：d命令"></a>删除：d命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ sed &#x27;2d&#x27; example-----删除example文件的第二行。  </span><br><span class="line">*  </span><br><span class="line">$ sed &#x27;2,$d&#x27; example-----删除example文件的第二行到末尾所有行。  </span><br><span class="line">*  </span><br><span class="line">$ sed &#x27;$d&#x27; example-----删除example文件的最后一行。  </span><br><span class="line">*  </span><br><span class="line">$ sed &#x27;/test/&#x27;d example-----删除example文件所有包含test的行。  </span><br></pre></td></tr></table></figure>
+
+<h3 id="替换：s命令"><a href="#替换：s命令" class="headerlink" title="替换：s命令"></a>替换：s命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ sed &#x27;s/test/mytest/g&#x27; example-----在整行范围内把test替换为mytest。如果没有g标记，则只有每行第一个匹配的test被替换成mytest。  </span><br><span class="line">*  </span><br><span class="line">$ sed -n &#x27;s/^test/mytest/p&#x27; example-----(-n)选项和p标志一起使用表示只打印那些发生替换的行。也就是说，如果某一行开头的test被替换成mytest，就打印它。  </span><br><span class="line">*  </span><br><span class="line">$ sed &#x27;s/^192.168.0.1/&amp;localhost/&#x27; example-----&amp;符号表示替换换字符串中被找到的部份。所有以192.168.0.1开头的行都会被替换成它自已加 localhost，变成192.168.0.1localhost。  </span><br><span class="line">*  </span><br><span class="line">$ sed -n &#x27;s/\(love\)able/\1rs/p&#x27; example-----love被标记为1，所有loveable会被替换成lovers，而且替换的行会被打印出来。  </span><br><span class="line">*  </span><br><span class="line">$ sed &#x27;s#10#100#g&#x27; example-----不论什么字符，紧跟着s命令的都被认为是新的分隔符，所以，“#”在这里是分隔符，代替了默认的“/”分隔符。表示把所有10替换成100。</span><br></pre></td></tr></table></figure>
+
+<h3 id="选定行的范围：逗号"><a href="#选定行的范围：逗号" class="headerlink" title="选定行的范围：逗号"></a>选定行的范围：逗号</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sed -n &#x27;/test/,/check/p&#x27; example-----所有在模板test和check所确定的范围内的行都被打印。  </span><br><span class="line">*  </span><br><span class="line">$ sed -n &#x27;5,/^test/p&#x27; example-----打印从第五行开始到第一个包含以test开始的行之间的所有行。  </span><br><span class="line">*  </span><br><span class="line">$ sed &#x27;/test/,/check/s/$/sed test/&#x27; example-----对于模板test和west之间的行，每行的末尾用字符串sed test替换。</span><br></pre></td></tr></table></figure>
+
+<h3 id="多点编辑：e命令"><a href="#多点编辑：e命令" class="headerlink" title="多点编辑：e命令"></a>多点编辑：e命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sed -e &#x27;1,5d&#x27; -e &#x27;s/test/check/&#x27; example-----(-e)选项允许在同一行里执行多条命令。如例子所示，第一条命令删除1至5行，第二条命令用check替换test。命令的执行顺序对结果有影响。如果两个命令都是替换命令，那么第一个替换命令将影响第二个替换命令的结果。  </span><br><span class="line">*  </span><br><span class="line">$ sed --expression=&#x27;s/test/check/&#x27; --expression=&#x27;/love/d&#x27; example-----一个比-e更好的命令是--expression。它能给sed表达式赋值。</span><br></pre></td></tr></table></figure>
+
+<h3 id="从文件读入：r命令"><a href="#从文件读入：r命令" class="headerlink" title="从文件读入：r命令"></a>从文件读入：r命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sed &#x27;/test/r file&#x27; example-----file里的内容被读进来，显示在与test匹配的行后面，如果匹配多行，则file的内容将显示在所有匹配行的下面。</span><br></pre></td></tr></table></figure>
+
+<h3 id="写入文件：w命令"><a href="#写入文件：w命令" class="headerlink" title="写入文件：w命令"></a>写入文件：w命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sed -n &#x27;/test/w file&#x27; example-----在example中所有包含test的行都被写入file里。</span><br></pre></td></tr></table></figure>
+
+<h3 id="追加命令：a命令"><a href="#追加命令：a命令" class="headerlink" title="追加命令：a命令"></a>追加命令：a命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sed &#x27;/^test/a\\---&gt;this is a example&#x27; example&lt;-----&#x27;this is a example&#x27;被追加到以test开头的行后面，sed要求命令a后面有一个反斜杠。</span><br></pre></td></tr></table></figure>
+
+<h3 id="插入：i命令"><a href="#插入：i命令" class="headerlink" title="插入：i命令"></a>插入：i命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sed &#x27;/test/i\\  </span><br><span class="line">new line  </span><br><span class="line">-------------------------&#x27; example  </span><br><span class="line">如果test被匹配，则把反斜杠后面的文本插入到匹配行的前面。  </span><br></pre></td></tr></table></figure>
+
+<h3 id="下一个：n命令"><a href="#下一个：n命令" class="headerlink" title="下一个：n命令"></a>下一个：n命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sed &#x27;/test/&#123; n; s/aa/bb/; &#125;&#x27; example-----如果test被匹配，则移动到匹配行的下一行，替换这一行的aa，变为bb，并打印该行，然后继续。  </span><br></pre></td></tr></table></figure>
+
+<h3 id="变形：y命令"><a href="#变形：y命令" class="headerlink" title="变形：y命令"></a>变形：y命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sed &#x27;1,10y/abcde/ABCDE/&#x27; example-----把1--10行内所有abcde转变为大写，注意，正则表达式元字符不能使用这个命令。  </span><br></pre></td></tr></table></figure>
+
+<p>###退出：q命令  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sed &#x27;10q&#x27; example-----打印完第10行后，退出sed。  </span><br></pre></td></tr></table></figure>
+
+<h3 id="保持和获取：h命令和G命令"><a href="#保持和获取：h命令和G命令" class="headerlink" title="保持和获取：h命令和G命令"></a>保持和获取：h命令和G命令</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sed -e &#x27;/test/h&#x27; -e &#x27;$G example-----在sed处理文件的时候，每一行都被保存在一个叫模式空间的临时缓冲区中，除非行被删除或者输出被取消，否则所有被处理的行都将 打印在屏幕上。接着模式空间被清空，并存入新的一行等待处理。在这个例子里，匹配test的行被找到后，将存入模式空间，h命令将其复制并存入一个称为保 持缓存区的特殊缓冲区内。第二条语句的意思是，当到达最后一行后，G命令取出保持缓冲区的行，然后把它放回模式空间中，且追加到现在已经存在于模式空间中 的行的末尾。在这个例子中就是追加到最后一行。简单来说，任何包含test的行都被复制并追加到该文件的末尾。</span><br><span class="line"></span><br><span class="line">保持和互换：h命令和x命令  </span><br><span class="line">*  </span><br><span class="line">$ sed -e &#x27;/test/h&#x27; -e &#x27;/check/x&#x27; example -----互换模式空间和保持缓冲区的内容。也就是把包含test与check的行互换。  </span><br></pre></td></tr></table></figure>
+
+<h2 id="脚本"><a href="#脚本" class="headerlink" title="脚本"></a>脚本</h2><p>Sed脚本是一个sed的命令清单，启动Sed时以-f选项引导脚本文件名。Sed对于脚本中输入的命令非常挑剔，在命令的末尾不能有任何空白或文本，如果在一行中有多个命令，要用分号分隔。以#开头的行为注释行，且不能跨行。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Unix/" rel="tag"># Unix</a>
+              <a href="/tags/Unix%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8/" rel="tag"># Unix入门经典</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/04/20/%E8%AF%AD%E8%A8%80/Shell/Shell-%E6%A0%87%E5%87%86%E8%BE%93%E5%85%A5%E3%80%81%E6%A0%87%E5%87%86%E8%BE%93%E5%87%BA%E3%80%81%E9%94%99%E8%AF%AF%E8%BE%93%E5%87%BA/" rel="prev" title="Shell-标准输入、标准输出、错误输出">
+      <i class="fa fa-chevron-left"></i> Shell-标准输入、标准输出、错误输出
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/04/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Unix%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8/%E5%91%BD%E4%BB%A4-awk/" rel="next" title="命令-awk">
+      命令-awk <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Sed%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">Sed简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E5%9D%80"><span class="nav-number">2.</span> <span class="nav-text">定址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sed%E5%91%BD%E4%BB%A4"><span class="nav-number">3.</span> <span class="nav-text">Sed命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E9%A1%B9"><span class="nav-number">4.</span> <span class="nav-text">选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%83%E5%AD%97%E7%AC%A6%E9%9B%86"><span class="nav-number">5.</span> <span class="nav-text">元字符集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">6.</span> <span class="nav-text">实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%EF%BC%9Ad%E5%91%BD%E4%BB%A4"><span class="nav-number">6.1.</span> <span class="nav-text">删除：d命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%BF%E6%8D%A2%EF%BC%9As%E5%91%BD%E4%BB%A4"><span class="nav-number">6.2.</span> <span class="nav-text">替换：s命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E5%AE%9A%E8%A1%8C%E7%9A%84%E8%8C%83%E5%9B%B4%EF%BC%9A%E9%80%97%E5%8F%B7"><span class="nav-number">6.3.</span> <span class="nav-text">选定行的范围：逗号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E7%82%B9%E7%BC%96%E8%BE%91%EF%BC%9Ae%E5%91%BD%E4%BB%A4"><span class="nav-number">6.4.</span> <span class="nav-text">多点编辑：e命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E6%96%87%E4%BB%B6%E8%AF%BB%E5%85%A5%EF%BC%9Ar%E5%91%BD%E4%BB%A4"><span class="nav-number">6.5.</span> <span class="nav-text">从文件读入：r命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%99%E5%85%A5%E6%96%87%E4%BB%B6%EF%BC%9Aw%E5%91%BD%E4%BB%A4"><span class="nav-number">6.6.</span> <span class="nav-text">写入文件：w命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%BD%E5%8A%A0%E5%91%BD%E4%BB%A4%EF%BC%9Aa%E5%91%BD%E4%BB%A4"><span class="nav-number">6.7.</span> <span class="nav-text">追加命令：a命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%92%E5%85%A5%EF%BC%9Ai%E5%91%BD%E4%BB%A4"><span class="nav-number">6.8.</span> <span class="nav-text">插入：i命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8B%E4%B8%80%E4%B8%AA%EF%BC%9An%E5%91%BD%E4%BB%A4"><span class="nav-number">6.9.</span> <span class="nav-text">下一个：n命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E5%BD%A2%EF%BC%9Ay%E5%91%BD%E4%BB%A4"><span class="nav-number">6.10.</span> <span class="nav-text">变形：y命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%9D%E6%8C%81%E5%92%8C%E8%8E%B7%E5%8F%96%EF%BC%9Ah%E5%91%BD%E4%BB%A4%E5%92%8CG%E5%91%BD%E4%BB%A4"><span class="nav-number">6.11.</span> <span class="nav-text">保持和获取：h命令和G命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%84%9A%E6%9C%AC"><span class="nav-number">7.</span> <span class="nav-text">脚本</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '5bcb8aef633f6672a0fcbcae9ee22872',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

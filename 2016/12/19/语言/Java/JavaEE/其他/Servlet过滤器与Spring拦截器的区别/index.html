@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;chenleixing&#x2F;article&#x2F;details&#x2F;44573495 过滤器和拦截器的区别：  拦截器是基于Java的反射机制的，而过滤器是基于函数回调。 拦截器不依赖与servlet容器，过滤器依赖与servlet容器。 拦截器只能对action请求起作用，而过滤器则可以对几乎所有的请求起作用。 拦截器可以访问action上下文、值栈里的对象，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Servlet过滤器与Spring拦截器的区别">
+<meta property="og:url" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;chenleixing&#x2F;article&#x2F;details&#x2F;44573495 过滤器和拦截器的区别：  拦截器是基于Java的反射机制的，而过滤器是基于函数回调。 拦截器不依赖与servlet容器，过滤器依赖与servlet容器。 拦截器只能对action请求起作用，而过滤器则可以对几乎所有的请求起作用。 拦截器可以访问action上下文、值栈里的对象，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/Filter%E6%B5%81%E7%A8%8B.png">
+<meta property="og:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB.png">
+<meta property="og:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/1.png">
+<meta property="article:published_time" content="2016-12-19T02:13:21.000Z">
+<meta property="article:modified_time" content="2021-07-11T11:38:49.152Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Filter">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/Filter%E6%B5%81%E7%A8%8B.png">
+
+<link rel="canonical" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Servlet过滤器与Spring拦截器的区别 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Servlet过滤器与Spring拦截器的区别
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-19 10:13:21" itemprop="dateCreated datePublished" datetime="2016-12-19T10:13:21+08:00">2016-12-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-11 19:38:49" itemprop="dateModified" datetime="2021-07-11T19:38:49+08:00">2021-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/chenleixing/article/details/44573495">http://blog.csdn.net/chenleixing/article/details/44573495</a></p>
+<p>过滤器和拦截器的区别：</p>
+<ol>
+<li>拦截器是基于Java的反射机制的，而过滤器是基于函数回调。</li>
+<li>拦截器不依赖与servlet容器，过滤器依赖与servlet容器。</li>
+<li>拦截器只能对action请求起作用，而过滤器则可以对几乎所有的请求起作用。</li>
+<li>拦截器可以访问action上下文、值栈里的对象，而过滤器不能访问。</li>
+<li>在action的生命周期中，拦截器可以多次被调用，而过滤器只能在容器初始化时被调用一次。</li>
+<li>拦截器可以获取IOC容器中的各个bean，而过滤器就不行，这点很重要，在拦截器里注入一个service，可以调用业务逻辑。</li>
+</ol>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/Filter%E6%B5%81%E7%A8%8B.png" alt="Filter流程"></p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB.png" alt="Servlet过滤器与Spring拦截器的区别"></p>
+<hr>
+<p>增加：2021/04/11 14:23:08</p>
+<p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/105438981">https://blog.csdn.net/zzti_erlie/article/details/105438981</a></p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>做 Web 开发，我们经常要和 Servlet Filter，Spring MVC Interceptor 打交道，它们都能对请求进行拦截，那么它们有哪些区别呢？</p>
+<h2 id="Servlet-Filter"><a href="#Servlet-Filter" class="headerlink" title="Servlet Filter"></a>Servlet Filter</h2><h3 id="Filter的使用"><a href="#Filter的使用" class="headerlink" title="Filter的使用"></a>Filter的使用</h3><p>可能很多小伙伴没怎么用过 Filter，我就简单演示一下</p>
+<ol>
+<li><p>在 web.xml 中配置 2 个 Filter</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;filter-mapping&gt;</span><br><span class="line">    &lt;filter-name&gt;logFilter&lt;/filter-name&gt;</span><br><span class="line">    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;</span><br><span class="line">&lt;/filter-mapping&gt;</span><br><span class="line">&lt;filter-mapping&gt;</span><br><span class="line">    &lt;filter-name&gt;imageFilter&lt;/filter-name&gt;</span><br><span class="line">    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;</span><br><span class="line">&lt;/filter-mapping&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>实现如下，略去了 init 方法和 destroy 方法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@WebFilter(filterName = &quot;logFilter&quot;)</span><br><span class="line">public class LogFilter implements Filter &#123;</span><br><span class="line"></span><br><span class="line">    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException &#123;</span><br><span class="line">        System.out.println(&quot;LogFilter execute&quot;);</span><br><span class="line">        chain.doFilter(request, response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@WebFilter(filterName = &quot;imageFilter&quot;)</span><br><span class="line">public class ImageFilter implements Filter &#123;</span><br><span class="line"></span><br><span class="line">    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException &#123;</span><br><span class="line">        System.out.println(&quot;ImageFilter execute&quot;);</span><br><span class="line">        chain.doFilter(request, response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>然后你访问任意一个 servlet 方法，LogFilter 和 ImageFilter 的 doFilter 方法都会执行</li>
+</ol>
+<p>如果你在一个 Filter 方法后不加c <code>hain.doFilter(request, response)</code>，则后续的 Filter 和 Servlet 都不会执行，这是为什么呢？看完我手写的 Demo 你一下就明白了</p>
+<p>可以看到 Filter 可以在请求到达 Servlet 之前做处理，如</p>
+<ul>
+<li>请求编码</li>
+<li>敏感词过滤等</li>
+</ul>
+<p>有兴趣的小伙伴可以看看相关的源码</p>
+<h2 id="手写Filter的实现"><a href="#手写Filter的实现" class="headerlink" title="手写Filter的实现"></a>手写Filter的实现</h2><p>Servlet 接口，任何一个 web 请求都会调用 service 方法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Servlet &#123;</span><br><span class="line">    public void service();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class MyServlet implements Servlet &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void service() &#123;</span><br><span class="line">        System.out.println(&quot;MyServlet的service方法执行了&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>拦截器接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Filter &#123;</span><br><span class="line">    public void doFilter(FilterChain chain);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class LogFilter implements Filter &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void doFilter(FilterChain chain) &#123;</span><br><span class="line">        System.out.println(&quot;LogFilter执行了&quot;);</span><br><span class="line">        chain.doFilter();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class ImageFilter implements Filter &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void doFilter(FilterChain chain) &#123;</span><br><span class="line">        System.out.println(&quot;ImageFilter执行了&quot;);</span><br><span class="line">        chain.doFilter();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>拦截器链对象</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface FilterChain &#123;</span><br><span class="line">    public void doFilter();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">public class ApplicationFilterChain implements FilterChain &#123;</span><br><span class="line"></span><br><span class="line">    private Filter[] filters = new Filter[10];</span><br><span class="line">    private Servlet servlet = null;</span><br><span class="line"></span><br><span class="line">    // 总共的Filter数目</span><br><span class="line">    private int n;</span><br><span class="line"></span><br><span class="line">    // 当前执行完的filter数目</span><br><span class="line">    private int pos;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void doFilter() &#123;</span><br><span class="line">        if (pos &lt; n) &#123;</span><br><span class="line">            Filter curFilter = filters[pos++];</span><br><span class="line">            curFilter.doFilter(this);</span><br><span class="line">            return;</span><br><span class="line">        &#125;</span><br><span class="line">        servlet.service();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void addFilter(Filter filter) &#123;</span><br><span class="line">        // 这里源码有动态扩容的过程，和ArrayList差不多</span><br><span class="line">        // 我就不演示了，直接赋数组大小为10了</span><br><span class="line">        filters[n++] = filter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void setServlet(Servlet servlet) &#123;</span><br><span class="line">        this.servlet = servlet;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试例子</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class Main &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // 在tomcat源码中，会将一个请求封装为一个ApplicationFilterChain对象</span><br><span class="line">        // 然后执行ApplicationFilterChain的doFilter方法</span><br><span class="line">        ApplicationFilterChain applicationFilterChain = new ApplicationFilterChain();</span><br><span class="line">        applicationFilterChain.addFilter(new LogFilter());</span><br><span class="line">        applicationFilterChain.addFilter(new ImageFilter());</span><br><span class="line">        applicationFilterChain.setServlet(new MyServlet());</span><br><span class="line"></span><br><span class="line">        // LogFilter执行了</span><br><span class="line">        // ImageFilter执行了</span><br><span class="line">        // MyServlet的service方法执行了</span><br><span class="line">        applicationFilterChain.doFilter();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果任意一个 Filter 方法的最后不加上 chain.doFilter()，则后面的拦截器及 Servlet 都不会执行了。相信你看完 ApplicationFilterChain 类的 doFilter 方法一下就明白了，就是一个简单的递归调用</p>
+<h2 id="Spring-MVC-Interceptor"><a href="#Spring-MVC-Interceptor" class="headerlink" title="Spring MVC Interceptor"></a>Spring MVC Interceptor</h2><h3 id="Interceptor-的使用"><a href="#Interceptor-的使用" class="headerlink" title="Interceptor 的使用"></a>Interceptor 的使用</h3><p>今天就来分析一下拦截器是怎么实现的？可以通过以下方式实现拦截器</p>
+<ol>
+<li>实现HandlerInterceptor接口</li>
+<li>继承HandlerInterceptorAdapter抽象类，按需重写部分实现即可，（HandlerInterceptorAdapter 也实现了 HandlerInterceptor 接口）</li>
+</ol>
+<p>总而言之拦截器必须必须实现了 HandlerInterceptor 接口</p>
+<p>HandlerInterceptor 有如下 3 个方法</p>
+<ul>
+<li>boolean preHandler()：在 controller 执行之前调用</li>
+<li>void postHandler()：controller 执行之后，且页面渲染之前调用</li>
+<li>void afterCompletion()：页面渲染之后调用，一般用于资源清理操作</li>
+</ul>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E8%BF%87%E6%BB%A4%E5%99%A8%E4%B8%8ESpring%E6%8B%A6%E6%88%AA%E5%99%A8%E7%9A%84%E5%8C%BA%E5%88%AB/1.png" alt="1"></p>
+<p>这个图应该很好的显示了一个请求可以被拦截的地方</p>
+<ol>
+<li>Servlet Filter 是对一个请求到达 Servlet 的过程进行拦截</li>
+<li>而 HandlerInterceptor 是当请求到达 DispatcherServlet 后，在 Controller 的方法执行前后进行拦截</li>
+</ol>
+<h3 id="手写-Interceptor-的实现"><a href="#手写-Interceptor-的实现" class="headerlink" title="手写 Interceptor 的实现"></a>手写 Interceptor 的实现</h3><p>我来手写一个 Demo，你一下就能明白了</p>
+<p>拦截接口，为了方便我这里就只定义了一个方法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface HandlerInterceptor &#123;</span><br><span class="line">    boolean preHandle();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义如下2个拦截器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public class CostInterceptor implements HandlerInterceptor &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean preHandle() &#123;</span><br><span class="line">        // 这里可以针对传入的参数做一系列事情，我这里就简单返回true了;</span><br><span class="line">        System.out.println(&quot;CostInterceptor 执行了&quot;);</span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class LoginInterceptor implements HandlerInterceptor &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean preHandle() &#123;</span><br><span class="line">        System.out.println(&quot;LoginInterceptor 执行了&quot;);</span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>存放拦截器的容器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">public class HandlerExecutionChain &#123;</span><br><span class="line"></span><br><span class="line">    private List&lt;HandlerInterceptor&gt; interceptorList = new ArrayList&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    public void addInterceptor(HandlerInterceptor interceptor) &#123;</span><br><span class="line">        interceptorList.add(interceptor);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public boolean applyPreHandle() &#123;</span><br><span class="line">        for (int i = 0; i &lt; interceptorList.size(); i++) &#123;</span><br><span class="line">            HandlerInterceptor interceptor = interceptorList.get(i);</span><br><span class="line">            if (!interceptor.preHandle()) &#123;</span><br><span class="line">                return false;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>演示 DispatcherServlet 的调用过程</p>
+<figure class="highlight plaintext"><figcaption><span>class Main &#123;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        // Spring MVC会根据请求返回一个HandlerExecutionChain对象</span><br><span class="line">        // 然后执行HandlerExecutionChain的applyPreHandle方法，controller中的方法</span><br><span class="line">        HandlerExecutionChain chain = new HandlerExecutionChain();</span><br><span class="line">        chain.addInterceptor(new CostInterceptor());</span><br><span class="line">        chain.addInterceptor(new LoginInterceptor());</span><br><span class="line"></span><br><span class="line">        // 只有拦截器都返回true，才会调用controller的方法</span><br><span class="line">        // CostInterceptor 执行了</span><br><span class="line">        // LoginInterceptor 执行了</span><br><span class="line">        if (!chain.applyPreHandle()) &#123;</span><br><span class="line">            return;</span><br><span class="line">        &#125;</span><br><span class="line">        result();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void result() &#123;</span><br><span class="line">        System.out.println(&quot;这是controller的方法&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>如果任意一个 Interceptor 返回 false，则后续的 Interceptor 和 Controller 中的方法都不会执行</strong>原因在 Demo 中显而易见</p>
+<p>当想对请求增加新的过滤逻辑时，只需要定义一个拦截器即可，完全符合开闭原则。</p>
+<p>不知道你意识到没有 <strong>Servlet Filter 和 Spring MVC Interceptor 都是用责任链模式实现的</strong></p>
+<p>来看看 DispatcherServlet 是怎么做的？和我们上面写的 demo 一模一样</p>
+<p>我们用 servlet 写 web 应用时，一个请求地址写一个 Servlet 类。</p>
+<p>而用了 spring mvc 后，整个应用程序只有一个 Servlet 即 DispatcherServlet，所有的请求都发送到DispatcherServlet，然后通过方法调用的方式执行 controller 的方法</p>
+<p>DispatcherServlet 的 doDispatch 方法源码如下，省略了一部分逻辑（所有的请求都会执行这个方法）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">protected void doDispatch() &#123;</span><br><span class="line"></span><br><span class="line">	// 执行所有HandlerInterceptor的preHandle方法</span><br><span class="line">	if (!mappedHandler.applyPreHandle(processedRequest, response)) &#123;</span><br><span class="line">		return;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// 执行controller中的方法</span><br><span class="line">	mv = ha.handle(processedRequest, response, mappedHandler.getHandler());</span><br><span class="line"></span><br><span class="line">	// 执行所有HandlerInterceptor的postHandle方法</span><br><span class="line">	mappedHandler.applyPostHandle(processedRequest, response, mv);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Interceptor 可以有如下用处</p>
+<ul>
+<li>记录接口响应时间</li>
+<li>判断用户是否登陆</li>
+<li>权限校验等</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>Servlet Filter 和 Spring MVC Interceptor 都能对请求进行拦截，只不过时机不同，Servlet Filter 在请求到达 Servlet 之前拦截，Spring MVC Interceptor 在请求到达 DispatcherServlet 之后拦截</li>
+<li>Servlet Filter 是 Servlet 的规范，而 Spring MVC Interceptor 只能在 Spring MVC 中使用</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/Filter/" rel="tag"># Filter</a>
+              <a href="/tags/Spring/" rel="tag"># Spring</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/12/17/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E8%AF%AD%E6%B3%95-rewrite%E5%92%8Cproxy_pass%E7%9A%84%E5%8C%BA%E5%88%AB/" rel="prev" title="Nginx-语法-proxy_pass中的路径问题">
+      <i class="fa fa-chevron-left"></i> Nginx-语法-proxy_pass中的路径问题
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-1.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90Volatile%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" rel="next" title="Java-聊聊并发-1.深入分析Volatile的实现原理">
+      Java-聊聊并发-1.深入分析Volatile的实现原理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Servlet-Filter"><span class="nav-number">2.</span> <span class="nav-text">Servlet Filter</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Filter%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.1.</span> <span class="nav-text">Filter的使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%8B%E5%86%99Filter%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">手写Filter的实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-MVC-Interceptor"><span class="nav-number">4.</span> <span class="nav-text">Spring MVC Interceptor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Interceptor-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">4.1.</span> <span class="nav-text">Interceptor 的使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%8B%E5%86%99-Interceptor-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.2.</span> <span class="nav-text">手写 Interceptor 的实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '990868ea177e1abe93096d20360f8ada',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

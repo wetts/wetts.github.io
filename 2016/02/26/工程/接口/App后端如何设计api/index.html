@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;newjueqi&#x2F;article&#x2F;details&#x2F;44037011 app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。 什么是api？ 这个问题在以前发表的文章“7.app和app后端的通讯”中其实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="App后端如何设计api">
+<meta property="og:url" content="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;newjueqi&#x2F;article&#x2F;details&#x2F;44037011 app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。 什么是api？ 这个问题在以前发表的文章“7.app和app后端的通讯”中其实">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%85%A5.png">
+<meta property="og:image" content="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%87%BA.png">
+<meta property="article:published_time" content="2016-02-26T05:56:32.000Z">
+<meta property="article:modified_time" content="2017-01-19T15:10:07.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="接口设计">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%85%A5.png">
+
+<link rel="canonical" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>App后端如何设计api | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          App后端如何设计api
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-02-26 13:56:32" itemprop="dateCreated datePublished" datetime="2016-02-26T13:56:32+08:00">2016-02-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-01-19 23:10:07" itemprop="dateModified" datetime="2017-01-19T23:10:07+08:00">2017-01-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/newjueqi/article/details/44037011">http://blog.csdn.net/newjueqi/article/details/44037011</a></p>
+<p>app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。</p>
+<h2 id="什么是api？"><a href="#什么是api？" class="headerlink" title="什么是api？"></a>什么是api？</h2><p> 这个问题在以前发表的文章“7.app和app后端的通讯”中其实已经回答了，这里再重复一次。  </p>
+<p>相信大家都用过银行的柜员机(ATM)的查询余额，转帐，取款等操作。   </p>
+<p>当在柜员机取款的时候，我们输入要取款的金额，隔一会钱就出来了，如果因为有什么问题不能取款（例如超过取款金额的限制），屏幕上也会显示出错误的信息。   </p>
+<p>在整个过程中，我们只要输入金额，获得结果（取款成功或不成功），就行了，至于柜员机内部是怎么处理，我们不需要理会。   　　柜员机这种把内部的处理遮蔽的做法极大方便了我们的使用。   </p>
+<p>同样的，在后端，也只提供了一系列的功能给app使用，这系列的功能以api的形式提供。   </p>
+<p>api的定义：API（Application Programming Interface,应用程序编程接口）是一些预先定义的函数，目的是提供应用程序与开发人员基于某软件或硬件得以访问一组例程的能力，而又无需访问源码，或理解内部工作机制的细节。   </p>
+<p>当app调用api的时候，只需要明确下面３点:   </p>
+<ol>
+<li>这个api是干啥的（柜员机例子中，是取款功能，还是查询余额,还是转账）   </li>
+<li>知道要输入什么（柜员机例子中，取款要输入金钱）   </li>
+<li>知道结果是什么（柜员机例子中，取款是成功还是失败）   </li>
+</ol>
+<p>至于api内部是怎么处理的，app根本无需理会。   </p>
+<p>从这里可看出，api能在最大程度遮蔽了app后端复杂性，极大提高了app前端的开发效率。 </p>
+<h2 id="api设计的8点"><a href="#api设计的8点" class="headerlink" title="api设计的8点"></a>api设计的8点</h2><p>### Restful设计原则  <br>Restful风格：RESTfu设计原则,它被Roy Felding提出（在他的”基于网络的软件架构“论文中第五章）。而REST的核心原则是将你的API拆分为逻辑上的资源。这些资源通过http被操作（GET ,POST,PUT,DELETE）。</p>
+<p>在实际的开发过程中发现，程序员由于在web端养成的习惯，api操作中通常就只有两种方式”POST””GET”。大家可看一下微博的api例子”statuses/destroy”，这个很明显是delete操作的api却是用post方式提交。不是完全遵守Restful风格的风格。</p>
+<p>这个设计原则最简单的应用就是根据object而不是页面来设计api。最开始的时候，app的一个页面需要什么数据，api就返回什么数据。结果随着app的UI不断改版，需要的数据不断变化，不停地修改api，最后当api的改动会影响以前的版本的时候，只能写一个新的api版本，最后弄得api中有很多V2,V3这样的标志，恶梦!</p>
+<p>后来在网站的重构过程中，就根据object来设计api，但根据object来设计，又有一个问题，一个大object可能包含很多小object，是一个api返回全部小object，还是分为多个api返回？根据业务和技术，带宽等仔细考虑吧。</p>
+<h3 id="api的命名"><a href="#api的命名" class="headerlink" title="api的命名"></a>api的命名</h3><p>一看api名字就知道这个api是干啥。在创业团队中，一般就只有一两个人负责后台，当你要负责几十甚至上百个api，你就知道不能“望名知api”是个什么样的痛苦。</p>
+<p>api的命名，我是挺喜欢微博的命名风格，例如删除微博的api “statuses/destroy”，第一个是对象，第二个是对象的操作删除</p>
+<h3 id="api的安全性"><a href="#api的安全性" class="headerlink" title="api的安全性"></a>api的安全性</h3><p>这点会在以后的“怎么保证app通讯的安全性”一文中详细论述。</p>
+<h3 id="api返回数据"><a href="#api返回数据" class="headerlink" title="api返回数据"></a>api返回数据</h3><p>app客户端的语言 java 和object-c都是强类型语言，所以怎么处理空值显得特别重要，不合理的设计很容易造成app的闪退。</p>
+<p>从后台的角度来说，api中返回的数据中，正确值和空值的类型必须一样，举例，用户名的字段是“realname”: “xxx”,如果用户名为空，则应该返回“realname”: “”。如果返回值是一个array，空数据则返回一个空array，绝对禁止null值。</p>
+<p>对于客户端，必须用个全局的函数来处理所有api的返回数据，需要有一个机制：对于某个客户端需要数据，如果api中缺失，客户端自动补上并给予默认值。这个机制在我们的实践中大大减少了app的闪退。</p>
+<p>同时，在数据库设计的时候，一个合理的设计必须是所有字段都有默认值，不应该允许null值。null在大量的语言和数据库中，会带来无穷的问题。对于这个数据库设计原则，我以前不太明白，现在经历了一年的api设计后，终于懂得。</p>
+<p>如果客户端是php，还有一个问题，php中数组和字典都是array，但在java 和object-c中是不一样，这个问题一定要注意。</p>
+<h3 id="图片的处理"><a href="#图片的处理" class="headerlink" title="图片的处理"></a>图片的处理</h3><p>在不同版本的app中，各种不同尺寸的手机中，同一张图片显示的尺寸可能是不一样，如果每次都需要用返回原图，然后在客户端处理，则极大浪费网络资源。而如果是后台处理好图片才返回，则又是一个挑战，怎么有效保存和裁剪多种图片尺寸呢</p>
+<p>例如，一开始头像只需要返回60<em>60的尺寸，后来在新的版本需要返回70</em>70, 又出了一个新版本，需要返回80*80, 每次增加一个新的尺寸，怎么在数据库上记录下来。这个问题在一开始做api的时候没考虑，后来不得不用了一个极端的方法，没增加新的图片尺寸，就在数据库中增加一个新的字段，保存并生成新的图片尺寸，结果最后数据库的头像字段有”avatar”,”avatar_60_60”,”avatar_70_70”,”avatar_80_80”，这种极度恶虐的设计。</p>
+<p>最后，针对图片，我们才用了这样的策略：</p>
+<ol>
+<li>客户端本地缓存图片，只有没有合适的图片，才去服务器取。</li>
+<li>当客户端需要某种尺寸的图片，由客户端告诉服务端图片的尺寸，服务端动态生成并缓存起来。</li>
+</ol>
+<p>例如，客户端需要图片（<a target="_blank" rel="noopener" href="http://www.baidu.com/img/bdlogo.gif%EF%BC%89%E7%9A%8480*80%E7%9A%84%E5%B0%BA%E5%AF%B8%EF%BC%8C%E5%88%99%E5%9C%A8%E5%9B%BE%E7%89%87%E7%9A%84%E8%B7%AF%E5%BE%84%E5%8A%A0%E4%B8%8A%E5%AE%BD%E5%92%8C%E9%AB%98%E7%9A%84%E5%8F%82%E6%95%B0%EF%BC%88%E7%B1%BB%E4%BC%BC%E4%BA%8ECDN%E7%9A%84%E6%9C%BA%E5%88%B6%EF%BC%89">http://www.baidu.com/img/bdlogo.gif）的80*80的尺寸，则在图片的路径加上宽和高的参数（类似于CDN的机制）</a> <a target="_blank" rel="noopener" href="http://www.baidu.com/img/bdlogo.gif%EF%BC%9Fw=80&amp;h=80%EF%BC%8C">http://www.baidu.com/img/bdlogo.gif？w=80&amp;h=80，</a> 则服务器就生成80*80的尺寸并返回。</p>
+<p>采用了这样的图片处理机制，数据库中只要有一个字段保存原图就行了，其它尺寸就由客户端告诉服务端动态生成。以后无论什么尺寸的图片，数据库中都不需要记录，数据库只有原图就行了。</p>
+<p>注意，现在的文件云存储服务（例如七牛，又拍云）等都提供了这个文件的缩放功能，而且能加速文件的上传下载速度，极大提升了app的用户体验，强烈推荐使用。</p>
+<h3 id="返回的提示信息"><a href="#返回的提示信息" class="headerlink" title="返回的提示信息"></a>返回的提示信息</h3><p>最科学的情况，服务端只返回信息代码，具体的文字提示由客户端决定。</p>
+<p>如果文字信息是由服务端返回，则最起码要区分2种信息：提示用户的信息，提示客户端程序员的信息。这两者的区别：</p>
+<ol>
+<li>提示用户的信息是要在让客户知道的，提示客户端程序员的信息不需要让客户知道的。</li>
+<li>提示用户的信息文字很友好，客户不需要专业基础一看就知道是什么，提示客户端程序员的信息则很专业，例如告诉客户端少传了哪个参数？哪个参数有问题等等。</li>
+</ol>
+<h3 id="在线api测试文档"><a href="#在线api测试文档" class="headerlink" title="在线api测试文档"></a>在线api测试文档</h3><p>我们网站的api在线测试文档，是使用既是一份在线api文档，也是一个在线测试工具，极大方便沟通和测试。每次客户端程序员觉得某个api有什么问题，我们就是这个在线工具上讨论沟通的。客户端程序员最喜欢这个玩意了^-^。</p>
+<p>这个api在线测试文档，是使用了Swagger-UI搭建的。Swagger-UI简单而一目了然。它能够纯碎的基于html+javascript实现，只要稍微整合一下便能成为方便的API在线测试工具。项目的设计架构中一直提倡使用TDD（测试驱动）原则来开发，swagger-ui在这方面更是能提供很大帮助。</p>
+<p>下面是用Swagger-UI搭建的api文档中的一个api的例子，可看到，整个api的提交方式，作用，参数都非常清晰明了。</p>
+<p><img src="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%85%A5.png" alt="swagger输入"></p>
+<p>当按了“测试”，就以post方式调用这个api，返回的结果如下：</p>
+<p><img src="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%87%BA.png" alt="swagger输出"></p>
+<p>所有的返回结果，一目了然，cool！！！</p>
+<p>api返回的数据，是以json格式返回的。用json格式，最省流量，而且几乎每种计算机语言都支持json格式。用xml的话，太耗费流量了，而且冗余数据多，不适合移动端。</p>
+<p>在”app后端”的qq群，有个app创始人使用了这个api在线测试文档后赞不决口，称赞虽然前期的搭建需要花一段时间，但极大提高了app前后端工作的效率。以后有小伙伴问相关的问题，他都强烈推荐这个Swagger-UI。</p>
+<h3 id="在app启动时，调用一个初始化api获取必要的信息"><a href="#在app启动时，调用一个初始化api获取必要的信息" class="headerlink" title="在app启动时，调用一个初始化api获取必要的信息"></a>在app启动时，调用一个初始化api获取必要的信息</h3><p>通过这个初始化api，获取一下必要的信息，例如，最新的app版本。当发现本地app的版本已经低于最新的app版本，可提示用户更新。当然了，这个提示版本更新的功能很多第三方sdk都提供。</p>
+<h2 id="如何处理api的版本升级"><a href="#如何处理api的版本升级" class="headerlink" title="如何处理api的版本升级"></a>如何处理api的版本升级</h2><p>当app做了大改版后，可能会出现一个问题，发现现在的api已经不适了，就考虑到api的升级，同时为了兼容已经发布的app，原来的api必须要保留。为了避免同一个app中调用不同版本的api，一般就会全部升级api的版本，例如:原来的是“test.com/v1/statuses/destroy”，升级为“test.com/v2/statuses/destroy”。</p>
+<p>在api的版本升级时，需要注意以下2点：</p>
+<ol>
+<li>v2版本的api的controller必须要继承v1版的controller，v2版本的api只重写需要改动的api。</li>
+<li>在线api测试文档中详细标明返回内容，已作对比，方便客户端人员的调试。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1/" rel="tag"># 接口设计</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/02/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-@Autowired%E5%92%8C@Resource%E7%9A%84%E5%8C%BA%E5%88%AB/" rel="prev" title="Spring-注解-@Autowired和@Resource的区别">
+      <i class="fa fa-chevron-left"></i> Spring-注解-@Autowired和@Resource的区别
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/RESTful%20API%20%E8%AE%BE%E8%AE%A1%E6%8C%87%E5%8D%97/" rel="next" title="RESTful API 设计指南">
+      RESTful API 设计指南 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFapi%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是api？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#api%E8%AE%BE%E8%AE%A1%E7%9A%848%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">api设计的8点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E7%9A%84%E5%91%BD%E5%90%8D"><span class="nav-number">2.1.</span> <span class="nav-text">api的命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E7%9A%84%E5%AE%89%E5%85%A8%E6%80%A7"><span class="nav-number">2.2.</span> <span class="nav-text">api的安全性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E8%BF%94%E5%9B%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">2.3.</span> <span class="nav-text">api返回数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BE%E7%89%87%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">2.4.</span> <span class="nav-text">图片的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E7%9A%84%E6%8F%90%E7%A4%BA%E4%BF%A1%E6%81%AF"><span class="nav-number">2.5.</span> <span class="nav-text">返回的提示信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%BA%BFapi%E6%B5%8B%E8%AF%95%E6%96%87%E6%A1%A3"><span class="nav-number">2.6.</span> <span class="nav-text">在线api测试文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8app%E5%90%AF%E5%8A%A8%E6%97%B6%EF%BC%8C%E8%B0%83%E7%94%A8%E4%B8%80%E4%B8%AA%E5%88%9D%E5%A7%8B%E5%8C%96api%E8%8E%B7%E5%8F%96%E5%BF%85%E8%A6%81%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="nav-number">2.7.</span> <span class="nav-text">在app启动时，调用一个初始化api获取必要的信息</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86api%E7%9A%84%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7"><span class="nav-number">3.</span> <span class="nav-text">如何处理api的版本升级</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'e53dc93aef6d13066e0910cdc6622a34',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

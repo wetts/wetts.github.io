@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;guanbin-529&#x2F;p&#x2F;11784914.html Callable接口有两种创建线程的方法：一种是通过创建 Thread 类，另一种是通过使用 Runnable 创建线程。但是，Runnable 缺少的一项功能是，当线程终止时（即run() 完成时），我们无法使线程返回结果。为了支持此功能，Java 中提供了 Callable 接口。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java-多线程-Callable接口及Futrue接口详解.md">
+<meta property="og:url" content="https://wetts.github.io/2021/06/03/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-Callable%E6%8E%A5%E5%8F%A3%E5%8F%8AFutrue%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;guanbin-529&#x2F;p&#x2F;11784914.html Callable接口有两种创建线程的方法：一种是通过创建 Thread 类，另一种是通过使用 Runnable 创建线程。但是，Runnable 缺少的一项功能是，当线程终止时（即run() 完成时），我们无法使线程返回结果。为了支持此功能，Java 中提供了 Callable 接口。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-06-03T07:34:03.000Z">
+<meta property="article:modified_time" content="2021-07-11T07:45:36.385Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2021/06/03/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-Callable%E6%8E%A5%E5%8F%A3%E5%8F%8AFutrue%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java-多线程-Callable接口及Futrue接口详解.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/06/03/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-Callable%E6%8E%A5%E5%8F%A3%E5%8F%8AFutrue%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java-多线程-Callable接口及Futrue接口详解.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-06-03 15:34:03" itemprop="dateCreated datePublished" datetime="2021-06-03T15:34:03+08:00">2021-06-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-11 15:45:36" itemprop="dateModified" datetime="2021-07-11T15:45:36+08:00">2021-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/guanbin-529/p/11784914.html">https://www.cnblogs.com/guanbin-529/p/11784914.html</a></p>
+<h2 id="Callable接口"><a href="#Callable接口" class="headerlink" title="Callable接口"></a>Callable接口</h2><p>有两种创建线程的方法：一种是通过创建 Thread 类，另一种是通过使用 Runnable 创建线程。但是，Runnable 缺少的一项功能是，当线程终止时（即run() 完成时），我们无法使线程返回结果。为了支持此功能，Java 中提供了 Callable 接口。</p>
+<ul>
+<li>为了实现 Runnable，需要实现不返回任何内容的 run() 方法，而对于 Callable，需要实现在完成时返回结果的 call() 方法。请注意，不能使用 Callable 创建线程，只能使用 Runnable 创建线程。</li>
+<li>另一个区别是 call() 方法可以引发异常，而 run() 则不能。</li>
+<li>为实现 Callable 而必须重写 call 方法。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">// Java program to illustrate Callable </span><br><span class="line">// to return a random number </span><br><span class="line">import java.util.Random; </span><br><span class="line">import java.util.concurrent.Callable; </span><br><span class="line">import java.util.concurrent.FutureTask; </span><br><span class="line">  </span><br><span class="line">class CallableExample implements Callable </span><br><span class="line">&#123; </span><br><span class="line">  </span><br><span class="line">    public Object call() throws Exception </span><br><span class="line">    &#123; </span><br><span class="line">        // Create random number generator </span><br><span class="line">        Random generator = new Random(); </span><br><span class="line">  </span><br><span class="line">        Integer randomNumber = generator.nextInt(5); </span><br><span class="line">  </span><br><span class="line">        // To simulate a heavy computation, </span><br><span class="line">        // we delay the thread for some random time </span><br><span class="line">        Thread.sleep(randomNumber * 1000); </span><br><span class="line">  </span><br><span class="line">        return randomNumber; </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<h2 id="Futrue接口"><a href="#Futrue接口" class="headerlink" title="Futrue接口"></a>Futrue接口</h2><p>当 call() 方法完成时，结果必须存储在主线程已知的对象中，以便主线程可以知道该线程返回的结果。为此，可以使用 Future 对象。将 Future 视为保存结果的对象–它可能暂时不保存结果，但将来会保存（一旦 Callable 返回）。因此，Future 基本上是主线程可以跟踪进度以及其他线程的结果的一种方式。要实现此接口，必须重写 5 种方法，但是由于下面的示例使用了库中的具体实现，因此这里仅列出了重要的方法。</p>
+<ul>
+<li>public boolean cancel(boolean mayInterrupt)：用于停止任务。如果尚未启动，它将停止任务。如果已启动，则仅在 mayInterrupt 为 true 时才会中断任务。</li>
+<li>public Object get() 抛出 InterruptedException，ExecutionException：用于获取任务的结果。如果任务完成，它将立即返回结果，否则将等待任务完成，然后返回结果。</li>
+<li>public boolean isDone()：如果任务完成，则返回 true，否则返回 false</li>
+</ul>
+<p>可以看到 Callable 和 Future 做两件事：Callable 与 Runnable类似，因为它封装了要在另一个线程上运行的任务，而 Future 用于存储从另一个线程获得的结果。实际上，future 也可以与 Runnable 一起使用。</p>
+<p>要创建线程，需要 Runnable。为了获得结果，需要 future。</p>
+<p>Java 库具有具体的 FutureTask 类型，该类型实现 Runnable 和 Future，并方便地将两种功能组合在一起。<br>可以通过为其构造函数提供 Callable 来创建 FutureTask。然后，将 FutureTask 对象提供给 Thread 的构造函数以创建 Thread 对象。因此，间接地使用 Callable 创建线程。</p>
+<h3 id="使用Callable和Future的完整示例"><a href="#使用Callable和Future的完整示例" class="headerlink" title="使用Callable和Future的完整示例"></a>使用Callable和Future的完整示例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line">package com.example.thread.callable;</span><br><span class="line"></span><br><span class="line">import java.util.ArrayList;</span><br><span class="line">import java.util.Date;</span><br><span class="line">import java.util.List;</span><br><span class="line">import java.util.concurrent.*;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @author: GuanBin</span><br><span class="line"> * @date: Created in 下午11:19 2019/10/31</span><br><span class="line"> */</span><br><span class="line">public class TestCallable implements Callable&lt;Object&gt; &#123;</span><br><span class="line"></span><br><span class="line">    private int taskNum;</span><br><span class="line"></span><br><span class="line">    public TestCallable(int taskNum) &#123;</span><br><span class="line">        this.taskNum = taskNum;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //1，2主要区别是创建线程的方式</span><br><span class="line">    public static void main(String[] args) throws ExecutionException, InterruptedException &#123;</span><br><span class="line">        test1();</span><br><span class="line">        test2();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 使用Executors.newFixedThreadPool创建线程池</span><br><span class="line">     * @throws InterruptedException</span><br><span class="line">     * @throws ExecutionException</span><br><span class="line">     */</span><br><span class="line">    private static void test1() throws InterruptedException, ExecutionException &#123;</span><br><span class="line">        System.out.println(&quot;----程序开始运行----&quot;);</span><br><span class="line">        Date date1 = new Date();</span><br><span class="line">        int taskSize=5;</span><br><span class="line">        ExecutorService pool = Executors.newFixedThreadPool(taskSize);</span><br><span class="line">        List&lt;Future&gt; list = new ArrayList&lt;Future&gt;();</span><br><span class="line">        for (int i = 0; i &lt; taskSize; i++) &#123;</span><br><span class="line">            Callable c = new TestCallable(i);</span><br><span class="line">            // 执行任务并获取Future对象</span><br><span class="line">            Future f = pool.submit(c);</span><br><span class="line">            list.add(f);</span><br><span class="line">        &#125;</span><br><span class="line">        // 关闭线程池</span><br><span class="line">        pool.shutdown();</span><br><span class="line">        // 获取所有并发任务的运行结果</span><br><span class="line">        for (Future f : list) &#123;</span><br><span class="line">            // 从Future对象上获取任务的返回值，并输出到控制台</span><br><span class="line">            System.out.println(&quot;&gt;&gt;&gt;&quot; + f.get().toString()); //OPTION + return 抛异常</span><br><span class="line">        &#125;</span><br><span class="line">        Date date2 = new Date();</span><br><span class="line">        System.out.println(&quot;----程序结束运行----，程序运行时间【&quot; + (date2.getTime() - date1.getTime()) + &quot;毫秒】&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 线程直接使用new Thread来创建</span><br><span class="line">     * @throws ExecutionException</span><br><span class="line">     * @throws InterruptedException</span><br><span class="line">     */</span><br><span class="line">    private static void test2() throws ExecutionException, InterruptedException &#123;</span><br><span class="line">        System.out.println(&quot;----程序开始运行----&quot;);</span><br><span class="line">        Date date1 = new Date();</span><br><span class="line">        int taskSize=5;</span><br><span class="line">        FutureTask[] randomNumberTasks = new FutureTask[5];</span><br><span class="line">        List&lt;Future&gt; list = new ArrayList&lt;Future&gt;();</span><br><span class="line">        for (int i = 0; i &lt; randomNumberTasks.length; i++) &#123;</span><br><span class="line">            Callable c = new TestCallable(i);</span><br><span class="line">            // 执行任务并获取Future对象</span><br><span class="line">            randomNumberTasks[i]=   new FutureTask(c);</span><br><span class="line"></span><br><span class="line">            Thread t = new Thread(randomNumberTasks[i]);</span><br><span class="line">            t.start();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 获取所有并发任务的运行结果</span><br><span class="line">        for (Future f : randomNumberTasks) &#123;</span><br><span class="line">            // 从Future对象上获取任务的返回值，并输</span><br><span class="line">            System.out.println(&quot;&gt;&gt;&gt;&quot; + f.get().toString()); //OPTION + return 抛异常</span><br><span class="line">        &#125;</span><br><span class="line">        Date date2 = new Date();</span><br><span class="line">        System.out.println(&quot;----程序结束运行----，程序运行时间【&quot; + (date2.getTime() - date1.getTime()) + &quot;毫秒】&quot;);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * call方法的实现，主要用于执行线程的具体实现，并返回结果</span><br><span class="line">     * @return</span><br><span class="line">     * @throws Exception</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public Object call() throws Exception &#123;</span><br><span class="line">        System.out.println(&quot;&gt;&gt;&gt;&quot; + taskNum + &quot;任务启动&quot;);</span><br><span class="line">        Date dateTmp1 = new Date();</span><br><span class="line">        Thread.sleep(1000);</span><br><span class="line">        Date dateTmp2 = new Date();</span><br><span class="line">        long time = dateTmp2.getTime() - dateTmp1.getTime();</span><br><span class="line">        System.out.println(&quot;&gt;&gt;&gt;&quot; + taskNum + &quot;任务终止&quot;);</span><br><span class="line">        return taskNum + &quot;任务返回运行结果,当前任务时间【&quot; + time + &quot;毫秒】&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">----程序开始运行----</span><br><span class="line">&gt;&gt;&gt;0任务启动</span><br><span class="line">&gt;&gt;&gt;1任务启动</span><br><span class="line">&gt;&gt;&gt;2任务启动</span><br><span class="line">&gt;&gt;&gt;3任务启动</span><br><span class="line">&gt;&gt;&gt;4任务启动</span><br><span class="line">&gt;&gt;&gt;0任务终止</span><br><span class="line">&gt;&gt;&gt;0任务返回运行结果,当前任务时间【1002毫秒】</span><br><span class="line">&gt;&gt;&gt;1任务终止</span><br><span class="line">&gt;&gt;&gt;2任务终止</span><br><span class="line">&gt;&gt;&gt;4任务终止</span><br><span class="line">&gt;&gt;&gt;1任务返回运行结果,当前任务时间【1005毫秒】</span><br><span class="line">&gt;&gt;&gt;2任务返回运行结果,当前任务时间【1005毫秒】</span><br><span class="line">&gt;&gt;&gt;3任务终止</span><br><span class="line">&gt;&gt;&gt;3任务返回运行结果,当前任务时间【1005毫秒】</span><br><span class="line">&gt;&gt;&gt;4任务返回运行结果,当前任务时间【1005毫秒】</span><br><span class="line">----程序结束运行----，程序运行时间【1007毫秒】</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用-Callable-和-FutureTask-的完整示例"><a href="#使用-Callable-和-FutureTask-的完整示例" class="headerlink" title="使用 Callable 和 FutureTask 的完整示例"></a>使用 Callable 和 FutureTask 的完整示例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">// Java program to illustrate Callable and FutureTask </span><br><span class="line">// for random number generation </span><br><span class="line">import java.util.Random; </span><br><span class="line">import java.util.concurrent.Callable; </span><br><span class="line">import java.util.concurrent.FutureTask; </span><br><span class="line">  </span><br><span class="line">class CallableExample implements Callable </span><br><span class="line">&#123; </span><br><span class="line">  </span><br><span class="line">  public Object call() throws Exception </span><br><span class="line">  &#123; </span><br><span class="line">    Random generator = new Random(); </span><br><span class="line">    Integer randomNumber = generator.nextInt(5); </span><br><span class="line">  </span><br><span class="line">    Thread.sleep(randomNumber * 1000); </span><br><span class="line">  </span><br><span class="line">    return randomNumber; </span><br><span class="line">  &#125; </span><br><span class="line">  </span><br><span class="line">&#125; </span><br><span class="line">  </span><br><span class="line">public class CallableFutureTest </span><br><span class="line">&#123; </span><br><span class="line">  public static void main(String[] args) throws Exception </span><br><span class="line">  &#123; </span><br><span class="line">  </span><br><span class="line">    // FutureTask is a concrete class that </span><br><span class="line">    // implements both Runnable and Future </span><br><span class="line">    FutureTask[] randomNumberTasks = new FutureTask[5]; </span><br><span class="line">  </span><br><span class="line">    for (int i = 0; i &lt; 5; i++) </span><br><span class="line">    &#123; </span><br><span class="line">      Callable callable = new CallableExample(); </span><br><span class="line">  </span><br><span class="line">      // Create the FutureTask with Callable </span><br><span class="line">      randomNumberTasks[i] = new FutureTask(callable); </span><br><span class="line">  </span><br><span class="line">      // As it implements Runnable, create Thread </span><br><span class="line">      // with FutureTask </span><br><span class="line">      Thread t = new Thread(randomNumberTasks[i]); </span><br><span class="line">      t.start(); </span><br><span class="line">    &#125; </span><br><span class="line">  </span><br><span class="line">    for (int i = 0; i &lt; 5; i++) </span><br><span class="line">    &#123; </span><br><span class="line">      // As it implements Future, we can call get() </span><br><span class="line">      System.out.println(randomNumberTasks[i].get()); </span><br><span class="line">  </span><br><span class="line">      // This method blocks till the result is obtained </span><br><span class="line">      // The get method can throw checked exceptions </span><br><span class="line">      // like when it is interrupted. This is the reason </span><br><span class="line">      // for adding the throws clause to main </span><br><span class="line">    &#125; </span><br><span class="line">  &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>启动线程后，与线程的所有交互都使用 FutureTask，因为它实现了 Future 接口。因此，不需要存储 Thread 对象。使用 FutureTask 对象，还可以取消任务，检查任务是否完成或尝试获取结果。</p>
+<h3 id="使用Runnable来获取返回结果的实现"><a href="#使用Runnable来获取返回结果的实现" class="headerlink" title="使用Runnable来获取返回结果的实现"></a>使用Runnable来获取返回结果的实现</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">// Java program to illustrate Runnable </span><br><span class="line">// for random number generation </span><br><span class="line">import java.util.Random; </span><br><span class="line">import java.util.concurrent.Callable; </span><br><span class="line">import java.util.concurrent.FutureTask; </span><br><span class="line">  </span><br><span class="line">class RunnableExample implements Runnable </span><br><span class="line">&#123; </span><br><span class="line">    // Shared object to store result </span><br><span class="line">    private Object result = null; </span><br><span class="line">  </span><br><span class="line">    public void run() </span><br><span class="line">    &#123; </span><br><span class="line">        Random generator = new Random(); </span><br><span class="line">        Integer randomNumber = generator.nextInt(5); </span><br><span class="line">  </span><br><span class="line">        // As run cannot throw any Exception </span><br><span class="line">        try</span><br><span class="line">        &#123; </span><br><span class="line">            Thread.sleep(randomNumber * 1000); </span><br><span class="line">        &#125; </span><br><span class="line">        catch (InterruptedException e) </span><br><span class="line">        &#123; </span><br><span class="line">            e.printStackTrace(); </span><br><span class="line">        &#125; </span><br><span class="line">  </span><br><span class="line">        // Store the return value in result when done </span><br><span class="line">        result = randomNumber; </span><br><span class="line">  </span><br><span class="line">        // Wake up threads blocked on the get() method </span><br><span class="line">        synchronized(this) </span><br><span class="line">        &#123; </span><br><span class="line">            notifyAll(); </span><br><span class="line">        &#125; </span><br><span class="line">    &#125; </span><br><span class="line">  </span><br><span class="line">    public synchronized Object get() </span><br><span class="line">          throws InterruptedException </span><br><span class="line">    &#123; </span><br><span class="line">        while (result == null) </span><br><span class="line">            wait(); </span><br><span class="line">  </span><br><span class="line">        return result; </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br><span class="line">  </span><br><span class="line">// Code is almost same as the previous example with a </span><br><span class="line">// few changes made to use Runnable instead of Callable </span><br><span class="line">public class RunnableTest </span><br><span class="line">&#123; </span><br><span class="line">    public static void main(String[] args) throws Exception </span><br><span class="line">    &#123; </span><br><span class="line">        RunnableExample[] randomNumberTasks = new RunnableExample[5]; </span><br><span class="line">  </span><br><span class="line">        for (int i = 0; i &lt; 5; i++) </span><br><span class="line">        &#123; </span><br><span class="line">            randomNumberTasks[i] = new RunnableExample(); </span><br><span class="line">            Thread t = new Thread(randomNumberTasks[i]); </span><br><span class="line">            t.start(); </span><br><span class="line">        &#125; </span><br><span class="line">  </span><br><span class="line">        for (int i = 0; i &lt; 5; i++) </span><br><span class="line">            System.out.println(randomNumberTasks[i].get()); </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/01/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-%E6%8E%A7%E5%88%B6%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/" rel="prev" title="Java-并发-控制多线程执行顺序.md">
+      <i class="fa fa-chevron-left"></i> Java-并发-控制多线程执行顺序.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1-%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96/" rel="next" title="Spring-框架设计-循环依赖.md">
+      Spring-框架设计-循环依赖.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Callable%E6%8E%A5%E5%8F%A3"><span class="nav-number">1.</span> <span class="nav-text">Callable接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Futrue%E6%8E%A5%E5%8F%A3"><span class="nav-number">2.</span> <span class="nav-text">Futrue接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Callable%E5%92%8CFuture%E7%9A%84%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B"><span class="nav-number">2.1.</span> <span class="nav-text">使用Callable和Future的完整示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-Callable-%E5%92%8C-FutureTask-%E7%9A%84%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B"><span class="nav-number">2.2.</span> <span class="nav-text">使用 Callable 和 FutureTask 的完整示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Runnable%E6%9D%A5%E8%8E%B7%E5%8F%96%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">使用Runnable来获取返回结果的实现</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'f7631ce568b3667204af784f1ec2d4c4',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

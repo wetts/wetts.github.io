@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Oracle数据块的物理存储结构由多种物理文件组成，主要有数据文件、控制文件、重做日志文件、归档日志文件、参数文件、口令文件和警告日志文件等。 数据文件：用于保存用户应用程序数据和Oracle系统内部数据的文件，这些文件在操作系统中就是普通的操作系统文件。只能由Oracle系统负责为数据对象选择具体的数据文件，并在其中分配物理存储空间，用户是无法指定使用哪一个数据文件来进程存储的。 在读取数据时，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Oracle从入门到精通-Oracle的物理存储结构">
+<meta property="og:url" content="https://wetts.github.io/2014/09/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/Oracle%E7%9A%84%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="Oracle数据块的物理存储结构由多种物理文件组成，主要有数据文件、控制文件、重做日志文件、归档日志文件、参数文件、口令文件和警告日志文件等。 数据文件：用于保存用户应用程序数据和Oracle系统内部数据的文件，这些文件在操作系统中就是普通的操作系统文件。只能由Oracle系统负责为数据对象选择具体的数据文件，并在其中分配物理存储空间，用户是无法指定使用哪一个数据文件来进程存储的。 在读取数据时，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2014-09-17T08:23:11.000Z">
+<meta property="article:modified_time" content="2017-03-11T03:12:50.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Oracle">
+<meta property="article:tag" content="Oracle从入门到精通">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2014/09/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/Oracle%E7%9A%84%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Oracle从入门到精通-Oracle的物理存储结构 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/09/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/Oracle%E7%9A%84%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Oracle从入门到精通-Oracle的物理存储结构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-09-17 16:23:11" itemprop="dateCreated datePublished" datetime="2014-09-17T16:23:11+08:00">2014-09-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Oracle数据块的物理存储结构由多种物理文件组成，主要有数据文件、控制文件、重做日志文件、归档日志文件、参数文件、口令文件和警告日志文件等。</p>
+<h3 id="数据文件："><a href="#数据文件：" class="headerlink" title="数据文件："></a>数据文件：</h3><p>用于保存用户应用程序数据和Oracle系统内部数据的文件，这些文件在操作系统中就是普通的操作系统文件。只能由Oracle系统负责为数据对象选择具体的数据文件，并在其中分配物理存储空间，用户是无法指定使用哪一个数据文件来进程存储的。</p>
+<p>在读取数据时，Oracle系统首先从数据文件中读取数据，并将数据存储在内存的高速数据缓冲区中，如果用户要读取数据库中的某些数据，而请求的数据又不在内存的高速数据缓冲区中，则需要从相应的数据文件中能够读取数据斌光存储在缓冲区中。当修改和插入数据时，Oracle不会立即将数据写入数据文件，而是把这些数据保存在数据缓冲区中，然后由Oracle的后台进程DBWR决定如何将其写入相应的数据文件。这样的存取方式减少了磁盘的I/O操作，提高了系统的响应性能。</p>
+<ul>
+<li>系统数据文件：用于存放“特殊”的用户数据和Oracle系统本身的数据，如用户建立的表名、列名及字段类型等，这些属于用户数据范畴，这些数据存放在系统表空间所包含的数据文件中；而Oracle系统内部的数据字典、系统表（如dba_data_files、dba_temp_files等）中所存储的数据属于Oracle系统的内部数据，这些数据也存放在系统表空间所包含的数据文件中。</li>
+<li>撤销数据文件：隶属于撤销表空间。如果修改Oracle数据库中的数据，那么就必须使用撤销段，撤销段用来临时存放修改前的旧数据，而撤销段通常存放在一个单独的撤销表空间中，这个撤销表空间所包含的数据文件就是撤销数据文件。</li>
+<li>用户数据文件：用于存放用户应用系统的数据，这些数据包括与应用系统有关的所有相关信息。<br>dba_data_files或者v$datafile可以查数据文件。</li>
+<li>临时数据文件：从Oracle9i以后，Oracle将临时表空间对应的临时数据文件与一般数据文件分开，可以从dba_temp_files或v$tempfile数据字段中查询。</li>
+</ul>
+<h3 id="控制文件："><a href="#控制文件：" class="headerlink" title="控制文件："></a>控制文件：</h3><p>是一个二进制文件，它记录了数据库的物理结构，其中主要包含数据库名、数据文件与日志文件的名字和位置、数据库建立日期等信息。控制文件一般在Oracle系统安装时或创建数据库时自动创建，控制文件所存放的路径有服务器参数文件spfileorcl.ora和control_files参数值来指定。</p>
+<p>由于控制文件存放有数据文件、日志文件等的相关信息，因此，Oracle实例在启动时必需访问控制文件。</p>
+<p>当Oracle实例在正常启动时，系统首先要访问的是初始化参数文件spfile，然后Oracle为系统全局区（SGA）分配内存。这是，Oracle实例处于安装状态，并且控制文件处于打开状态；接下来Oracle会自动读出“控制文件”中的所有数据文件和日志文件的信息，并打开当前数据库中所有的数据文件和所有的日志文件以供用户访问。<br>每个数据库至少拥有一个控制文件，一个数据库可以同时拥有多个控制文件，但是一个控制文件只能属于一个数据库。控制文件内部除了存放数据库名以及其创建日期、控制文件、日志文件等的相关信息之外，在系统运行过程中，还存放有系统更改号、检查点信息及归档的当前状态灯信息。<br>处于安全考虑，在安装Oracle数据库或创建数据库时，Oracle数据库系统会自动创建2个或3个控制文件，每个控制文件记录相同的信息。<br><code>v$controlfile</code>可以查询控制文件信息。</p>
+<h3 id="日志文件："><a href="#日志文件：" class="headerlink" title="日志文件："></a>日志文件：</h3><p>主要功能是记录对数据所做的修改，对数据库所做的修改记录都记录在日志文件中。</p>
+<h3 id="重做日志文件："><a href="#重做日志文件：" class="headerlink" title="重做日志文件："></a>重做日志文件：</h3><p>用来记录数据库所有发生过的更改信息（修改、添加、删除等信息）及由Oracle内部行为（创建数据表、索引等）而引起的数据库变化信息。在数据库恢复时，可以从该日志文件中读取原始记录。在数据库运行期间，当用户执行COMMIT命令时，数据库首先将每笔操作的原始记录写入到日志文件中，写入日志文件成功后，才把新的记录传递给应用程序。</p>
+<p>通过对表或则整个表空间设定NOLOGGING属性时，使基于表或表空间中所有的DML操作（如创建表、删除试图、修改索引等操作）都不会产生日志信息。</p>
+<p>为了保障数据库系统的安全，每个Oracle实例都启用一个日志线程来记录数据库的变化。日志线程有若干“日志组”构成，而每个日志组又由一个或者多个日志文件构成。</p>
+<p>Oracle系统在运行过程中产生的日志信息，首先被临时存放在系统全局区的“重做日志缓冲区”中，当发出COMMIT命令（或日志缓冲区信息满1/3）时，LGWR进程（日志写入进程）将日志信息从“重做日志缓冲区”中读取出来，并将“读取的日志信息”写入到日志文件组中序列号较小的文件里，一个日志组写满后接着写另外一个日志组。当LGWR进程将所有能用的日志文件都使用过一遍后，它将再辞转向第一个日志组重新覆写。</p>
+<p><code>v$logfile</code>查询日志文件。</p>
+<h3 id="归档日志文件："><a href="#归档日志文件：" class="headerlink" title="归档日志文件："></a>归档日志文件：</h3><p>在所有的日志文件被写入一遍之后，LGWR进程将再次转向第一个日志组进行重新覆写，这样务必会导致一部分较早的日志信息被覆盖掉，但Oracle通过归档日志文件解决了这个问题。</p>
+<p>Oracle数据库可以运行在两种模式下，即归档模式和非归档模式。非归档模式是指在系统运行期间，所产生的日志信息不断地记录到日志文件组中，当所有重做日志被写满后，又重新从第一个日志组开始覆写。归档模式是在各个日志文件都被写满而即将被覆盖之前，先由归档进程（ARCH）将即将被覆盖的日志文件中的日志信息读出，并将“读出的日志信息”写入到归档日志文件中，而这个过程又被称为归档操作。</p>
+<p>在归档操作进程的过程中。日志写入进程（LGWR）需要等待归档进程（ARCH）的结束才能开始覆写日志文件，这样就延迟了系统的响应时间，而且归档日志本身又会占用大量的磁盘空间，这些都会影响系统的整体性能。所以在默认情况下，Oracle系统不采用归档模式运行。</p>
+<p>如果将Oracle数据库系统设置成在归档模式下运行，则可以通过服务器参数文件spfile的log_archive_dest参数来规定归档日志文件的所在路径。</p>
+<h3 id="服务器参数文件："><a href="#服务器参数文件：" class="headerlink" title="服务器参数文件："></a>服务器参数文件：</h3><p>SPFILE（Server parameter File）是二进制文件，用来记录Oracle数据库的基本参数信息（如数据库名、控制文件所在路径、日志缓冲大小等）。数据库实例在启动之前，Oracle系统首先会读取SPFILE参数文件中设置的这些参数，并根据这些初始化参数来配置和启动实例。比如，设置标准数据块的大小（即参数db_block_size的值）、设置日志缓冲区的大小（即参数log_buffer的值）等，所以SPFILE参数文件非常重要。服务器参数文件在安装Oracle数据库系统时由系统自动创建，文件的名称为SPFILEsid.ora，sid问所创建的数据库实例名。</p>
+<h3 id="密码文件："><a href="#密码文件：" class="headerlink" title="密码文件："></a>密码文件：</h3><p>是Oracle系统用于验证sysdba权限的二进制文件。</p>
+<h3 id="警告文件："><a href="#警告文件：" class="headerlink" title="警告文件："></a>警告文件：</h3><p>是一个存储在Oracle系统目录下的文本文件（名称通常为alert_orcl.log），它用来记录Oracle系统的运行信息和错误信息。</p>
+<h3 id="跟踪文件："><a href="#跟踪文件：" class="headerlink" title="跟踪文件："></a>跟踪文件：</h3><p>跟踪文件包括后台进程跟踪文件和用户跟踪文件。后台进程跟踪文件用于记录后台进程的警告或错误信息，每个后台进程都有对应的后台进程跟踪文件。用户跟踪文件主要用于跟踪SQL语句。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Oracle/" rel="tag"># Oracle</a>
+              <a href="/tags/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/" rel="tag"># Oracle从入门到精通</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/09/15/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPSession/" rel="prev" title="JavaEE-深入理解HTTPSession">
+      <i class="fa fa-chevron-left"></i> JavaEE-深入理解HTTPSession
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/09/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/%E8%A1%A8%E7%A9%BA%E9%97%B4%E3%80%81%E6%AE%B5%E3%80%81%E5%8C%BA%E3%80%81%E5%9D%97/" rel="next" title="Oracle从入门到精通-表空间、段、区、块">
+      Oracle从入门到精通-表空间、段、区、块 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">数据文件：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A7%E5%88%B6%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">控制文件：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">日志文件：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E5%81%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">重做日志文件：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%92%E6%A1%A3%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">归档日志文件：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%8F%82%E6%95%B0%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">服务器参数文件：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">7.</span> <span class="nav-text">密码文件：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AD%A6%E5%91%8A%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">8.</span> <span class="nav-text">警告文件：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%9F%E8%B8%AA%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="nav-number">9.</span> <span class="nav-text">跟踪文件：</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '735f7c502900d69e56a36634ad7cee6d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

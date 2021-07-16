@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Oracle服务器主要由实例、数据库、程序全局区（PGA）和前台进程组成。 实例实例可以划分为：系统全局区（SGA）和后台进程（PMON、SMON等）两部分，其中，SGA使用操作系统的内存资源，而后台进程需要使用CPU和内存资源。 系统全局区（SGA）：是所有用户进程共享的一块内存区域，也就是说，SGA中的数据资源可以被多个用户进程共同使用。SGA主要由高速数据缓冲区、共享池、重做日志缓存区、Ja">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Oracle从入门到精通-Oracle服务器结构">
+<meta property="og:url" content="https://wetts.github.io/2014/09/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/Oracle%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="Oracle服务器主要由实例、数据库、程序全局区（PGA）和前台进程组成。 实例实例可以划分为：系统全局区（SGA）和后台进程（PMON、SMON等）两部分，其中，SGA使用操作系统的内存资源，而后台进程需要使用CPU和内存资源。 系统全局区（SGA）：是所有用户进程共享的一块内存区域，也就是说，SGA中的数据资源可以被多个用户进程共同使用。SGA主要由高速数据缓冲区、共享池、重做日志缓存区、Ja">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2014-09-18T01:01:22.000Z">
+<meta property="article:modified_time" content="2017-03-11T03:12:50.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Oracle">
+<meta property="article:tag" content="Oracle从入门到精通">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2014/09/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/Oracle%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BB%93%E6%9E%84/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Oracle从入门到精通-Oracle服务器结构 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/09/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/Oracle%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BB%93%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Oracle从入门到精通-Oracle服务器结构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-09-18 09:01:22" itemprop="dateCreated datePublished" datetime="2014-09-18T09:01:22+08:00">2014-09-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Oracle服务器主要由实例、数据库、程序全局区（PGA）和前台进程组成。</p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>实例可以划分为：系统全局区（SGA）和后台进程（PMON、SMON等）两部分，其中，SGA使用操作系统的内存资源，而后台进程需要使用CPU和内存资源。</p>
+<h3 id="系统全局区（SGA）："><a href="#系统全局区（SGA）：" class="headerlink" title="系统全局区（SGA）："></a>系统全局区（SGA）：</h3><p>是所有用户进程共享的一块内存区域，也就是说，SGA中的数据资源可以被多个用户进程共同使用。SGA主要由高速数据缓冲区、共享池、重做日志缓存区、Java池和大型池等内存结构组成。SGA随着数据库实例的启动而加载到内存中，当数据库实例关闭时，SGA区域也就消失了。</p>
+<ul>
+<li><p>高速数据缓冲区（Database buffer cache）：存放着Oracle系统最近访问过的数据块（数据块在高速缓冲区中也可称为缓存块）。</p>
+<p>若无法在高速数据缓冲区中找到所需要的数据，则Oracle首先从数据文件中读取指定的数据块到缓冲区，然后再从缓冲区中奖请求的数据返回给用户。由于高速数据缓冲区被所有用户共享，只要数据文件中的某些数据块被当前用户或其他用户请求过，那么这些数据块就会被装载到高速数据缓冲区中。经常或最近被访问的数据块会被放置到高速数据缓冲区前端，不常被访问的数据块会被放置到高速数据缓冲区的后端，当高速数据缓冲区填满时，会自动挤掉一些不常被访问的数据块。</p>
+<ul>
+<li>高速数据缓冲区分为以下三个部分：<pre><code>- 脏数据区：脏数据区中存放着已被修改过的数据，这些数据等待被写入数据文件中。
+- 空闲区：空闲区中的数据块不包含任何数据，这些数据块可以被写入数据，Oracle可以从数据文件中读取数据块，并将其放到该区中。
+- 保留区：保留区包含那些正在被用户访问的数据块和明确保留以作为将来使用的数据块（即缓存块），这些数据块将被保留在缓冲区中。
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>重做日志缓冲区（Red log buffer cache）：存放对数据库进行修改操作时所产生的日志信息，这些日志信息在写入到重做日志文件之前，首先存放到重做日志缓冲区中，然后，在检查点发生或重做日志缓冲区中的信息量达到一定峰值时，最后由日志写入进程（LGWR）将此缓冲区的内容写入到重做日志文件。</p>
+<p>重做日志缓冲区的大小由LOG_BUFFER参数指定，该参数也可以在树立启动后动态修改。相对于高速数据缓冲区而言，重做日志缓冲区的大小对数据库性能的影响较小，通常较大的重做日志缓冲区能减少重做日志文件的对I/O的读取次数，对数据库的整体性能有一定的提高。</p>
+</li>
+<li><p>共享池（Shared Pool）：共享池是SGA保留的内存区域，用于缓存SQL语句、PL/SQL语句、数据字典、资源锁、字符集以及其他控制结构等。共享池包含库高数缓冲区（Library cache）和字典高速缓冲区（Dictionary cache）。</p>
+<p>库高速缓冲区是共享池的一部分，主要包括共享SQL区和私有SQL区两个组成部分。每条被缓存的SQL或PL/SQL语句都被分成两个部分，分别被存放在共享SQL区和私有SQL区中。共享SQL区存放SQL或PL/SQL语句的语法分析结果和执行计划，如果以后要再次执行类似的语句，则可以利用共享SQL区已缓存的语法分析结果和执行计划。私有SQL区存放SQL语句中的绑定变量、环境和会话等信息，这些信息属于执行该语句的用户的私有信息，其他用户则无法共享这些信息。</p>
+<pre><code>  字典高速缓冲区用于存放Oracle系统内部管理所需要的数据字典信息，例如用户名、数据对象和权限等。
+</code></pre>
+</li>
+<li><p>大型池（Large pool）：大型池在SGA区中不是必需的内存结构，只在某些特殊情况下，实例需要使用大型池来减轻共享池的访问压力，常用的情况有以下几种：</p>
+<ul>
+<li>当使用恢复管理器进行备份和恢复操作时，大型池将作为I/O缓冲区使用。</li>
+<li>使用I/O Slave仿真异步I/O功能时，大型池将被当作I/O缓冲区使用。</li>
+<li>执行具有大量排序操作的SQL语句。</li>
+<li>当使用并行查询时，大型池作为并行查询进程彼此交换信息的地方。</li>
+</ul>
+</li>
+<li><p>Java池：用来提供内存空间给Java虚拟机使用，目的是支持在数据库中运行Java程序包，其大小由JAVA_POOL_SIZE参数决定。</p>
+</li>
+<li><p>流池：Oracle流池用于在数据库与数据库之间进行信息共享。如果没有用到Oracle流，就不需要设置该池。流池的大小由参数STREAMS_POOL_SIZE决定。</p>
+</li>
+</ul>
+<h2 id="程序全局区（PGA）："><a href="#程序全局区（PGA）：" class="headerlink" title="程序全局区（PGA）："></a>程序全局区（PGA）：</h2><p>也称作用户进程全局区，它的内存区在进程私有区而不是共享区中。虽然PGA是一个全局区，可以把代码、全局变量和数据结构都可以存放在其中，但区域内的资源并不像SGA一样被所有的用户进程所共享，而是每个Oracle服务器进程都只拥有属于自己的那部分PGA资源。</p>
+<p>各个服务进程的PGA区的总和即为实例的PGA区的大小。通常PGA区由私有SQL区和会话区组成：</p>
+<ul>
+<li>私有SQL区：用于存储变量以及SQL语句运行时的内存结构信息，当每个用户连接到实例时，都会在实例中创建一个会话。这些会话可能会在SGA区中创建一个共享SQL，但在PGA区中可能会创建多个私有SQL区。把一个私有SQL区与对应的共享SQL区合并在一起，就可以获得一条SQL语句的完整缓存数据。私有SQL区可以再分为静态区和动态区两个部分。静态区的信息在会话过程中保持不变，只有当会话结束时，静态区才会被释放掉；而动态区的信息在整个会话过程中是不断变化的，一旦SQL语句执行完毕，即使会话还没有结束，动态区也被释放掉。</li>
+<li>会话区：用于存放用户的会话信息（如登陆用户名）。如果数据库处于共享服务器连接模式下，则会话区将位于SGA区域，而不是PGA中，这点需要用户特别注意。</li>
+</ul>
+<h2 id="前台进程："><a href="#前台进程：" class="headerlink" title="前台进程："></a>前台进程：</h2><p>前台进程包括用户进程和服务进程，它不属于实例的一部分，但是用户在不知不觉中经常会用到它，使用前台进程能够实现用户和实例沟通。</p>
+<p>用户进程：指那些能够产生或执行SQL语句的应用程序。在用户进程中有两个非常重要的概念：连接和会话。</p>
+<p>服务器进程：用于处理用户会话过程中想数据库实例发出SQL语句，它可以分为专用服务器模式和共享服务器模式。在专用服务器模式下，每个用户进程都有一个专用的服务器进程，这个服务器进程代表用户进程执行SQL语句，必要时还可以回传执行结果给用户进程。在共享服务器模式下，每个用户进程不直接与服务器连接，而是连接到分派程序，每个分派程序可以同时连接多个用户进程。</p>
+<h2 id="后台进程："><a href="#后台进程：" class="headerlink" title="后台进程："></a>后台进程：</h2><p>是一组运行于Oracle服务器端的后台程序，是Oracle实例的重要组成部分。其中SMON、PMON、DBWR、LGWR和CKPT这5个后台进程必需正常启动，否则导致数据库实例崩溃。</p>
+<ul>
+<li><p>数据写入进程（DBWR）：主要任务是负责将内存中的脏数据块回写到数据文件中通常在以下几种情况发生时，DBWR进程会将脏数据块写入数据文件：</p>
+<ul>
+<li>当用户进程执行插入或修改等操作时，需要将“新数据”写入高速数据缓冲区，如果在高速数据缓冲区中没有找到足够大的空闲数据块来存放这些“新数据”。</li>
+<li>当检查点进程启动后，它会强制要求DBWR将某些脏数据块写入数据文件中。</li>
+<li>当脏数据块在高速数据缓冲区中存放超过3秒钟，DBWR进程会自行启动并将某些脏数据块写入到数据文件中。</li>
+</ul>
+<p>在某些比较繁忙的应用系统中可以修改服务器参数文件SPFILE的DB_WRITER_PROCESSES参数，以允许使用多个DBWR进程。但是DBWR进程的数量不应当超过系统处理器的数量，否则多余的DBWR不但无法发乎作用，反而会耗费系统资源。</p>
+</li>
+<li><p>检查点进程（CKPT）：检查点进程可以看作一个时间，当检查点时间发生时，CKPT会要求DBWR将某些脏数据块回写到数据文件。当用户进程发出数据请求时，Oracle系统从数据文件中读取需要的数据并存放到高速数据缓冲区中，用户对数据的操作是在缓冲区中进程的。当用户操作数据时，就会产生大量的日志信息并存储在重做日志缓冲区，当Oracle系统满足一定条件时，日志写入进程（LGWR）会将日志信息写入到重做日志文件组中，当发生日志切换时，就会启动检查点进程。</p>
+<ul>
+<li>可以通过修改初始化参数文件SPFILE中的CHECKPOINT_PROCESS参数为TRUE来启动检查点进程。</li>
+</ul>
+</li>
+<li><p>日志写入进程（LGWR）：用于将重做日志缓冲区中的数据写入重做日志文件。</p>
+<ul>
+<li>当发生提交命令、或者重做日志缓冲区的信息满1/3、或者日志信息存放超过3秒钟时，LGWR进程就会将日志信息从重做日志缓冲区中读出写入到日志文件组中序号较小的文件中，一个日志组写满后接着写另外一组。当LGWR进程将所有的日志文件都写过一遍之后，它将再次转向第一个日志文件组重新覆盖。</li>
+</ul>
+</li>
+<li><p>归档进程（ARCH）：归档进程是一个可选择的进程，只有当Oracle数据库处于归档模式时，该进程才可能起到作用。若Oracle数据库处于归档模式，当各个日志文件组都被写满而即将被覆盖之前，先由归档进程（ARCH）把即将被覆盖的日志文件中的日志信息读出，然后再把这些“读出的日志信息”写入到归档日志文件中。</p>
+<ul>
+<li>当系统比较繁忙而导致LGWR进程处于等待ARCH进程时，可通过修改LOG_ARCHIVE_MAX_PROCESSES参数启动多个归档进程，从而提高归档写磁盘的速度。</li>
+</ul>
+</li>
+<li><p>系统监控进程（SMON）：系统监控进程是在数据库系统启动时执行恢复工作的强制性进程。比如，在并行服务器模式下，SMON可以恢复另一个处于失败的数据库，使系统切换到另一台正常的服务器上。</p>
+</li>
+<li><p>进程监控进程（PMON）：用于监控其他进程的状态，当有进程启动失败时，PMON会清除失败的用户进程，释放用户进程所用的资源。</p>
+</li>
+<li><p>锁定进程（LCKN）：这是一个可选进程，并行服务器模式下可以出现多个锁定进程以利于数据库通信。</p>
+</li>
+<li><p>恢复进程（RECO）：这是在分布式数据库模式下使用的一个可选进程，用于数据不一致时进行恢复工作。</p>
+</li>
+<li><p>调度进程（DNNN）：这是一个可选进程，在共享服务器模式下使用，可以启动多个调度进程。</p>
+</li>
+<li><p>快照进程（SNPN）：快照进程用于处理数据库快照的自动刷新，并通过DBMS_JOB包运行预定的数据库存储过程。</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Oracle/" rel="tag"># Oracle</a>
+              <a href="/tags/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/" rel="tag"># Oracle从入门到精通</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/09/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/%E8%A1%A8%E7%A9%BA%E9%97%B4%E3%80%81%E6%AE%B5%E3%80%81%E5%8C%BA%E3%80%81%E5%9D%97/" rel="prev" title="Oracle从入门到精通-表空间、段、区、块">
+      <i class="fa fa-chevron-left"></i> Oracle从入门到精通-表空间、段、区、块
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/09/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/SQL%E8%AF%AD%E8%A8%80%E5%88%86%E7%B1%BB/" rel="next" title="Oracle从入门到精通-SQL语言分类">
+      Oracle从入门到精通-SQL语言分类 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.</span> <span class="nav-text">实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E5%85%A8%E5%B1%80%E5%8C%BA%EF%BC%88SGA%EF%BC%89%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">系统全局区（SGA）：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%85%A8%E5%B1%80%E5%8C%BA%EF%BC%88PGA%EF%BC%89%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">程序全局区（PGA）：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E5%8F%B0%E8%BF%9B%E7%A8%8B%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">前台进程：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E5%8F%B0%E8%BF%9B%E7%A8%8B%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">后台进程：</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'f96319444f11b0c0b61140fb720e1f8a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

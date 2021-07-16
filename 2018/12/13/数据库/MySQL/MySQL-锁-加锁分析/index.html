@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;rjzheng&#x2F;p&#x2F;9950951.html 引言大家在面试中有没遇到面试官问你下面六句Sql的区别呢 123456select * from table where id &#x3D; ?select * from table where id &lt; ?select * from table where id &#x3D; ? lock in share m">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL-锁-加锁分析.md">
+<meta property="og:url" content="https://wetts.github.io/2018/12/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E9%94%81-%E5%8A%A0%E9%94%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;rjzheng&#x2F;p&#x2F;9950951.html 引言大家在面试中有没遇到面试官问你下面六句Sql的区别呢 123456select * from table where id &#x3D; ?select * from table where id &lt; ?select * from table where id &#x3D; ? lock in share m">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-12-12T23:56:21.000Z">
+<meta property="article:modified_time" content="2021-07-12T23:12:44.138Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="事务">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="锁">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2018/12/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E9%94%81-%E5%8A%A0%E9%94%81%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySQL-锁-加锁分析.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2018/12/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E9%94%81-%E5%8A%A0%E9%94%81%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL-锁-加锁分析.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-13 07:56:21" itemprop="dateCreated datePublished" datetime="2018-12-13T07:56:21+08:00">2018-12-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-13 07:12:44" itemprop="dateModified" datetime="2021-07-13T07:12:44+08:00">2021-07-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/rjzheng/p/9950951.html">https://www.cnblogs.com/rjzheng/p/9950951.html</a></p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>大家在面试中有没遇到面试官问你下面六句Sql的区别呢</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ?</span><br><span class="line">select * from table where id &lt; ?</span><br><span class="line">select * from table where id = ? lock in share mode</span><br><span class="line">select * from table where id &lt; ? lock in share mode</span><br><span class="line">select * from table where id = ? for update</span><br><span class="line">select * from table where id &lt; ? for update</span><br></pre></td></tr></table></figure>
+
+<p>如果你能清楚的说出，这六句sql在不同的事务隔离级别下，是否加锁，加的是共享锁还是排他锁，是否存在间隙锁，那这篇文章就没有看的意义了。</p>
+<p>之所以写这篇文章是因为目前为止网上这方面的文章太片面，都只说了一半，且大多没指明隔离级别，以及<code>where</code>后跟的是否为索引条件列。在此，我就不一一列举那些有误的文章了，大家可以自行百度一下，大多都是讲不清楚。</p>
+<p>OK，要回答这个问题，先问自己三个问题</p>
+<ul>
+<li>当前事务隔离级别是什么</li>
+<li>id列是否存在索引</li>
+<li>如果存在索引是聚簇索引还是非聚簇索引呢？</li>
+</ul>
+<p>OK，开始回答</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>本文假定读者，看过我的《MySQL(Innodb)索引的原理》。如果没看过，额，你记得三句话吧</p>
+<ul>
+<li>innodb一定存在聚簇索引，默认以主键作为聚簇索引</li>
+<li>有几个索引，就有几棵B+树(不考虑hash索引的情形)</li>
+<li>聚簇索引的叶子节点为磁盘上的真实数据。非聚簇索引的叶子节点还是索引，指向聚簇索引B+树。</li>
+</ul>
+<p>下面啰嗦点基础知识</p>
+<h3 id="锁类型"><a href="#锁类型" class="headerlink" title="锁类型"></a>锁类型</h3><ul>
+<li>共享锁(S锁):假设事务T1对数据A加上共享锁，那么事务T2可以读数据A，不能修改数据A。</li>
+<li>排他锁(X锁):假设事务T1对数据A加上排他锁，那么事务T2不能读数据A，不能修改数据A。</li>
+</ul>
+<p>我们通过<code>update</code>、<code>delete</code>等语句加上的锁都是行级别的锁。只有<code>LOCK TABLE … READ</code>和<code>LOCK TABLE … WRITE</code>才能申请表级别的锁。</p>
+<ul>
+<li>意向共享锁(IS锁):一个事务在获取（任何一行/或者全表）S锁之前，一定会先在所在的表上加IS锁。</li>
+<li>意向排他锁(IX锁):一个事务在获取（任何一行/或者全表）X锁之前，一定会先在所在的表上加IX锁。</li>
+</ul>
+<p><em><strong>意向锁存在的目的?</strong></em></p>
+<p>OK，这里说一下意向锁存在的目的。假设事务T1，用X锁来锁住了表上的几条记录，那么此时表上存在IX锁，即意向排他锁。那么此时事务T2要进行<code>LOCK TABLE … WRITE</code>的表级别锁的请求，可以直接根据意向锁是否存在而判断是否有锁冲突。</p>
+<h3 id="加锁算法"><a href="#加锁算法" class="headerlink" title="加锁算法"></a>加锁算法</h3><p>我的说法是来自官方文档：<code>https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html</code>。加上自己矫揉造作的见解得出。</p>
+<p>ok，记得如下三种，本文就够用了</p>
+<ul>
+<li>Record Locks：简单翻译为行锁吧。注意了，该锁是对索引记录进行加锁！锁是在加索引上而不是行上的。注意了，innodb一定存在聚簇索引，因此行锁最终都会落到聚簇索引上！</li>
+<li>Gap Locks：简单翻译为间隙锁，是对索引的间隙加锁，其目的只有一个，防止其他事物插入数据。在Read Committed隔离级别下，不会使用间隙锁。这里我对官网补充一下，隔离级别比ReadCommitted低的情况下，也不会使用间隙锁，如隔离级别为Read Uncommited时，也不存在间隙锁。当隔离级别为Repeatable Read和Serializable时，就会存在间隙锁。</li>
+<li>Next-Key Locks：这个理解为Record Lock+索引前面的Gap Lock。记住了，锁住的是索引前面的间隙！比如一个索引包含值，10，11，13和20。那么，间隙锁的范围如下<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(negative infinity, 10]</span><br><span class="line">(10, 11]</span><br><span class="line">(11, 13]</span><br><span class="line">(13, 20]</span><br><span class="line">(20, positive infinity)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="快照读和当前读"><a href="#快照读和当前读" class="headerlink" title="快照读和当前读"></a>快照读和当前读</h3><p>最后一点基础知识了，大家坚持看完，这些是后面分析的基础！</p>
+<p>在mysql中select分为快照读和当前读，执行下面的语句</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ?;</span><br></pre></td></tr></table></figure>
+<p>执行的是快照读，读的是数据库记录的快照版本，是不加锁的。（这种说法在隔离级别为Serializable中不成立，后面我会补充。）</p>
+<p>那么，执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ? lock in share mode;</span><br></pre></td></tr></table></figure>
+<p>会对读取记录加S锁 (共享锁)，执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ? for update</span><br></pre></td></tr></table></figure>
+<p>会对读取记录加X锁 (排他锁)，那么</p>
+<p><em><strong>加的是表锁还是行锁呢？</strong></em></p>
+<p>针对这点，我们先回忆一下事务的四个隔离级别，他们由弱到强如下所示:</p>
+<ul>
+<li>Read Uncommited(RU)：读未提交，一个事务可以读到另一个事务未提交的数据！</li>
+<li>Read Committed (RC)：读已提交，一个事务可以读到另一个事务已提交的数据!</li>
+<li>Repeatable Read (RR):可重复读，加入间隙锁，一定程度上避免了幻读的产生！注意了，只是一定程度上，并没有完全避免!我会在下一篇文章说明!另外就是记住从该级别才开始加入间隙锁(这句话记下来，后面有用到)!</li>
+<li>Serializable：串行化，该级别下读写串行化，且所有的select语句后都自动加上lock in share mode，即使用了共享锁。因此在该隔离级别下，使用的是当前读，而不是快照读。</li>
+</ul>
+<p>那么关于是表锁还是行锁，大家可以看到网上最流传的一个说法是这样的，</p>
+<blockquote>
+<p>InnoDB行锁是通过给索引上的索引项加锁来实现的，这一点MySQL与Oracle不同，后者是通过在数据块中对相应数据行加锁来实现的。 InnoDB这种行锁实现特点意味着：只有通过索引条件检索数据，InnoDB才使用行级锁，否则，InnoDB将使用表锁！</p>
+</blockquote>
+<p>这句话大家可以搜一下，都是你抄我的，我抄你的。那么，这句话本身有两处错误！</p>
+<p><strong>错误一</strong>:并不是用表锁来实现锁表的操作，而是利用了Next-Key Locks，也可以理解为是用了行锁+间隙锁来实现锁表的操作!<br>为了便于说明，我来个例子，假设有表数据如下，pId为主键索引</p>
+<table>
+<thead>
+<tr>
+<th>pId(int)</th>
+<th>name(varchar)</th>
+<th>num(int)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>aaa</td>
+<td>100</td>
+</tr>
+<tr>
+<td>2</td>
+<td>bbb</td>
+<td>200</td>
+</tr>
+<tr>
+<td>7</td>
+<td>ccc</td>
+<td>200</td>
+</tr>
+</tbody></table>
+<p>执行语句(name列无索引)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where name = `aaa` for update</span><br></pre></td></tr></table></figure>
+<p>那么此时在pId=1,2,7这三条记录上存在行锁(把行锁住了)。另外，在(-∞,1)(1,2)(2,7)(7,+∞)上存在间隙锁(把间隙锁住了)。因此，给人一种整个表锁住的错觉！</p>
+<p>ps:对该结论有疑问的，可自行执行show engine innodb status;语句进行分析。</p>
+<p><strong>错误二</strong>:所有文章都不提隔离级别！</p>
+<p>注意我上面说的，之所以能够锁表，是通过行锁+间隙锁来实现的。那么，RU和RC都不存在间隙锁，这种说法在RU和RC中还能成立么？</p>
+<p>因此，该说法只在RR和Serializable中是成立的。如果隔离级别为RU和RC，无论条件列上是否有索引，都不会锁表，只锁行！</p>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>下面来对开始的问题作出解答，假设有表如下，pId为主键索引</p>
+<table>
+<thead>
+<tr>
+<th>pId(int)</th>
+<th>name(varchar)</th>
+<th>num(int)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>aaa</td>
+<td>100</td>
+</tr>
+<tr>
+<td>2</td>
+<td>bbb</td>
+<td>200</td>
+</tr>
+<tr>
+<td>3</td>
+<td>bbb</td>
+<td>300</td>
+</tr>
+<tr>
+<td>7</td>
+<td>ccc</td>
+<td>200</td>
+</tr>
+</tbody></table>
+<p><strong>RC/RU+条件列非索引</strong></p>
+<ol>
+<li>select * from table where num = 200<ul>
+<li>不加任何锁，是快照读。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200<ul>
+<li>不加任何锁，是快照读。</li>
+</ul>
+</li>
+<li>select * from table where num = 200 lock in share mode<ul>
+<li>当num = 200，有两条记录。这两条记录对应的pId=2，7，因此在pId=2，7的聚簇索引上加行级S锁，采用当前读。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200 lock in share mode<ul>
+<li>当num &gt; 200，有一条记录。这条记录对应的pId=3，因此在pId=3的聚簇索引上加上行级S锁，采用当前读。</li>
+</ul>
+</li>
+<li>select * from table where num = 200 for update<ul>
+<li>当num = 200，有两条记录。这两条记录对应的pId=2，7，因此在pId=2，7的聚簇索引上加行级X锁，采用当前读。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200 for update<ul>
+<li>当num &gt; 200，有一条记录。这条记录对应的pId=3，因此在pId=3的聚簇索引上加上行级X锁，采用当前读。</li>
+</ul>
+</li>
+</ol>
+<p><strong>RC/RU+条件列是聚簇索引</strong></p>
+<p>恩，大家应该知道pId是主键列，因此pId用的就是聚簇索引。此情况其实和RC/RU+条件列非索引情况是类似的。</p>
+<ol>
+<li>select * from table where pId = 2<ul>
+<li>不加任何锁，是快照读。</li>
+</ul>
+</li>
+<li>select * from table where pId &gt; 2<ul>
+<li>不加任何锁，是快照读。</li>
+</ul>
+</li>
+<li>select * from table where pId = 2 lock in share mode<ul>
+<li>在pId=2的聚簇索引上，加S锁，为当前读。</li>
+</ul>
+</li>
+<li>select * from table where pId &gt; 2 lock in share mode<ul>
+<li>在pId=3，7的聚簇索引上，加S锁，为当前读。</li>
+</ul>
+</li>
+<li>select * from table where pId = 2 for update<ul>
+<li>在pId=2的聚簇索引上，加X锁，为当前读。</li>
+</ul>
+</li>
+<li>select * from table where pId &gt; 2 for update<ul>
+<li>在pId=3，7的聚簇索引上，加X锁，为当前读。</li>
+</ul>
+</li>
+</ol>
+<p>这里，大家可能有疑问</p>
+<p><em><strong>为什么条件列加不加索引，加锁情况是一样的？</strong></em></p>
+<p>ok,其实是不一样的。在RC/RU隔离级别中，MySQL Server做了优化。在条件列没有索引的情况下，尽管通过聚簇索引来扫描全表，进行全表加锁。但是，MySQL Server层会进行过滤并把不符合条件的锁当即释放掉，因此你看起来最终结果是一样的。但是R<strong>C/RU+条件列非索引比本例多了一个释放不符合条件的锁的过程</strong>！</p>
+<p><strong>RC/RU+条件列是非聚簇索引</strong></p>
+<p>我们在num列上建上非唯一索引。此时有一棵聚簇索引(主键索引，pId)形成的B+索引树，其叶子节点为硬盘上的真实数据。以及另一棵非聚簇索引(非唯一索引，num)形成的B+索引树，其叶子节点依然为索引节点，保存了num列的字段值，和对应的聚簇索引。</p>
+<p>接下来分析开始</p>
+<ol>
+<li>select * from table where num = 200<ul>
+<li>不加任何锁，是快照读。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200<ul>
+<li>不加任何锁，是快照读。</li>
+</ul>
+</li>
+<li>select * from table where num = 200 lock in share mode<ul>
+<li>当num = 200，由于num列上有索引，因此先在 num = 200的两条索引记录上加行级S锁。接着，去聚簇索引树上查询，这两条记录对应的pId=2，7，因此在pId=2，7的聚簇索引上加行级S锁，采用当前读。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200 lock in share mode<ul>
+<li>当num &gt; 200，由于num列上有索引，因此先在符合条件的 num = 300的一条索引记录上加行级S锁。接着，去聚簇索引树上查询，这条记录对应的pId=3，因此在pId=3的聚簇索引上加行级S锁，采用当前读。</li>
+</ul>
+</li>
+<li>select * from table where num = 200 for update<ul>
+<li>当num = 200，由于num列上有索引，因此先在 num = 200的两条索引记录上加行级X锁。接着，去聚簇索引树上查询，这两条记录对应的pId=2，7，因此在pId=2，7的聚簇索引上加行级X锁，采用当前读。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200 for update<ul>
+<li>当num &gt; 200，由于num列上有索引，因此先在符合条件的 num = 300的一条索引记录上加行级X锁。接着，去聚簇索引树上查询，这条记录对应的pId=3，因此在pId=3的聚簇索引上加行级X锁，采用当前读。</li>
+</ul>
+</li>
+</ol>
+<p><strong>RR/Serializable+条件列非索引</strong></p>
+<p>RR级别需要多考虑的就是gap lock，他的加锁特征在于，无论你怎么查都是锁全表。如下所示</p>
+<p>接下来分析开始</p>
+<ol>
+<li>select * from table where num = 200<ul>
+<li>在RR级别下，不加任何锁，是快照读。</li>
+<li>在Serializable级别下，在pId = 1,2,3,7（全表所有记录）的聚簇索引上加S锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200<ul>
+<li>在RR级别下，不加任何锁，是快照读。</li>
+<li>在Serializable级别下，在pId = 1,2,3,7（全表所有记录）的聚簇索引上加S锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
+</ul>
+</li>
+<li>select * from table where num = 200 lock in share mode<ul>
+<li>在pId = 1,2,3,7（全表所有记录）的聚簇索引上加S锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200 lock in share mode<ul>
+<li>在pId = 1,2,3,7（全表所有记录）的聚簇索引上加S锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
+</ul>
+</li>
+<li>select * from table where num = 200 for update<ul>
+<li>在pId = 1,2,3,7（全表所有记录）的聚簇索引上加X锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200 for update<ul>
+<li>在pId = 1,2,3,7（全表所有记录）的聚簇索引上加X锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
+</ul>
+</li>
+</ol>
+<p><strong>RR/Serializable+条件列是聚簇索引</strong></p>
+<p>恩，大家应该知道pId是主键列，因此pId用的就是聚簇索引。该情况的加锁特征在于，如果where后的条件为精确查询(=的情况)，那么只存在record lock。如果where后的条件为范围查询(&gt;或&lt;的情况)，那么存在的是record lock+gap lock。</p>
+<ol>
+<li>select * from table where pId = 2<ul>
+<li>在RR级别下，不加任何锁，是快照读。</li>
+<li>在Serializable级别下，是当前读，在pId=2的聚簇索引上加S锁，不存在gap lock。</li>
+</ul>
+</li>
+<li>select * from table where pId &gt; 2<ul>
+<li>在RR级别下，不加任何锁，是快照读。</li>
+<li>在Serializable级别下，是当前读，在pId=3,7的聚簇索引上加S锁。在(2,3)(3,7)(7,+∞)加上gap lock</li>
+</ul>
+</li>
+<li>select * from table where pId = 2 lock in share mode<ul>
+<li>是当前读，在pId=2的聚簇索引上加S锁，不存在gap lock。</li>
+</ul>
+</li>
+<li>select * from table where pId &gt; 2 lock in share mode<ul>
+<li>是当前读，在pId=3,7的聚簇索引上加S锁。在(2,3)(3,7)(7,+∞)加上gap lock</li>
+</ul>
+</li>
+<li>select * from table where pId = 2 for update<ul>
+<li>是当前读，在pId=2的聚簇索引上加X锁。</li>
+</ul>
+</li>
+<li>select * from table where pId &gt; 2 for update<ul>
+<li>在pId=3,7的聚簇索引上加X锁。在(2,3)(3,7)(7,+∞)加上gap lock</li>
+</ul>
+</li>
+<li>select * from table where pId = 6 [lock in share mode|for update]<ul>
+<li>注意了，pId=6是不存在的列，这种情况会在(3,7)上加gap lock。</li>
+</ul>
+</li>
+<li>select * from table where pId &gt; 18 [lock in share mode|for update]<ul>
+<li>注意了，pId&gt;18，查询结果是空的。在这种情况下，是在(7,+∞)上加gap lock。</li>
+</ul>
+</li>
+</ol>
+<p><strong>RR/Serializable+条件列是非聚簇索引</strong></p>
+<p>这里非聚簇索引，需要区分是否为唯一索引。因为如果是非唯一索引，间隙锁的加锁方式是有区别的。</p>
+<p>先说一下，唯一索引的情况。如果是唯一索引，情况和RR/Serializable+条件列是聚簇索引类似，唯一有区别的是:这个时候有两棵索引树，加锁是加在对应的非聚簇索引树和聚簇索引树上！大家可以自行推敲!</p>
+<p>下面说一下，非聚簇索引是非唯一索引的情况，他和唯一索引的区别就是通过索引进行精确查询以后，不仅存在record lock，还存在gap lock。而通过唯一索引进行精确查询后，只存在record lock，不存在gap lock。老规矩在num列建立非唯一索引</p>
+<ol>
+<li>select * from table where num = 200<ul>
+<li>在RR级别下，不加任何锁，是快照读。</li>
+<li>在Serializable级别下，是当前读，在pId=2，7的聚簇索引上加S锁，在num=200的非聚集索引上加S锁，在(100,200)(200,300)加上gap lock。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200<ul>
+<li>在RR级别下，不加任何锁，是快照读。</li>
+<li>在Serializable级别下，是当前读，在pId=3的聚簇索引上加S锁，在num=300的非聚集索引上加S锁。在(200,300)(300,+∞)加上gap lock</li>
+</ul>
+</li>
+<li>select * from table where num = 200 lock in share mode<ul>
+<li>是当前读，在pId=2，7的聚簇索引上加S锁，在num=200的非聚集索引上加S锁，在(100,200)(200,300)加上gap lock。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200 lock in share mode<ul>
+<li>是当前读，在pId=3的聚簇索引上加S锁，在num=300的非聚集索引上加S锁。在(200,300)(300,+∞)加上gap lock。</li>
+</ul>
+</li>
+<li>select * from table where num = 200 for update<ul>
+<li>是当前读，在pId=2，7的聚簇索引上加S锁，在num=200的非聚集索引上加X锁，在(100,200)(200,300)加上gap lock。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 200 for update<ul>
+<li>是当前读，在pId=3的聚簇索引上加S锁，在num=300的非聚集索引上加X锁。在(200,300)(300,+∞)加上gap lock</li>
+</ul>
+</li>
+<li>select * from table where num = 250 [lock in share mode|for update]<ul>
+<li>注意了，num=250是不存在的列，这种情况会在(200,300)上加gap lock。</li>
+</ul>
+</li>
+<li>select * from table where num &gt; 400 [lock in share mode|for update]<ul>
+<li>注意了，pId&gt;400，查询结果是空的。在这种情况下，是在(400,+∞)上加gap lock。</li>
+</ul>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E4%BA%8B%E5%8A%A1/" rel="tag"># 事务</a>
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/%E9%94%81/" rel="tag"># 锁</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/11/19/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E6%97%A5%E5%BF%97-binlog/" rel="prev" title="MySQL-日志-binlog.md">
+      <i class="fa fa-chevron-left"></i> MySQL-日志-binlog.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/" rel="next" title="平均数">
+      平均数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%81%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.1.</span> <span class="nav-text">锁类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E9%94%81%E7%AE%97%E6%B3%95"><span class="nav-number">2.2.</span> <span class="nav-text">加锁算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BF%AB%E7%85%A7%E8%AF%BB%E5%92%8C%E5%BD%93%E5%89%8D%E8%AF%BB"><span class="nav-number">2.3.</span> <span class="nav-text">快照读和当前读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">2.4.</span> <span class="nav-text">分析</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '1c5303851dc5fe16befe24e00da274d3',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>
