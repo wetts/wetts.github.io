@@ -188,6 +188,445 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/18/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/18/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">Redis-常用命令</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-18 01:17:38" itemprop="dateCreated datePublished" datetime="2016-04-18T01:17:38+08:00">2016-04-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-19 00:57:00" itemprop="dateModified" datetime="2021-07-19T00:57:00+08:00">2021-07-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="key-pattern-查询相应的key"><a href="#key-pattern-查询相应的key" class="headerlink" title="key pattern 查询相应的key"></a>key pattern 查询相应的key</h2><ul>
+<li>redis允许模糊查询key　　有3个通配符  <code>*、?、[]</code></li>
+<li>randomkey：返回随机key　　</li>
+<li>type key：返回key存储的类型</li>
+<li>exists key：判断某个key是否存在</li>
+<li>del key：删除key</li>
+<li>rename key newkey：改名</li>
+<li>renamenx key newkey：如果newkey不存在则修改成功</li>
+<li>move key 1：将key移动到1数据库</li>
+<li>ttl key：查询key的生命周期（秒）</li>
+<li>expire key 整数值：设置key的生命周期以秒为单位</li>
+<li>pexpire key 整数值：设置key的生命周期以毫秒为单位</li>
+<li>pttl key：查询key 的生命周期（毫秒）</li>
+<li>perisist key：把指定key设置为永久有效</li>
+</ul>
+<h2 id="字符串类型的操作"><a href="#字符串类型的操作" class="headerlink" title="字符串类型的操作"></a>字符串类型的操作</h2><ul>
+<li><p>set key value [ex 秒数] [px 毫秒数] [nx/xx]　　</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">如果ex和px同时写，则以后面的有效期为准</span><br><span class="line">nx：如果key不存在则建立</span><br><span class="line">xx：如果key存在则修改其值</span><br></pre></td></tr></table></figure></li>
+<li><p>get key：取值</p>
+</li>
+<li><p>mset key1 value1 key2 value2 一次设置多个值</p>
+</li>
+<li><p>mget key1 key2 ：一次获取多个值</p>
+</li>
+<li><p>setrange key offset value：把字符串的offset偏移字节改成value，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">如果偏移量 &gt; 字符串长度，该字符自动补0x00</span><br></pre></td></tr></table></figure></li>
+<li><p>append key value ：把value追加到key 的原值上</p>
+</li>
+<li><p>getrange key start stop：获取字符串中[start, stop]范围的值</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">对于字符串的下标，左数从0开始，右数从-1开始</span><br><span class="line">注意：当start&gt;length，则返回空字符串</span><br><span class="line">      当stop&gt;=length，则截取至字符串尾</span><br><span class="line">      如果start所处位置在stop右边，则返回空字符串</span><br></pre></td></tr></table></figure></li>
+<li><p>getset key nrevalue：获取并返回旧值，在设置新值</p>
+</li>
+<li><p>incr key：自增，返回新值，如果incr一个不是int的value则返回错误，incr一个不存在的key，则设置key为1</p>
+</li>
+<li><p>incrby key 2：跳2自增</p>
+</li>
+<li><p>incrbyfloat by 0.7： 自增浮点数　</p>
+</li>
+<li><p>setbit key offset value：设置offset对应二进制上的值，返回该位上的旧值</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">注意：如果offset过大，则会在中间填充0</span><br><span class="line">  offset最大到多少</span><br><span class="line">  2^32-1，即可推出最大的字符串为512M</span><br></pre></td></tr></table></figure></li>
+<li><p>bitop operation destkey key1 [key2..]    对key1 key2做opecation并将结果保存在destkey上，opecation可以是AND OR NOT XOR</p>
+</li>
+<li><p>strlen key：取指定key的value值的长度</p>
+</li>
+<li><p>setex key time value：设置key对应的值value，并设置有效期为time秒</p>
+</li>
+</ul>
+<h2 id="链表操作"><a href="#链表操作" class="headerlink" title="链表操作"></a>链表操作</h2><p>Redis的list类型其实就是一个每个子元素都是string类型的双向链表，链表的最大长度是2^32。list既可以用做栈，也可以用做队列。</p>
+<p>list的pop操作还有阻塞版本，主要是为了避免轮询</p>
+<ul>
+<li><p>lpush key value：把值插入到链表头部</p>
+</li>
+<li><p>rpush key value：把值插入到链表尾部</p>
+</li>
+<li><p>lpop key ：返回并删除链表头部元素</p>
+</li>
+<li><p>rpop key： 返回并删除链表尾部元素</p>
+</li>
+<li><p>lrange key start stop：返回链表中[start, stop]中的元素</p>
+</li>
+<li><p>lrem key count value：从链表中删除value值，删除count的绝对值个value后结束</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">count &gt; 0 从表头删除　　</span><br><span class="line">count &lt; 0 从表尾删除　　</span><br><span class="line">count=0 全部删除</span><br></pre></td></tr></table></figure></li>
+<li><p>ltrim key start stop：剪切key对应的链接，切[start, stop]一段并把改制重新赋给key</p>
+</li>
+<li><p>lindex key index：返回index索引上的值</p>
+</li>
+<li><p>llen key：计算链表的元素个数</p>
+</li>
+<li><p>linsert key after|before search value：在key 链表中寻找search，并在search值之前|之后插入value</p>
+</li>
+<li><p>rpoplpush source dest：把source 的末尾拿出，放到dest头部，并返回单元值</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">应用场景： task + bak 双链表完成安全队列</span><br><span class="line"></span><br><span class="line">业务逻辑： rpoplpush task bak</span><br><span class="line">  接收返回值并做业务处理</span><br><span class="line">  如果成功则rpop bak清除任务，如果不成功，下次从bak表取任务</span><br></pre></td></tr></table></figure></li>
+<li><p>brpop，blpop key timeout：等待弹出key的尾/头元素</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">timeout为等待超时时间，如果timeout为0则一直等待下去</span><br><span class="line"></span><br><span class="line">应用场景：长轮询ajax，在线聊天时能用到</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="hashes类型及操作"><a href="#hashes类型及操作" class="headerlink" title="hashes类型及操作"></a>hashes类型及操作</h2><p>Redis hash 是一个string类型的field和value的映射表，它的添加、删除操作都是O(1)（平均）。hash特别适用于存储对象，将一个对象存储在hash类型中会占用更少的内存，并且可以方便的存取整个对象。</p>
+<p>配置： hash_max_zipmap_entries 64 #配置字段最多64个，hash_max_zipmap_value 512 #配置value最大为512字节</p>
+<ul>
+<li>hset myhash field value：设置myhash的field为value</li>
+<li>hsetnx myhash field value：不存在的情况下设置myhash的field为value</li>
+<li>hmset myhash field1 value1 field2 value2：同时设置多个field</li>
+<li>hget myhash field：获取指定的hash field</li>
+<li>hmget myhash field1 field2：一次获取多个field</li>
+<li>hincrby myhash field 5：指定的hash field加上给定的值</li>
+<li>hexists myhash field：测试指定的field是否存在</li>
+<li>hlen myhash：返回hash的field数量</li>
+<li>hdel myhash field：删除指定的field</li>
+<li>hkeys myhash：返回hash所有的field</li>
+<li>hvals myhash：返回hash所有的value</li>
+<li>hgetall myhash：获取某个hash中全部的field及value　</li>
+</ul>
+<h2 id="集合结构操作"><a href="#集合结构操作" class="headerlink" title="集合结构操作"></a>集合结构操作</h2><p>特点：无序性、确定性、唯一性</p>
+<ul>
+<li>sadd key value1 value2：往集合里面添加元素</li>
+<li>smembers key：获取集合所有的元素</li>
+<li>srem key value：删除集合某个元素</li>
+<li>spop key：返回并删除集合中1个随机元素（可以坐抽奖，不会重复抽到某人）　　　</li>
+<li>srandmember key：随机取一个元素</li>
+<li>sismember key value：判断集合是否有某个值</li>
+<li>scard key：返回集合元素的个数</li>
+<li>smove source dest value：把source的value移动到dest集合中</li>
+<li>sinter key1 key2 key3：求key1 key2 key3的交集</li>
+<li>sunion key1 key2：求key1 key2 的并集</li>
+<li>sdiff key1 key2：求key1 key2的差集</li>
+<li>sinterstore res key1 key2：求key1 key2的交集并存在res里　</li>
+</ul>
+<h2 id="有序集合"><a href="#有序集合" class="headerlink" title="有序集合"></a>有序集合</h2><p>概念：它是在set的基础上增加了一个顺序属性，这一属性在添加修改元素的时候可以指定，每次指定后，zset会自动按新的值调整顺序。可以理解为有两列的mysql表，一列存储value，一列存储顺序，操作中key理解为zset的名字。</p>
+<p>和set一样sorted，sets也是string类型元素的集合，不同的是每个元素都会关联一个double型的score。sorted set的实现是skip list和hash table的混合体。</p>
+<p>当元素被添加到集合中时，一个元素到score的映射被添加到hash table中，所以给定一个元素获取score的开销是O(1)。另一个score到元素的映射被添加的skip list，并按照score排序，所以就可以有序地获取集合中的元素。添加、删除操作开销都是O(logN)和skip list的开销一致，redis的skip list 实现是双向链表，这样就可以逆序从尾部去元素。sorted set最经常使用方式应该就是作为索引来使用，我们可以把要排序的字段作为score存储，对象的ID当元素存储。</p>
+<ul>
+<li>zadd key score1 value1：添加元素</li>
+<li>zrange key start stop [withscore]：把集合排序后,返回名次[start,stop]的元素  默认是升续排列  withscores 是把score也打印出来</li>
+<li>zrank key member：查询member的排名（升序0名开始）</li>
+<li>zrangebyscore key min max [withscores] limit offset N：集合（升序）排序后取score在[min, max]内的元素，并跳过offset个，取出N个</li>
+<li>zrevrank key member：查询member排名（降序 0名开始）</li>
+<li>zremrangebyscore key min max：按照score来删除元素，删除score在[min, max]之间</li>
+<li>zrem key value1 value2：删除集合中的元素</li>
+<li>zremrangebyrank key start end：按排名删除元素，删除名次在[start, end]之间的</li>
+<li>zcard key：返回集合元素的个数</li>
+<li>zcount key min max：返回[min, max]区间内元素数量</li>
+<li>zinterstore dest numkeys key1[key2..] [WEIGHTS weight1 [weight2…]] [AGGREGATE SUM|MIN|MAX]<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">求key1，key2的交集，key1，key2的权值分别是weight1，weight2</span><br><span class="line">聚合方法用 sum|min|max</span><br><span class="line">聚合结果 保存子dest集合内</span><br><span class="line">注意：weights,aggregate如何理解？</span><br><span class="line">  答：如果有交集，交集元素又有score，score怎么处理？aggregate num-&gt;score相加，min最小score，max最大score，另外可以通过weights设置不同的key的权重，交集时  score*weight</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="服务器相关命令"><a href="#服务器相关命令" class="headerlink" title="服务器相关命令"></a>服务器相关命令</h2><ul>
+<li><p>ping：测定连接是否存活</p>
+</li>
+<li><p>echo：在命令行打印一些内容</p>
+</li>
+<li><p>select：选择数据库</p>
+</li>
+<li><p>quit：退出连接</p>
+</li>
+<li><p>dbsize：返回当前数据库中key的数目</p>
+</li>
+<li><p>info：获取服务器的信息和统计</p>
+</li>
+<li><p>monitor：实时转储收到的请求</p>
+</li>
+<li><p>config get 配置项：获取服务器配置的信息</p>
+</li>
+<li><p>config set 配置项  值：设置配置项信息</p>
+</li>
+<li><p>flushdb：删除当前选择数据库中所有的key</p>
+</li>
+<li><p>flushall：删除所有数据库中的所有的key</p>
+</li>
+<li><p>time：显示服务器时间，时间戳（秒），微秒数</p>
+</li>
+<li><p>bgrewriteaof：后台保存aof快照</p>
+</li>
+<li><p>bgsave：后台保存rdb快照</p>
+</li>
+<li><p>save：保存rdb快照</p>
+</li>
+<li><p>lastsave：上次保存时间</p>
+</li>
+<li><p>shutdown [save/nosave]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">注意：如果不小心运行了flushall，立即shutdown nosave，关闭服务器，然后手工编辑aof文件，去掉文件中的flushall相关行，然后开启服务器，就可以倒回原来是数据。如果flushall之后，系统恰好bgwriteaof了，那么aof就清空了，数据丢失。</span><br></pre></td></tr></table></figure></li>
+<li><p>showlog：显示慢查询</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">问：多慢才叫慢？</span><br><span class="line">答：由slowlog-log-slower-than 10000，来指定（单位为微秒）</span><br><span class="line">问：服务器存储多少条慢查询记录</span><br><span class="line">答：由slowlog-max-len 128，来做限制</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/" class="post-title-link" itemprop="url">Redis-使用场景</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-17 10:29:44" itemprop="dateCreated datePublished" datetime="2016-04-17T10:29:44+08:00">2016-04-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-19 00:57:12" itemprop="dateModified" datetime="2021-07-19T00:57:12+08:00">2021-07-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="圈子列表"><a href="#圈子列表" class="headerlink" title="圈子列表"></a>圈子列表</h3><p>可以运用Redis的List数据类型来保存最新圈子列表。</p>
+<ul>
+<li><p>在发布新的圈子的时候，我们可以进行如下操作：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LPUSH moments &lt;圈子的json串&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>如果我们需要得到最新的20条圈子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LRANGE moments 0 20</span><br></pre></td></tr></table></figure>
+<p>该操作可以获取该List的index为0到index为20的数据。</p>
+</li>
+</ul>
+<p>如果Redis缓存中不够20条圈子，还需要去数据库中读取，和Redis数据结合返回。</p>
+<ul>
+<li><p>如果圈子列表缓存了过多数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LTRIM moments 0 5000</span><br></pre></td></tr></table></figure>
+<p>该操作保留该List的index为0到index为5000的数据，其余数据删除。</p>
+</li>
+<li><p>如果删除了一条圈子：<br>Redis里面没有提供删除List中index为某一个值的方法。</p>
+</li>
+</ul>
+<p>但是我们可以通过如下方式删除：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LREM moments 0 &lt;删除圈子的json串&gt;</span><br></pre></td></tr></table></figure>
+<p>该操作是在圈子List中，从index为0的位置开始匹配，如果两个值相等，则删除该条。</p>
+<h3 id="积分排行榜"><a href="#积分排行榜" class="headerlink" title="积分排行榜"></a>积分排行榜</h3><p>可以用Redis的有序set来实现这个功能。</p>
+<ul>
+<li><p>获取积分的时候：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ZADD rankingList &lt;score&gt; &lt;username&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>得到排行榜前100名：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ZREVRANGE rankingList 0 99</span><br></pre></td></tr></table></figure></li>
+<li><p>用户在排行榜中的位置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ZREVRANK rankingList &lt;username&gt;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="统计某日某篇文件的访问用户"><a href="#统计某日某篇文件的访问用户" class="headerlink" title="统计某日某篇文件的访问用户"></a>统计某日某篇文件的访问用户</h3><ul>
+<li><p>添加文章的访问用户：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SADD page:&lt;date&gt;:&lt;page_id&gt; &lt;user_id&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>获取访问用户总数量：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SCARD page:&lt;date&gt;:&lt;page_id&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>查询某用户是否访问该文章：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SISMEMBER page:&lt;date&gt;:&lt;page_id&gt; &lt;user_id&gt;</span><br></pre></td></tr></table></figure>
+<p>如果成员元素是集合的成员，返回 1 。 如果成员元素不是集合的成员，或 key 不存在，返回 0 。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E6%95%B0%E6%8D%AE%E5%BA%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E6%95%B0%E6%8D%AE%E5%BA%93/" class="post-title-link" itemprop="url">Redis-常用命令-数据库</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-17 10:29:44" itemprop="dateCreated datePublished" datetime="2016-04-17T10:29:44+08:00">2016-04-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-19 00:56:58" itemprop="dateModified" datetime="2021-07-19T00:56:58+08:00">2021-07-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="查看Redis信息和状态"><a href="#查看Redis信息和状态" class="headerlink" title="查看Redis信息和状态"></a>查看Redis信息和状态</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">info</span><br></pre></td></tr></table></figure>
+
+<h3 id="后台启动Redis"><a href="#后台启动Redis" class="headerlink" title="后台启动Redis"></a>后台启动Redis</h3><ul>
+<li>命令加参数</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server &amp;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>配置文件中配置<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#修改daemonize为yes，即默认以后台程序方式运行（还记得前面手动使用&amp;号强制后台运行吗）。</span><br><span class="line">daemonize no</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="关闭Redis"><a href="#关闭Redis" class="headerlink" title="关闭Redis"></a>关闭Redis</h3><ul>
+<li>使用客户端redis-cli<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shutdown</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="redis-cli登陆显示中文"><a href="#redis-cli登陆显示中文" class="headerlink" title="redis-cli登陆显示中文"></a>redis-cli登陆显示中文</h3><blockquote>
+<p>登陆 redis<br><br>加上 –raw 参数，可显示中文</p>
+</blockquote>
+<h3 id="查看Redis配置"><a href="#查看Redis配置" class="headerlink" title="查看Redis配置"></a>查看Redis配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config get *</span><br></pre></td></tr></table></figure>
+
+<p>如果 bind 为空，则没有 IP 限制</p>
+<h4 id="绑定-IP-访问限制"><a href="#绑定-IP-访问限制" class="headerlink" title="绑定 IP 访问限制"></a>绑定 IP 访问限制</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bind 127.0.0.1</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E9%94%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -809,251 +1248,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/24/%E8%AF%AD%E8%A8%80/PHP/PHP-%E9%85%8D%E7%BD%AE-%E6%96%87%E4%BB%B6php-fpm.conf%E9%87%8D%E8%A6%81%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/03/24/%E8%AF%AD%E8%A8%80/PHP/PHP-%E9%85%8D%E7%BD%AE-%E6%96%87%E4%BB%B6php-fpm.conf%E9%87%8D%E8%A6%81%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">PHP-配置-文件php-fpm.conf重要参数详解</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-03-24 10:26:33" itemprop="dateCreated datePublished" datetime="2016-03-24T10:26:33+08:00">2016-03-24</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2016-11-30 21:08:01" itemprop="dateModified" datetime="2016-11-30T21:08:01+08:00">2016-11-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line">pid = run/php-fpm.pid</span><br><span class="line">#pid设置，默认在安装目录中的var/run/php-fpm.pid，建议开启</span><br><span class="line"></span><br><span class="line">error_log = log/php-fpm.log</span><br><span class="line">#错误日志，默认在安装目录中的var/log/php-fpm.log</span><br><span class="line"></span><br><span class="line">log_level = notice</span><br><span class="line">#错误级别. 可用级别为: alert（必须立即处理）, error（错误情况）, warning（警告情况）, notice（一般重要信息）, debug（调试信息）. 默认: notice.</span><br><span class="line"></span><br><span class="line">emergency_restart_threshold = 60</span><br><span class="line">emergency_restart_interval = 60s</span><br><span class="line">#表示在emergency_restart_interval所设值内出现SIGSEGV或者SIGBUS错误的php-cgi进程数如果超过 emergency_restart_threshold个，php-fpm就会优雅重启。这两个选项一般保持默认值。</span><br><span class="line"></span><br><span class="line">process_control_timeout = 0</span><br><span class="line">#设置子进程接受主进程复用信号的超时时间. 可用单位: s(秒), m(分), h(小时), 或者 d(天) 默认单位: s(秒). 默认值: 0.</span><br><span class="line"></span><br><span class="line">daemonize = yes</span><br><span class="line">#后台执行fpm,默认值为yes，如果为了调试可以改为no。在FPM中，可以使用不同的设置来运行多个进程池。 这些设置可以针对每个进程池单独设置。</span><br><span class="line"></span><br><span class="line">listen = 127.0.0.1:9000</span><br><span class="line">#fpm监听端口，即nginx中php处理的地址，一般默认值即可。可用格式为: &#x27;ip:port&#x27;, &#x27;port&#x27;, &#x27;/path/to/unix/socket&#x27;. 每个进程池都需要设置.</span><br><span class="line"></span><br><span class="line">listen.backlog = -1</span><br><span class="line">#backlog数，-1表示无限制，由操作系统决定，此行注释掉就行。backlog含义参考：http://www.3gyou.cc/?p=41</span><br><span class="line"></span><br><span class="line">listen.allowed_clients = 127.0.0.1</span><br><span class="line">#允许访问FastCGI进程的IP，设置any为不限制IP，如果要设置其他主机的nginx也能访问这台FPM进程，listen处要设置成本地可被访问的IP。默认值是any。每个地址是用逗号分隔. 如果没有设置或者为空，则允许任何服务器请求连接</span><br><span class="line"></span><br><span class="line">listen.owner = www</span><br><span class="line">listen.group = www</span><br><span class="line">listen.mode = 0666</span><br><span class="line">#unix socket设置选项，如果使用tcp方式访问，这里注释即可。</span><br><span class="line"></span><br><span class="line">user = www</span><br><span class="line">group = www</span><br><span class="line">#启动进程的帐户和组</span><br><span class="line"></span><br><span class="line">pm = dynamic #对于专用服务器，pm可以设置为static。</span><br><span class="line">#如何控制子进程，选项有static和dynamic。如果选择static，则由pm.max_children指定固定的子进程数。如果选择dynamic，则由下开参数决定：</span><br><span class="line">pm.max_children #，子进程最大数</span><br><span class="line">pm.start_servers #，启动时的进程数</span><br><span class="line">pm.min_spare_servers #，保证空闲进程数最小值，如果空闲进程小于此值，则创建新的子进程</span><br><span class="line">pm.max_spare_servers #，保证空闲进程数最大值，如果空闲进程大于此值，此进行清理</span><br><span class="line"></span><br><span class="line">pm.max_requests = 1000</span><br><span class="line">#设置每个子进程重生之前服务的请求数. 对于可能存在内存泄漏的第三方模块来说是非常有用的. 如果设置为 &#x27;0&#x27; 则一直接受请求. 等同于 PHP_FCGI_MAX_REQUESTS 环境变量. 默认值: 0.</span><br><span class="line"></span><br><span class="line">pm.status_path = /status</span><br><span class="line">#FPM状态页面的网址. 如果没有设置, 则无法访问状态页面. 默认值: none. munin监控会使用到</span><br><span class="line"></span><br><span class="line">ping.path = /ping</span><br><span class="line">#FPM监控页面的ping网址. 如果没有设置, 则无法访问ping页面. 该页面用于外部检测FPM是否存活并且可以响应请求. 请注意必须以斜线开头 (/)。</span><br><span class="line"></span><br><span class="line">ping.response = pong</span><br><span class="line">#用于定义ping请求的返回相应. 返回为 HTTP 200 的 text/plain 格式文本. 默认值: pong.</span><br><span class="line"></span><br><span class="line">request_terminate_timeout = 0</span><br><span class="line">#设置单个请求的超时中止时间. 该选项可能会对php.ini设置中的&#x27;max_execution_time&#x27;因为某些特殊原因没有中止运行的脚本有用. 设置为 &#x27;0&#x27; 表示 &#x27;Off&#x27;.当经常出现502错误时可以尝试更改此选项。</span><br><span class="line"></span><br><span class="line">request_slowlog_timeout = 10s</span><br><span class="line">#当一个请求该设置的超时时间后，就会将对应的PHP调用堆栈信息完整写入到慢日志中. 设置为 &#x27;0&#x27; 表示 &#x27;Off&#x27;</span><br><span class="line"></span><br><span class="line">slowlog = log/$pool.log.slow</span><br><span class="line">#慢请求的记录日志,配合request_slowlog_timeout使用</span><br><span class="line"></span><br><span class="line">rlimit_files = 1024</span><br><span class="line">#设置文件打开描述符的rlimit限制. 默认值: 系统定义值默认可打开句柄是1024，可使用 ulimit -n查看，ulimit -n 2048修改。</span><br><span class="line"></span><br><span class="line">rlimit_core = 0</span><br><span class="line">#设置核心rlimit最大限制值. 可用值: &#x27;unlimited&#x27; 、0或者正整数. 默认值: 系统定义值.</span><br><span class="line"></span><br><span class="line">chroot =</span><br><span class="line">#启动时的Chroot目录. 所定义的目录需要是绝对路径. 如果没有设置, 则chroot不被使用.</span><br><span class="line"></span><br><span class="line">chdir =</span><br><span class="line">#设置启动目录，启动时会自动Chdir到该目录. 所定义的目录需要是绝对路径. 默认值: 当前目录，或者/目录（chroot时）</span><br><span class="line"></span><br><span class="line">catch_workers_output = yes</span><br><span class="line">#重定向运行过程中的stdout和stderr到主要的错误日志文件中. 如果没有设置, stdout 和 stderr 将会根据FastCGI的规则被重定向到 /dev/null . 默认值: 空.</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP-%E5%AE%89%E8%A3%85-%E5%9C%A8Mac%E4%B8%8A%E5%AE%89%E8%A3%85mcrype%E6%8F%92%E4%BB%B6%E6%AD%A5%E9%AA%A4%E4%BB%A5%E5%8F%8A%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP-%E5%AE%89%E8%A3%85-%E5%9C%A8Mac%E4%B8%8A%E5%AE%89%E8%A3%85mcrype%E6%8F%92%E4%BB%B6%E6%AD%A5%E9%AA%A4%E4%BB%A5%E5%8F%8A%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" class="post-title-link" itemprop="url">PHP-安装-在Mac上安装mcrype插件步骤以及注意事项</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-03-23 22:09:21" itemprop="dateCreated datePublished" datetime="2016-03-23T22:09:21+08:00">2016-03-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-07-28 14:31:05" itemprop="dateModified" datetime="2017-07-28T14:31:05+08:00">2017-07-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="mac-安装-php-的-mcrypt-扩展步骤以及注意事项"><a href="#mac-安装-php-的-mcrypt-扩展步骤以及注意事项" class="headerlink" title="mac 安装 php 的 mcrypt 扩展步骤以及注意事项"></a>mac 安装 php 的 mcrypt 扩展步骤以及注意事项</h1><ol>
-<li><p>首先安装 libmcrypt</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd ~/Downloads/mcrypt-2.5.8</span><br><span class="line">./configure --disable-posix-threads --enable-static</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>安装 xcode 就可以使用 make 命令</p>
-</blockquote></li></ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP-%E5%AE%89%E8%A3%85-%E5%9C%A8Mac%E4%B8%8A%E5%AE%89%E8%A3%85mcrype%E6%8F%92%E4%BB%B6%E6%AD%A5%E9%AA%A4%E4%BB%A5%E5%8F%8A%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP7-%E5%AE%89%E8%A3%85-Redis%E6%89%A9%E5%B1%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP7-%E5%AE%89%E8%A3%85-Redis%E6%89%A9%E5%B1%95/" class="post-title-link" itemprop="url">PHP7-安装-Redis扩展</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-03-23 16:38:48" itemprop="dateCreated datePublished" datetime="2016-03-23T16:38:48+08:00">2016-03-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-07-28 14:30:20" itemprop="dateModified" datetime="2017-07-28T14:30:20+08:00">2017-07-28</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ol>
-<li>git clone <a target="_blank" rel="noopener" href="https://github.com/phpredis/phpredis.git">https://github.com/phpredis/phpredis.git</a></li>
-<li>cd phpredis</li>
-<li>git checkout php7 #拉取php7分支</li>
-<li>/web/php/bin/phpize #用phpize生成configure配置文件</li></ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP7-%E5%AE%89%E8%A3%85-Redis%E6%89%A9%E5%B1%95/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1125,20 +1319,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

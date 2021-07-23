@@ -188,6 +188,107 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/30/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/09/30/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5/" class="post-title-link" itemprop="url">协方差矩阵</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-30 22:54:29" itemprop="dateCreated datePublished" datetime="2019-09-30T22:54:29+08:00">2019-09-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-11 20:38:37" itemprop="dateModified" datetime="2019-10-11T20:38:37+08:00">2019-10-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/37609917">https://zhuanlan.zhihu.com/p/37609917</a></p>
+<blockquote>
+<p>协方差矩阵在统计学和机器学习中随处可见，一般而言，可视作方差和协方差两部分组成，即方差构成了对角线上的元素，协方差构成了非对角线上的元素。本文旨在从几何角度介绍我们所熟知的协方差矩阵。</p>
+</blockquote>
+<h2 id="方差和协方差的定义"><a href="#方差和协方差的定义" class="headerlink" title="方差和协方差的定义"></a>方差和协方差的定义</h2><p>在统计学中，方差是用来度量单个随机变量的离散程度，而协方差则一般用来刻画两个随机变量的相似程度，其中，<strong>方差</strong> 的计算公式为<br>$$<br>\sigma_{x}^{2}=\frac{1}{n-1} \sum_{i=1}^{n}\left(x_{i}-\overline{x}\right)^{2}<br>$$<br>其中，$n$ 表示样本量，符号 $\overline{x}$ 表示观测样本的均值，这个定义在初中阶段就已经开始接触了。</p>
+<p>在此基础上，<strong>协方差</strong> 的计算公式被定义为<br>$$<br>\sigma(x, y)=\frac{1}{n-1} \sum_{i=1}^{n}\left(x_{i}-\overline{x}\right)\left(y_{i}-\overline{y}\right)<br>$$<br>在公式中，符号 $\overline{x}, \overline{y}$ 分别表示两个随机变量所对应的观测样本均值，据此，我们发现：方差 $\sigma^2$ 可视作随机变量 $x$ 关于其自身的协方差 $\sigma(x, x)$ .</p>
+<h2 id="从方差-协方差到协方差矩阵"><a href="#从方差-协方差到协方差矩阵" class="headerlink" title="从方差/协方差到协方差矩阵"></a>从方差/协方差到协方差矩阵</h2><p>根据方差的定义，给定 $d$ 个随机变量 $x_k, k=1, 2,…,d$ ，则这些随机变量的方差为<br>$$<br>\sigma\left(x_{k}, x_{k}\right)=\frac{1}{n-1} \sum_{i=1}^{n}\left(x_{k i}-\overline{x}<em>{k}\right)^{2}, k=1,2, \ldots, d<br>$$<br>其中，为方便书写，$x</em>{ki}$ 表示随机变量 $x_k$ 中的第 $i$ 个观测样本，$n$ 表示样本量，每个随机变量所对应的观测样本数量均为 $n$。</p>
+<p>对于这些随机变量，我们还可以根据协方差的定义，求出 <em><em>两两之间的协方差__，即<br>$$<br>\sigma\left(x</em>{m}, x</em>{k}\right)=\frac{1}{n-1} \sum_{i=1}^{n}\left(x_{m i}-\overline{x}<em>{m}\right)\left(x</em>{k i}-\overline{x}<em>{k}\right)<br>$$<br>因此，__协方差矩阵</em>_ 为<br>$$<br>\Sigma=\left[\begin{array}{ccc}{\sigma\left(x_{1}, x_{1}\right)} &amp; {\cdots} &amp; {\sigma\left(x_{1}, x_{d}\right)} \ {\vdots} &amp; {\ddots} &amp; {\vdots} \ {\sigma\left(x_{d}, x_{1}\right)} &amp; {\cdots} &amp; {\sigma\left(x_{d}, x_{d}\right)}\end{array}\right] \in \mathbb{R}^{d \times d}<br>$$<br>其中，对角线上的元素为各个随机变量的方差，非对角线上的元素为两两随机变量之间的协方差，根据协方差的定义，我们可以认定：矩阵 $\Sigma$ 为对称矩阵(symmetric matrix)，其大小为 $d \times d$ 。</p>
+<h2 id="多元正态分布与线性变换"><a href="#多元正态分布与线性变换" class="headerlink" title="多元正态分布与线性变换"></a>多元正态分布与线性变换</h2><p>假设一个向量 $x$ 服从均值向量为 $\mu$ 、协方差矩阵为 $\Sigma$ 的多元正态分布(multi-variate Gaussian distribution)，则<br>$$<br>p(\boldsymbol{x})=|2 \pi \Sigma|^{-1 / 2} \exp \left(-\frac{1}{2}(\boldsymbol{x}-\boldsymbol{\mu})^{T} \Sigma^{-1}(\boldsymbol{x}-\boldsymbol{\mu})\right)<br>$$<br>令该分布的均值向量为 $\mu = 0$，由于指数项外面的系数 $|2 \pi \Sigma|^{-1 / 2}$ 通常作为常数，故可将多元正态分布简化为<br>$$<br>p(\boldsymbol{x}) \propto \exp \left(-\frac{1}{2} \boldsymbol{x}^{T} \Sigma^{-1} \boldsymbol{x}\right)<br>$$<br>再令 $\boldsymbol{x}=(y, z)^{T}$，包含两个随机变量 $y$ 和 $z$，则协方差矩阵可写成如下形式：<br>$$<br>\Sigma=\left[\begin{array}{ll}{\sigma(y, y)} &amp; {\sigma(y, z)} \ {\sigma(z, y)} &amp; {\sigma(z, z)}\end{array}\right] \in \mathbb{R}^{2 \times 2}<br>$$<br>用单位矩阵(identity matrix) $I$ 作为协方差矩阵，随机变量 $y$ 和 $x$ 的方差均为1，则生成如干个随机数如图1所示。</p>
+<p><img src="/2019/09/30/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5/1.png" alt="1">（图1 标准的二元正态分布）</p>
+<p>在生成的若干个随机数中，每个点的似然为<br>$$<br>\mathcal{L}(\boldsymbol{x}) \propto \exp \left(-\frac{1}{2} \boldsymbol{x}^{T} \boldsymbol{x}\right)<br>$$<br>对图1中的所有点考虑一个线性变换(linear transformation)： $t = Ax$，我们能够得到图2.<br><img src="/2019/09/30/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5/2.png" alt="2">（图1 标准的二元正态分布）<br>图2 经过线性变换的二元正态分布，先将图1的纵坐标压缩0.5倍，再将所有点逆时针旋转30°得到。</p>
+<p>在线性变换中，矩阵 $A$ 被称为变换矩阵(transformation matrix)，为了将图1中的点经过线性变换得到我们想要的图2，其实我们需要构造两个矩阵：</p>
+<ul>
+<li>尺度矩阵(scaling matrix)：<br>$$<br>S=\left[\begin{array}{ll}{s_{y}} &amp; {0} \ {0} &amp; {s_{z}}\end{array}\right]<br>$$</li>
+<li>旋转矩阵(rotation matrix)<br>$$<br>R=\left[\begin{array}{cc}{\cos (\theta)} &amp; {-\sin (\theta)} \ {\sin (\theta)} &amp; {\cos (\theta)}\end{array}\right]<br>$$<br>其中，$\theta$ 为顺时针旋转的度数。</li>
+</ul>
+<blockquote>
+<p>变换矩阵、尺度矩阵和旋转矩阵三者的关系式：$A = RS$</p>
+</blockquote>
+<p>在这个例子中，尺度矩阵为 $S=\left[\begin{array}{cc}{1} &amp; {0} \ {0} &amp; {\frac{1}{2}}\end{array}\right]$  ，旋转矩阵为 $R=\left[\begin{array}{cc}{\cos \left(-\frac{\pi}{6}\right)} &amp; {-\sin \left(-\frac{\pi}{6}\right)} \ {\sin \left(-\frac{\pi}{6}\right)} &amp; {\cos \left(-\frac{\pi}{6}\right)}\end{array}\right]=\left[\begin{array}{cc}{\frac{\sqrt{3}}{2}} &amp; {\frac{1}{2}} \ {-\frac{1}{2}} &amp; {\frac{\sqrt{3}}{2}}\end{array}\right]$ ，故变换矩阵为 $A=R S=\left[\begin{array}{cc}{\frac{\sqrt{3}}{2}} &amp; {\frac{1}{4}} \ {-\frac{1}{2}} &amp; {\frac{\sqrt{3}}{4}}\end{array}\right]$</p>
+<p>另外，需要考虑的是，经过了线性变换，$t$ 的分布是什么样子呢？</p>
+<p>将 $x = A^{-1}t$ 带入前面给出的似然 $\mathcal{L}(\boldsymbol{t})$ ，有</p>
+<p>$$<br>\begin{array}{l}{\mathcal{L}(\boldsymbol{t}) \propto \exp \left(-\frac{1}{2}\left(A^{-1} \boldsymbol{t}\right)^{T}\left(A^{-1} \boldsymbol{t}\right)\right)} \ {=\exp \left(-\frac{1}{2} \boldsymbol{t}^{T}\left(\boldsymbol{A} \boldsymbol{A}^{T}\right)^{-1} \boldsymbol{t}\right)}\end{array}<br>$$</p>
+<p>由此可以得到，多元正态分布的协方差矩阵为<br>$$<br>\Sigma=A A^{T}=\left[\begin{array}{cc}{\frac{\sqrt{3}}{2}} &amp; {\frac{1}{4}} \ {-\frac{1}{2}} &amp; {\frac{\sqrt{3}}{4}}\end{array}\right]\left[\begin{array}{cc}{\frac{\sqrt{3}}{2}} &amp; {-\frac{1}{2}} \ {\frac{1}{4}} &amp; {\frac{\sqrt{3}}{4}}\end{array}\right]=\left[\begin{array}{cc}{\frac{13}{16}} &amp; {-\frac{3 \sqrt{3}}{16}} \ {-\frac{3 \sqrt{3}}{16}} &amp; {\frac{7}{16}}\end{array}\right]<br>$$</p>
+<h2 id="协方差矩阵的特征值分解"><a href="#协方差矩阵的特征值分解" class="headerlink" title="协方差矩阵的特征值分解"></a>协方差矩阵的特征值分解</h2><p>回到我们已经学过的线性代数内容，对于任意对称矩阵 $\Sigma$，存在一个特征值分解(eigenvalue decomposition, EVD)：$\Sigma = U\Lambda U^T$</p>
+<p>其中，$U$ 的每一列都是相互正交的特征向量，且是单位向量，满足 $U^TU=I$，$\Lambda$ 对角线上的元素是从大到小排列的特征值，非对角线上的元素均为0。</p>
+<p>当然，这条公式在这里也可以很容易地写成如下形式：<br>$$<br>\Sigma=\left(U \Lambda^{1 / 2}\right)\left(U \Lambda^{1 / 2}\right)^{T}=A A^{T}<br>$$<br>其中， $A = U\Lambda^{1/2}$ ，因此，通俗地说，任意一个协方差矩阵都可以视为线性变换的结果。</p>
+<p>在上面的例子中，特征向量构成的矩阵为<br>$$<br>U=R=\left[\begin{array}{cc}{\cos (\theta)} &amp; {-\sin (\theta)} \ {\sin (\theta)} &amp; {\cos (\theta)}\end{array}\right]=\left[\begin{array}{cc}{\frac{\sqrt{3}}{2}} &amp; {\frac{1}{2}} \ {-\frac{1}{2}} &amp; {\frac{\sqrt{3}}{2}}\end{array}\right]<br>$$<br>特征值构成的矩阵为<br>$$<br>\Lambda=S S^{T}=\left[\begin{array}{cc}{s_{y}^{2}} &amp; {0} \ {0} &amp; {s_{z}^{2}}\end{array}\right]=\left[\begin{array}{cc}{1} &amp; {0} \ {0} &amp; {\frac{1}{4}}\end{array}\right]<br>$$<br>到这里，我们发现：多元正态分布的概率密度是由协方差矩阵的特征向量控制旋转(rotation)，特征值控制尺度(scale)，除了协方差矩阵，均值向量会控制概率密度的位置，在图1和图2中，均值向量为 $0$，因此，概率密度的中心位于坐标原点。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/21/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E7%A9%BA%E9%97%B4%E4%B8%8E%E5%B8%8C%E5%B0%94%E4%BC%AF%E7%89%B9%E7%A9%BA%E9%97%B4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1193,113 +1294,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">统计学系方法-第6章-逻辑斯谛回归与最大熵模型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-08-29 11:37:12" itemprop="dateCreated datePublished" datetime="2019-08-29T11:37:12+08:00">2019-08-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-09-19 12:48:16" itemprop="dateModified" datetime="2019-09-19T12:48:16+08:00">2019-09-19</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>逻辑斯谛回归（logistic regression）是统计学习中的经典分类方法。最大熵是概率模型学习的一个准则，将其推广到分类问题得到最大熵模型（maximum entropy model）。逻辑斯蒂回归模型与最大熵模型都属于对数线性模型。</p>
-<h2 id="逻辑斯谛回归模型"><a href="#逻辑斯谛回归模型" class="headerlink" title="逻辑斯谛回归模型"></a>逻辑斯谛回归模型</h2><h3 id="逻辑斯谛分布"><a href="#逻辑斯谛分布" class="headerlink" title="逻辑斯谛分布"></a>逻辑斯谛分布</h3><p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%88%86%E5%B8%83.png" alt="逻辑斯谛分布"> </p>
-<h3 id="二项逻辑斯谛回归模型"><a href="#二项逻辑斯谛回归模型" class="headerlink" title="二项逻辑斯谛回归模型"></a>二项逻辑斯谛回归模型</h3><p>二项逻辑斯谛回归模型（binomial logistic regression model）是一种分类模型，由条件概率分布 P(Y|X) 表示，形式为参数化的逻辑斯谛分布。这里，随机变量 X 取值为实数，随机变量 Y 取值为 1 或 0。</p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E4%BA%8C%E9%A1%B9%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E6%A8%A1%E5%9E%8B.png" alt="二项逻辑斯谛回归模型"> </p>
-<p>一个事件的几率（odds）是指该事件发生的概率与该事件不发生的概率的比值。如果事件发生的概率是 p，那么该事件的几率是 p/(1-p)，该事件的对数几率（log odds）或 logit 函数是 <img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/logit.png" alt="logit"></p>
-<p>对逻辑斯谛回归而言，<img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E5%87%A0%E7%8E%87.png" alt="逻辑斯谛回归几率"></p>
-<p>这就是说，在逻辑斯谛回归模型中，输出 Y=1 的对数几率是输入 x 的线性函数。或者说，输出 Y=1 的对数几率是由输入 x 的线性函数表示的模型，即逻辑斯谛回归模型。</p>
-<h3 id="模型参数估计"><a href="#模型参数估计" class="headerlink" title="模型参数估计"></a>模型参数估计</h3><p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92-%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E4%BC%B0%E8%AE%A1.png" alt="逻辑斯谛回归-模型参数估计"></p>
-<h3 id="多项逻辑斯谛回归"><a href="#多项逻辑斯谛回归" class="headerlink" title="多项逻辑斯谛回归"></a>多项逻辑斯谛回归</h3><p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E5%A4%9A%E9%A1%B9%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92.png" alt="多项逻辑斯谛回归"></p>
-<h2 id="最大熵模型"><a href="#最大熵模型" class="headerlink" title="最大熵模型"></a>最大熵模型</h2><p>最大熵模型（maximum entropy model）由最大熵原理推导实现。</p>
-<h3 id="最大熵原理"><a href="#最大熵原理" class="headerlink" title="最大熵原理"></a>最大熵原理</h3><p>最大熵原理是概率模型学习的一个准则。最大熵原理认为，学习概率模型时，在所有可能的概率模型（分布）中，熵最大的模型是最好的模型。通常用约束条件来确定概率模型的集合，所以，最大熵原理也可以表述为在满足条件的模型集合中选取熵最大的模型。</p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E7%86%B5.png" alt="熵"></p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E6%9C%80%E5%A4%A7%E7%86%B5%E5%87%A0%E4%BD%95%E8%A7%A3%E9%87%8A1.png" alt="最大熵几何解释1"></p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E6%9C%80%E5%A4%A7%E7%86%B5%E5%87%A0%E4%BD%95%E8%A7%A3%E9%87%8A2.png" alt="最大熵几何解释2"></p>
-<h3 id="最大熵模型的定义"><a href="#最大熵模型的定义" class="headerlink" title="最大熵模型的定义"></a>最大熵模型的定义</h3><p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%AE%9A%E4%B9%891.png" alt="最大熵模型的定义1"></p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%AE%9A%E4%B9%892.png" alt="最大熵模型的定义2"></p>
-<h3 id="最大熵模型的学习"><a href="#最大熵模型的学习" class="headerlink" title="最大熵模型的学习"></a>最大熵模型的学习</h3><p>最大熵模型的学习过程就是求解最大熵模型的过程。最大熵模型的学习可以形式化为约束最优化问题。</p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%AD%A6%E4%B9%A01.png" alt="最大熵模型的学习1"></p>
-<p>求解上述约束最优问题，所得出的解，就是最大熵模型学习的解。</p>
-<p>将约束最优化的原始问题转换为无约束最优化的对偶问题。通过求解对偶问题求解原始问题。</p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F.png" alt="拉格朗日对偶形式"></p>
-<p>由于拉格朗日函数 L(P, w) 是 P 的凸函数，原始问题（6.18）的解与对偶问题（6.19）的解是等价的。</p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E6%B1%82%E8%A7%A31.png" alt="对偶问题求解1"></p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E6%B1%82%E8%A7%A32.png" alt="对偶问题求解2"></p>
-<h3 id="极大似然估计"><a href="#极大似然估计" class="headerlink" title="极大似然估计"></a>极大似然估计</h3><p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E5%AF%B9%E5%81%B6%E5%87%BD%E6%95%B0%E6%9E%81%E5%A4%A7%E5%8C%96%E7%AD%89%E4%BB%B7%E4%BA%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%9E%81%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1%E8%AF%81%E6%98%8E1.png" alt="对偶函数极大化等价于最大熵模型的极大似然估计证明1"></p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/%E5%AF%B9%E5%81%B6%E5%87%BD%E6%95%B0%E6%9E%81%E5%A4%A7%E5%8C%96%E7%AD%89%E4%BB%B7%E4%BA%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%9E%81%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1%E8%AF%81%E6%98%8E2.png" alt="对偶函数极大化等价于最大熵模型的极大似然估计证明2"></p>
-<h2 id="模型学习的最优化算法"><a href="#模型学习的最优化算法" class="headerlink" title="模型学习的最优化算法"></a>模型学习的最优化算法</h2><p>逻辑斯谛回归模型、最大熵模型学习归结为似然函数为目标函数的最优化问题，通常通过迭代算法求解。从最优化的观点看，这时的目标函数具有很好的性质。它是光滑的凸函数，因此多种最优化的方法都适用，保证能找到全局最优解。常用的方法有改进的迭代尺度法、梯度下降法、牛顿法或拟牛顿法。牛顿法或拟牛顿法一般收敛速度更快。</p>
-<h3 id="改进的迭代尺度法"><a href="#改进的迭代尺度法" class="headerlink" title="改进的迭代尺度法"></a>改进的迭代尺度法</h3><p>改进的迭代尺度法（improved iterative scaling, IIS）是一种最大熵模型学习的最优化算法。</p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/IIS.png" alt="IIS"></p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/IIS%E7%AE%97%E6%B3%951.png" alt="IIS算法1"></p>
-<p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/IIS%E7%AE%97%E6%B3%952.png" alt="IIS算法2"></p>
-<h3 id="拟牛顿法"><a href="#拟牛顿法" class="headerlink" title="拟牛顿法"></a>拟牛顿法</h3><p><img src="/2019/08/29/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC6%E7%AB%A0-%E9%80%BB%E8%BE%91%E6%96%AF%E8%B0%9B%E5%9B%9E%E5%BD%92%E4%B8%8E%E6%9C%80%E5%A4%A7%E7%86%B5%E6%A8%A1%E5%9E%8B/BFGS.png" alt="BFGS"></p>
-<hr>
-<p>Logistic Regression：根据周志华老师的讲法，这里 logistic 是对数几率的意思，所以正确的翻译方法应该叫 __对数几率回归__，所以不要以为这个东西叫 __逻辑回归__，逻辑回归是错误的翻译。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1371,20 +1365,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

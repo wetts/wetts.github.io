@@ -188,6 +188,338 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/03/27/%E5%B7%A5%E5%85%B7/git/git-CommitMessage%E7%BC%96%E5%86%99%E6%8C%87%E5%8D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/03/27/%E5%B7%A5%E5%85%B7/git/git-CommitMessage%E7%BC%96%E5%86%99%E6%8C%87%E5%8D%97/" class="post-title-link" itemprop="url">git-CommitMessage编写指南</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-03-27 17:30:21" itemprop="dateCreated datePublished" datetime="2017-03-27T17:30:21+08:00">2017-03-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-07-27 15:17:25" itemprop="dateModified" datetime="2017-07-27T15:17:25+08:00">2017-07-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2016/01/commit_message_change_log.html">http://www.ruanyifeng.com/blog/2016/01/commit_message_change_log.html</a></p>
+<h2 id="Commit-message-的作用"><a href="#Commit-message-的作用" class="headerlink" title="Commit message 的作用"></a>Commit message 的作用</h2><p>格式化的Commit message，有几个好处。</p>
+<h3 id="提供更多的历史信息，方便快速浏览。"><a href="#提供更多的历史信息，方便快速浏览。" class="headerlink" title="提供更多的历史信息，方便快速浏览。"></a>提供更多的历史信息，方便快速浏览。</h3><p>比如，下面的命令显示上次发布后的变动，每个commit占据一行。你只看行首，就知道某次 commit 的目的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git log &lt;last tag&gt; HEAD --pretty=format:%s</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2017/03/27/%E5%B7%A5%E5%85%B7/git/git-CommitMessage%E7%BC%96%E5%86%99%E6%8C%87%E5%8D%97/1.png" alt="1"></p>
+<h3 id="可以过滤某些commit（比如文档改动），便于快速查找信息。"><a href="#可以过滤某些commit（比如文档改动），便于快速查找信息。" class="headerlink" title="可以过滤某些commit（比如文档改动），便于快速查找信息。"></a>可以过滤某些commit（比如文档改动），便于快速查找信息。</h3><p>比如，下面的命令仅仅显示本次发布新增加的功能。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git log &lt;last release&gt; HEAD --grep feature</span><br></pre></td></tr></table></figure>
+
+<h3 id="可以直接从commit生成Change-log。"><a href="#可以直接从commit生成Change-log。" class="headerlink" title="可以直接从commit生成Change log。"></a>可以直接从commit生成Change log。</h3><p>Change Log 是发布新版本时，用来说明与上一个版本差异的文档，详见后文。</p>
+<p><img src="/2017/03/27/%E5%B7%A5%E5%85%B7/git/git-CommitMessage%E7%BC%96%E5%86%99%E6%8C%87%E5%8D%97/2.png" alt="2"></p>
+<h2 id="Commit-message-的格式"><a href="#Commit-message-的格式" class="headerlink" title="Commit message 的格式"></a>Commit message 的格式</h2><p>每次提交，Commit message 都包括三个部分：Header，Body 和 Footer。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;</span><br><span class="line">// 空一行</span><br><span class="line">&lt;body&gt;</span><br><span class="line">// 空一行</span><br><span class="line">&lt;footer&gt;</span><br></pre></td></tr></table></figure>
+<p>其中，Header 是必需的，Body 和 Footer 可以省略。</p>
+<p>不管是哪一个部分，任何一行都不得超过72个字符（或100个字符）。这是为了避免自动换行影响美观。</p>
+<h3 id="Header"><a href="#Header" class="headerlink" title="Header"></a>Header</h3><p>Header部分只有一行，包括三个字段：type（必需）、scope（可选）和subject（必需）。</p>
+<h4 id="type"><a href="#type" class="headerlink" title="type"></a>type</h4><p>type用于说明 commit 的类别，只允许使用下面7个标识。</p>
+<ul>
+<li>feat：新功能（feature）</li>
+<li>fix：修补bug</li>
+<li>docs：文档（documentation）</li>
+<li>style： 格式（不影响代码运行的变动）</li>
+<li>refactor：重构（即不是新增功能，也不是修改bug的代码变动）</li>
+<li>test：增加测试</li>
+<li>chore：构建过程或辅助工具的变动</li>
+</ul>
+<p>如果type为feat和fix，则该 commit 将肯定出现在 Change log 之中。其他情况（docs、chore、style、refactor、test）由你决定，要不要放入 Change log，建议是不要。</p>
+<h4 id="scope"><a href="#scope" class="headerlink" title="scope"></a>scope</h4><p>scope用于说明 commit 影响的范围，比如数据层、控制层、视图层等等，视项目不同而不同。</p>
+<h4 id="subject"><a href="#subject" class="headerlink" title="subject"></a>subject</h4><p>subject是 commit 目的的简短描述，不超过50个字符。</p>
+<ul>
+<li>以动词开头，使用第一人称现在时，比如change，而不是changed或changes</li>
+<li>第一个字母小写</li>
+<li>结尾不加句号（.）</li>
+</ul>
+<h3 id="Body"><a href="#Body" class="headerlink" title="Body"></a>Body</h3><p>Body 部分是对本次 commit 的详细描述，可以分成多行。下面是一个范例。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">More detailed explanatory text, if necessary.  Wrap it to</span><br><span class="line">about 72 characters or so.</span><br><span class="line"></span><br><span class="line">Further paragraphs come after blank lines.</span><br><span class="line"></span><br><span class="line">- Bullet points are okay, too</span><br><span class="line">- Use a hanging indent</span><br></pre></td></tr></table></figure>
+
+<p>有两个注意点。</p>
+<ol>
+<li>使用第一人称现在时，比如使用change而不是changed或changes。</li>
+<li>应该说明代码变动的动机，以及与以前行为的对比。</li>
+</ol>
+<h3 id="Footer"><a href="#Footer" class="headerlink" title="Footer"></a>Footer</h3><p>Footer 部分只用于两种情况。</p>
+<ol>
+<li>不兼容变动<br>如果当前代码与上一个版本不兼容，则 Footer 部分以BREAKING CHANGE开头，后面是对变动的描述、以及变动理由和迁移方法。</li>
+</ol>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">BREAKING CHANGE: isolate scope bindings definition has changed.</span><br><span class="line"></span><br><span class="line">    To migrate the code follow the example below:</span><br><span class="line"></span><br><span class="line">    Before:</span><br><span class="line"></span><br><span class="line">    scope: &#123;</span><br><span class="line">      myAttr: &#x27;attribute&#x27;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    After:</span><br><span class="line"></span><br><span class="line">    scope: &#123;</span><br><span class="line">      myAttr: &#x27;@&#x27;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    The removed `inject` wasn&#x27;t generaly useful for directives so there should be no code using it.</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>关闭 Issue<br>如果当前 commit 针对某个issue，那么可以在 Footer 部分关闭这个 issue 。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Closes #234</span><br></pre></td></tr></table></figure>
+也可以一次关闭多个 issue 。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Closes #123, #245, #992</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="Revert"><a href="#Revert" class="headerlink" title="Revert"></a>Revert</h3><p>还有一种特殊情况，如果当前 commit 用于撤销以前的 commit，则必须以revert:开头，后面跟着被撤销 Commit 的 Header。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">revert: feat(pencil): add &#x27;graphiteWidth&#x27; option</span><br><span class="line"></span><br><span class="line">This reverts commit 667ecc1654a317a13331b17617d973392f415f02.</span><br></pre></td></tr></table></figure>
+<p>Body部分的格式是固定的，必须写成<code>This reverts commit &amp;lt;hash&gt;.</code>，其中的hash是被撤销 commit 的 SHA 标识符。</p>
+<p>如果当前 commit 与被撤销的 commit，在同一个发布（release）里面，那么它们都不会出现在 Change log 里面。如果两者在不同的发布，那么当前 commit，会出现在 Change log 的Reverts小标题下面。</p>
+<h2 id="Commitizen"><a href="#Commitizen" class="headerlink" title="Commitizen"></a>Commitizen</h2><p>Commitizen是一个撰写合格 Commit message 的工具。</p>
+<p>安装命令如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g commitizen</span><br></pre></td></tr></table></figure>
+<p>然后，在项目目录里，运行下面的命令，使其支持 Angular 的 Commit message 格式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ commitizen init cz-conventional-changelog --save --save-exact</span><br></pre></td></tr></table></figure>
+<p>以后，凡是用到git commit命令，一律改为使用git cz。这时，就会出现选项，用来生成符合格式的 Commit message。</p>
+<p><img src="/2017/03/27/%E5%B7%A5%E5%85%B7/git/git-CommitMessage%E7%BC%96%E5%86%99%E6%8C%87%E5%8D%97/3.png" alt="3"></p>
+<h2 id="validate-commit-msg"><a href="#validate-commit-msg" class="headerlink" title="validate-commit-msg"></a>validate-commit-msg</h2><p>validate-commit-msg 用于检查 Node 项目的 Commit message 是否符合格式。</p>
+<p>它的安装是手动的。首先，拷贝下面这个JS文件，放入你的代码库。文件名可以取为<code>validate-commit-msg.js</code>。</p>
+<p>接着，把这个脚本加入 Git 的 hook。下面是在<code>package.json</code>里面使用 ghooks，把这个脚本加为<code>commit-msg</code>时运行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&quot;config&quot;: &#123;</span><br><span class="line">  &quot;ghooks&quot;: &#123;</span><br><span class="line">    &quot;commit-msg&quot;: &quot;./validate-commit-msg.js&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，每次git commit的时候，这个脚本就会自动检查 Commit message 是否合格。如果不合格，就会报错。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ git add -A</span><br><span class="line">$ git commit -m &quot;edit markdown&quot;</span><br><span class="line">INVALID COMMIT MSG: does not match &quot;&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;&quot; ! was: edit markdown</span><br></pre></td></tr></table></figure>
+
+<h2 id="生成-Change-log"><a href="#生成-Change-log" class="headerlink" title="生成 Change log"></a>生成 Change log</h2><p>如果你的所有 Commit 都符合 Angular 格式，那么发布新版本时， Change log 就可以用脚本自动生成（例1，例2，例3）。</p>
+<p>生成的文档包括以下三个部分。</p>
+<ul>
+<li>New features</li>
+<li>Bug fixes</li>
+<li>Breaking changes.</li>
+</ul>
+<p>每个部分都会罗列相关的 commit ，并且有指向这些 commit 的链接。当然，生成的文档允许手动修改，所以发布前，你还可以添加其他内容。</p>
+<p><code>conventional-changelog</code> 就是生成 Change log 的工具，运行下面的命令即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g conventional-changelog</span><br><span class="line">$ cd my-project</span><br><span class="line">$ conventional-changelog -p angular -i CHANGELOG.md -w</span><br></pre></td></tr></table></figure>
+
+<p>上面命令不会覆盖以前的 Change log，只会在CHANGELOG.md的头部加上自从上次发布以来的变动。</p>
+<p>如果你想生成所有发布的 Change log，要改为运行下面的命令。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ conventional-changelog -p angular -i CHANGELOG.md -w -r 0</span><br></pre></td></tr></table></figure>
+
+<p>为了方便使用，可以将其写入package.json的scripts字段。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;scripts&quot;: &#123;</span><br><span class="line">    &quot;changelog&quot;: &quot;conventional-changelog -p angular -i CHANGELOG.md -w -r 0&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以后，直接运行下面的命令即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm run changelog</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/03/19/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%89%98%E6%A8%A1%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/03/19/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%89%98%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">双亲委托模型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-03-19 14:33:13" itemprop="dateCreated datePublished" datetime="2017-03-19T14:33:13+08:00">2017-03-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-11 21:52:54" itemprop="dateModified" datetime="2019-10-11T21:52:54+08:00">2019-10-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>“双亲委派”是指子类加载器如果没有加载过该目标类，就先委托父类加载器加载该目标类，只有在父类加载器找不到字节码文件的情况下才从自己的类路径中查找并装载目标类。</p>
+<p>“双亲委派”机制加载Class的具体过程是：</p>
+<ol>
+<li>源ClassLoader先判断该Class是否已加载，如果已加载，则返回Class对象；如果没有则委托给父类加载器。</li>
+<li>父类加载器判断是否加载过该Class，如果已加载，则返回Class对象；如果没有则委托给祖父类加载器。</li>
+<li>依此类推，直到始祖类加载器（引用类加载器）。</li>
+<li>始祖类加载器判断是否加载过该Class，如果已加载，则返回Class对象；如果没有则尝试从其对应的类路径下寻找class字节码文件并载入。如果载入成功，则返回Class对象；如果载入失败，则委托给始祖类加载器的子类加载器。</li>
+<li>始祖类加载器的子类加载器尝试从其对应的类路径下寻找class字节码文件并载入。如果载入成功，则返回Class对象；如果载入失败，则委托给始祖类加载器的孙类加载器。</li>
+<li>依此类推，直到源ClassLoader。</li>
+</ol>
+<p>源ClassLoader尝试从其对应的类路径下寻找class字节码文件并载入。如果载入成功，则返回Class对象；如果载入失败，源ClassLoader不会再委托其子类加载器，而是抛出异常。</p>
+<p>“双亲委派”机制只是Java推荐的机制，并不是强制的机制。</p>
+<p>我们可以继承java.lang.ClassLoader类，实现自己的类加载器。如果想保持双亲委派模型，就应该重写findClass(name)方法；如果想破坏双亲委派模型，可以重写loadClass(name)方法。</p>
+<p>打破双亲委托机制：</p>
+<ol>
+<li>在构造类加载器时将parent设为null</li>
+<li>重写load(String,boolean)方法，改变类的查找机制</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/03/16/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%9D%91-Integer%E7%B1%BB%E5%9E%8B%EF%BC%8C%E5%80%BC%E4%B8%BA0%E8%A2%AB%E8%AE%A4%E4%B8%BA%E6%98%AF%E7%A9%BA%E5%AD%97%E7%AC%A6%E4%B8%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/03/16/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%9D%91-Integer%E7%B1%BB%E5%9E%8B%EF%BC%8C%E5%80%BC%E4%B8%BA0%E8%A2%AB%E8%AE%A4%E4%B8%BA%E6%98%AF%E7%A9%BA%E5%AD%97%E7%AC%A6%E4%B8%B2/" class="post-title-link" itemprop="url">Mybatis-坑-Integer类型，值为0被认为是空字符串</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-03-16 15:30:35" itemprop="dateCreated datePublished" datetime="2017-03-16T15:30:35+08:00">2017-03-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-19 17:01:30" itemprop="dateModified" datetime="2017-03-19T17:01:30+08:00">2017-03-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>正常是 type 有值才会使用这个条件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;if test=&quot;type != null and type != &#x27;&#x27;&quot;&gt;</span><br><span class="line">   type=#&#123;type&#125;,</span><br><span class="line">&lt;/if&gt;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int i = 0;</span><br><span class="line">i!=&#x27;&#x27;。</span><br><span class="line">mybatis中会返回true。也就是说，mybatis将i==0的值也认定为空字符串。</span><br></pre></td></tr></table></figure>
+
+<p>正常来说，0不为空也不是空字符串。所以，针对这个问题，我的解决办法是：如果类型为Integer类型，我就去掉 ！= ”的判断，只判断!=null即可。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/03/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringBoot-spring-boot-starter-thymeleaf%E5%AF%B9%E6%B2%A1%E6%9C%89%E7%BB%93%E6%9D%9F%E7%AC%A6%E7%9A%84HTML5%E6%A0%87%E7%AD%BE%E8%A7%A3%E6%9E%90%E5%87%BA%E9%94%99/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -297,7 +629,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+                <time title="修改时间：2021-07-17 01:45:50" itemprop="dateModified" datetime="2021-07-17T01:45:50+08:00">2021-07-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -331,25 +663,25 @@
 <p>Then, when you do a git add, it stages the file in the index, and Git says “oh, okay, now your working copy and index match, but those are both different than HEAD.”</p>
 <p>When you then perform a git commit, Git creates a new commit that HEAD now points to and the status of the index and working copy match it so Git’s happy once more.</p>
 <h2 id="Reset"><a href="#Reset" class="headerlink" title="Reset"></a>Reset</h2><p>If you just look at the reset command by itself, all it does is reset HEAD (the tip of the current branch) to another commit. For instance, say we have a branch (the name doesn’t matter, so let’s call this one “super-duper-feature”) and it looks like so:</p>
-<p>![HEADLatest](Difference between git reset soft, mixed and hard/HEADLatest.png)</p>
+<p><img src="/2017/03/10/%E5%B7%A5%E5%85%B7/git/Difference%20between%20git%20reset%20soft,%20mixed%20and%20hard/HEADLatest.png" alt="HEADLatest"></p>
 <p>If we perform:</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; git reset HEAD</span><br></pre></td></tr></table></figure>
 <p>… nothing happens. This is because we tell git to reset this branch to HEAD, which is where it already is. But if we do:</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; git reset HEAD~1</span><br></pre></td></tr></table></figure>
 <p>(HEAD~1 is shorthand case for “the commit right before HEAD”, or put differently “HEAD’s parent”) our branch now looks like so:</p>
-<p>![HEADParent](Difference between git reset soft, mixed and hard/HEADParent.png)</p>
+<p><img src="/2017/03/10/%E5%B7%A5%E5%85%B7/git/Difference%20between%20git%20reset%20soft,%20mixed%20and%20hard/HEADParent.png" alt="HEADParent"></p>
 <p>If we start at the latest commit again and do:</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; git reset HEAD~2</span><br></pre></td></tr></table></figure>
 <p>our branch would look like so:</p>
-<p>![HEADParentParent](Difference between git reset soft, mixed and hard/HEADParentParent.png)</p>
+<p><img src="/2017/03/10/%E5%B7%A5%E5%85%B7/git/Difference%20between%20git%20reset%20soft,%20mixed%20and%20hard/HEADParentParent.png" alt="HEADParentParent"></p>
 <p>Again, all it does on a basic level is move HEAD to another commit.</p>
 <h2 id="Parameters"><a href="#Parameters" class="headerlink" title="Parameters"></a>Parameters</h2><p>So the reset command itself is pretty simple, but it’s the parameters that cause confusion. The main parameters are soft, hard and mixed. These tell Git what to do with your index and working copy when performing the reset.</p>
 <h3 id="Soft"><a href="#Soft" class="headerlink" title="Soft"></a>Soft</h3><p>The –soft parameter tells Git to reset HEAD to another commit, but that’s it. If you specify –soft Git will stop there and nothing else will change. What this means is that the index and working copy don’t get touched, so all of the files that changed between the original HEAD and the commit you reset to appear to be staged.</p>
-<p>![reset-wc-index-changed](Difference between git reset soft, mixed and hard/reset-wc-index-changed.png)</p>
+<p><img src="/2017/03/10/%E5%B7%A5%E5%85%B7/git/Difference%20between%20git%20reset%20soft,%20mixed%20and%20hard/reset-wc-index-changed.png" alt="reset-wc-index-changed"></p>
 <h3 id="Mixed-default"><a href="#Mixed-default" class="headerlink" title="Mixed (default)"></a>Mixed (default)</h3><p>The –mixed parameter (which is the default if you don’t specify anything) will reset HEAD to another commit, and will reset the index to match it, but will stop there. The working copy will not be touched. So, all of the changes between the original HEAD and the commit you reset to are still in the working copy and appear as modified, but not staged.</p>
-<p>![reset-wc-changed](Difference between git reset soft, mixed and hard/reset-wc-changed.png)</p>
+<p><img src="/2017/03/10/%E5%B7%A5%E5%85%B7/git/Difference%20between%20git%20reset%20soft,%20mixed%20and%20hard/reset-wc-changed.png" alt="reset-wc-changed"></p>
 <h3 id="Hard"><a href="#Hard" class="headerlink" title="Hard"></a>Hard</h3><p>The –hard parameter will blow out everything – it resets HEAD back to another commit, resets the index to match it, and resets the working copy to match it as well. This is the more dangerous of the commands and is where you can cause damage. Data might get lost here*!</p>
-<p>![reset-all-happy](Difference between git reset soft, mixed and hard/reset-all-happy.png)</p>
+<p><img src="/2017/03/10/%E5%B7%A5%E5%85%B7/git/Difference%20between%20git%20reset%20soft,%20mixed%20and%20hard/reset-all-happy.png" alt="reset-all-happy"></p>
 
       
     </div>
@@ -794,7 +1126,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-21 22:12:10" itemprop="dateModified" datetime="2017-01-21T22:12:10+08:00">2017-01-21</time>
+                <time title="修改时间：2021-07-19 00:59:28" itemprop="dateModified" datetime="2021-07-19T00:59:28+08:00">2021-07-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -802,7 +1134,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
                 </span>
             </span>
 
@@ -831,290 +1163,6 @@
 <li>-o:指明到要导出的文件名</li>
 <li>-q:指明导出数据的过滤条件</li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC17%E7%AB%A0-%E5%91%B3%E9%81%93%E4%B8%8E%E5%90%AF%E5%8F%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC17%E7%AB%A0-%E5%91%B3%E9%81%93%E4%B8%8E%E5%90%AF%E5%8F%91/" class="post-title-link" itemprop="url">代码整洁之道-第17章-味道与启发</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-20 14:54:07" itemprop="dateCreated datePublished" datetime="2017-01-20T14:54:07+08:00">2017-01-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h2><ol>
-<li>不恰当的信息</li>
-</ol>
-<p>  让注释传达本该更好地在源代码控制系统、问题追踪系统或任何其他记录系统中保持的信息，是不恰当的。例如，修改历史记录只会用大量过时而无趣的文本搞乱源代码文件。通常，作者、最后修改时间、SPR数等元数据不该在注释中出现。注释只应该描述有关代码和设计的技术性信息。</p>
-<ol start="2">
-<li>废弃的注释</li>
-</ol>
-<p>  过时、无关或不正确的注释就是废弃的注释。注释会很快过时。最好别编写将被废弃的注释。如果发现废弃的注释，最好尽快更新或删除。</p>
-<ol start="3">
-<li>冗余注释</li>
-</ol>
-<p>  如果注释描述的是某种充分自我描述了的东西，那么注释就是多余的。例如：<br>  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i++; // increment i</span><br></pre></td></tr></table></figure><br>  另一个例子是除函数签名之外什么也没多说（或少说）的Javadoc：<br>  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * @param sellRequest</span><br><span class="line"> * @return</span><br><span class="line"> * @throws ManagedComponentException</span><br><span class="line"> */</span><br><span class="line">public SellReponse beginSellItem(SellRequest sellRequest) throws ManagedComponentException</span><br></pre></td></tr></table></figure></p>
-<ol start="4">
-<li>糟糕的注释</li>
-</ol>
-<p>  如果要编写一条注释，就花时间保证写出最好的注释，字斟句酌。使用正确的语法和拼写。别闲扯，别画蛇添足，保持简洁。</p>
-<ol start="5">
-<li>注释掉的代码</li>
-</ol>
-<p>  看到注释掉的代码，就删除它！源代码控制系统会记得它，如果有人真的需要，可以签出比较前的版本。</p>
-<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><ol>
-<li>过多的参数</li>
-</ol>
-<p>  函数的参数数量应该少。没参数最好，一个次之，两个、三个再次之。三个以上的参数非常值得质疑，应坚决避免。</p>
-<ol start="2">
-<li>输出参数</li>
-</ol>
-<p>  输出参数违反直觉。读者期望参数用于输入而非输出。如果函数非要修改什么东西的状态不可，就修改它所在对象的状态好了。</p>
-<ol start="3">
-<li>标识参数</li>
-</ol>
-<p>  布尔值参数大声宣告函数做了不止一件事。它们令人迷惑，应该消灭掉。</p>
-<ol start="4">
-<li>死函数</li>
-</ol>
-<p>  永不被调用的方法应该丢弃。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC9%E7%AB%A0-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC9%E7%AB%A0-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/" class="post-title-link" itemprop="url">代码整洁之道-第9章-单元测试</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-19 16:48:11" itemprop="dateCreated datePublished" datetime="2017-01-19T16:48:11+08:00">2017-01-19</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>TDD(Test-Driven Development)：测试驱动开发，是敏捷开发中的一项核心实践和技术，也是一种设计方法论。</p>
-<p>TDD三定律：</p>
-<ol>
-<li>在编写不能通过的单元测试前，不可编写生产代码。</li>
-<li>只可编写刚好无法通过的单元测试，不能编译也算不能通过。</li>
-<li>只可编写刚好足以通过当前失败测试的生产代码。</li>
-</ol>
-<p>这样测试代码量足以匹敌生产代码量，导致令人生畏的管理问题。</p>
-<p>测试代码和生产代码一样重要。它该像生产代码一般保持整洁。</p>
-<p>整洁的测试，三个要素：可读性、可读性和可读性。</p>
-<p>每个测试函数只测试一个概念。</p>
-<p>整洁的测试还遵循一下5条规则（F.I.R.S.T）：</p>
-<ul>
-<li>快速（Fast）：测试应该够快。测试运行缓慢，你就不会想要频繁地运行它。</li>
-<li>独立（Independent）：测试应该相互独立。某个测试不应为下一个测试设定条件。</li>
-<li>可重复（Repeatable）：测试应当可在任何环境中重复通过。</li>
-<li>自足验证（Self-Validating）：测试应该有布尔值输出。</li>
-<li>及时（Timely）：测试应及时编写。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC8%E7%AB%A0-%E8%BE%B9%E7%95%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC8%E7%AB%A0-%E8%BE%B9%E7%95%8C/" class="post-title-link" itemprop="url">代码整洁之道-第8章-边界</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-19 16:08:39" itemprop="dateCreated datePublished" datetime="2017-01-19T16:08:39+08:00">2017-01-19</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="使用第三方代码"><a href="#使用第三方代码" class="headerlink" title="使用第三方代码"></a>使用第三方代码</h3><p>在接口提供者和使用者之间，存在与生俱来的张力。第三方程序包和框架提供者追求普适性，这样就能在多个环境中工作，吸引广泛的用户。而使用者则想要集中满足特定需求的接口。这种张力会导致系统边界上出现问题。</p>
-<p>以java.util.Map为例。应用程序可能构造一个Map对象并传递它。我们的初衷可能是Map对象的所有接收者都不要删除映射图中的任何东西。但是Map中正好有一个clear()方法。Map的任何使用者都能清楚映射图。或许设计惯例是Map中只能保存特定的类型，但Map并不会可靠地约束存于其中的对象的类型。使用者可随意往Map中塞入任何类型的条目。</p>
-<p>可以通过泛型来规定传入参数的类型。但是超出所需/所愿的功能问题，仍未得到解决。</p>
-<p>在系统中不受限制的传递<code>Map&lt;Integer, Sensors&gt;</code>的实体，意味着当到Map的接口被修改时，有许多地方都要跟着改。你或许会认为这样的改动不太可能发生，不过，当Java 5加入对泛型的支持时，的确发生了改动。</p>
-<p>使用Map的更整洁的方式大概如下。Sensors的用户不必关心是否用了泛型，那将是实现细节才关心的。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class Sensors &#123;</span><br><span class="line">  private Map sensors = new HashMap();</span><br><span class="line"></span><br><span class="line">  public Sensors getById(String id) &#123;</span><br><span class="line">    return (Sensors) sensors.get(id);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>边界上的接口（Map）是隐藏的。它能随来自应用程序其他部分的极小的影响而变动。对泛型的使用不再是一个大问题，因为转换和类型管理是在Sensors类内部处理的。</p>
-<p>我们并不建议总是以这种方式封装Map的使用。我们建议不要将Map（或者边界上的其他接口）在系统中传递。如果你使用类似Map这样的边界接口，就把它保留在类或近亲类中。避免从公共API中返回边界接口，或将边界接口作为参数传递给公共API。</p>
-<hr>
-<p>我们通过代码中少数几处引用第三方边界接口的位置来管理第三方边界。可以像我们对待Map那样包装它们，也可以使用Adapter模式将我们的接口转换为第三方提供的接口。采用这两种方式，代码都能更好地与我们沟通，在边界两边推动内部一致的用法，当第三方代码有改动时修改点也会更少。</p>
 
       
     </div>
@@ -1201,20 +1249,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

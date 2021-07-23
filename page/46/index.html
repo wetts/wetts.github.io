@@ -188,6 +188,354 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">MySQL-引擎</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-09 11:22:03" itemprop="dateCreated datePublished" datetime="2016-03-09T11:22:03+08:00">2016-03-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-13 01:59:28" itemprop="dateModified" datetime="2021-07-13T01:59:28+08:00">2021-07-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.2cto.com/database/201503/385669.html">http://www.2cto.com/database/201503/385669.html</a></p>
+<h3 id="Innodb引擎"><a href="#Innodb引擎" class="headerlink" title="Innodb引擎"></a>Innodb引擎</h3><p>Innodb引擎提供了对数据库ACID事务的支持，并且实现了SQL标准的四种隔离级别，关于数据库事务与其隔离级别的内容请见数据库事务与其隔离级别这篇文章。该引擎还提供了行级锁和外键约束，它的设计目标是处理大容量数据库系统，它本身其实就是基于MySQL后台的完整数据库系统，MySQL运行时Innodb会在内存中建立缓冲池，用于缓冲数据和索引。但是该引擎不支持FULLTEXT类型的索引，而且它没有保存表的行数，当<code>SELECT COUNT(*) FROM TABLE</code>时需要扫描全表。当需要使用数据库事务时，该引擎当然是首选。由于锁的粒度更小，写操作不会锁定全表，所以在并发较高时，使用Innodb引擎会提升效率。但是使用行级锁也不是绝对的，如果在执行一个SQL语句时MySQL不能确定要扫描的范围，InnoDB表同样会锁全表。</p>
+<h3 id="MyIASM引擎"><a href="#MyIASM引擎" class="headerlink" title="MyIASM引擎"></a>MyIASM引擎</h3><p>MyIASM是MySQL默认的引擎，但是它没有提供对数据库事务的支持，也不支持行级锁和外键，因此当INSERT(插入)或UPDATE(更新)数据时即写操作需要锁定整个表，效率便会低一些。不过和Innodb不同，MyIASM中存储了表的行数，于是<code>SELECT COUNT(*) FROM TABLE</code>时只需要直接读取已经保存好的值而不需要进行全表扫描。如果表的读操作远远多于写操作且不需要数据库事务的支持，那么MyIASM也是很好的选择。</p>
+<h3 id="两种引擎的选择"><a href="#两种引擎的选择" class="headerlink" title="两种引擎的选择"></a>两种引擎的选择</h3><p>大尺寸的数据集趋向于选择InnoDB引擎，因为它支持事务处理和故障恢复。数据库的大小决定了故障恢复的时间长短，InnoDB可以利用事务日志进行数据恢复，这会比较快。主键查询在InnoDB引擎下也会相当快，不过需要注意的是如果主键太长也会导致性能问题，关于这个问题我会在下文中讲到。大批的INSERT语句(在每个INSERT语句中写入多行，批量插入)在MyISAM下会快一些，但是UPDATE语句在InnoDB下则会更快一些，尤其是在并发量大的时候。</p>
+<h4 id="Index——索引"><a href="#Index——索引" class="headerlink" title="Index——索引"></a>Index——索引</h4><p>索引（Index）是帮助MySQL高效获取数据的数据结构。MyIASM和Innodb都使用了树这种数据结构做为索引，关于树我也曾经写过一篇文章树是一种伟大的数据结构，只是自己的理解，有兴趣的朋友可以去阅读。下面我接着讲这两种引擎使用的索引结构，讲到这里，首先应该谈一下B-Tree和B+Tree。</p>
+<h5 id="B-Tree和B-Tree"><a href="#B-Tree和B-Tree" class="headerlink" title="B-Tree和B+Tree"></a>B-Tree和B+Tree</h5><p>B+Tree是B-Tree的变种，那么我就先讲B-Tree吧，相信大家都知道红黑树，这是我前段时间学《算法》一书时，实现的一颗红黑树，大家可以参考。其实红黑树类似2,3-查找树，这种树既有2叉结点又有3叉结点。B-Tree也与之类似，它的每个结点做多可以有d个分支（叉），d称为B-Tree的度，如下图所示，它的每个结点可以有4个元素，5个分支，于是它的度为5。B-Tree中的元素是有序的，比如图中元素7左边的指针指向的结点中的元素都小于7，而元素7和16之间的指针指向的结点中的元素都处于7和16之间，正是满足这样的关系，才能高效的查找：首先从根节点进行二分查找，找到就返回对应的值，否则就进入相应的区间结点递归的查找，直到找到对应的元素或找到null指针，找到null指针则表示查找失败。这个查找是十分高效的，其时间复杂度为O(logN)（以d为底，当d很大时，树的高度就很低），因为每次检索最多只需要检索树高h个结点。</p>
+<p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/1.png" alt="1"></p>
+<p>接下来就该讲B+Tree了，它是B-Tree的变种，如下面两张图所示：</p>
+<p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/2.png" alt="2"></p>
+<p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/3.png" alt="3"></p>
+<p>从图中就可以看出，B+Tree的内部结点不存储数据，只存储指针，而叶子结点则只存储数据，不存储指针。并且在其每个叶子节点上增加了一个指向湘MyISAM引擎的索引结构</p>
+<p>MyISAM引擎的索引结构为B+Tree，其中B+Tree的数据域存储的内容为实际数据的地址，也就是说它的索引和实际的数据是分开的，只不过是用索引指向了实际的数据，这种索引就是所谓的非聚集索引。</p>
+<h5 id="Innodb引擎的索引结构"><a href="#Innodb引擎的索引结构" class="headerlink" title="Innodb引擎的索引结构"></a>Innodb引擎的索引结构</h5><p>MyISAM引擎的索引结构同样也是B+Tree，但是Innodb的索引文件本身就是数据文件，即B+Tree的数据域存储的就是实际的数据，这种索引就是聚集索引。这个索引的key就是数据表的主键，因此InnoDB表数据文件本身就是主索引。</p>
+<p>因为InnoDB的数据文件本身要按主键聚集，所以InnoDB要求表必须有主键（MyISAM可以没有），如果没有显式指定，则MySQL系统会自动选择一个可以唯一标识数据记录的列作为主键，如果不存在这种列，则MySQL自动为InnoDB表生成一个隐含字段作为主键，这个字段长度为6个字节，类型为长整形。</p>
+<p>并且和MyISAM不同，InnoDB的辅助索引数据域存储的也是相应记录主键的值而不是地址，所以当以辅助索引查找时，会先根据辅助索引找到主键，再根据主键索引找到实际的数据。所以Innodb不建议使用过长的主键，否则会使辅助索引变得过大。建议使用自增的字段作为主键，这样B+Tree的每一个结点都会被顺序的填满，而不会频繁的分裂调整，会有效的提升插入数据的效率。</p>
+<hr>
+<p>转自：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20596402/answer/211492971">https://www.zhihu.com/question/20596402/answer/211492971</a></p>
+<p>时间：2021/07/13 01:57:48</p>
+<h2 id="区别："><a href="#区别：" class="headerlink" title="区别："></a>区别：</h2><ol>
+<li>InnoDB 支持事务，MyISAM 不支持事务。这是 MySQL 将默认存储引擎从 MyISAM 变成 InnoDB 的重要原因之一；</li>
+<li>InnoDB 支持外键，而 MyISAM 不支持。对一个包含外键的 InnoDB 表转为 MYISAM 会失败；</li>
+<li>InnoDB 是聚集索引，MyISAM 是非聚集索引。聚簇索引的文件存放在主键索引的叶子节点上，因此 InnoDB 必须要有主键，通过主键索引效率很高。但是辅助索引需要两次查询，先查询到主键，然后再通过主键查询到数据。因此，主键不应该过大，因为主键太大，其他索引也都会很大。而 MyISAM 是非聚集索引，数据文件是分离的，索引保存的是数据文件的指针。主键索引和辅助索引是独立的。</li>
+<li>InnoDB 不保存表的具体行数，执行 select count(*) from table 时需要全表扫描。而MyISAM 用一个变量保存了整个表的行数，执行上述语句时只需要读出该变量即可，速度很快；</li>
+<li>InnoDB 最小的锁粒度是行锁，MyISAM 最小的锁粒度是表锁。一个更新语句会锁住整张表，导致其他查询和更新都会被阻塞，因此并发访问受限。这也是 MySQL 将默认存储引擎从 MyISAM 变成 InnoDB 的重要原因之一；</li>
+</ol>
+<p>如何选择：</p>
+<ol>
+<li>是否要支持事务，如果要请选择 InnoDB，如果不需要可以考虑 MyISAM；</li>
+<li>如果表中绝大多数都只是读查询，可以考虑 MyISAM，如果既有读写也挺频繁，请使用InnoDB。</li>
+<li>系统奔溃后，MyISAM恢复起来更困难，能否接受，不能接受就选 InnoDB；</li>
+<li>MySQL5.5版本开始Innodb已经成为Mysql的默认引擎(之前是MyISAM)，说明其优势是有目共睹的。如果你不知道用什么存储引擎，那就用InnoDB，至少不会差。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/%E5%85%B6%E4%BB%96/Shiro%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/02/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/%E5%85%B6%E4%BB%96/Shiro%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" class="post-title-link" itemprop="url">Shiro注意事项</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-02-27 10:21:57" itemprop="dateCreated datePublished" datetime="2016-02-27T10:21:57+08:00">2016-02-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-10-11 21:29:30" itemprop="dateModified" datetime="2019-10-11T21:29:30+08:00">2019-10-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ol>
+<li>Shiro页面依赖jstl</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/RESTful%20API%20%E8%AE%BE%E8%AE%A1%E6%8C%87%E5%8D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/RESTful%20API%20%E8%AE%BE%E8%AE%A1%E6%8C%87%E5%8D%97/" class="post-title-link" itemprop="url">RESTful API 设计指南</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-02-26 16:13:22" itemprop="dateCreated datePublished" datetime="2016-02-26T16:13:22+08:00">2016-02-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-01-19 23:10:07" itemprop="dateModified" datetime="2017-01-19T23:10:07+08:00">2017-01-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2014/05/restful_api.html">http://www.ruanyifeng.com/blog/2014/05/restful_api.html</a></p>
+<h2 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h2><p>API与用户的通信协议，总是使用HTTPs协议。</p>
+<h2 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h2><p>应该尽量将API部署在专用域名之下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://api.example.com</span><br></pre></td></tr></table></figure>
+<p>如果确定API很简单，不会有进一步扩展，可以考虑放在主域名下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://example.org/api/</span><br></pre></td></tr></table></figure>
+
+<h2 id="版本（Versioning）"><a href="#版本（Versioning）" class="headerlink" title="版本（Versioning）"></a>版本（Versioning）</h2><p>应该将API的版本号放入URL。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://api.example.com/v1/</span><br></pre></td></tr></table></figure>
+<p>另一种做法是，将版本号放在HTTP头信息中，但不如放入URL方便和直观。Github采用这种做法。</p>
+<h2 id="路径（Endpoint）"><a href="#路径（Endpoint）" class="headerlink" title="路径（Endpoint）"></a>路径（Endpoint）</h2><p>路径又称”终点”（endpoint），表示API的具体网址。</p>
+<p>在RESTful架构中，每个网址代表一种资源（resource），所以网址中不能有动词，只能有名词，而且所用的名词往往与数据库的表格名对应。一般来说，数据库中的表都是同种记录的”集合”（collection），所以API中的名词也应该使用复数。</p>
+<p>举例来说，有一个API提供动物园（zoo）的信息，还包括各种动物和雇员的信息，则它的路径应该设计成下面这样。</p>
+<ul>
+<li><code>https://api.example.com/v1/zoos</code></li>
+<li><code>https://api.example.com/v1/animals</code></li>
+<li><code>https://api.example.com/v1/employees</code></li>
+</ul>
+<h2 id="HTTP动词"><a href="#HTTP动词" class="headerlink" title="HTTP动词"></a>HTTP动词</h2><p>对于资源的具体操作类型，由HTTP动词表示。</p>
+<p>常用的HTTP动词有下面五个（括号里是对应的SQL命令）。</p>
+<ul>
+<li>GET（SELECT）：从服务器取出资源（一项或多项）。</li>
+<li>POST（CREATE）：在服务器新建一个资源。</li>
+<li>PUT（UPDATE）：在服务器更新资源（客户端提供改变后的完整资源）。</li>
+<li>PATCH（UPDATE）：在服务器更新资源（客户端提供改变的属性）。</li>
+<li>DELETE（DELETE）：从服务器删除资源。</li>
+</ul>
+<p>还有两个不常用的HTTP动词。</p>
+<ul>
+<li>HEAD：获取资源的元数据。</li>
+<li>OPTIONS：获取信息，关于资源的哪些属性是客户端可以改变的。</li>
+</ul>
+<p>下面是一些例子。</p>
+<ul>
+<li>GET /zoos：列出所有动物园</li>
+<li>POST /zoos：新建一个动物园</li>
+<li>GET /zoos/ID：获取某个指定动物园的信息</li>
+<li>PUT /zoos/ID：更新某个指定动物园的信息（提供该动物园的全部信息）</li>
+<li>PATCH /zoos/ID：更新某个指定动物园的信息（提供该动物园的部分信息）</li>
+<li>DELETE /zoos/ID：删除某个动物园</li>
+<li>GET /zoos/ID/animals：列出某个指定动物园的所有动物</li>
+<li>DELETE /zoos/ID/animals/ID：删除某个指定动物园的指定动物</li>
+</ul>
+<h2 id="过滤信息（Filtering）"><a href="#过滤信息（Filtering）" class="headerlink" title="过滤信息（Filtering）"></a>过滤信息（Filtering）</h2><p>如果记录数量很多，服务器不可能都将它们返回给用户。API应该提供参数，过滤返回结果。</p>
+<p>下面是一些常见的参数。</p>
+<ul>
+<li>?limit=10：指定返回记录的数量</li>
+<li>?offset=10：指定返回记录的开始位置。</li>
+<li>?page=2&amp;per_page=100：指定第几页，以及每页的记录数。</li>
+<li>?sortby=name&amp;order=asc：指定返回结果按照哪个属性排序，以及排序顺序。</li>
+<li>?animal_type_id=1：指定筛选条件</li>
+</ul>
+<p>参数的设计允许存在冗余，即允许API路径和URL参数偶尔有重复。比如，GET /zoo/ID/animals 与 GET /animals?zoo_id=ID 的含义是相同的。</p>
+<h2 id="状态码（Status-Codes）"><a href="#状态码（Status-Codes）" class="headerlink" title="状态码（Status Codes）"></a>状态码（Status Codes）</h2><p>服务器向用户返回的状态码和提示信息，常见的有以下一些（方括号中是该状态码对应的HTTP动词）。</p>
+<ul>
+<li><code>200 OK - [GET]</code>：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。</li>
+<li><code>201 CREATED - [POST/PUT/PATCH]</code>：用户新建或修改数据成功。</li>
+<li><code>202 Accepted - [*]</code>：表示一个请求已经进入后台排队（异步任务）</li>
+<li><code>204 NO CONTENT - [DELETE]</code>：用户删除数据成功。</li>
+<li><code>400 INVALID REQUEST - [POST/PUT/PATCH]</code>：用户发出的请求有错误，服务器没有进行新建或修改数据的操作，该操作是幂等的。</li>
+<li><code>401 Unauthorized - [*]</code>：表示用户没有权限（令牌、用户名、密码错误）。</li>
+<li><code>403 Forbidden - [*]</code>：表示用户得到授权（与401错误相对），但是访问是被禁止的。</li>
+<li><code>404 NOT FOUND - [*]</code>：用户发出的请求针对的是不存在的记录，服务器没有进行操作，该操作是幂等的。</li>
+<li><code>406 Not Acceptable - [GET]</code>：用户请求的格式不可得（比如用户请求JSON格式，但是只有XML格式）。</li>
+<li><code>410 Gone -[GET]</code>：用户请求的资源被永久删除，且不会再得到的。</li>
+<li><code>422 Unprocesable entity - [POST/PUT/PATCH]</code>：当创建一个对象时，发生一个验证错误。</li>
+<li><code>500 INTERNAL SERVER ERROR - [*]</code>：服务器发生错误，用户将无法判断发出的请求是否成功。</li>
+</ul>
+<p>状态码的完全列表参见这里。</p>
+<h2 id="错误处理（Error-handling）"><a href="#错误处理（Error-handling）" class="headerlink" title="错误处理（Error handling）"></a>错误处理（Error handling）</h2><p>如果状态码是4xx，就应该向用户返回出错信息。一般来说，返回的信息中将error作为键名，出错信息作为键值即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    error: &quot;Invalid API key&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="返回结果"><a href="#返回结果" class="headerlink" title="返回结果"></a>返回结果</h2><p>针对不同操作，服务器向用户返回的结果应该符合以下规范。</p>
+<ul>
+<li>GET /collection：返回资源对象的列表（数组）</li>
+<li>GET /collection/resource：返回单个资源对象</li>
+<li>POST /collection：返回新生成的资源对象</li>
+<li>PUT /collection/resource：返回完整的资源对象</li>
+<li>PATCH /collection/resource：返回完整的资源对象</li>
+<li>DELETE /collection/resource：返回一个空文档</li>
+</ul>
+<h2 id="Hypermedia-API"><a href="#Hypermedia-API" class="headerlink" title="Hypermedia API"></a>Hypermedia API</h2><p>RESTful API最好做到Hypermedia，即返回结果中提供链接，连向其他API方法，使得用户不查文档，也知道下一步应该做什么。</p>
+<p>比如，当用户向api.example.com的根目录发出请求，会得到这样一个文档。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;link&quot;: &#123;</span><br><span class="line">  &quot;rel&quot;:   &quot;collection https://www.example.com/zoos&quot;,</span><br><span class="line">  &quot;href&quot;:  &quot;https://api.example.com/zoos&quot;,</span><br><span class="line">  &quot;title&quot;: &quot;List of zoos&quot;,</span><br><span class="line">  &quot;type&quot;:  &quot;application/vnd.yourformat+json&quot;</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码表示，文档中有一个link属性，用户读取这个属性就知道下一步该调用什么API了。rel表示这个API与当前网址的关系（collection关系，并给出该collection的网址），href表示API的路径，title表示API的标题，type表示返回类型。</p>
+<p>Hypermedia API的设计被称为HATEOAS。Github的API就是这种设计，访问api.github.com会得到一个所有可用API的网址列表。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;current_user_url&quot;: &quot;https://api.github.com/user&quot;,</span><br><span class="line">  &quot;authorizations_url&quot;: &quot;https://api.github.com/authorizations&quot;,</span><br><span class="line">  // ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从上面可以看到，如果想获取当前用户的信息，应该去访问api.github.com/user，然后就得到了下面结果。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;message&quot;: &quot;Requires authentication&quot;,</span><br><span class="line">  &quot;documentation_url&quot;: &quot;https://developer.github.com/v3&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码表示，服务器给出了提示信息，以及文档的网址。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ol>
+<li>API的身份认证应该使用OAuth 2.0框架。</li>
+<li>服务器返回的数据格式，应该尽量使用JSON，避免使用XML。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -518,7 +866,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-08-01 13:29:38" itemprop="dateModified" datetime="2017-08-01T13:29:38+08:00">2017-08-01</time>
+                <time title="修改时间：2021-07-19 00:58:29" itemprop="dateModified" datetime="2021-07-19T00:58:29+08:00">2021-07-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -526,7 +874,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
                 </span>
             </span>
 
@@ -836,348 +1184,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/01/04/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-$sort/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/01/04/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-$sort/" class="post-title-link" itemprop="url">MongoDB-常用命令-$sort</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-01-04 18:26:37" itemprop="dateCreated datePublished" datetime="2016-01-04T18:26:37+08:00">2016-01-04</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-04 19:42:54" itemprop="dateModified" datetime="2017-01-04T19:42:54+08:00">2017-01-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://docs.mongodb.com/manual/reference/operator/update/sort/">https://docs.mongodb.com/manual/reference/operator/update/sort/</a></p>
-<h2 id="sort"><a href="#sort" class="headerlink" title="$sort"></a>$sort</h2><p>New in version 2.4.</p>
-<p>The $sort modifier orders the elements of an array during a $push operation.</p>
-<p>To use the $sort modifier, it must appear with the $each modifier. You can pass an empty array [] to the $each modifier such that only the $sort modifier has an effect.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  $push: &#123;</span><br><span class="line">     &lt;field&gt;: &#123;</span><br><span class="line">       $each: [ &lt;value1&gt;, &lt;value2&gt;, ... ],</span><br><span class="line">       $sort: &lt;sort specification&gt;</span><br><span class="line">     &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>For <sort specification>:</sort></p>
-<ul>
-<li>To sort array elements that are not documents, or if the array elements are documents, to sort by the whole documents, specify 1 for ascending or -1 for descending.</li>
-<li>If the array elements are documents, to sort by a field in the documents, specify a sort document with the field and the direction, i.e. { field: 1 } or { field: -1 }. Do not reference the containing array field in the sort specification (e.g. { “arrayField.field”: 1 } is incorrect).</li>
-</ul>
-<h3 id="Behavior"><a href="#Behavior" class="headerlink" title="Behavior"></a>Behavior</h3><p>Changed in version 2.6.</p>
-<p>The $sort modifier can sort array elements that are not documents. In previous versions, the $sort modifier required the array elements be documents.</p>
-<p>If the array elements are documents, the modifier can sort by either the whole document or by a specific field in the documents. In previous versions, the $sort modifier can only sort by a specific field in the documents.</p>
-<p>Trying to use the $sort modifier without the $each modifier results in an error. The $sort no longer requires the $slice modifier. For a list of modifiers available for $push, see Modifiers.</p>
-<h3 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h3><h4 id="Sort-Array-of-Documents-by-a-Field-in-the-Documents"><a href="#Sort-Array-of-Documents-by-a-Field-in-the-Documents" class="headerlink" title="Sort Array of Documents by a Field in the Documents"></a>Sort Array of Documents by a Field in the Documents</h4><p>A collection students contains the following document:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_id&quot;: 1,</span><br><span class="line">  &quot;quizzes&quot;: [</span><br><span class="line">    &#123; &quot;id&quot; : 1, &quot;score&quot; : 6 &#125;,</span><br><span class="line">    &#123; &quot;id&quot; : 2, &quot;score&quot; : 9 &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>The following update appends additional documents to the quizzes array and then sorts all the elements of the array by the ascending score field:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">db.students.update(</span><br><span class="line">   &#123; _id: 1 &#125;,</span><br><span class="line">   &#123;</span><br><span class="line">     $push: &#123;</span><br><span class="line">       quizzes: &#123;</span><br><span class="line">         $each: [ &#123; id: 3, score: 8 &#125;, &#123; id: 4, score: 7 &#125;, &#123; id: 5, score: 6 &#125; ],</span><br><span class="line">         $sort: &#123; score: 1 &#125;</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p><strong>The sort document refers directly to the field in the documents and does not reference the containing array field quizzes; i.e. { score: 1 } and not { “quizzes.score”: 1}</strong></p>
-<p>After the update, the array elements are in order of ascending score field.:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_id&quot; : 1,</span><br><span class="line">  &quot;quizzes&quot; : [</span><br><span class="line">     &#123; &quot;id&quot; : 1, &quot;score&quot; : 6 &#125;,</span><br><span class="line">     &#123; &quot;id&quot; : 5, &quot;score&quot; : 6 &#125;,</span><br><span class="line">     &#123; &quot;id&quot; : 4, &quot;score&quot; : 7 &#125;,</span><br><span class="line">     &#123; &quot;id&quot; : 3, &quot;score&quot; : 8 &#125;,</span><br><span class="line">     &#123; &quot;id&quot; : 2, &quot;score&quot; : 9 &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Sort-Array-Elements-That-Are-Not-Documents"><a href="#Sort-Array-Elements-That-Are-Not-Documents" class="headerlink" title="Sort Array Elements That Are Not Documents"></a>Sort Array Elements That Are Not Documents</h4><p>A collection students contains the following document:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : 2, &quot;tests&quot; : [  89,  70,  89,  50 ] &#125;</span><br></pre></td></tr></table></figure>
-
-<p>The following operation adds two more elements to the scores array and sorts the elements:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db.students.update(</span><br><span class="line">   &#123; _id: 2 &#125;,</span><br><span class="line">   &#123; $push: &#123; tests: &#123; $each: [ 40, 60 ], $sort: 1 &#125; &#125; &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>The updated document has the elements of the scores array in ascending order:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : 2, &quot;tests&quot; : [  40,  50,  60,  70,  89,  89 ] &#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Update-Array-Using-Sort-Only"><a href="#Update-Array-Using-Sort-Only" class="headerlink" title="Update Array Using Sort Only"></a>Update Array Using Sort Only</h4><p>A collection students contains the following document:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : 3, &quot;tests&quot; : [  89,  70,  100,  20 ] &#125;</span><br></pre></td></tr></table></figure>
-
-<p>To update the tests field to sort its elements in descending order, specify the { $sort: -1 } and specify an empty array [] for the $each modifier, as in the following:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db.students.update(</span><br><span class="line">   &#123; _id: 3 &#125;,</span><br><span class="line">   &#123; $push: &#123; tests: &#123; $each: [ ], $sort: -1 &#125; &#125; &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>The result of the operation is to update the scores field to sort its elements in descending order:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : 3, &quot;tests&quot; : [ 100,  89,  70,  20 ] &#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Use-sort-with-Other-push-Modifiers"><a href="#Use-sort-with-Other-push-Modifiers" class="headerlink" title="Use $sort with Other $push Modifiers"></a>Use $sort with Other $push Modifiers</h4><p>A collection students has the following document:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   &quot;_id&quot; : 5,</span><br><span class="line">   &quot;quizzes&quot; : [</span><br><span class="line">      &#123; &quot;wk&quot;: 1, &quot;score&quot; : 10 &#125;,</span><br><span class="line">      &#123; &quot;wk&quot;: 2, &quot;score&quot; : 8 &#125;,</span><br><span class="line">      &#123; &quot;wk&quot;: 3, &quot;score&quot; : 5 &#125;,</span><br><span class="line">      &#123; &quot;wk&quot;: 4, &quot;score&quot; : 6 &#125;</span><br><span class="line">   ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>The following $push operation uses:</p>
-<ul>
-<li>the $each modifier to add multiple documents to the quizzes array,</li>
-<li>the $sort modifier to sort all the elements of the modified quizzes array by the score field in descending order, and</li>
-<li>the $slice modifier to keep only the first three sorted elements of the quizzes array.</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">db.students.update(</span><br><span class="line">   &#123; _id: 5 &#125;,</span><br><span class="line">   &#123;</span><br><span class="line">     $push: &#123;</span><br><span class="line">       quizzes: &#123;</span><br><span class="line">          $each: [ &#123; wk: 5, score: 8 &#125;, &#123; wk: 6, score: 7 &#125;, &#123; wk: 7, score: 6 &#125; ],</span><br><span class="line">          $sort: &#123; score: -1 &#125;,</span><br><span class="line">          $slice: 3</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>The result of the operation is keep only the three highest scoring quizzes:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_id&quot; : 5,</span><br><span class="line">  &quot;quizzes&quot; : [</span><br><span class="line">     &#123; &quot;wk&quot; : 1, &quot;score&quot; : 10 &#125;,</span><br><span class="line">     &#123; &quot;wk&quot; : 2, &quot;score&quot; : 8 &#125;,</span><br><span class="line">     &#123; &quot;wk&quot; : 5, &quot;score&quot; : 8 &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/12/15/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-MybatisGenerator/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/12/15/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-MybatisGenerator/" class="post-title-link" itemprop="url">Mybatis-代码生成-MybatisGenerator</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-12-15 15:32:34" itemprop="dateCreated datePublished" datetime="2015-12-15T15:32:34+08:00">2015-12-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-12 20:51:53" itemprop="dateModified" datetime="2017-01-12T20:51:53+08:00">2017-01-12</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="mybatis-自动生成代码"><a href="#mybatis-自动生成代码" class="headerlink" title="mybatis 自动生成代码"></a>mybatis 自动生成代码</h1><h2 id="在-“Command-line”-选项中输入“mybatis-generator-generate-e”"><a href="#在-“Command-line”-选项中输入“mybatis-generator-generate-e”" class="headerlink" title="在 “Command line” 选项中输入“mybatis-generator:generate -e”"></a>在 “Command line” 选项中输入“mybatis-generator:generate -e”</h2><blockquote>
-<p>这里加了“-e ”选项是为了让该插件输出详细信息，这样可以帮助我们定位问题。</p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/12/15/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-MybatisGenerator/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/12/06/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/12/06/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">Tomcat-内存设置详解</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-12-06 16:03:57" itemprop="dateCreated datePublished" datetime="2015-12-06T16:03:57+08:00">2015-12-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-02-16 21:26:03" itemprop="dateModified" datetime="2017-02-16T21:26:03+08:00">2017-02-16</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://elf8848.iteye.com/blog/378805">http://elf8848.iteye.com/blog/378805</a></p>
-<h2 id="常见的Java内存溢出有以下三种："><a href="#常见的Java内存溢出有以下三种：" class="headerlink" title="常见的Java内存溢出有以下三种："></a>常见的Java内存溢出有以下三种：</h2><h3 id="java-lang-OutOfMemoryError-Java-heap-space-—-JVM-Heap（堆）溢出"><a href="#java-lang-OutOfMemoryError-Java-heap-space-—-JVM-Heap（堆）溢出" class="headerlink" title="java.lang.OutOfMemoryError: Java heap space —-JVM Heap（堆）溢出"></a>java.lang.OutOfMemoryError: Java heap space —-JVM Heap（堆）溢出</h3><p>JVM在启动的时候会自动设置JVM Heap的值，其初始空间(即-Xms)是物理内存的1/64，最大空间(-Xmx)是物理内存的1/4。</p>
-<p>可以利用JVM提供的-Xmn -Xms -Xmx等选项可进行设置。Heap的大小是Young Generation 和Tenured Generaion 之和。</p>
-<p>在JVM中如果98％的时间是用于GC，且可用的Heap size 不足2％的时候将抛出此异常信息。</p>
-<p>解决方法：手动设置JVM Heap（堆）的大小。  </p>
-<h3 id="java-lang-OutOfMemoryError-PermGen-space-—-PermGen-space溢出。"><a href="#java-lang-OutOfMemoryError-PermGen-space-—-PermGen-space溢出。" class="headerlink" title="java.lang.OutOfMemoryError: PermGen space  —- PermGen space溢出。"></a>java.lang.OutOfMemoryError: PermGen space  —- PermGen space溢出。</h3><p>PermGen space的全称是Permanent Generation space，是指内存的永久保存区域。</p>
-<p>为什么会内存溢出，这是由于这块内存主要是被JVM存放Class和Meta信息的，Class在被Load的时候被放入PermGen space区域，它和存放Instance的Heap区域不同,sun的 GC不会在主程序运行期对PermGen space进行清理，所以如果你的APP会载入很多CLASS的话，就很可能出现PermGen space溢出。</p>
-<p>解决方法： 手动设置MaxPermSize大小</p>
-<h3 id="java-lang-StackOverflowError-—-栈溢出"><a href="#java-lang-StackOverflowError-—-栈溢出" class="headerlink" title="java.lang.StackOverflowError   —- 栈溢出"></a>java.lang.StackOverflowError   —- 栈溢出</h3><p>栈溢出了，JVM依然是采用栈式的虚拟机，这个和C和Pascal都是一样的。函数的调用过程都体现在堆栈和退栈上了。<br>调用构造函数的 “层”太多了，以致于把栈区溢出了。</p>
-<p>通常来讲，一般栈区远远小于堆区的，因为函数调用过程往往不会多于上千层，而即便每个函数调用需要 1K的空间(这个大约相当于在一个C函数内声明了256个int类型的变量)，那么栈区也不过是需要1MB的空间。通常栈的大小是1－2MB的。</p>
-<p>通常递归也不要递归的层次过多，很容易溢出。</p>
-<p>解决方法：修改程序。</p>
-<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>在生产环境中tomcat内存设置不好很容易出现jvm内存溢出。</p>
-<h3 id="linux下的tomcat："><a href="#linux下的tomcat：" class="headerlink" title="linux下的tomcat："></a>linux下的tomcat：</h3><p>修改<code>TOMCAT_HOME/bin/catalina.sh</code>位置<code>cygwin=false</code>前。<code>JAVA_OPTS=&quot;-server -Xms256m -Xmx512m -XX:PermSize=64M -XX:MaxPermSize=128m&quot;</code>。</p>
-<h3 id="如果tomcat-5-注册成了windows服务，以services方式启动的，则需要修改注册表中的相应键值。"><a href="#如果tomcat-5-注册成了windows服务，以services方式启动的，则需要修改注册表中的相应键值。" class="headerlink" title="如果tomcat 5 注册成了windows服务，以services方式启动的，则需要修改注册表中的相应键值。"></a>如果tomcat 5 注册成了windows服务，以services方式启动的，则需要修改注册表中的相应键值。</h3><p>修改注册表<code>HKEY_LOCAL_MACHINE\SOFTWARE\Apache Software Foundation\Tomcat Service Manager\Tomcat5\Parameters\Java</code>，右侧的<code>Options</code>原值为<code>-Dcatalina.home=&quot;C:\ApacheGroup\Tomcat 5.0&quot; -Djava.endorsed.dirs=&quot;C:\ApacheGroup\Tomcat 5.0\common\endorsed&quot; -Xrs</code>加入<code>-Xms256m -Xmx512m</code>，重起tomcat服务,设置生效。</p>
-<h3 id="如果tomcat-6-注册成了windows服务，或者windows2003下用tomcat的安装版"><a href="#如果tomcat-6-注册成了windows服务，或者windows2003下用tomcat的安装版" class="headerlink" title="如果tomcat 6 注册成了windows服务，或者windows2003下用tomcat的安装版"></a>如果tomcat 6 注册成了windows服务，或者windows2003下用tomcat的安装版</h3><p>在<code>/bin/tomcat6w.exe</code>里修改就可以了。</p>
-<h3 id="如果要在myeclipse中启动tomcat，上述的修改就不起作用了，可如下设置："><a href="#如果要在myeclipse中启动tomcat，上述的修改就不起作用了，可如下设置：" class="headerlink" title="如果要在myeclipse中启动tomcat，上述的修改就不起作用了，可如下设置："></a>如果要在myeclipse中启动tomcat，上述的修改就不起作用了，可如下设置：</h3><p><code>Myeclipse-&gt;preferences-&gt;myeclipse-&gt;servers-&gt;tomcat-&gt;tomcat×.×-&gt;JDK</code>面板中的<code>Optional Java VM arguments</code>中添加：<code>-Xms256m -Xmx512m -XX:PermSize=64M -XX:MaxPermSize=128m</code></p>
-<h2 id="jvm参数说明："><a href="#jvm参数说明：" class="headerlink" title="jvm参数说明："></a>jvm参数说明：</h2><ul>
-<li><p><code>-server</code>:一定要作为第一个参数，在多个CPU时性能佳</p>
-</li>
-<li><p><code>-Xms</code>：Java Heap初始大小。默认是物理内存的1/64。</p>
-</li>
-<li><p><code>-Xmx</code>：Java Heap最大值。建议均设为物理内存的一半。不可超过物理内存。</p>
-</li>
-<li><p><code>-XX:PermSize</code>：设定内存的永久保存区初始大小，缺省值为64M。（我用visualvm.exe查看的）</p>
-</li>
-<li><p><code>-XX:MaxPermSize</code>：设定内存的永久保存区最大大小，缺省值为64M。（我用visualvm.exe查看的）</p>
-</li>
-<li><p><code>-XX:SurvivorRatio=2</code>：生还者池的大小,默认是2，如果垃圾回收变成了瓶颈，您可以尝试定制生成池设置。</p>
-</li>
-<li><p><code>-XX:NewSize</code>：新生成的池的初始大小。缺省值为2M。</p>
-</li>
-<li><p><code>-XX:MaxNewSize</code>：新生成的池的最大大小。缺省值为32M。</p>
-</li>
-</ul>
-<p>如果 JVM 的堆大小大于 1GB，则应该使用值：<code>-XX:newSize=640m -XX:MaxNewSize=640m -XX:SurvivorRatio=16</code>，或者将堆的总大小的 50% 到 60% 分配给新生成的池。调大新对象区，减少Full GC次数。</p>
-<ul>
-<li><p><code>+XX:AggressiveHeap</code>会使得 Xms没有意义。这个参数让jvm忽略Xmx参数,疯狂地吃完一个G物理内存,再吃尽一个G的swap。</p>
-</li>
-<li><p><code>-Xss</code>：每个线程的Stack大小，“-Xss 15120” 这使得JBoss每增加一个线程（thread)就会立即消耗15M内存，而最佳值应该是128K,默认值好像是512k.</p>
-</li>
-<li><p><code>-verbose:gc</code>：现实垃圾收集信息</p>
-</li>
-<li><p><code>-Xloggc:gc.log</code>：指定垃圾收集日志文件</p>
-</li>
-<li><p><code>-Xmn</code>：young generation的heap大小，一般设置为Xmx的3、4分之一</p>
-</li>
-<li><p><code>-XX:+UseParNewGC</code>：缩短minor收集的时间</p>
-</li>
-<li><p><code>-XX:+UseConcMarkSweepGC</code>：缩短major收集的时间 此选项在Heap Size 比较大而且Major收集时间较长的情况下使用更合适。</p>
-</li>
-<li><p><code>-XX:userParNewGC</code>：可用来设置并行收集【多CPU】</p>
-</li>
-<li><p><code>-XX:ParallelGCThreads</code>：可用来增加并行度【多CPU】</p>
-</li>
-<li><p><code>-XX:UseParallelGC</code>：设置后可以使用并行清除收集器【多CPU】</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1249,20 +1255,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

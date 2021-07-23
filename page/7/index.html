@@ -1210,6 +1210,118 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/" class="post-title-link" itemprop="url">缓存算法.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-23 15:23:18" itemprop="dateCreated datePublished" datetime="2019-12-23T15:23:18+08:00">2019-12-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-23 15:32:10" itemprop="dateModified" datetime="2021-07-23T15:32:10+08:00">2021-07-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="FIFO算法"><a href="#FIFO算法" class="headerlink" title="FIFO算法"></a>FIFO算法</h2><p>FIFO（First in First out），先进先出。其实在操作系统的设计理念中很多地方都利用到了先进先出的思想，比如作业调度（先来先服务），为什么这个原则在很多地方都会用到呢？因为这个原则简单、且符合人们的惯性思维，具备公平性，并且实现起来简单，直接使用数据结构中的队列即可实现。</p>
+<p>在FIFO Cache设计中，核心原则就是：如果一个数据最先进入缓存中，则应该最早淘汰掉。也就是说，当缓存满的时候，应当把最先进入缓存的数据给淘汰掉。在FIFO Cache中应该支持以下操作;</p>
+<ul>
+<li>get(key)：如果Cache中存在该key，则返回对应的value值，否则，返回-1；</li>
+<li>set(key,value)：如果Cache中存在该key，则重置value值；如果不存在该key，则将该key插入到到Cache中，若Cache已满，则淘汰最早进入Cache的数据。</li>
+</ul>
+<p>举个例子：假如Cache大小为3，访问数据序列为set(1,1),set(2,2),set(3,3),set(4,4),get(2),set(5,5)</p>
+<p>则Cache中的数据变化为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(1,1)                           set(1,1)</span><br><span class="line"></span><br><span class="line">(1,1) (2,2)                     set(2,2)</span><br><span class="line"></span><br><span class="line">(1,1) (2,2) (3,3)               set(3,3)</span><br><span class="line"></span><br><span class="line">(2,2) (3,3) (4,4)               set(4,4)</span><br><span class="line"></span><br><span class="line">(2,2) (3,3) (4,4)               get(2)</span><br><span class="line"></span><br><span class="line">(3,3) (4,4) (5,5)               set(5,5)</span><br></pre></td></tr></table></figure>
+
+<p>那么利用什么数据结构来实现呢？</p>
+<p>下面提供一种实现思路：</p>
+<p>利用一个双向链表保存数据，当来了新的数据之后便添加到链表末尾，如果Cache存满数据，则把链表头部数据删除，然后把新的数据添加到链表末尾。在访问数据的时候，如果在Cache中存在该数据的话，则返回对应的value值；否则返回-1。如果想提高访问效率，可以利用hashmap来保存每个key在链表中对应的位置。</p>
+<h2 id="LFU算法"><a href="#LFU算法" class="headerlink" title="LFU算法"></a>LFU算法</h2><p>LFU（Least Frequently Used）最近最少使用算法。它是基于“如果一个数据在最近一段时间内使用次数很少，那么在将来一段时间内被使用的可能性也很小”的思路。</p>
+<p>注意LFU和LRU算法的不同之处，LRU的淘汰规则是基于访问时间，而LFU是基于访问次数的。举个简单的例子：</p>
+<p>假设缓存大小为3，数据访问序列为set(2,2),set(1,1),get(2),get(1),get(2),set(3,3),set(4,4)，</p>
+<p>则在set(4,4)时对于LFU算法应该淘汰(3,3)，而LRU应该淘汰(1,1)。</p>
+<p>那么LFU Cache应该支持的操作为：</p>
+<ul>
+<li>get(key)：如果Cache中存在该key，则返回对应的value值，否则，返回-1；</li>
+<li>set(key,value)：如果Cache中存在该key，则重置value值；如果不存在该key，则将该key插入到到Cache中，若Cache已满，则淘汰最少访问的数据。</li>
+</ul>
+<p>为了能够淘汰最少使用的数据，因此LFU算法最简单的一种设计思路就是 利用一个数组存储数据项，用hashmap存储每个数据项在数组中对应的位置，然后为每个数据项设计一个访问频次，当数据项被命中时，访问频次自增，在淘汰的时候淘汰访问频次最少的数据。这样一来的话，在插入数据和访问数据的时候都能达到O(1)的时间复杂度，在淘汰数据的时候，通过选择算法得到应该淘汰的数据项在数组中的索引，并将该索引位置的内容替换为新来的数据内容即可，这样的话，淘汰数据的操作时间复杂度为O(n)。</p>
+<p>另外还有一种实现思路就是利用小顶堆+hashmap，小顶堆插入、删除操作都能达到O(logn)时间复杂度，因此效率相比第一种实现方法更加高效。</p>
+<h2 id="LRU"><a href="#LRU" class="headerlink" title="LRU"></a>LRU</h2><p>LRU（Least recently used，最近最少使用）算法根据数据的历史访问记录来进行淘汰数据，其核心思想是“如果数据最近被访问过，那么将来被访问的几率也更高”。</p>
+<p><img src="/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/1.png" alt="1"></p>
+<ol>
+<li>新数据插入到链表头部；</li>
+<li>每当缓存命中（即缓存数据被访问），则将数据移到链表头部；</li>
+<li>当链表满的时候，将链表尾部的数据丢弃。</li>
+</ol>
+<p>过程如下：</p>
+<p><img src="/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/2.png" alt="2"></p>
+<ol>
+<li>最开始时，内存空间是空的，因此依次进入A、B、C是没有问题的</li>
+<li>当加入D时，就出现了问题，内存空间不够了，因此根据LRU算法，内存空间中A待的时间最为久远，选择A,将其淘汰</li>
+<li>当再次引用B时，内存空间中的B又处于活跃状态，而C则变成了内存空间中，近段时间最久未使用的</li>
+<li>当再次向内存空间加入E时，这时内存空间又不足了，选择在内存空间中待的最久的C将其淘汰出内存，这时的内存空间存放的对象就是E-&gt;B-&gt;D</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1432,158 +1544,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/" class="post-title-link" itemprop="url">二叉树、B树、B+树、B*树.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-13 02:05:01" itemprop="dateCreated datePublished" datetime="2019-12-13T02:05:01+08:00">2019-12-13</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-07-16 13:19:38" itemprop="dateModified" datetime="2021-07-16T13:19:38+08:00">2021-07-16</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/27700617">https://zhuanlan.zhihu.com/p/27700617</a></p>
-<h2 id="平衡二叉树"><a href="#平衡二叉树" class="headerlink" title="平衡二叉树"></a>平衡二叉树</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>平衡二叉树是基于二分法的策略提高数据的查找速度的二叉树的数据结构；</p>
-<h3 id="特点："><a href="#特点：" class="headerlink" title="特点："></a>特点：</h3><p>平衡二叉树是采用二分法思维把数据按规则组装成一个树形结构的数据，用这个树形结构的数据减少无关数据的检索，大大的提升了数据检索的速度；平衡二叉树的数据结构组装过程有以下规则：</p>
-<ol>
-<li>非叶子节点只能允许最多两个子节点存在。</li>
-<li>每一个非叶子节点数据分布规则为左边的子节点小当前节点的值，右边的子节点大于当前节点的值(这里值是基于自己的算法规则而定的，比如hash值)；</li>
-</ol>
-<p><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/1.jpg" alt="1"></p>
-<p>平衡树的层级结构：因为平衡二叉树查询性能和树的层级（h高度）成反比，h值越小查询越快、为了保证树的结构左右两端数据大致平衡降低二叉树的查询难度一般会采用一种算法机制实现节点数据结构的平衡，实现了这种算法的有比如Treap、红黑树，使用平衡二叉树能保证数据的左右两边的节点层级相差不会大于1.，通过这样避免树形结构由于删除增加变成线性链表影响查询效率，保证数据平衡的情况下查找数据的速度近于二分法查找；</p>
-<p><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/2.jpg" alt="2"></p>
-<p>总结平衡二叉树特点：</p>
-<ol>
-<li>非叶子节点最多拥有两个子节点；</li>
-<li>非叶子节值大于左边子节点、小于右边子节点；</li>
-<li>树的左右两边的层级数相差不会大于1;</li>
-<li>没有值相等重复的节点;</li>
-</ol>
-<h2 id="B树-B-tree"><a href="#B树-B-tree" class="headerlink" title="B树(B-tree)"></a>B树(B-tree)</h2><p>注意:之前有看到有很多文章把B树和B-tree理解成了两种不同类别的树，其实这两个是同一种树;</p>
-<h3 id="概念："><a href="#概念：" class="headerlink" title="概念："></a>概念：</h3><p>B树和平衡二叉树稍有不同的是B树属于多叉树又名平衡多路查找树（查找路径不只两个），数据库索引技术里大量使用者B树和B+树的数据结构，让我们来看看他有什么特点;</p>
-<h3 id="规则："><a href="#规则：" class="headerlink" title="规则："></a>规则：</h3><ol>
-<li>排序方式：所有节点关键字是按递增次序排列，并遵循左小右大原则；</li>
-<li>子节点数：非叶节点的子节点数&gt;1，且&lt;=M ，且M&gt;=2，空树除外（注：M阶代表一个树节点最多有多少个查找路径，M=M路,当M=2则是2叉树,M=3则是3叉）；</li>
-<li>关键字数：枝节点的关键字数量大于等于ceil(m/2)-1个且小于等于M-1个（注：ceil()是个朝正无穷方向取整的函数 如ceil(1.1)结果为2);</li>
-<li>所有叶子节点均在同一层、叶子节点除了包含了关键字和关键字记录的指针外也有指向其子节点的指针只不过其指针地址都为null对应下图最后一层节点的空格子;</li>
-</ol>
-<p>最后我们用一个图和一个实际的例子来理解B树（这里为了理解方便我就直接用实际字母的大小来排列C&gt;B&gt;A）<br><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/3.jpg" alt="3"></p>
-<h3 id="B树的查询流程："><a href="#B树的查询流程：" class="headerlink" title="B树的查询流程："></a>B树的查询流程：</h3><p>如上图我要从上图中找到E字母，查找流程如下</p>
-<ol>
-<li>获取根节点的关键字进行比较，当前根节点关键字为M，E&lt;M（26个字母顺序），所以往找到指向左边的子节点（二分法规则，左小右大，左边放小于当前节点值的子节点、右边放大于当前节点值的子节点）；</li>
-<li>拿到关键字D和G，D&lt;E&lt;G 所以直接找到D和G中间的节点；</li>
-<li>拿到E和F，因为E=E 所以直接返回关键字和指针信息（如果树结构里面没有包含所要查找的节点则返回null）；</li>
-</ol>
-<h3 id="B树的插入节点流程"><a href="#B树的插入节点流程" class="headerlink" title="B树的插入节点流程"></a>B树的插入节点流程</h3><p>定义一个5阶树（平衡5路查找树;），现在我们要把3、8、31、11、23、29、50、28 这些数字构建出一个5阶树出来;</p>
-<p>遵循规则：</p>
-<ol>
-<li>节点拆分规则：当前是要组成一个5路查找树，那么此时m=5,关键字数必须&lt;=5-1（这里关键字数&gt;4就要进行节点拆分）；</li>
-<li>排序规则：满足节点本身比左边节点大，比右边节点小的排序规则;</li>
-</ol>
-<p>先插入 3、8、31、11<br><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/4.jpg" alt="4"></p>
-<p>再插入23、29<br><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/5.png" alt="5"></p>
-<p>再插入50、28<br><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/6.png" alt="6"></p>
-<h3 id="B树节点的删除"><a href="#B树节点的删除" class="headerlink" title="B树节点的删除"></a>B树节点的删除</h3><p>规则：</p>
-<ol>
-<li>节点合并规则：当前是要组成一个5路查找树，那么此时m=5,关键字数必须大于等于ceil（5/2）（这里关键字数&lt;2就要进行节点合并）；</li>
-<li>满足节点本身比左边节点大，比右边节点小的排序规则;</li>
-<li>关键字数小于二时先从子节点取，子节点没有符合条件时就向向父节点取，取中间值往父节点放；<br><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/7.png" alt="7"></li>
-</ol>
-<h3 id="特点：-1"><a href="#特点：-1" class="headerlink" title="特点："></a>特点：</h3><p>B树相对于平衡二叉树的不同是，每个节点包含的关键字增多了，特别是在B树应用到数据库中的时候，数据库充分利用了磁盘块的原理（磁盘数据存储是采用块的形式存储的，每个块的大小为4K，每次IO进行数据读取时，同一个磁盘块的数据可以一次性读取出来）把节点大小限制和充分使用在磁盘快大小范围；把树的节点关键字增多后树的层级比原来的二叉树少了，减少数据查找的次数和复杂度;</p>
-<h2 id="B-树"><a href="#B-树" class="headerlink" title="B+树"></a>B+树</h2><h3 id="概念-1"><a href="#概念-1" class="headerlink" title="概念"></a>概念</h3><p>B+树是B树的一个升级版，相对于B树来说B+树更充分的利用了节点的空间，让查询速度更加稳定，其速度完全接近于二分法查找。为什么说B+树查找的效率要比B树更高、更稳定；我们先看看两者的区别</p>
-<h3 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h3><ol>
-<li>B+跟B树不同B+树的非叶子节点不保存关键字记录的指针，只进行数据索引，这样使得B+树每个非叶子节点所能保存的关键字大大增加；</li>
-<li>B+树叶子节点保存了父节点的所有关键字记录的指针，所有数据地址必须要到叶子节点才能获取到。所以每次数据查询的次数都一样；</li>
-<li>B+树叶子节点的关键字从小到大有序排列，左边结尾数据都会保存右边节点开始数据的指针。</li>
-<li>非叶子节点的子节点数=关键字数（来源百度百科）（根据各种资料 这里有两种算法的实现方式，另一种为非叶节点的关键字数=子节点数-1（来源维基百科)，虽然他们数据排列结构不一样，但其原理还是一样的Mysql 的B+树是用第一种方式实现）;</li>
-</ol>
-<p><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/8.jpg" alt="8"><br>（百度百科算法结构示意图）</p>
-<p><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/9.jpg" alt="9"><br>（维基百科算法结构示意图）</p>
-<h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><ol>
-<li>B+树的层级更少：相较于B树B+每个非叶子节点存储的关键字数更多，树的层级更少所以查询数据更快；</li>
-<li>B+树查询速度更稳定：B+所有关键字数据地址都存在叶子节点上，所以每次查找的次数都相同所以查询速度要比B树更稳定;</li>
-<li>B+树天然具备排序功能：B+树所有的叶子节点数据构成了一个有序链表，在查询大小区间的数据时候更方便，数据紧密性很高，缓存的命中率也会比B树高。</li>
-<li>B+树全节点遍历更快：B+树遍历整棵树只需要遍历所有的叶子节点即可，，而不需要像B树一样需要对每一层进行遍历，这有利于数据库做全表扫描。</li>
-</ol>
-<p>B树相对于B+树的优点是，如果经常访问的数据离根节点很近，而B树的非叶子节点本身存有关键字其数据的地址，所以这种数据检索的时候会要比B+树快。</p>
-<h2 id="B-树-1"><a href="#B-树-1" class="headerlink" title="B*树"></a>B*树</h2><h3 id="规则-1"><a href="#规则-1" class="headerlink" title="规则"></a>规则</h3><p>B*树是B+树的变种，相对于B+树他们的不同之处如下：</p>
-<ol>
-<li>首先是关键字个数限制问题，B+树初始化的关键字初始化个数是cei(m/2)，b<em>树的初始化个数为（cei(2/3</em>m)）</li>
-<li>B+树节点满时就会分裂，而B*树节点满时会检查兄弟节点是否满（因为每个节点都有指向兄弟的指针），如果兄弟节点未满则向兄弟节点转移关键字，如果兄弟节点已满，则从当前节点和兄弟节点各拿出1/3的数据创建一个新的节点出来；</li>
-</ol>
-<h3 id="特点-1"><a href="#特点-1" class="headerlink" title="特点"></a>特点</h3><p>在B+树的基础上因其初始化的容量变大，使得节点空间使用率更高，而又存有兄弟节点的指针，可以向兄弟节点转移关键字的特性使得B*树额分解次数变得更少；</p>
-<p><img src="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/10.jpg" alt="10"></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
-<li><p>相同思想和策略</p>
-<p> 从平衡二叉树、B树、B+树、B*树总体来看它们的贯彻的思想是相同的，都是采用二分法和数据平衡策略来提升查找数据的速度；</p>
-</li>
-<li><p>不同的方式的磁盘空间利用</p>
-<p> 不同点是他们一个一个在演变的过程中通过IO从磁盘读取数据的原理进行一步步的演变，每一次演变都是为了让节点的空间更合理的运用起来，从而使树的层级减少达到快速查找数据的目的；</p>
-</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1655,20 +1615,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

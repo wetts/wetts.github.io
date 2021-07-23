@@ -188,6 +188,250 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-24.CAS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-24.CAS/" class="post-title-link" itemprop="url">Java-并发性和多线程-24.CAS</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 15:09:31" itemprop="dateCreated datePublished" datetime="2016-12-12T15:09:31+08:00">2016-12-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/compare-and-swap/">http://ifeve.com/compare-and-swap/</a></p>
+<p>CAS（Compare and swap）比较和替换是设计并发算法时用到的一种技术。简单来说，比较和替换是使用一个期望值和一个变量的当前值进行比较，如果当前变量的值与我们期望的值相等，就使用一个新值替换当前变量的值。这听起来可能有一点复杂但是实际上你理解之后发现很简单，接下来，让我们跟深入的了解一下这项技术。</p>
+<h2 id="CAS的使用场景"><a href="#CAS的使用场景" class="headerlink" title="CAS的使用场景"></a>CAS的使用场景</h2><p>在程序和算法中一个经常出现的模式就是“check and act”模式。先检查后操作模式发生在代码中首先检查一个变量的值，然后再基于这个值做一些操作。下面是一个简单的示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">class MyLock &#123;</span><br><span class="line"></span><br><span class="line">    private boolean locked = false;</span><br><span class="line"></span><br><span class="line">    public boolean lock() &#123;</span><br><span class="line">        if(!locked) &#123;</span><br><span class="line">            locked = true;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面这段代码，如果用在多线程的程序会出现很多错误，不过现在请忘掉它。</p>
+<p>如你所见，lock()方法首先检查locked&gt;成员变量是否等于false，如果等于，就将locked设为true。</p>
+<p>如果同个线程访问同一个MyLock实例，上面的lock()将不能保证正常工作。如果一个线程检查locked的值，然后将其设置为false，与此同时，一个线程B也在检查locked的值，又或者，在线程A将locked的值设为false之前。因此，线程A和线程B可能都看到locked的值为false，然后两者都基于这个信息做一些操作。</p>
+<p>为了在一个多线程程序中良好的工作，”check then act” 操作必须是原子的。原子就是说”check“操作和”act“被当做一个原子代码块执行。不存在多个线程同时执行原子块。</p>
+<p>下面是一个代码示例，把之前的lock()方法用synchronized关键字重构成一个原子块。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">class MyLock &#123;</span><br><span class="line"></span><br><span class="line">    private boolean locked = false;</span><br><span class="line"></span><br><span class="line">    public synchronized boolean lock() &#123;</span><br><span class="line">        if(!locked) &#123;</span><br><span class="line">            locked = true;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在lock()方法是同步的，所以，在某一时刻只能有一个线程在同一个MyLock实例上执行它。</p>
+<p>原子的lock方法实际上是一个”compare and swap“的例子。</p>
+<h2 id="CAS用作原子操作"><a href="#CAS用作原子操作" class="headerlink" title="CAS用作原子操作"></a>CAS用作原子操作</h2><p>现在CPU内部已经执行原子的CAS操作。Java5以来，你可以使用java.util.concurrent.atomic包中的一些原子类来使用CPU中的这些功能。</p>
+<p>下面是一个使用AtomicBoolean类实现lock()方法的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public static class MyLock &#123;</span><br><span class="line">    private AtomicBoolean locked = new AtomicBoolean(false);</span><br><span class="line"></span><br><span class="line">    public boolean lock() &#123;</span><br><span class="line">        return locked.compareAndSet(false, true);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>locked变量不再是boolean类型而是AtomicBoolean。这个类中有一个compareAndSet()方法，它使用一个期望值和AtomicBoolean实例的值比较，和两者相等，则使用一个新值替换原来的值。在这个例子中，它比较locked的值和false，如果locked的值为false，则把修改为true。</p>
+<p>如果值被替换了，compareAndSet()返回true，否则，返回false。</p>
+<p>使用Java5+提供的CAS特性而不是使用自己实现的的好处是Java5+中内置的CAS特性可以让你利用底层的你的程序所运行机器的CPU的CAS特性。这会使还有CAS的代码运行更快。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC4%E7%AB%A0-REST%E6%9C%8D%E5%8A%A1%E4%B8%8E%E5%BC%82%E6%AD%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC4%E7%AB%A0-REST%E6%9C%8D%E5%8A%A1%E4%B8%8E%E5%BC%82%E6%AD%A5/" class="post-title-link" itemprop="url">第4章-REST服务与异步</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2016-12-10 23:07:02 / 修改时间：23:17:14" itemprop="dateCreated datePublished" datetime="2016-12-10T23:07:02+08:00">2016-12-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>服务器端使用异步机制的主要目的是将“处理连接”与“处理请求”解耦。</p>
+<p>对于服务器而言，如果处理连接的线程被一个需要较长时间才能处理完毕的任务阻塞，那么服务器处理连接的能力就会下降，而此时服务器的资源很有可能是空闲的。此时，我们考虑将处理连接和处理请求任务解耦，处理连接的线程接收请求后，将其分派给处理请求任务的线程。这样一来，即使任务需要较长时间才能完成，处理连接的线程也无需阻塞等待了，服务器因此可以重用连接线程，从而提供更高的吞吐率。处理请求的线程相对于处理连接的线程是异步执行的，当任务结束后，服务器会从上下文中找到当前连接，并将连接结束返回，作为该连接请求的响应。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/HTTP%E5%B8%B8%E7%94%A8%E7%8A%B6%E6%80%81%E7%A0%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/HTTP%E5%B8%B8%E7%94%A8%E7%8A%B6%E6%80%81%E7%A0%81/" class="post-title-link" itemprop="url">第2章-REST API设计</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2016-12-10 22:37:09 / 修改时间：23:07:54" itemprop="dateCreated datePublished" datetime="2016-12-10T22:37:09+08:00">2016-12-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>200（OK）：服务器正常响应</li>
+<li>201（Created）：创建新实体，响应头Location指定访问该实体的URL</li>
+<li>202（Accepted）：服务器接受请求，处理尚未完成。可用于异步处理机制</li>
+<li>204（No Content）：服务器正常响应，但响应实体为空</li>
+<li>301（Moved Permanently）：请求资源的地址发生永久变动，响应头Location指定新的URL</li>
+<li>302（Found）：请求资源的地址发生临时变动</li>
+<li>304（Not modified）：客户端缓存资源依然有效</li>
+<li>400（Bad Request）：请求信息出现语法错误</li>
+<li>401（Unauthorized）：请求资源无法授权给未验证用户</li>
+<li>403（Forbidden）：请求资源未授权当前用户</li>
+<li>404（Not Found）：请求资源不存在</li>
+<li>405（Method Not Allowed）：请求方法不匹配</li>
+<li>406（Not Acceptable）：请求资源的媒体类型不匹配</li>
+<li>500（Internal Server Error）：服务器内部错误，意外终止响应</li>
+<li>501（Not Implemented）：服务器不支持当前请求</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC2%E7%AB%A0-REST%20API%E8%AE%BE%E8%AE%A1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -863,269 +1107,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-7.%E7%A7%81%E6%9C%89%E5%8F%98%E9%87%8F%E5%92%8C%E7%A7%81%E6%9C%89%E6%96%B9%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-7.%E7%A7%81%E6%9C%89%E5%8F%98%E9%87%8F%E5%92%8C%E7%A7%81%E6%9C%89%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">Java-Reflection-7.私有变量和私有方法</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 17:08:47" itemprop="dateCreated datePublished" datetime="2016-12-09T17:08:47+08:00">2016-12-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2016-12-10 15:02:00" itemprop="dateModified" datetime="2016-12-10T15:02:00+08:00">2016-12-10</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-7/">http://ifeve.com/java-reflection-7/</a></p>
-<p>在通常的观点中从对象的外部访问私有变量以及方法是不允许的，但是Java反射机制可以做到这一点。使用这个功能并不困难，在进行单元测试时这个功能非常有效。本节会向你展示如何使用这个功能。</p>
-<p>注意：这个功能只有在代码运行在单机Java应用(standalone Java application)中才会有效,就像你做单元测试或者一些常规的应用程序一样。如果你在Java Applet中使用这个功能，那么你就要想办法去应付SecurityManager对你限制了。但是一般情况下我们是不会这么做的，所以在本节里面我们不会探讨这个问题。</p>
-<h2 id="访问私有变量"><a href="#访问私有变量" class="headerlink" title="访问私有变量"></a>访问私有变量</h2><p>要想获取私有变量你可以调用<code>Class.getDeclaredField(String name)</code>方法或者<code>Class.getDeclaredFields()</code>方法。<code>Class.getField(String name)</code>和<code>Class.getFields()</code>只会返回公有的变量，无法获取私有变量。下面例子定义了一个包含私有变量的类，在它下面是如何通过反射获取私有变量的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class PrivateObject &#123;</span><br><span class="line">  private String privateString = null;</span><br><span class="line"></span><br><span class="line">  public PrivateObject(String privateString) &#123;</span><br><span class="line">    this.privateString = privateString;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PrivateObject privateObject = new PrivateObject(&quot;The Private Value&quot;);</span><br><span class="line">Field privateStringField = PrivateObject.class.getDeclaredField(&quot;privateString&quot;);</span><br><span class="line">privateStringField.setAccessible(true);</span><br><span class="line">String fieldValue = (String) privateStringField.get(privateObject);</span><br><span class="line">System.out.println(&quot;fieldValue = &quot; + fieldValue);</span><br></pre></td></tr></table></figure>
-<p>这个例子会输出<code>fieldValue = The Private Value</code>，The Private Value是PrivateObject实例的privateString私有变量的值，注意调用<code>PrivateObject.class.getDeclaredField(“privateString”)</code>方法会返回一个私有变量，这个方法返回的变量是定义在PrivateObject类中的而不是在它的父类中定义的变量。</p>
-<p>注意<code>privateStringField.setAccessible(true)</code>这行代码，通过调用<code>setAccessible()</code>方法会关闭指定类Field实例的反射访问检查，这行代码执行之后不论是私有的、受保护的以及包访问的作用域，你都可以在任何地方访问，即使你不在他的访问权限作用域之内。但是你如果你用一般代码来访问这些不在你权限作用域之内的代码依然是不可以的，在编译的时候就会报错。</p>
-<h2 id="访问私有方法"><a href="#访问私有方法" class="headerlink" title="访问私有方法"></a>访问私有方法</h2><p>访问一个私有方法你需要调用 <code>Class.getDeclaredMethod(String name, Class[] parameterTypes)</code>或者<code>Class.getDeclaredMethods()</code> 方法。 <code>Class.getMethod(String name, Class[] parameterTypes)</code>和<code>Class.getMethods()</code>方法，只会返回公有的方法，无法获取私有方法。下面例子定义了一个包含私有方法的类，在它下面是如何通过反射获取私有方法的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class PrivateObject &#123;</span><br><span class="line">  private String privateString = null;</span><br><span class="line"></span><br><span class="line">  public PrivateObject(String privateString) &#123;</span><br><span class="line">    this.privateString = privateString;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  private String getPrivateString()&#123;</span><br><span class="line">    return this.privateString;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PrivateObject privateObject = new PrivateObject(&quot;The Private Value&quot;);</span><br><span class="line">Method privateStringMethod = PrivateObject.class.getDeclaredMethod(&quot;getPrivateString&quot;, null);</span><br><span class="line">privateStringMethod.setAccessible(true);</span><br><span class="line">String returnValue = (String)privateStringMethod.invoke(privateObject, null);</span><br><span class="line">System.out.println(&quot;returnValue = &quot; + returnValue);</span><br></pre></td></tr></table></figure>
-<p>这个例子会输出<code>returnValue = The Private Value</code>，The Private Value是PrivateObject实例的<code>getPrivateString()</code>方法的返回值。</p>
-<p><code>PrivateObject.class.getDeclaredMethod(“privateString”)</code>方法会返回一个私有方法，这个方法是定义在PrivateObject类中的而不是在它的父类中定义的。</p>
-<p>同样的，注意<code>Method.setAcessible(true)</code>这行代码，通过调用<code>setAccessible()</code>方法会关闭指定类的Method实例的反射访问检查，这行代码执行之后不论是私有的、受保护的以及包访问的作用域，你都可以在任何地方访问，即使你不在他的访问权限作用域之内。但是你如果你用一般代码来访问这些不在你权限作用域之内的代码依然是不可以的，在编译的时候就会报错。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-6.Getters%20and%20Setters/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-6.Getters%20and%20Setters/" class="post-title-link" itemprop="url">Java-Reflection-6.Getters and Setters</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 17:05:51" itemprop="dateCreated datePublished" datetime="2016-12-09T17:05:51+08:00">2016-12-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2016-12-10 15:02:00" itemprop="dateModified" datetime="2016-12-10T15:02:00+08:00">2016-12-10</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection%E5%85%ADgetters-and-setters/">http://ifeve.com/java-reflection%E5%85%ADgetters-and-setters/</a></p>
-<p>使用Java反射你可以在运行期检查一个方法的信息以及在运行期调用这个方法，使用这个功能同样可以获取指定类的getters和setters，你不能直接寻找getters和setters，你需要检查一个类所有的方法来判断哪个方法是getters和setters。</p>
-<p>首先让我们来规定一下getters和setters的特性：</p>
-<h3 id="Getter"><a href="#Getter" class="headerlink" title="Getter"></a>Getter</h3><p>Getter方法的名字以get开头，没有方法参数，返回一个值。</p>
-<h3 id="Setter"><a href="#Setter" class="headerlink" title="Setter"></a>Setter</h3><p>Setter方法的名字以set开头，有一个方法参数。</p>
-<p>setters方法有可能会有返回值也有可能没有，一些Setter方法返回void，一些用来设置值，有一些对象的setter方法在方法链中被调用（译者注：这类的setter方法必须要有返回值），因此你不应该妄自假设setter方法的返回值，一切应该视情况而定。</p>
-<p>下面是一个获取getter方法和setter方法的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">public static void printGettersSetters(Class aClass)&#123;</span><br><span class="line">  Method[] methods = aClass.getMethods();</span><br><span class="line">  for(Method method : methods)&#123;</span><br><span class="line">    if(isGetter(method)) System.out.println(&quot;getter: &quot; + method);</span><br><span class="line">    if(isSetter(method)) System.out.println(&quot;setter: &quot; + method);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public static boolean isGetter(Method method)&#123;</span><br><span class="line">  if(!method.getName().startsWith(&quot;get&quot;))      return false;</span><br><span class="line">  if(method.getParameterTypes().length != 0)   return false;</span><br><span class="line">  if(void.class.equals(method.getReturnType()) return false;</span><br><span class="line">  return true;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public static boolean isSetter(Method method)&#123;</span><br><span class="line">  if(!method.getName().startsWith(&quot;set&quot;)) return false;</span><br><span class="line">  if(method.getParameterTypes().length != 1) return false;</span><br><span class="line">  return true;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-5.%E6%96%B9%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-5.%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">Java-Reflection-5.方法</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 17:01:32" itemprop="dateCreated datePublished" datetime="2016-12-09T17:01:32+08:00">2016-12-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2016-12-10 15:02:00" itemprop="dateModified" datetime="2016-12-10T15:02:00+08:00">2016-12-10</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection%E4%BA%94%E6%96%B9%E6%B3%95/">http://ifeve.com/java-reflection%E4%BA%94%E6%96%B9%E6%B3%95/</a></p>
-<p>使用Java反射你可以在运行期检查一个方法的信息以及在运行期调用这个方法，通过使用java.lang.reflect.Method类就可以实现上述功能。在本节会带你深入了解Method对象的信息。</p>
-<h2 id="获取Method对象"><a href="#获取Method对象" class="headerlink" title="获取Method对象"></a>获取Method对象</h2><p>可以通过Class对象获取Method对象，如下例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class aClass = ...//获取Class对象</span><br><span class="line">Method[] methods = aClass.getMethods();</span><br></pre></td></tr></table></figure>
-<p>返回的Method对象数组包含了指定类中声明为公有的(public)的所有变量集合。</p>
-<p>如果你知道你要调用方法的具体参数类型，你就可以直接通过参数类型来获取指定的方法，下面这个例子中返回方法对象名称是“doSomething”，他的方法参数是String类型：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class  aClass = ...//获取Class对象</span><br><span class="line">Method method = aClass.getMethod(&quot;doSomething&quot;, new Class[]&#123;String.class&#125;);</span><br></pre></td></tr></table></figure>
-<p>如果根据给定的方法名称以及参数类型无法匹配到相应的方法，则会抛出NoSuchMethodException。</p>
-<p>如果你想要获取的方法没有参数，那么在调用getMethod()方法时第二个参数传入null即可，就像这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class  aClass = ...//获取Class对象</span><br><span class="line">Method method = aClass.getMethod(&quot;doSomething&quot;, null);</span><br></pre></td></tr></table></figure>
-
-<h2 id="方法参数以及返回类型"><a href="#方法参数以及返回类型" class="headerlink" title="方法参数以及返回类型"></a>方法参数以及返回类型</h2><p>你可以获取指定方法的方法参数是哪些：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Method method = ... //获取Class对象</span><br><span class="line">Class[] parameterTypes = method.getParameterTypes();</span><br></pre></td></tr></table></figure>
-<p>你可以获取指定方法的返回类型：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Method method = ... //获取Class对象</span><br><span class="line">Class returnType = method.getReturnType();</span><br></pre></td></tr></table></figure>
-
-<h2 id="通过Method对象调用方法"><a href="#通过Method对象调用方法" class="headerlink" title="通过Method对象调用方法"></a>通过Method对象调用方法</h2><p>你可以通过如下方式来调用一个方法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//获取一个方法名为doSomesthing，参数类型为String的方法</span><br><span class="line">Method method = MyObject.class.getMethod(&quot;doSomething&quot;, String.class);</span><br><span class="line">Object returnValue = method.invoke(null, &quot;parameter-value1&quot;);</span><br></pre></td></tr></table></figure>
-<p>传入的null参数是你要调用方法的对象，如果是一个静态方法调用的话则可以用null代替指定对象作为invoke()的参数，在上面这个例子中，如果doSomething不是静态方法的话，你就要传入有效的MyObject实例而不是null。</p>
-<p>Method.invoke(Object target, Object … parameters)方法的第二个参数是一个可变参数列表，但是你必须要传入与你要调用方法的形参一一对应的实参。就像上个例子那样，方法需要String类型的参数，那我们必须要传入一个字符串。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1197,20 +1178,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

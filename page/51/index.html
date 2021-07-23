@@ -188,6 +188,400 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/06/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E6%A6%82%E5%BF%B5-%E8%A1%A8%E7%A9%BA%E9%97%B4(tablespace)%E3%80%81%E6%96%B9%E6%A1%88(schema)%E3%80%81%E6%AE%B5(segment)%E3%80%81%E5%8C%BA(extent)%E3%80%81%E5%9D%97(block)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/07/06/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E6%A6%82%E5%BF%B5-%E8%A1%A8%E7%A9%BA%E9%97%B4(tablespace)%E3%80%81%E6%96%B9%E6%A1%88(schema)%E3%80%81%E6%AE%B5(segment)%E3%80%81%E5%8C%BA(extent)%E3%80%81%E5%9D%97(block)/" class="post-title-link" itemprop="url">Oracle-概念-表空间(tablespace)、方案(schema)、段(segment)、区(extent)、块(block)</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-07-06 12:52:12" itemprop="dateCreated datePublished" datetime="2015-07-06T12:52:12+08:00">2015-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-19 00:57:56" itemprop="dateModified" datetime="2021-07-19T00:57:56+08:00">2021-07-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>数据文件和日志文件是数据库中最重要的文件。它们是数据存储的地方。每个数据库至少有一个与之相关的数据文件，通常情况下不只一个，有很多。数据在数据文件中是如何组织的？要了解这些内容我们首先必须理解什么是表空间（tablespace）、段（segment）、区（extent）、块（block），这些都是oracle数据库在数据文件中组织数据的基本单元。现在我们来理解这些概念。</p>
+<h3 id="块"><a href="#块" class="headerlink" title="块"></a>块</h3><p>块是数据存储的物理单位，也是数据文件中最基础的单位，数据直接存储在块上。是oracle空间分配的最小单位。oracle中的块大小常见的有三种，2KB、4KB、8KB。块的大小在数据库创建时就已经固定下来，数据库中每个块的大小都是相同的，而且所有的块都有相同的格式，由“块头＋表目录＋行目录＋空闲空间＋数据空间”组成。块头包含着块类型（比如是表块、还是索引块）的信息、磁盘上块的位置等信息。表目录（table directory），如果有的话，包含着此块中存储各行的表的信息（如果一个块中存有多个表中的数据）。行目录（row directory）包含着数据行的描述信息，它是一个指针数组，指示了每一行在数据块中的物理位置。块头、表目录、行目录统称为块开销（block overhead），是oracle原来统计、管理块本身的。剩下的两部分很简单，已经存有数据的就是数据空间，暂时没存的就是空闲空间。</p>
+<h3 id="区"><a href="#区" class="headerlink" title="区"></a>区</h3><p>区又叫盘区，是数据文件中一个连续的分配空间，它比块要大，由块组成。有些对象分配空间时可能至少需要两个盘区，比如回滚段，而这两个盘区不一定要求相连。区的大小从一个块到2GB不等</p>
+<h3 id="段"><a href="#段" class="headerlink" title="段"></a>段</h3><p>段是oracle数据库中的分配单位，对象如表、索引等都是以段为单位进行分配。当创建一个表时将创建一个表段，创建一个索引时就创建一个索引段。每一个消耗存储空间的对象最终被存储到一个单一的段中。有回滚段、临时段、聚簇段、索引段等。<br>表空间是一个逻辑容器，它和数据文件关联起来，一个表空间至少有一个数据文件与之关联。一个表空间可以有多个段，一个段只能属于一个表空间。</p>
+<h3 id="方案（schema）"><a href="#方案（schema）" class="headerlink" title="方案（schema）"></a>方案（schema）</h3><p>方案（schema）又叫模式，是比表空间小一级的逻辑概念，它也是一个逻辑容器。多个用户可能共用一个表空间，那如何区分开每一个用户？那么在表空间中对每个用户都有一个对应的方案，用于保存单个用户的信息。</p>
+<hr>
+<p>oracle中存储的层次结构总结如下：</p>
+<ol>
+<li>数据库由一个或多个表空间组成</li>
+<li>表空间由一个或多个数据文件组成，一个表空间包含多个段</li>
+<li>段由一个或多个区组成</li>
+<li>区是数据文件中一个连续的分配空间，由一个或多个块组成</li>
+<li>块是数据库中最小、最基本的单位，是数据库使用的最小的I/O单元</li>
+<li>每个用户都有一个对应的方案</li>
+</ol>
+<p>“我们可以把Database看作是一个大仓库，仓库分了很多很多的房间，Schema就是其中的房间，一个Schema代表一个房间，Table可以看作是每个Schema中的床，Table（床）被放入每个房间中，不能放置在房间之外，那岂不是晚上睡觉无家可归了，然后床上可以放置很多物品，就好比 Table上可以放置很多列和行一样，数据库中存储数据的基本单元是Table，现实中每个仓库放置物品的基本单位就是床， User就是每个Schema的主人，（所以Schema包含的是Object，而不是User），user和schema是一一对应的，每个user在没有特别指定下只能使用自己schema（房间）的东西，如果一个user想使用其他schema（房间）的东西，那就要看那个schema（房间）的user（主人）有没有给你这个权限了，或者看这个仓库的老大（DBA）有没有给你这个权限了。换句话说，如果你是某个仓库的主人，那么这个仓库的使用权和仓库中的所有东西都是你的（包括房间），你有完全的操作权，可以扔掉不用的东西从每个房间，也可以放置一些有用的东西到某一个房间，你还可以给每个User分配具体的权限，也就是他到某一个房间能做些什么，是只能看（Read-Only），还是可以像主人一样有所有的控制权（R/W），这个就要看这个User所对应的角色Role了。”</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/06/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E6%A6%82%E5%BF%B5-%E5%AF%B9%E8%B1%A1%E6%9D%83%E9%99%90%E3%80%81%E8%A7%92%E8%89%B2%E6%9D%83%E9%99%90%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9D%83%E9%99%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/07/06/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E6%A6%82%E5%BF%B5-%E5%AF%B9%E8%B1%A1%E6%9D%83%E9%99%90%E3%80%81%E8%A7%92%E8%89%B2%E6%9D%83%E9%99%90%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9D%83%E9%99%90/" class="post-title-link" itemprop="url">Oracle-概念-对象权限、角色权限、系统权限</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-07-06 12:49:12" itemprop="dateCreated datePublished" datetime="2015-07-06T12:49:12+08:00">2015-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-19 00:58:08" itemprop="dateModified" datetime="2021-07-19T00:58:08+08:00">2021-07-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>系统权限：是针对oracle系统操作而言，例如登陆create session，创建表：create table等；</li>
+<li>对象权限：是针对对象操作的，例如：查询select，更新update等；</li>
+<li>角色权限：角色其实是特定系统权限和对象权限的组合，是一组权限的组合，便于对用户授权，Oracle内置了一些角色，如经常使用的  connnet，reseource和dba等。</li>
+</ul>
+<h4 id="查看oracle的角色拥有的哪些权限的sql"><a href="#查看oracle的角色拥有的哪些权限的sql" class="headerlink" title="查看oracle的角色拥有的哪些权限的sql"></a>查看oracle的角色拥有的哪些权限的sql</h4><p>前提是当前用户有查看dba_sys_privs的权限，我用的用户有dba的角色权限，<code>select grantee,privilege from dba_sys_privs where grantee=&#39;RESOURCE&#39; order by privilege;</code>。无dba的角色权限时提示 表或试图不存在！<code>select grantee,privilege from dba_sys_privs where grantee=&#39;CONNECT&#39; order by privilege;</code></p>
+<h4 id="查看用户拥有的角色，拥有的系统权限的sql"><a href="#查看用户拥有的角色，拥有的系统权限的sql" class="headerlink" title="查看用户拥有的角色，拥有的系统权限的sql"></a>查看用户拥有的角色，拥有的系统权限的sql</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">select * from user_role_privs;--用户所拥有的oracle角色</span><br><span class="line">select * from user_sys_privs; --用户所用户的系统权限</span><br><span class="line">select * from table_privilege_map;</span><br><span class="line">select * from session_privs;</span><br></pre></td></tr></table></figure>
+
+<h4 id="查看对表table1有访问权限的用户"><a href="#查看对表table1有访问权限的用户" class="headerlink" title="查看对表table1有访问权限的用户"></a>查看对表table1有访问权限的用户</h4><p>具有一定权限的用户（我测试时是DBA）使用select * from dba_tab_privs a where a.table_name=’TABLE1’查看,否则在无权限时提示“表或视图不存在”</p>
+<hr>
+<p>用户user1和user2，使用用户user1创建表table1（下面的是本人按照顺序依次执行测试的）：</p>
+<ol>
+<li>当user2拥有dba角色时，执行sql：select * from user2.teble1;不会出错，而且可以修改表数据，可以修改表结构等操作；</li>
+<li>当去掉user2的dba角色时，设置很低的权限，执行上述的sql，提示“ORA-01031 权限不足”；</li>
+<li>当user1登录oracle，使用sql：grant select on taleb1 to user2后，user2执行上述的查询语句ok；不能修改，修改后提交时提示“权限不足！”；</li>
+<li>当user1执行sql：revoke select on table1 from user2后，user2执行table1查询的sql时报错，提示“权限不足”。</li>
+<li>当user1使用revoke或者grant 语句为自己授权时，提示“ORA-01749 用户不能为自己revoke/grant权限”</li>
+<li>当sys用户使用revoke select on user1.table1 from user1时，oracle系统提示“ORA-无法REVOKE您未授权的权限”，此时再用user1执行把表table1的任何权限（也就是select,inseert,update,delete,references,alter,index）授予sys或者用用dba角色的用户，再使用sys执行：revoke select on use1.table1 from user1时,仍是提示“ORA-无法REVOKE您未授权的权限”.</li>
+</ol>
+<p>结论：use1创建的对象（如表），user1永久对此表拥有权限，不可删除。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/01/%E8%AF%AD%E8%A8%80/web/Ajax-%E8%B7%A8%E5%9F%9F-JSONP%E8%8E%B7%E5%8F%96JSON%E6%95%B0%E6%8D%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/07/01/%E8%AF%AD%E8%A8%80/web/Ajax-%E8%B7%A8%E5%9F%9F-JSONP%E8%8E%B7%E5%8F%96JSON%E6%95%B0%E6%8D%AE/" class="post-title-link" itemprop="url">Ajax-跨域-JSONP获取JSON数据</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-07-01 11:13:21" itemprop="dateCreated datePublished" datetime="2015-07-01T11:13:21+08:00">2015-07-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-07-27 15:37:36" itemprop="dateModified" datetime="2017-07-27T15:37:36+08:00">2017-07-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JavaScript/" itemprop="url" rel="index"><span itemprop="name">JavaScript</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>Asynchronous JavaScript and XML (Ajax ) 是驱动新一代 Web 站点（流行术语为 Web 2.0 站点）的关键技术。Ajax 允许在不干扰 Web 应用程序的显示和行为的情况下在后台进行数据检索。使用 XMLHttpRequest 函数获取数据，它是一种 API，允许客户端 JavaScript 通过 HTTP 连接到远程服务器。Ajax 也是许多 mashup 的驱动力，它可将来自多个地方的内容集成为单一 Web 应用程序。<br> <br>不过，由于受到浏览器的限制，该方法不允许跨域通信。如果尝试从不同的域请求数据，会出现安全错误。如果能控制数 据驻留的远程服务器并且每个请求都前往同一域，就可以避免这些安全错误。</p>
+<h2 id="理解同源策略限制"><a href="#理解同源策略限制" class="headerlink" title="理解同源策略限制"></a>理解同源策略限制</h2><p>同源策略阻止从一个域上加载的脚本获取或操作另一个域上的文档属性。也就是说，受到请求的 URL 的域必须与当前 Web 页面的域相同。这意味着浏览器隔离来自不同源的内容，以防止它们之间的操作。这个浏览器策略很旧，从 Netscape Navigator 2.0 版本开始就存在。<br> <br>克服该限制的一个相对简单的方法是让 Web 页面向它源自的 Web 服务器请求数据，并且让 Web 服务器像代理一样将请求转发给真正的第三方服务器。尽管该技术获得了普遍使用，但它是不可伸缩的。另一种方式是使用框架要素在当前 Web 页面中创建新区域，并且使用 GET 请求获取任何第三方资源。不过，获取资源后，框架中的内容会受到同源策略的限制。<br> <br>克服该限制更理想方法是在 Web 页面中插入动态脚本元素，该页面源指向其他域中的服务 URL 并且在自身脚本中获取数据。脚本加载时它开始执行。该方法是可行的，因为同源策略不阻止动态脚本插入，并且将脚本看作是从提供 Web 页面的域上加载的。但如果该脚本尝试从另一个域上加载文档，就不会成功。幸运的是，通过添加 JavaScript Object Notation (JSON) 可以改进该技术。</p>
+<h2 id="什么是JSONP？"><a href="#什么是JSONP？" class="headerlink" title="什么是JSONP？"></a>什么是JSONP？</h2><p>要了解JSONP，不得不提一下JSON，那么什么是JSON ？</p>
+<p>  JSON is a subset of the object literal notation of JavaScript. Since JSON is a subset of JavaScript, it can be used in the language with no muss or fuss.</p>
+<p>JSONP(JSON with Padding)是一个非官方的协议，它允许在服务器端集成Script tags返回至客户端，通过javascript callback的形式实现跨域访问（这仅仅是JSONP简单的实现形式）。
+ </p>
+<h2 id="JSONP有什么用？"><a href="#JSONP有什么用？" class="headerlink" title="JSONP有什么用？"></a>JSONP有什么用？</h2><p>由于同源策略的限制，XmlHttpRequest只允许请求当前源（域名、协议、端口）的资源，为了实现跨域请求，可以通过script标签实现跨域请求，然后在服务端输出JSON数据并执行回调函数，从而解决了跨域的数据请求。
+ </p>
+<h2 id="如何使用JSONP？"><a href="#如何使用JSONP？" class="headerlink" title="如何使用JSONP？"></a>如何使用JSONP？</h2><p>下边这一DEMO实际上是JSONP的简单表现形式，在客户端声明回调函数之后，客户端通过script标签向服务器跨域请求数据，然后服务端返回相应的数据并动态执行回调函数。<br> <br>HTML代码 （任一 ）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta content=&quot;text/html; charset=utf-8&quot; http-equiv=&quot;Content-Type&quot; /&gt;  </span><br><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;  </span><br><span class="line">    function jsonpCallback(result) &#123;  </span><br><span class="line">        //alert(result);  </span><br><span class="line">        for(var i in result) &#123;  </span><br><span class="line">            alert(i+&quot;:&quot;+result[i]);//循环输出a:1,b:2,etc.  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">    var JSONP=document.createElement(&quot;script&quot;);  </span><br><span class="line">    JSONP.type=&quot;text/javascript&quot;;  </span><br><span class="line">    JSONP.src=&quot;http://crossdomain.com/services.php?callback=jsonpCallback&quot;;  </span><br><span class="line">    document.getElementsByTagName(&quot;head&quot;)[0].appendChild(JSONP);  </span><br><span class="line">&lt;/script&gt;  </span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta content=&quot;text/html; charset=utf-8&quot; http-equiv=&quot;Content-Type&quot; /&gt;  </span><br><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;  </span><br><span class="line">    function jsonpCallback(result) &#123;  </span><br><span class="line">        alert(result.a);  </span><br><span class="line">        alert(result.b);  </span><br><span class="line">        alert(result.c);  </span><br><span class="line">        for(var i in result) &#123;  </span><br><span class="line">            alert(i+&quot;:&quot;+result[i]);//循环输出a:1,b:2,etc.  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&lt;/script&gt;  </span><br><span class="line">&lt;script type=&quot;text/javascript&quot; src=&quot;http://crossdomain.com/services.php?callback=jsonpCallback&quot;&gt;&lt;/script&gt;  </span><br></pre></td></tr></table></figure>
+<p>JavaScript的链接，必须在function的下面。<br> <br>服务端PHP代码 （services.php）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php  </span><br><span class="line">  </span><br><span class="line">//服务端返回JSON数据  </span><br><span class="line">$arr=array(&#x27;a&#x27;=&gt;1,&#x27;b&#x27;=&gt;2,&#x27;c&#x27;=&gt;3,&#x27;d&#x27;=&gt;4,&#x27;e&#x27;=&gt;5);  </span><br><span class="line">$result=json_encode($arr);  </span><br><span class="line">//echo $_GET[&#x27;callback&#x27;].&#x27;(&quot;Hello,World!&quot;)&#x27;;  </span><br><span class="line">//echo $_GET[&#x27;callback&#x27;].&quot;($result)&quot;;  </span><br><span class="line">//动态执行回调函数  </span><br><span class="line">$callback=$_GET[&#x27;callback&#x27;];  </span><br><span class="line">echo $callback.&quot;($result)&quot;;  </span><br></pre></td></tr></table></figure>
+<p>如果将上述JS客户端代码用jQuery的方法来实现，也非常简单。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$.getJSON </span><br><span class="line">$.ajax </span><br><span class="line">$.get</span><br></pre></td></tr></table></figure>
+<p>客户端JS代码在jQuery中的实现方式1：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type=&quot;text/javascript&quot; src=&quot;jquery.js&quot;&gt;&lt;/script&gt;  </span><br><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;  </span><br><span class="line">    $.getJSON(&quot;http://crossdomain.com/services.php?callback=?&quot;,  </span><br><span class="line">    function(result) &#123;  </span><br><span class="line">        for(var i in result) &#123;  </span><br><span class="line">            alert(i+&quot;:&quot;+result[i]);//循环输出a:1,b:2,etc.  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;);  </span><br><span class="line">&lt;/script&gt;  </span><br></pre></td></tr></table></figure>
+<p>客户端JS代码在jQuery中的实现方式2：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type=&quot;text/javascript&quot; src=&quot;jquery.js&quot;&gt;&lt;/script&gt;  </span><br><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;  </span><br><span class="line">    $.ajax(&#123;  </span><br><span class="line">        url:&quot;http://crossdomain.com/services.php&quot;,  </span><br><span class="line">        dataType:&#x27;jsonp&#x27;,  </span><br><span class="line">        data:&#x27;&#x27;,  </span><br><span class="line">        jsonp:&#x27;callback&#x27;,  </span><br><span class="line">        success:function(result) &#123;  </span><br><span class="line">            for(var i in result) &#123;  </span><br><span class="line">                alert(i+&quot;:&quot;+result[i]);//循环输出a:1,b:2,etc.  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;,  </span><br><span class="line">        timeout:3000  </span><br><span class="line">    &#125;);  </span><br><span class="line">&lt;/script&gt;  </span><br></pre></td></tr></table></figure>
+<p>客户端JS代码在jQuery中的实现方式3：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type=&quot;text/javascript&quot; src=&quot;jquery.js&quot;&gt;&lt;/script&gt;  </span><br><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;  </span><br><span class="line">    $.get(&#x27;http://crossdomain.com/services.php?callback=?&#x27;, &#123;name: encodeURIComponent(&#x27;tester&#x27;)&#125;, function (json) &#123; for(var i in json) alert(i+&quot;:&quot;+json[i]); &#125;, &#x27;jsonp&#x27;);  </span><br><span class="line">&lt;/script&gt;  </span><br></pre></td></tr></table></figure>
+<p>其中 jsonCallback 是客户端注册的，获取 跨域服务器 上的json数据 后，回调的函数。 <code>http://crossdomain.com/services.php?callback=jsonpCallback</code> 这个 url 是跨域服务 器取 json 数据的接口，参数为回调函数的名字，返回的格式为<code>jsonpCallback(&#123;msg:&#39;this is json data&#39;&#125;)</code> 
+ </p>
+<h2 id="Jsonp原理："><a href="#Jsonp原理：" class="headerlink" title="Jsonp原理："></a>Jsonp原理：</h2><p> 首先在客户端注册一个callback, 然后把callback的名字传给服务器。</p>
+<p>  此时，服务器先生成 json 数据。</p>
+<p> 然后以 javascript 语法的方式，生成一个function , function 名字就是传递上来的参数 jsonp.  </p>
+<p>最后将 json 数据直接以入参的方式，放置到 function 中，这样就生成了一段 js 语法的文档，返回给客户端。  </p>
+<p>客户端浏览器，解析script标签，并执行返回的 javascript 文档，此时数据作为参数，传入到了客户端预先定义好的 callback 函数里.（动态执行回调函数）</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/06/30/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E7%99%BD%E8%AF%9D%E4%BB%A5%E5%A4%AA%E7%BD%917%E5%B1%82%E5%8D%8F%E8%AE%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/06/30/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E7%99%BD%E8%AF%9D%E4%BB%A5%E5%A4%AA%E7%BD%917%E5%B1%82%E5%8D%8F%E8%AE%AE/" class="post-title-link" itemprop="url">白话以太网7层协议</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-06-30 11:21:07" itemprop="dateCreated datePublished" datetime="2015-06-30T11:21:07+08:00">2015-06-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-19 00:56:34" itemprop="dateModified" datetime="2021-07-19T00:56:34+08:00">2021-07-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><img src="/2015/06/30/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E7%99%BD%E8%AF%9D%E4%BB%A5%E5%A4%AA%E7%BD%917%E5%B1%82%E5%8D%8F%E8%AE%AE/%E4%BB%A5%E5%A4%AA%E7%BD%91%E5%8D%8F%E8%AE%AE.png" alt="以太网协议"></p>
+<p>今天我将用大家都能理解的比喻形式把以太网的协议层的概念讲解清楚。大家在上大学期间应该会接触网络基础这门课程，在那里边会提到以太网的7层协议，工控的技术人员很少会对此深究，只是作为基础掌握一些知道有哪几层就可以了，至于是干什么起什么作用，就不是很清楚了。工控的今天已经从单元控制晋升到网络控制，而这其中工业以太网正是网络控制的中坚力量。以太网的协议层是建立在OSI模型的基础上的，在这里我就要讲一下OSI模型。OSI模型，即开放式通信系统互联参考模型(Open System Interconnection)，是国际标准化组织(ISO)提出的一个试图使各种计算机在世界范围内互连为网络的标准框架，简称OSI。​</p>
+<p>OSI的层次划分：OSI将计算机网络体系结构(architecture)划分为以下七层：</p>
+<ol>
+<li>物理层  Physical Layer</li>
+<li>数据链路层  Data Link Layer</li>
+<li>网络层  Network Layer</li>
+<li>传输层  Transport Layer</li>
+<li>会话层  Session Layer</li>
+<li>表示层  Presentation Layer</li>
+<li>应用层 Application Layer</li>
+</ol>
+<p>它和我们常用的TCP/IP的协议层有些相似，TCP/IP把1和2封装为一层，3和4还是独立的层，5和6和7封装成为一层，也就是说TCP/IP只有四层，但是在此我讲述的7层的具体意义。</p>
+<p>在这里我将假设一个场景，那就是把要传输数据的一方视为某个公司的经理，网络传输被视为这个经理要把一件事情告诉另一个公司的经理。</p>
+<p>网络的A端：</p>
+<ol>
+<li>应用层：A公司经理把他想要告诉B公司经理的事情用嘴讲了出来。</li>
+<li>表示层：秘书就把A公司经理说的事情翻译成为英文然后写在了纸上。</li>
+<li>会话层：行政的职员把秘书写的这封信，装到了信封封装好了，写上了信封的信息。</li>
+<li>传输层：A邮局的职工把这封信取走。</li>
+<li>网络层：A邮局的分派的职工，把这封信分派到指定送信区域。</li>
+<li>数据链路层：A邮局的装箱的职工，就把一同送往这个区域的信封装到一个木箱子里，然后送到A邮局物流站。</li>
+<li>物理层：A邮局的物流职工把木箱运到铁路</li>
+</ol>
+<p>这里的铁路就是网络连接物理介质</p>
+<p>网络的B端：<br>7. 物理层：B邮局的物流职工把木箱从铁路运到邮局的物流站。<br>6. 数据链路层：B邮局的拆箱的职工把物流站的木箱拆箱然后把所有的信件取出来。<br>5. 网络层：B邮局的分派的职工，把这封信分派到指定送信区域。<br>4. 传输层：B邮局的职工把这封信送到B公司。<br>3. 会话层：B公司行政的职员把公司的信件整理并且拆封信件（假设这是公司允许的情况下）并送到各自部门的秘书手里。<br>2. 表示层：B公司秘书把信上的英文翻译成为中文。</p>
+<ol>
+<li>应用层：B公司经理听秘书转述给他这封信的内容。</li>
+</ol>
+<p>到此为止一个完整的通过这7层的网络通讯顺利完成。接下来我将用技术术语并结合TCP/IP中的应用再描述一遍这7层协议。</p>
+<h3 id="应用层："><a href="#应用层：" class="headerlink" title="应用层："></a>应用层：</h3><p>与其他计算机进行通讯的一个应用，它是对应应用程序的通信服务的。例如，一个没有通信功能的字处理程序就不能执行通信的代码，从事字处理工作的程序员也不关心OSI的第7层。但是，如果添加了一个传输文件的选项，那么字处理器的程序员就需要实现OSI的第7层。示例：telnet，HTTP，FTP，WWW，NFS，SMTP等。​</p>
+<h2 id="表示层："><a href="#表示层：" class="headerlink" title="表示层："></a>表示层：</h2><p>这一层的主要功能是定义数据格式及加密。例如，FTP 允许你选择以二进制或ASII格式传输。如果选择二进制，那么发送方和接收方不改变文件的内容。如果选择ASII格式，发送方将把文本从发送方的字符集转换成标准的 ASII 后发送数据。在接收方将标准的ASII转换成接收方计算机的字符集。示例：加密，ASII等。​</p>
+<h2 id="会话层："><a href="#会话层：" class="headerlink" title="会话层："></a>会话层：</h2><p>他定义了如何开始、控制和结束一个会话，包括对多个双向小时的控制和管理，以便在只完成连续消息的一部分时可以通知应用，从而使表示层看到的数据是连续的，在某些情况下，如果表示层收到了所有的数据，则用数据代表表示层。示例：RPC，SQL等。​</p>
+<h2 id="传输层："><a href="#传输层：" class="headerlink" title="传输层："></a>传输层：</h2><p>这层的功能包括是否选择差错恢复协议还是无差错恢复协议，及在同一主机上对不同应用的数据流的输入进行复用，还包括对收到的顺序不对的数据包的重新排序功能。示例：TCP，UDP，SPX。​</p>
+<h2 id="网络层："><a href="#网络层：" class="headerlink" title="网络层："></a>网络层：</h2><p>这层对端到端的包传输进行定义，他定义了能够标识所有结点的逻辑地址，还定义了路由实现的方式和学习的方式。为了适应最大传输单元长度小于包长度的传输介质，网络层还定义了如何将一个包分解成更小的包的分段方法。示例：IP，IPX等。​</p>
+<h2 id="数据链路层："><a href="#数据链路层：" class="headerlink" title="数据链路层："></a>数据链路层：</h2><p>他定义了在单个链路上如何传输数据。这些协议与被讨论的各种介质有关。示例：ATM，FDDI等。​</p>
+<h2 id="物理层："><a href="#物理层：" class="headerlink" title="物理层："></a>物理层：</h2><p>OSI的物理层规范是有关传输介质的特性标准，这些规范通常也参考了其他组织制定的标准。连接头、针、针的使用、电流、电流、编码及光调制等都属于各种物理层规范中的内容。物理层常用多个规范完成对所有细节的定义。示例：Rj45，802.3等。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/06/25/%E8%AF%AD%E8%A8%80/web/Ajax-%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -667,347 +1061,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/06/02/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/%E5%85%B6%E4%BB%96/Lucene-%E5%9F%BA%E6%9C%AC%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/06/02/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/%E5%85%B6%E4%BB%96/Lucene-%E5%9F%BA%E6%9C%AC%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A/" class="post-title-link" itemprop="url">Lucene-基本名词解释</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-06-02 00:12:09" itemprop="dateCreated datePublished" datetime="2015-06-02T00:12:09+08:00">2015-06-02</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-10-11 21:29:26" itemprop="dateModified" datetime="2019-10-11T21:29:26+08:00">2019-10-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Document"><a href="#Document" class="headerlink" title="Document"></a>Document</h3><p>Document 是用来描述文档的，这里的文档可以指一个 HTML 页面，一封电子邮件，或者是一个文本文件。一个 Document 对象由多个 Field 对象组成的。可以把一个 Document 对象想象成数据库中的一个记录，而每个 Field 对象就是记录的一个字段。  </p>
-<h3 id="Field"><a href="#Field" class="headerlink" title="Field"></a>Field</h3><p>Field 对象是用来描述一个文档的某个属性的，比如一封电子邮件的标题和内容可以用两个 Field 对象分别描述。  </p>
-<h3 id="Analyzer"><a href="#Analyzer" class="headerlink" title="Analyzer"></a>Analyzer</h3><p>在一个文档被索引之前，首先需要对文档内容进行分词处理，这部分工作就是由 Analyzer 来做的。Analyzer 类是一个抽象类，它有多个实现。针对不同的语言和应用需要选择适合的 Analyzer。Analyzer 把分词后的内容交给 IndexWriter 来建立索引。  </p>
-<h3 id="IndexWriter"><a href="#IndexWriter" class="headerlink" title="IndexWriter"></a>IndexWriter</h3><p>IndexWriter 是 Lucene 用来创建索引的一个核心的类，他的作用是把一个个的 Document 对象加到索引中来。  </p>
-<h3 id="Directory"><a href="#Directory" class="headerlink" title="Directory"></a>Directory</h3><p>这个类代表了 Lucene 的索引的存储的位置，这是一个抽象类，它目前有两个实现，第一个是 FSDirectory，它表示一个存储在文件系统中的索引的位置。第二个是 RAMDirectory，它表示一个存储在内存当中的索引的位置。</p>
-<h3 id="Query"><a href="#Query" class="headerlink" title="Query"></a>Query</h3><p>这是一个抽象类，他有多个实现，比如 TermQuery, BooleanQuery, PrefixQuery. 这个类的目的是把用户输入的查询字符串封装成 Lucene 能够识别的 Query。</p>
-<h3 id="IndexSearcher"><a href="#IndexSearcher" class="headerlink" title="IndexSearcher"></a>IndexSearcher</h3><p>IndexSearcher 是用来在建立好的索引上进行搜索的。它只能以只读的方式打开一个索引，所以可以有多个 IndexSearcher 的实例在一个索引上进行操作。</p>
-<h3 id="Hits"><a href="#Hits" class="headerlink" title="Hits"></a>Hits</h3><p>Hits 是用来保存搜索结果的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC29%E7%AB%A0-%E6%A1%A5%E6%A2%81%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC29%E7%AB%A0-%E6%A1%A5%E6%A2%81%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">设计模式之禅-第29章-桥梁模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-24 16:26:54" itemprop="dateCreated datePublished" datetime="2015-05-24T16:26:54+08:00">2015-05-24</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>桥梁模式（Bridge Pattern）</p>
-<p>定义：Decouple an abstraction from its implementation so that the two can vary independently.（将抽象和实现解耦，使得两者可以独立地变化。）</p>
-<hr>
-<p>桥梁模式的优点：</p>
-<ul>
-<li>抽象和实现分离；</li>
-<li>优秀的扩充能力；</li>
-<li>实现细节对客户透明。</li>
-</ul>
-<hr>
-<p>桥梁模式的使用场景：</p>
-<ul>
-<li>不希望或不适用使用继承的场景；</li>
-<li>接口或抽象类不稳定的场景；</li>
-<li>重用性要求较高的场景。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC28%E7%AB%A0-%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC28%E7%AB%A0-%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">设计模式之禅-第28章-享元模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-24 14:23:05" itemprop="dateCreated datePublished" datetime="2015-05-24T14:23:05+08:00">2015-05-24</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>享元模式（Flyweight Pattern）</p>
-<p>定义：Use sharing to support large numbers of fine-grained objects efficiently.（使用共享对象可有效地支持大量的细粒度的对象。）</p>
-<hr>
-<p>要求细粒度对象，那么不可避免地使得对象数量多切性质相近，那我们就将这些对象的信息分为两个部分：内部状态（intrinsic）与外部状态（extrinsic）。</p>
-<ul>
-<li>内部状态是对象可共享出来的信息，存储在享元对象内部并且不会随环境改变而改变。</li>
-<li>外部状态是独享得以依赖的一个标记，是随环境改变而改变的、不可用共享的状态。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC27%E7%AB%A0-%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC27%E7%AB%A0-%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">设计模式之禅-第27章-解释器模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-24 13:06:12" itemprop="dateCreated datePublished" datetime="2015-05-24T13:06:12+08:00">2015-05-24</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>解释器模式（Interpreter Pattern）</p>
-<p>Given a language, define a representation for its grammer along with an interpreter that uses the representation to interpret sentences in the language.（给定一门语言，定义它的文法的一种表示，并定义一个解释器，该解释器使用该表示来解释语言中的句子）</p>
-<hr>
-<p>解释器模式优点：它最显著的优点就是扩展性，修改语法规则只要修改相应的非终结符表达式就可以了，若扩展语法，则只要增加非终结符类就可以了。</p>
-<hr>
-<p>解释器模式缺点：</p>
-<ul>
-<li>会引起类膨胀</li>
-<li>采用递归调用方法</li>
-<li>效率问题</li>
-</ul>
-<hr>
-<p>解释器模式使用场景：</p>
-<ul>
-<li>重复发生的问题</li>
-<li>一个简单语法需要解释的场景</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1079,20 +1132,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

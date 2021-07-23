@@ -188,6 +188,290 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC17%E7%AB%A0-%E5%91%B3%E9%81%93%E4%B8%8E%E5%90%AF%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC17%E7%AB%A0-%E5%91%B3%E9%81%93%E4%B8%8E%E5%90%AF%E5%8F%91/" class="post-title-link" itemprop="url">代码整洁之道-第17章-味道与启发</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-20 14:54:07" itemprop="dateCreated datePublished" datetime="2017-01-20T14:54:07+08:00">2017-01-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h2><ol>
+<li>不恰当的信息</li>
+</ol>
+<p>  让注释传达本该更好地在源代码控制系统、问题追踪系统或任何其他记录系统中保持的信息，是不恰当的。例如，修改历史记录只会用大量过时而无趣的文本搞乱源代码文件。通常，作者、最后修改时间、SPR数等元数据不该在注释中出现。注释只应该描述有关代码和设计的技术性信息。</p>
+<ol start="2">
+<li>废弃的注释</li>
+</ol>
+<p>  过时、无关或不正确的注释就是废弃的注释。注释会很快过时。最好别编写将被废弃的注释。如果发现废弃的注释，最好尽快更新或删除。</p>
+<ol start="3">
+<li>冗余注释</li>
+</ol>
+<p>  如果注释描述的是某种充分自我描述了的东西，那么注释就是多余的。例如：<br>  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i++; // increment i</span><br></pre></td></tr></table></figure><br>  另一个例子是除函数签名之外什么也没多说（或少说）的Javadoc：<br>  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * @param sellRequest</span><br><span class="line"> * @return</span><br><span class="line"> * @throws ManagedComponentException</span><br><span class="line"> */</span><br><span class="line">public SellReponse beginSellItem(SellRequest sellRequest) throws ManagedComponentException</span><br></pre></td></tr></table></figure></p>
+<ol start="4">
+<li>糟糕的注释</li>
+</ol>
+<p>  如果要编写一条注释，就花时间保证写出最好的注释，字斟句酌。使用正确的语法和拼写。别闲扯，别画蛇添足，保持简洁。</p>
+<ol start="5">
+<li>注释掉的代码</li>
+</ol>
+<p>  看到注释掉的代码，就删除它！源代码控制系统会记得它，如果有人真的需要，可以签出比较前的版本。</p>
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><ol>
+<li>过多的参数</li>
+</ol>
+<p>  函数的参数数量应该少。没参数最好，一个次之，两个、三个再次之。三个以上的参数非常值得质疑，应坚决避免。</p>
+<ol start="2">
+<li>输出参数</li>
+</ol>
+<p>  输出参数违反直觉。读者期望参数用于输入而非输出。如果函数非要修改什么东西的状态不可，就修改它所在对象的状态好了。</p>
+<ol start="3">
+<li>标识参数</li>
+</ol>
+<p>  布尔值参数大声宣告函数做了不止一件事。它们令人迷惑，应该消灭掉。</p>
+<ol start="4">
+<li>死函数</li>
+</ol>
+<p>  永不被调用的方法应该丢弃。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC9%E7%AB%A0-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC9%E7%AB%A0-%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/" class="post-title-link" itemprop="url">代码整洁之道-第9章-单元测试</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-19 16:48:11" itemprop="dateCreated datePublished" datetime="2017-01-19T16:48:11+08:00">2017-01-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>TDD(Test-Driven Development)：测试驱动开发，是敏捷开发中的一项核心实践和技术，也是一种设计方法论。</p>
+<p>TDD三定律：</p>
+<ol>
+<li>在编写不能通过的单元测试前，不可编写生产代码。</li>
+<li>只可编写刚好无法通过的单元测试，不能编译也算不能通过。</li>
+<li>只可编写刚好足以通过当前失败测试的生产代码。</li>
+</ol>
+<p>这样测试代码量足以匹敌生产代码量，导致令人生畏的管理问题。</p>
+<p>测试代码和生产代码一样重要。它该像生产代码一般保持整洁。</p>
+<p>整洁的测试，三个要素：可读性、可读性和可读性。</p>
+<p>每个测试函数只测试一个概念。</p>
+<p>整洁的测试还遵循一下5条规则（F.I.R.S.T）：</p>
+<ul>
+<li>快速（Fast）：测试应该够快。测试运行缓慢，你就不会想要频繁地运行它。</li>
+<li>独立（Independent）：测试应该相互独立。某个测试不应为下一个测试设定条件。</li>
+<li>可重复（Repeatable）：测试应当可在任何环境中重复通过。</li>
+<li>自足验证（Self-Validating）：测试应该有布尔值输出。</li>
+<li>及时（Timely）：测试应及时编写。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC8%E7%AB%A0-%E8%BE%B9%E7%95%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC8%E7%AB%A0-%E8%BE%B9%E7%95%8C/" class="post-title-link" itemprop="url">代码整洁之道-第8章-边界</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-19 16:08:39" itemprop="dateCreated datePublished" datetime="2017-01-19T16:08:39+08:00">2017-01-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="使用第三方代码"><a href="#使用第三方代码" class="headerlink" title="使用第三方代码"></a>使用第三方代码</h3><p>在接口提供者和使用者之间，存在与生俱来的张力。第三方程序包和框架提供者追求普适性，这样就能在多个环境中工作，吸引广泛的用户。而使用者则想要集中满足特定需求的接口。这种张力会导致系统边界上出现问题。</p>
+<p>以java.util.Map为例。应用程序可能构造一个Map对象并传递它。我们的初衷可能是Map对象的所有接收者都不要删除映射图中的任何东西。但是Map中正好有一个clear()方法。Map的任何使用者都能清楚映射图。或许设计惯例是Map中只能保存特定的类型，但Map并不会可靠地约束存于其中的对象的类型。使用者可随意往Map中塞入任何类型的条目。</p>
+<p>可以通过泛型来规定传入参数的类型。但是超出所需/所愿的功能问题，仍未得到解决。</p>
+<p>在系统中不受限制的传递<code>Map&lt;Integer, Sensors&gt;</code>的实体，意味着当到Map的接口被修改时，有许多地方都要跟着改。你或许会认为这样的改动不太可能发生，不过，当Java 5加入对泛型的支持时，的确发生了改动。</p>
+<p>使用Map的更整洁的方式大概如下。Sensors的用户不必关心是否用了泛型，那将是实现细节才关心的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class Sensors &#123;</span><br><span class="line">  private Map sensors = new HashMap();</span><br><span class="line"></span><br><span class="line">  public Sensors getById(String id) &#123;</span><br><span class="line">    return (Sensors) sensors.get(id);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>边界上的接口（Map）是隐藏的。它能随来自应用程序其他部分的极小的影响而变动。对泛型的使用不再是一个大问题，因为转换和类型管理是在Sensors类内部处理的。</p>
+<p>我们并不建议总是以这种方式封装Map的使用。我们建议不要将Map（或者边界上的其他接口）在系统中传递。如果你使用类似Map这样的边界接口，就把它保留在类或近亲类中。避免从公共API中返回边界接口，或将边界接口作为参数传递给公共API。</p>
+<hr>
+<p>我们通过代码中少数几处引用第三方边界接口的位置来管理第三方边界。可以像我们对待Map那样包装它们，也可以使用Adapter模式将我们的接口转换为第三方提供的接口。采用这两种方式，代码都能更好地与我们沟通，在边界两边推动内部一致的用法，当第三方代码有改动时修改点也会更少。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC10%E7%AB%A0-%E7%B1%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -810,284 +1094,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC5%E7%AB%A0-%E6%A0%BC%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC5%E7%AB%A0-%E6%A0%BC%E5%BC%8F/" class="post-title-link" itemprop="url">代码整洁之道-第5章-格式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-18 17:54:03" itemprop="dateCreated datePublished" datetime="2017-01-18T17:54:03+08:00">2017-01-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="垂直格式"><a href="#垂直格式" class="headerlink" title="垂直格式"></a>垂直格式</h2><ul>
-<li><p>垂直方向上的间隔</p>
-<p>在封包声明、导入声明和每个函数之间，都有空白行隔开。</p>
-</li>
-<li><p>垂直方向上的靠近</p>
-<p>在方法中，紧密相关的代码应该互相靠近。</p>
-</li>
-<li><p>垂直距离</p>
-<p>实体变量应该在类的顶部声明。</p>
-<p>若某个函数调用了另外一个，就应该把它们放到一起，而且调用者应该尽可能放在被调用者上面。</p>
-<p>概念相关的代码应该放到一起。相关性越强，彼此之间的距离就该越短。</p>
-</li>
-<li><p>垂直顺序</p>
-<p>调用者应该尽可能放在被调用者上面。</p>
-</li>
-</ul>
-<h2 id="横向格式"><a href="#横向格式" class="headerlink" title="横向格式"></a>横向格式</h2><p>应该尽力保持代码行短小。死守80个字符的上限有点僵化，而且我也并不反对代码行长度达到100个字符或120个字符。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC4%E7%AB%A0-%E6%B3%A8%E9%87%8A/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC4%E7%AB%A0-%E6%B3%A8%E9%87%8A/" class="post-title-link" itemprop="url">代码整洁之道-第4章-注释</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-18 17:22:53" itemprop="dateCreated datePublished" datetime="2017-01-18T17:22:53+08:00">2017-01-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="注释不能美化糟糕的代码"><a href="#注释不能美化糟糕的代码" class="headerlink" title="注释不能美化糟糕的代码"></a>注释不能美化糟糕的代码</h3><p>带有少量注释的整洁而有表达力的代码，要比带有大量注释的零碎而复杂的代码像样得多。</p>
-<h3 id="用代码来阐述"><a href="#用代码来阐述" class="headerlink" title="用代码来阐述"></a>用代码来阐述</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if ((employee.flags &amp; HOURLY_FLAG) &amp;&amp; (employee.age &gt; 65))</span><br></pre></td></tr></table></figure>
-<p>or</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (employee.isEligibleForFullBenefites())</span><br></pre></td></tr></table></figure>
-
-<p>只要想上那么几秒钟，就能用代码解释你大部分的意图。很多时候，简单到只需要创建一个描述与注释所言同一事物的函数即可。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC3%E7%AB%A0-%E5%87%BD%E6%95%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC3%E7%AB%A0-%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">代码整洁之道-第3章-函数</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-18 15:30:13" itemprop="dateCreated datePublished" datetime="2017-01-18T15:30:13+08:00">2017-01-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>函数的规则：</p>
-<ul>
-<li><p>短小</p>
-<ul>
-<li><p>代码块和缩进</p>
-<p>if语句、else语句、while语句等，其中的代码块应该只有一行。该行大抵应该是一个函数调用语句。这样不但能保持函数短小，而且，因为块内调用的函数拥有较具说明性的名称，从而增加了文档上的价值。</p>
-<p>这也意味着函数不应该大到足以容纳嵌套结构。所以，函数的缩进层级不该多于一层或两层。当然，这样的函数易于阅读和理解。</p>
-</li>
-</ul>
-</li>
-<li><p>只做一件事</p>
-</li>
-<li><p>每个函数一个抽象级别</p>
-</li>
-<li><p>使用描述性的命名</p>
-</li>
-<li><p>函数参数尽量少</p>
-<p>最理想的参数数量是零（零参数函数），其次是一（单参数函数），再次是二（双参数函数），应尽量避免三（三参数函数）。有足够特殊的理由才能用三个以上参数（多参数函数）——————所以无论如何也不要这么做。</p>
-<p>从测试的角度看，参数过多测试覆盖所有可能值的组合让人生畏。</p>
-<ul>
-<li><p>标识参数</p>
-<p>向函数传入布尔值简直就是骇人听闻的做法。这样做标识着导致该函数不止做一件事。</p>
-</li>
-</ul>
-<p>如果函数看来需要两个、三个或三个以上参数，就说明其中一些参数应该封装为类了。</p>
-</li>
-<li><p>分隔指令与询问</p>
-<p><code>public boolean set(String attribute, String value);</code> 该函数设置某个指定属性，如果成功就返回true，如果不存在那个属性则返回false。</p>
-<p>这就会导致以下的语句：<code>if (set(&quot;username&quot;, &quot;unclebob&quot;)) ...</code>。</p>
-<p>作者本意，set是个动词，但在if语句的上下文中，感觉它像是个形容词。该语句读取来像是说“如果username属性值之前已被设置为unclebob”，而不是“设置username属性值为unclebob，看看是否可行，然后……”。要解决这个问题，可以将set函数重命名为setAndCheckIfExists，但这对提高if语句的可读性帮助不大。真正的解决方案是把指令与询问分割开来，防止混淆的发生：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (attributeExists(&quot;username&quot;)) &#123;</span><br><span class="line">  setAttribute(&quot;username&quot;,&quot;unclebob&quot;);</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>使用异常代替返回错误码</p>
-</li>
-<li><p>避免重复的代码</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1159,20 +1165,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

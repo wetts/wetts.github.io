@@ -188,6 +188,251 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/24/%E8%AF%AD%E8%A8%80/PHP/PHP-%E9%85%8D%E7%BD%AE-%E6%96%87%E4%BB%B6php-fpm.conf%E9%87%8D%E8%A6%81%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/03/24/%E8%AF%AD%E8%A8%80/PHP/PHP-%E9%85%8D%E7%BD%AE-%E6%96%87%E4%BB%B6php-fpm.conf%E9%87%8D%E8%A6%81%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">PHP-配置-文件php-fpm.conf重要参数详解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-24 10:26:33" itemprop="dateCreated datePublished" datetime="2016-03-24T10:26:33+08:00">2016-03-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2016-11-30 21:08:01" itemprop="dateModified" datetime="2016-11-30T21:08:01+08:00">2016-11-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line">pid = run/php-fpm.pid</span><br><span class="line">#pid设置，默认在安装目录中的var/run/php-fpm.pid，建议开启</span><br><span class="line"></span><br><span class="line">error_log = log/php-fpm.log</span><br><span class="line">#错误日志，默认在安装目录中的var/log/php-fpm.log</span><br><span class="line"></span><br><span class="line">log_level = notice</span><br><span class="line">#错误级别. 可用级别为: alert（必须立即处理）, error（错误情况）, warning（警告情况）, notice（一般重要信息）, debug（调试信息）. 默认: notice.</span><br><span class="line"></span><br><span class="line">emergency_restart_threshold = 60</span><br><span class="line">emergency_restart_interval = 60s</span><br><span class="line">#表示在emergency_restart_interval所设值内出现SIGSEGV或者SIGBUS错误的php-cgi进程数如果超过 emergency_restart_threshold个，php-fpm就会优雅重启。这两个选项一般保持默认值。</span><br><span class="line"></span><br><span class="line">process_control_timeout = 0</span><br><span class="line">#设置子进程接受主进程复用信号的超时时间. 可用单位: s(秒), m(分), h(小时), 或者 d(天) 默认单位: s(秒). 默认值: 0.</span><br><span class="line"></span><br><span class="line">daemonize = yes</span><br><span class="line">#后台执行fpm,默认值为yes，如果为了调试可以改为no。在FPM中，可以使用不同的设置来运行多个进程池。 这些设置可以针对每个进程池单独设置。</span><br><span class="line"></span><br><span class="line">listen = 127.0.0.1:9000</span><br><span class="line">#fpm监听端口，即nginx中php处理的地址，一般默认值即可。可用格式为: &#x27;ip:port&#x27;, &#x27;port&#x27;, &#x27;/path/to/unix/socket&#x27;. 每个进程池都需要设置.</span><br><span class="line"></span><br><span class="line">listen.backlog = -1</span><br><span class="line">#backlog数，-1表示无限制，由操作系统决定，此行注释掉就行。backlog含义参考：http://www.3gyou.cc/?p=41</span><br><span class="line"></span><br><span class="line">listen.allowed_clients = 127.0.0.1</span><br><span class="line">#允许访问FastCGI进程的IP，设置any为不限制IP，如果要设置其他主机的nginx也能访问这台FPM进程，listen处要设置成本地可被访问的IP。默认值是any。每个地址是用逗号分隔. 如果没有设置或者为空，则允许任何服务器请求连接</span><br><span class="line"></span><br><span class="line">listen.owner = www</span><br><span class="line">listen.group = www</span><br><span class="line">listen.mode = 0666</span><br><span class="line">#unix socket设置选项，如果使用tcp方式访问，这里注释即可。</span><br><span class="line"></span><br><span class="line">user = www</span><br><span class="line">group = www</span><br><span class="line">#启动进程的帐户和组</span><br><span class="line"></span><br><span class="line">pm = dynamic #对于专用服务器，pm可以设置为static。</span><br><span class="line">#如何控制子进程，选项有static和dynamic。如果选择static，则由pm.max_children指定固定的子进程数。如果选择dynamic，则由下开参数决定：</span><br><span class="line">pm.max_children #，子进程最大数</span><br><span class="line">pm.start_servers #，启动时的进程数</span><br><span class="line">pm.min_spare_servers #，保证空闲进程数最小值，如果空闲进程小于此值，则创建新的子进程</span><br><span class="line">pm.max_spare_servers #，保证空闲进程数最大值，如果空闲进程大于此值，此进行清理</span><br><span class="line"></span><br><span class="line">pm.max_requests = 1000</span><br><span class="line">#设置每个子进程重生之前服务的请求数. 对于可能存在内存泄漏的第三方模块来说是非常有用的. 如果设置为 &#x27;0&#x27; 则一直接受请求. 等同于 PHP_FCGI_MAX_REQUESTS 环境变量. 默认值: 0.</span><br><span class="line"></span><br><span class="line">pm.status_path = /status</span><br><span class="line">#FPM状态页面的网址. 如果没有设置, 则无法访问状态页面. 默认值: none. munin监控会使用到</span><br><span class="line"></span><br><span class="line">ping.path = /ping</span><br><span class="line">#FPM监控页面的ping网址. 如果没有设置, 则无法访问ping页面. 该页面用于外部检测FPM是否存活并且可以响应请求. 请注意必须以斜线开头 (/)。</span><br><span class="line"></span><br><span class="line">ping.response = pong</span><br><span class="line">#用于定义ping请求的返回相应. 返回为 HTTP 200 的 text/plain 格式文本. 默认值: pong.</span><br><span class="line"></span><br><span class="line">request_terminate_timeout = 0</span><br><span class="line">#设置单个请求的超时中止时间. 该选项可能会对php.ini设置中的&#x27;max_execution_time&#x27;因为某些特殊原因没有中止运行的脚本有用. 设置为 &#x27;0&#x27; 表示 &#x27;Off&#x27;.当经常出现502错误时可以尝试更改此选项。</span><br><span class="line"></span><br><span class="line">request_slowlog_timeout = 10s</span><br><span class="line">#当一个请求该设置的超时时间后，就会将对应的PHP调用堆栈信息完整写入到慢日志中. 设置为 &#x27;0&#x27; 表示 &#x27;Off&#x27;</span><br><span class="line"></span><br><span class="line">slowlog = log/$pool.log.slow</span><br><span class="line">#慢请求的记录日志,配合request_slowlog_timeout使用</span><br><span class="line"></span><br><span class="line">rlimit_files = 1024</span><br><span class="line">#设置文件打开描述符的rlimit限制. 默认值: 系统定义值默认可打开句柄是1024，可使用 ulimit -n查看，ulimit -n 2048修改。</span><br><span class="line"></span><br><span class="line">rlimit_core = 0</span><br><span class="line">#设置核心rlimit最大限制值. 可用值: &#x27;unlimited&#x27; 、0或者正整数. 默认值: 系统定义值.</span><br><span class="line"></span><br><span class="line">chroot =</span><br><span class="line">#启动时的Chroot目录. 所定义的目录需要是绝对路径. 如果没有设置, 则chroot不被使用.</span><br><span class="line"></span><br><span class="line">chdir =</span><br><span class="line">#设置启动目录，启动时会自动Chdir到该目录. 所定义的目录需要是绝对路径. 默认值: 当前目录，或者/目录（chroot时）</span><br><span class="line"></span><br><span class="line">catch_workers_output = yes</span><br><span class="line">#重定向运行过程中的stdout和stderr到主要的错误日志文件中. 如果没有设置, stdout 和 stderr 将会根据FastCGI的规则被重定向到 /dev/null . 默认值: 空.</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP-%E5%AE%89%E8%A3%85-%E5%9C%A8Mac%E4%B8%8A%E5%AE%89%E8%A3%85mcrype%E6%8F%92%E4%BB%B6%E6%AD%A5%E9%AA%A4%E4%BB%A5%E5%8F%8A%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP-%E5%AE%89%E8%A3%85-%E5%9C%A8Mac%E4%B8%8A%E5%AE%89%E8%A3%85mcrype%E6%8F%92%E4%BB%B6%E6%AD%A5%E9%AA%A4%E4%BB%A5%E5%8F%8A%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" class="post-title-link" itemprop="url">PHP-安装-在Mac上安装mcrype插件步骤以及注意事项</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-23 22:09:21" itemprop="dateCreated datePublished" datetime="2016-03-23T22:09:21+08:00">2016-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-07-28 14:31:05" itemprop="dateModified" datetime="2017-07-28T14:31:05+08:00">2017-07-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="mac-安装-php-的-mcrypt-扩展步骤以及注意事项"><a href="#mac-安装-php-的-mcrypt-扩展步骤以及注意事项" class="headerlink" title="mac 安装 php 的 mcrypt 扩展步骤以及注意事项"></a>mac 安装 php 的 mcrypt 扩展步骤以及注意事项</h1><ol>
+<li><p>首先安装 libmcrypt</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd ~/Downloads/mcrypt-2.5.8</span><br><span class="line">./configure --disable-posix-threads --enable-static</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>安装 xcode 就可以使用 make 命令</p>
+</blockquote></li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP-%E5%AE%89%E8%A3%85-%E5%9C%A8Mac%E4%B8%8A%E5%AE%89%E8%A3%85mcrype%E6%8F%92%E4%BB%B6%E6%AD%A5%E9%AA%A4%E4%BB%A5%E5%8F%8A%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP7-%E5%AE%89%E8%A3%85-Redis%E6%89%A9%E5%B1%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP7-%E5%AE%89%E8%A3%85-Redis%E6%89%A9%E5%B1%95/" class="post-title-link" itemprop="url">PHP7-安装-Redis扩展</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-23 16:38:48" itemprop="dateCreated datePublished" datetime="2016-03-23T16:38:48+08:00">2016-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-07-28 14:30:20" itemprop="dateModified" datetime="2017-07-28T14:30:20+08:00">2017-07-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ol>
+<li>git clone <a target="_blank" rel="noopener" href="https://github.com/phpredis/phpredis.git">https://github.com/phpredis/phpredis.git</a></li>
+<li>cd phpredis</li>
+<li>git checkout php7 #拉取php7分支</li>
+<li>/web/php/bin/phpize #用phpize生成configure配置文件</li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/03/23/%E8%AF%AD%E8%A8%80/PHP/PHP7-%E5%AE%89%E8%A3%85-Redis%E6%89%A9%E5%B1%95/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/23/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%AE%89%E8%A3%85%E9%97%AE%E9%A2%98-PHP/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -765,354 +1010,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">MySQL-引擎</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-03-09 11:22:03" itemprop="dateCreated datePublished" datetime="2016-03-09T11:22:03+08:00">2016-03-09</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-07-13 01:59:28" itemprop="dateModified" datetime="2021-07-13T01:59:28+08:00">2021-07-13</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.2cto.com/database/201503/385669.html">http://www.2cto.com/database/201503/385669.html</a></p>
-<h3 id="Innodb引擎"><a href="#Innodb引擎" class="headerlink" title="Innodb引擎"></a>Innodb引擎</h3><p>Innodb引擎提供了对数据库ACID事务的支持，并且实现了SQL标准的四种隔离级别，关于数据库事务与其隔离级别的内容请见数据库事务与其隔离级别这篇文章。该引擎还提供了行级锁和外键约束，它的设计目标是处理大容量数据库系统，它本身其实就是基于MySQL后台的完整数据库系统，MySQL运行时Innodb会在内存中建立缓冲池，用于缓冲数据和索引。但是该引擎不支持FULLTEXT类型的索引，而且它没有保存表的行数，当<code>SELECT COUNT(*) FROM TABLE</code>时需要扫描全表。当需要使用数据库事务时，该引擎当然是首选。由于锁的粒度更小，写操作不会锁定全表，所以在并发较高时，使用Innodb引擎会提升效率。但是使用行级锁也不是绝对的，如果在执行一个SQL语句时MySQL不能确定要扫描的范围，InnoDB表同样会锁全表。</p>
-<h3 id="MyIASM引擎"><a href="#MyIASM引擎" class="headerlink" title="MyIASM引擎"></a>MyIASM引擎</h3><p>MyIASM是MySQL默认的引擎，但是它没有提供对数据库事务的支持，也不支持行级锁和外键，因此当INSERT(插入)或UPDATE(更新)数据时即写操作需要锁定整个表，效率便会低一些。不过和Innodb不同，MyIASM中存储了表的行数，于是<code>SELECT COUNT(*) FROM TABLE</code>时只需要直接读取已经保存好的值而不需要进行全表扫描。如果表的读操作远远多于写操作且不需要数据库事务的支持，那么MyIASM也是很好的选择。</p>
-<h3 id="两种引擎的选择"><a href="#两种引擎的选择" class="headerlink" title="两种引擎的选择"></a>两种引擎的选择</h3><p>大尺寸的数据集趋向于选择InnoDB引擎，因为它支持事务处理和故障恢复。数据库的大小决定了故障恢复的时间长短，InnoDB可以利用事务日志进行数据恢复，这会比较快。主键查询在InnoDB引擎下也会相当快，不过需要注意的是如果主键太长也会导致性能问题，关于这个问题我会在下文中讲到。大批的INSERT语句(在每个INSERT语句中写入多行，批量插入)在MyISAM下会快一些，但是UPDATE语句在InnoDB下则会更快一些，尤其是在并发量大的时候。</p>
-<h4 id="Index——索引"><a href="#Index——索引" class="headerlink" title="Index——索引"></a>Index——索引</h4><p>索引（Index）是帮助MySQL高效获取数据的数据结构。MyIASM和Innodb都使用了树这种数据结构做为索引，关于树我也曾经写过一篇文章树是一种伟大的数据结构，只是自己的理解，有兴趣的朋友可以去阅读。下面我接着讲这两种引擎使用的索引结构，讲到这里，首先应该谈一下B-Tree和B+Tree。</p>
-<h5 id="B-Tree和B-Tree"><a href="#B-Tree和B-Tree" class="headerlink" title="B-Tree和B+Tree"></a>B-Tree和B+Tree</h5><p>B+Tree是B-Tree的变种，那么我就先讲B-Tree吧，相信大家都知道红黑树，这是我前段时间学《算法》一书时，实现的一颗红黑树，大家可以参考。其实红黑树类似2,3-查找树，这种树既有2叉结点又有3叉结点。B-Tree也与之类似，它的每个结点做多可以有d个分支（叉），d称为B-Tree的度，如下图所示，它的每个结点可以有4个元素，5个分支，于是它的度为5。B-Tree中的元素是有序的，比如图中元素7左边的指针指向的结点中的元素都小于7，而元素7和16之间的指针指向的结点中的元素都处于7和16之间，正是满足这样的关系，才能高效的查找：首先从根节点进行二分查找，找到就返回对应的值，否则就进入相应的区间结点递归的查找，直到找到对应的元素或找到null指针，找到null指针则表示查找失败。这个查找是十分高效的，其时间复杂度为O(logN)（以d为底，当d很大时，树的高度就很低），因为每次检索最多只需要检索树高h个结点。</p>
-<p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/1.png" alt="1"></p>
-<p>接下来就该讲B+Tree了，它是B-Tree的变种，如下面两张图所示：</p>
-<p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/2.png" alt="2"></p>
-<p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/3.png" alt="3"></p>
-<p>从图中就可以看出，B+Tree的内部结点不存储数据，只存储指针，而叶子结点则只存储数据，不存储指针。并且在其每个叶子节点上增加了一个指向湘MyISAM引擎的索引结构</p>
-<p>MyISAM引擎的索引结构为B+Tree，其中B+Tree的数据域存储的内容为实际数据的地址，也就是说它的索引和实际的数据是分开的，只不过是用索引指向了实际的数据，这种索引就是所谓的非聚集索引。</p>
-<h5 id="Innodb引擎的索引结构"><a href="#Innodb引擎的索引结构" class="headerlink" title="Innodb引擎的索引结构"></a>Innodb引擎的索引结构</h5><p>MyISAM引擎的索引结构同样也是B+Tree，但是Innodb的索引文件本身就是数据文件，即B+Tree的数据域存储的就是实际的数据，这种索引就是聚集索引。这个索引的key就是数据表的主键，因此InnoDB表数据文件本身就是主索引。</p>
-<p>因为InnoDB的数据文件本身要按主键聚集，所以InnoDB要求表必须有主键（MyISAM可以没有），如果没有显式指定，则MySQL系统会自动选择一个可以唯一标识数据记录的列作为主键，如果不存在这种列，则MySQL自动为InnoDB表生成一个隐含字段作为主键，这个字段长度为6个字节，类型为长整形。</p>
-<p>并且和MyISAM不同，InnoDB的辅助索引数据域存储的也是相应记录主键的值而不是地址，所以当以辅助索引查找时，会先根据辅助索引找到主键，再根据主键索引找到实际的数据。所以Innodb不建议使用过长的主键，否则会使辅助索引变得过大。建议使用自增的字段作为主键，这样B+Tree的每一个结点都会被顺序的填满，而不会频繁的分裂调整，会有效的提升插入数据的效率。</p>
-<hr>
-<p>转自：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20596402/answer/211492971">https://www.zhihu.com/question/20596402/answer/211492971</a></p>
-<p>时间：2021/07/13 01:57:48</p>
-<h2 id="区别："><a href="#区别：" class="headerlink" title="区别："></a>区别：</h2><ol>
-<li>InnoDB 支持事务，MyISAM 不支持事务。这是 MySQL 将默认存储引擎从 MyISAM 变成 InnoDB 的重要原因之一；</li>
-<li>InnoDB 支持外键，而 MyISAM 不支持。对一个包含外键的 InnoDB 表转为 MYISAM 会失败；</li>
-<li>InnoDB 是聚集索引，MyISAM 是非聚集索引。聚簇索引的文件存放在主键索引的叶子节点上，因此 InnoDB 必须要有主键，通过主键索引效率很高。但是辅助索引需要两次查询，先查询到主键，然后再通过主键查询到数据。因此，主键不应该过大，因为主键太大，其他索引也都会很大。而 MyISAM 是非聚集索引，数据文件是分离的，索引保存的是数据文件的指针。主键索引和辅助索引是独立的。</li>
-<li>InnoDB 不保存表的具体行数，执行 select count(*) from table 时需要全表扫描。而MyISAM 用一个变量保存了整个表的行数，执行上述语句时只需要读出该变量即可，速度很快；</li>
-<li>InnoDB 最小的锁粒度是行锁，MyISAM 最小的锁粒度是表锁。一个更新语句会锁住整张表，导致其他查询和更新都会被阻塞，因此并发访问受限。这也是 MySQL 将默认存储引擎从 MyISAM 变成 InnoDB 的重要原因之一；</li>
-</ol>
-<p>如何选择：</p>
-<ol>
-<li>是否要支持事务，如果要请选择 InnoDB，如果不需要可以考虑 MyISAM；</li>
-<li>如果表中绝大多数都只是读查询，可以考虑 MyISAM，如果既有读写也挺频繁，请使用InnoDB。</li>
-<li>系统奔溃后，MyISAM恢复起来更困难，能否接受，不能接受就选 InnoDB；</li>
-<li>MySQL5.5版本开始Innodb已经成为Mysql的默认引擎(之前是MyISAM)，说明其优势是有目共睹的。如果你不知道用什么存储引擎，那就用InnoDB，至少不会差。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/%E5%85%B6%E4%BB%96/Shiro%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/02/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/%E5%85%B6%E4%BB%96/Shiro%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" class="post-title-link" itemprop="url">Shiro注意事项</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-02-27 10:21:57" itemprop="dateCreated datePublished" datetime="2016-02-27T10:21:57+08:00">2016-02-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-10-11 21:29:30" itemprop="dateModified" datetime="2019-10-11T21:29:30+08:00">2019-10-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ol>
-<li>Shiro页面依赖jstl</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/RESTful%20API%20%E8%AE%BE%E8%AE%A1%E6%8C%87%E5%8D%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/RESTful%20API%20%E8%AE%BE%E8%AE%A1%E6%8C%87%E5%8D%97/" class="post-title-link" itemprop="url">RESTful API 设计指南</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-02-26 16:13:22" itemprop="dateCreated datePublished" datetime="2016-02-26T16:13:22+08:00">2016-02-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-19 23:10:07" itemprop="dateModified" datetime="2017-01-19T23:10:07+08:00">2017-01-19</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2014/05/restful_api.html">http://www.ruanyifeng.com/blog/2014/05/restful_api.html</a></p>
-<h2 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h2><p>API与用户的通信协议，总是使用HTTPs协议。</p>
-<h2 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h2><p>应该尽量将API部署在专用域名之下。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://api.example.com</span><br></pre></td></tr></table></figure>
-<p>如果确定API很简单，不会有进一步扩展，可以考虑放在主域名下。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://example.org/api/</span><br></pre></td></tr></table></figure>
-
-<h2 id="版本（Versioning）"><a href="#版本（Versioning）" class="headerlink" title="版本（Versioning）"></a>版本（Versioning）</h2><p>应该将API的版本号放入URL。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://api.example.com/v1/</span><br></pre></td></tr></table></figure>
-<p>另一种做法是，将版本号放在HTTP头信息中，但不如放入URL方便和直观。Github采用这种做法。</p>
-<h2 id="路径（Endpoint）"><a href="#路径（Endpoint）" class="headerlink" title="路径（Endpoint）"></a>路径（Endpoint）</h2><p>路径又称”终点”（endpoint），表示API的具体网址。</p>
-<p>在RESTful架构中，每个网址代表一种资源（resource），所以网址中不能有动词，只能有名词，而且所用的名词往往与数据库的表格名对应。一般来说，数据库中的表都是同种记录的”集合”（collection），所以API中的名词也应该使用复数。</p>
-<p>举例来说，有一个API提供动物园（zoo）的信息，还包括各种动物和雇员的信息，则它的路径应该设计成下面这样。</p>
-<ul>
-<li><code>https://api.example.com/v1/zoos</code></li>
-<li><code>https://api.example.com/v1/animals</code></li>
-<li><code>https://api.example.com/v1/employees</code></li>
-</ul>
-<h2 id="HTTP动词"><a href="#HTTP动词" class="headerlink" title="HTTP动词"></a>HTTP动词</h2><p>对于资源的具体操作类型，由HTTP动词表示。</p>
-<p>常用的HTTP动词有下面五个（括号里是对应的SQL命令）。</p>
-<ul>
-<li>GET（SELECT）：从服务器取出资源（一项或多项）。</li>
-<li>POST（CREATE）：在服务器新建一个资源。</li>
-<li>PUT（UPDATE）：在服务器更新资源（客户端提供改变后的完整资源）。</li>
-<li>PATCH（UPDATE）：在服务器更新资源（客户端提供改变的属性）。</li>
-<li>DELETE（DELETE）：从服务器删除资源。</li>
-</ul>
-<p>还有两个不常用的HTTP动词。</p>
-<ul>
-<li>HEAD：获取资源的元数据。</li>
-<li>OPTIONS：获取信息，关于资源的哪些属性是客户端可以改变的。</li>
-</ul>
-<p>下面是一些例子。</p>
-<ul>
-<li>GET /zoos：列出所有动物园</li>
-<li>POST /zoos：新建一个动物园</li>
-<li>GET /zoos/ID：获取某个指定动物园的信息</li>
-<li>PUT /zoos/ID：更新某个指定动物园的信息（提供该动物园的全部信息）</li>
-<li>PATCH /zoos/ID：更新某个指定动物园的信息（提供该动物园的部分信息）</li>
-<li>DELETE /zoos/ID：删除某个动物园</li>
-<li>GET /zoos/ID/animals：列出某个指定动物园的所有动物</li>
-<li>DELETE /zoos/ID/animals/ID：删除某个指定动物园的指定动物</li>
-</ul>
-<h2 id="过滤信息（Filtering）"><a href="#过滤信息（Filtering）" class="headerlink" title="过滤信息（Filtering）"></a>过滤信息（Filtering）</h2><p>如果记录数量很多，服务器不可能都将它们返回给用户。API应该提供参数，过滤返回结果。</p>
-<p>下面是一些常见的参数。</p>
-<ul>
-<li>?limit=10：指定返回记录的数量</li>
-<li>?offset=10：指定返回记录的开始位置。</li>
-<li>?page=2&amp;per_page=100：指定第几页，以及每页的记录数。</li>
-<li>?sortby=name&amp;order=asc：指定返回结果按照哪个属性排序，以及排序顺序。</li>
-<li>?animal_type_id=1：指定筛选条件</li>
-</ul>
-<p>参数的设计允许存在冗余，即允许API路径和URL参数偶尔有重复。比如，GET /zoo/ID/animals 与 GET /animals?zoo_id=ID 的含义是相同的。</p>
-<h2 id="状态码（Status-Codes）"><a href="#状态码（Status-Codes）" class="headerlink" title="状态码（Status Codes）"></a>状态码（Status Codes）</h2><p>服务器向用户返回的状态码和提示信息，常见的有以下一些（方括号中是该状态码对应的HTTP动词）。</p>
-<ul>
-<li><code>200 OK - [GET]</code>：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。</li>
-<li><code>201 CREATED - [POST/PUT/PATCH]</code>：用户新建或修改数据成功。</li>
-<li><code>202 Accepted - [*]</code>：表示一个请求已经进入后台排队（异步任务）</li>
-<li><code>204 NO CONTENT - [DELETE]</code>：用户删除数据成功。</li>
-<li><code>400 INVALID REQUEST - [POST/PUT/PATCH]</code>：用户发出的请求有错误，服务器没有进行新建或修改数据的操作，该操作是幂等的。</li>
-<li><code>401 Unauthorized - [*]</code>：表示用户没有权限（令牌、用户名、密码错误）。</li>
-<li><code>403 Forbidden - [*]</code>：表示用户得到授权（与401错误相对），但是访问是被禁止的。</li>
-<li><code>404 NOT FOUND - [*]</code>：用户发出的请求针对的是不存在的记录，服务器没有进行操作，该操作是幂等的。</li>
-<li><code>406 Not Acceptable - [GET]</code>：用户请求的格式不可得（比如用户请求JSON格式，但是只有XML格式）。</li>
-<li><code>410 Gone -[GET]</code>：用户请求的资源被永久删除，且不会再得到的。</li>
-<li><code>422 Unprocesable entity - [POST/PUT/PATCH]</code>：当创建一个对象时，发生一个验证错误。</li>
-<li><code>500 INTERNAL SERVER ERROR - [*]</code>：服务器发生错误，用户将无法判断发出的请求是否成功。</li>
-</ul>
-<p>状态码的完全列表参见这里。</p>
-<h2 id="错误处理（Error-handling）"><a href="#错误处理（Error-handling）" class="headerlink" title="错误处理（Error handling）"></a>错误处理（Error handling）</h2><p>如果状态码是4xx，就应该向用户返回出错信息。一般来说，返回的信息中将error作为键名，出错信息作为键值即可。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    error: &quot;Invalid API key&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="返回结果"><a href="#返回结果" class="headerlink" title="返回结果"></a>返回结果</h2><p>针对不同操作，服务器向用户返回的结果应该符合以下规范。</p>
-<ul>
-<li>GET /collection：返回资源对象的列表（数组）</li>
-<li>GET /collection/resource：返回单个资源对象</li>
-<li>POST /collection：返回新生成的资源对象</li>
-<li>PUT /collection/resource：返回完整的资源对象</li>
-<li>PATCH /collection/resource：返回完整的资源对象</li>
-<li>DELETE /collection/resource：返回一个空文档</li>
-</ul>
-<h2 id="Hypermedia-API"><a href="#Hypermedia-API" class="headerlink" title="Hypermedia API"></a>Hypermedia API</h2><p>RESTful API最好做到Hypermedia，即返回结果中提供链接，连向其他API方法，使得用户不查文档，也知道下一步应该做什么。</p>
-<p>比如，当用户向api.example.com的根目录发出请求，会得到这样一个文档。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;link&quot;: &#123;</span><br><span class="line">  &quot;rel&quot;:   &quot;collection https://www.example.com/zoos&quot;,</span><br><span class="line">  &quot;href&quot;:  &quot;https://api.example.com/zoos&quot;,</span><br><span class="line">  &quot;title&quot;: &quot;List of zoos&quot;,</span><br><span class="line">  &quot;type&quot;:  &quot;application/vnd.yourformat+json&quot;</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure>
-<p>上面代码表示，文档中有一个link属性，用户读取这个属性就知道下一步该调用什么API了。rel表示这个API与当前网址的关系（collection关系，并给出该collection的网址），href表示API的路径，title表示API的标题，type表示返回类型。</p>
-<p>Hypermedia API的设计被称为HATEOAS。Github的API就是这种设计，访问api.github.com会得到一个所有可用API的网址列表。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;current_user_url&quot;: &quot;https://api.github.com/user&quot;,</span><br><span class="line">  &quot;authorizations_url&quot;: &quot;https://api.github.com/authorizations&quot;,</span><br><span class="line">  // ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>从上面可以看到，如果想获取当前用户的信息，应该去访问api.github.com/user，然后就得到了下面结果。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;message&quot;: &quot;Requires authentication&quot;,</span><br><span class="line">  &quot;documentation_url&quot;: &quot;https://developer.github.com/v3&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面代码表示，服务器给出了提示信息，以及文档的网址。</p>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ol>
-<li>API的身份认证应该使用OAuth 2.0框架。</li>
-<li>服务器返回的数据格式，应该尽量使用JSON，避免使用XML。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1184,20 +1081,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

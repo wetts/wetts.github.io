@@ -188,6 +188,265 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-configure%EF%BC%8Fmake%EF%BC%8Fmake%20install%E7%9A%84%E4%BD%9C%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/05/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-configure%EF%BC%8Fmake%EF%BC%8Fmake%20install%E7%9A%84%E4%BD%9C%E7%94%A8/" class="post-title-link" itemprop="url">Linux-命令-configure／make／make install的作用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-05-14 16:21:21" itemprop="dateCreated datePublished" datetime="2016-05-14T16:21:21+08:00">2016-05-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-01 14:57:48" itemprop="dateModified" datetime="2017-03-01T14:57:48+08:00">2017-03-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>这些都是典型的使用GNU的AUTOCONF和AUTOMAKE产生的程序的安装步骤。</p>
+<ul>
+<li><code>./configure</code> 是用来检测你的安装平台的目标特征的。比如它会检测你是不是有CC或GCC，并不是需要CC或GCC，它是个shell脚本。</li>
+<li><code>make</code> 是用来编译的，它从Makefile中读取指令，然后编译。</li>
+<li><code>make install</code> 是用来安装的，它也从Makefile中读取指令，安装到指定的位置。</li>
+</ul>
+<p>AUTOMAKE和AUTOCONF 是非常有用的用来发布C程序的东西。如果你也写程序想使用AUTOMAKE和AUTOCONF，可以参考CNGNU.ORG上的相关文章。</p>
+<p><strong>1、configure</strong>，这一步一般用来生成 Makefile，为下一步的编译做准备，你可以通过在 configure 后加上参数来对安装进行控制，比如</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/usr</span><br><span class="line">  # 上面的意思是将该软件安装在 /usr 下面，执行文件就会安装在 /usr/bin （而不是默认的 /usr/local/bin),资源文件就会安装在 /usr/share（而不是默认的/usr/local/share）。同时一些软件的配置文件你可以通过指定 --sys-config= 参数进行设定。有一些软件还可以加上 --with、--enable、--without、--disable 等等参数对编译加以控制，你可以通过允许</span><br><span class="line">./configure --help</span><br><span class="line">  # 察看详细的说明帮助。</span><br><span class="line">./configure --prefix</span><br><span class="line">  # 作用不指定prefix，则可执行文件默认放在/usr/local/bin，库文件默认放在/usr/local/lib，配置文件默认放在/usr/local/etc。其它的资源文件放在/usr/local/share。你要卸载这个程序，要么在原来的make目录下用一次make uninstall（前提是make文件指定过uninstall）,要么去上述目录里面把相关的文件一个个手工删掉。指定prefix，直接删掉一个文件夹就够了。</span><br></pre></td></tr></table></figure>
+
+<p><strong>2、make</strong>，这一步就是编译，大多数的源代码包都经过这一步进行编译（当然有些perl或python编写的软件需要调用perl或python来进行编译）。如果在 make 过程中出现 error ，你就要记下错误代码（注意不仅仅是最后一行），然后你可以向开发者提交 bugreport（一般在 INSTALL 里有提交地址），或者你的系统少了一些依赖库等，这些需要自己仔细研究错误代码。</p>
+<p><strong>3、make install</strong>，这条命令来进行安装（当然有些软件需要先运行 make check 或 make test 来进行一些测试），这一步一般需要你有 root 权限（因为要向系统写入文件）。</p>
+<p><strong>4  卸载   make uninstall</strong></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Nginx-日志-日志配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-05-05 10:13:23" itemprop="dateCreated datePublished" datetime="2016-05-05T10:13:23+08:00">2016-05-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2016-12-01 22:06:47" itemprop="dateModified" datetime="2016-12-01T22:06:47+08:00">2016-12-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="访问日志"><a href="#访问日志" class="headerlink" title="访问日志"></a>访问日志</h2><p>能够使用access_log指令的字段包括：http、server、location。</p>
+<p>需要注意的是：Nginx进程设置的用户和组必须对日志路径有创建文件的权限，否则，会报错。</p>
+<h3 id="访问日志格式配置"><a href="#访问日志格式配置" class="headerlink" title="访问日志格式配置"></a>访问日志格式配置</h3><p>log_format用来设置日志格式，也就是日志文件中每条日志的格式，具体如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">log_format name(格式名称) type(格式样式)</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E9%85%8D%E7%BD%AE/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">Nginx-日志-日志分析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-05-05 09:42:23" itemprop="dateCreated datePublished" datetime="2016-05-05T09:42:23+08:00">2016-05-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2016-12-01 22:06:03" itemprop="dateModified" datetime="2016-12-01T22:06:03+08:00">2016-12-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h2><h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>分析工具为 <em><strong>goaccess-nginx</strong></em></p>
+<p>目前，我们可以通过这款软件查看的统计信息有：</p>
+<ul>
+<li>统计概况，流量消耗等</li>
+<li>访客排名</li>
+<li>动态Web请求</li>
+<li>静态web请求，如图片、样式表、脚本等。</li>
+<li>来路域名</li>
+<li>404 错误</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/30/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-Validation%E6%B3%A8%E8%A7%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -745,445 +1004,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/18/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/04/18/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">Redis-常用命令</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-04-18 01:17:38" itemprop="dateCreated datePublished" datetime="2016-04-18T01:17:38+08:00">2016-04-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-09 22:19:58" itemprop="dateModified" datetime="2017-01-09T22:19:58+08:00">2017-01-09</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="key-pattern-查询相应的key"><a href="#key-pattern-查询相应的key" class="headerlink" title="key pattern 查询相应的key"></a>key pattern 查询相应的key</h2><ul>
-<li>redis允许模糊查询key　　有3个通配符  <code>*、?、[]</code></li>
-<li>randomkey：返回随机key　　</li>
-<li>type key：返回key存储的类型</li>
-<li>exists key：判断某个key是否存在</li>
-<li>del key：删除key</li>
-<li>rename key newkey：改名</li>
-<li>renamenx key newkey：如果newkey不存在则修改成功</li>
-<li>move key 1：将key移动到1数据库</li>
-<li>ttl key：查询key的生命周期（秒）</li>
-<li>expire key 整数值：设置key的生命周期以秒为单位</li>
-<li>pexpire key 整数值：设置key的生命周期以毫秒为单位</li>
-<li>pttl key：查询key 的生命周期（毫秒）</li>
-<li>perisist key：把指定key设置为永久有效</li>
-</ul>
-<h2 id="字符串类型的操作"><a href="#字符串类型的操作" class="headerlink" title="字符串类型的操作"></a>字符串类型的操作</h2><ul>
-<li><p>set key value [ex 秒数] [px 毫秒数] [nx/xx]　　</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">如果ex和px同时写，则以后面的有效期为准</span><br><span class="line">nx：如果key不存在则建立</span><br><span class="line">xx：如果key存在则修改其值</span><br></pre></td></tr></table></figure></li>
-<li><p>get key：取值</p>
-</li>
-<li><p>mset key1 value1 key2 value2 一次设置多个值</p>
-</li>
-<li><p>mget key1 key2 ：一次获取多个值</p>
-</li>
-<li><p>setrange key offset value：把字符串的offset偏移字节改成value，</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">如果偏移量 &gt; 字符串长度，该字符自动补0x00</span><br></pre></td></tr></table></figure></li>
-<li><p>append key value ：把value追加到key 的原值上</p>
-</li>
-<li><p>getrange key start stop：获取字符串中[start, stop]范围的值</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">对于字符串的下标，左数从0开始，右数从-1开始</span><br><span class="line">注意：当start&gt;length，则返回空字符串</span><br><span class="line">      当stop&gt;=length，则截取至字符串尾</span><br><span class="line">      如果start所处位置在stop右边，则返回空字符串</span><br></pre></td></tr></table></figure></li>
-<li><p>getset key nrevalue：获取并返回旧值，在设置新值</p>
-</li>
-<li><p>incr key：自增，返回新值，如果incr一个不是int的value则返回错误，incr一个不存在的key，则设置key为1</p>
-</li>
-<li><p>incrby key 2：跳2自增</p>
-</li>
-<li><p>incrbyfloat by 0.7： 自增浮点数　</p>
-</li>
-<li><p>setbit key offset value：设置offset对应二进制上的值，返回该位上的旧值</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">注意：如果offset过大，则会在中间填充0</span><br><span class="line">  offset最大到多少</span><br><span class="line">  2^32-1，即可推出最大的字符串为512M</span><br></pre></td></tr></table></figure></li>
-<li><p>bitop operation destkey key1 [key2..]    对key1 key2做opecation并将结果保存在destkey上，opecation可以是AND OR NOT XOR</p>
-</li>
-<li><p>strlen key：取指定key的value值的长度</p>
-</li>
-<li><p>setex key time value：设置key对应的值value，并设置有效期为time秒</p>
-</li>
-</ul>
-<h2 id="链表操作"><a href="#链表操作" class="headerlink" title="链表操作"></a>链表操作</h2><p>Redis的list类型其实就是一个每个子元素都是string类型的双向链表，链表的最大长度是2^32。list既可以用做栈，也可以用做队列。</p>
-<p>list的pop操作还有阻塞版本，主要是为了避免轮询</p>
-<ul>
-<li><p>lpush key value：把值插入到链表头部</p>
-</li>
-<li><p>rpush key value：把值插入到链表尾部</p>
-</li>
-<li><p>lpop key ：返回并删除链表头部元素</p>
-</li>
-<li><p>rpop key： 返回并删除链表尾部元素</p>
-</li>
-<li><p>lrange key start stop：返回链表中[start, stop]中的元素</p>
-</li>
-<li><p>lrem key count value：从链表中删除value值，删除count的绝对值个value后结束</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">count &gt; 0 从表头删除　　</span><br><span class="line">count &lt; 0 从表尾删除　　</span><br><span class="line">count=0 全部删除</span><br></pre></td></tr></table></figure></li>
-<li><p>ltrim key start stop：剪切key对应的链接，切[start, stop]一段并把改制重新赋给key</p>
-</li>
-<li><p>lindex key index：返回index索引上的值</p>
-</li>
-<li><p>llen key：计算链表的元素个数</p>
-</li>
-<li><p>linsert key after|before search value：在key 链表中寻找search，并在search值之前|之后插入value</p>
-</li>
-<li><p>rpoplpush source dest：把source 的末尾拿出，放到dest头部，并返回单元值</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">应用场景： task + bak 双链表完成安全队列</span><br><span class="line"></span><br><span class="line">业务逻辑： rpoplpush task bak</span><br><span class="line">  接收返回值并做业务处理</span><br><span class="line">  如果成功则rpop bak清除任务，如果不成功，下次从bak表取任务</span><br></pre></td></tr></table></figure></li>
-<li><p>brpop，blpop key timeout：等待弹出key的尾/头元素</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">timeout为等待超时时间，如果timeout为0则一直等待下去</span><br><span class="line"></span><br><span class="line">应用场景：长轮询ajax，在线聊天时能用到</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="hashes类型及操作"><a href="#hashes类型及操作" class="headerlink" title="hashes类型及操作"></a>hashes类型及操作</h2><p>Redis hash 是一个string类型的field和value的映射表，它的添加、删除操作都是O(1)（平均）。hash特别适用于存储对象，将一个对象存储在hash类型中会占用更少的内存，并且可以方便的存取整个对象。</p>
-<p>配置： hash_max_zipmap_entries 64 #配置字段最多64个，hash_max_zipmap_value 512 #配置value最大为512字节</p>
-<ul>
-<li>hset myhash field value：设置myhash的field为value</li>
-<li>hsetnx myhash field value：不存在的情况下设置myhash的field为value</li>
-<li>hmset myhash field1 value1 field2 value2：同时设置多个field</li>
-<li>hget myhash field：获取指定的hash field</li>
-<li>hmget myhash field1 field2：一次获取多个field</li>
-<li>hincrby myhash field 5：指定的hash field加上给定的值</li>
-<li>hexists myhash field：测试指定的field是否存在</li>
-<li>hlen myhash：返回hash的field数量</li>
-<li>hdel myhash field：删除指定的field</li>
-<li>hkeys myhash：返回hash所有的field</li>
-<li>hvals myhash：返回hash所有的value</li>
-<li>hgetall myhash：获取某个hash中全部的field及value　</li>
-</ul>
-<h2 id="集合结构操作"><a href="#集合结构操作" class="headerlink" title="集合结构操作"></a>集合结构操作</h2><p>特点：无序性、确定性、唯一性</p>
-<ul>
-<li>sadd key value1 value2：往集合里面添加元素</li>
-<li>smembers key：获取集合所有的元素</li>
-<li>srem key value：删除集合某个元素</li>
-<li>spop key：返回并删除集合中1个随机元素（可以坐抽奖，不会重复抽到某人）　　　</li>
-<li>srandmember key：随机取一个元素</li>
-<li>sismember key value：判断集合是否有某个值</li>
-<li>scard key：返回集合元素的个数</li>
-<li>smove source dest value：把source的value移动到dest集合中</li>
-<li>sinter key1 key2 key3：求key1 key2 key3的交集</li>
-<li>sunion key1 key2：求key1 key2 的并集</li>
-<li>sdiff key1 key2：求key1 key2的差集</li>
-<li>sinterstore res key1 key2：求key1 key2的交集并存在res里　</li>
-</ul>
-<h2 id="有序集合"><a href="#有序集合" class="headerlink" title="有序集合"></a>有序集合</h2><p>概念：它是在set的基础上增加了一个顺序属性，这一属性在添加修改元素的时候可以指定，每次指定后，zset会自动按新的值调整顺序。可以理解为有两列的mysql表，一列存储value，一列存储顺序，操作中key理解为zset的名字。</p>
-<p>和set一样sorted，sets也是string类型元素的集合，不同的是每个元素都会关联一个double型的score。sorted set的实现是skip list和hash table的混合体。</p>
-<p>当元素被添加到集合中时，一个元素到score的映射被添加到hash table中，所以给定一个元素获取score的开销是O(1)。另一个score到元素的映射被添加的skip list，并按照score排序，所以就可以有序地获取集合中的元素。添加、删除操作开销都是O(logN)和skip list的开销一致，redis的skip list 实现是双向链表，这样就可以逆序从尾部去元素。sorted set最经常使用方式应该就是作为索引来使用，我们可以把要排序的字段作为score存储，对象的ID当元素存储。</p>
-<ul>
-<li>zadd key score1 value1：添加元素</li>
-<li>zrange key start stop [withscore]：把集合排序后,返回名次[start,stop]的元素  默认是升续排列  withscores 是把score也打印出来</li>
-<li>zrank key member：查询member的排名（升序0名开始）</li>
-<li>zrangebyscore key min max [withscores] limit offset N：集合（升序）排序后取score在[min, max]内的元素，并跳过offset个，取出N个</li>
-<li>zrevrank key member：查询member排名（降序 0名开始）</li>
-<li>zremrangebyscore key min max：按照score来删除元素，删除score在[min, max]之间</li>
-<li>zrem key value1 value2：删除集合中的元素</li>
-<li>zremrangebyrank key start end：按排名删除元素，删除名次在[start, end]之间的</li>
-<li>zcard key：返回集合元素的个数</li>
-<li>zcount key min max：返回[min, max]区间内元素数量</li>
-<li>zinterstore dest numkeys key1[key2..] [WEIGHTS weight1 [weight2…]] [AGGREGATE SUM|MIN|MAX]<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">求key1，key2的交集，key1，key2的权值分别是weight1，weight2</span><br><span class="line">聚合方法用 sum|min|max</span><br><span class="line">聚合结果 保存子dest集合内</span><br><span class="line">注意：weights,aggregate如何理解？</span><br><span class="line">  答：如果有交集，交集元素又有score，score怎么处理？aggregate num-&gt;score相加，min最小score，max最大score，另外可以通过weights设置不同的key的权重，交集时  score*weight</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="服务器相关命令"><a href="#服务器相关命令" class="headerlink" title="服务器相关命令"></a>服务器相关命令</h2><ul>
-<li><p>ping：测定连接是否存活</p>
-</li>
-<li><p>echo：在命令行打印一些内容</p>
-</li>
-<li><p>select：选择数据库</p>
-</li>
-<li><p>quit：退出连接</p>
-</li>
-<li><p>dbsize：返回当前数据库中key的数目</p>
-</li>
-<li><p>info：获取服务器的信息和统计</p>
-</li>
-<li><p>monitor：实时转储收到的请求</p>
-</li>
-<li><p>config get 配置项：获取服务器配置的信息</p>
-</li>
-<li><p>config set 配置项  值：设置配置项信息</p>
-</li>
-<li><p>flushdb：删除当前选择数据库中所有的key</p>
-</li>
-<li><p>flushall：删除所有数据库中的所有的key</p>
-</li>
-<li><p>time：显示服务器时间，时间戳（秒），微秒数</p>
-</li>
-<li><p>bgrewriteaof：后台保存aof快照</p>
-</li>
-<li><p>bgsave：后台保存rdb快照</p>
-</li>
-<li><p>save：保存rdb快照</p>
-</li>
-<li><p>lastsave：上次保存时间</p>
-</li>
-<li><p>shutdown [save/nosave]</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">注意：如果不小心运行了flushall，立即shutdown nosave，关闭服务器，然后手工编辑aof文件，去掉文件中的flushall相关行，然后开启服务器，就可以倒回原来是数据。如果flushall之后，系统恰好bgwriteaof了，那么aof就清空了，数据丢失。</span><br></pre></td></tr></table></figure></li>
-<li><p>showlog：显示慢查询</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">问：多慢才叫慢？</span><br><span class="line">答：由slowlog-log-slower-than 10000，来指定（单位为微秒）</span><br><span class="line">问：服务器存储多少条慢查询记录</span><br><span class="line">答：由slowlog-max-len 128，来做限制</span><br></pre></td></tr></table></figure></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/04/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/" class="post-title-link" itemprop="url">Redis-使用场景</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-04-17 10:29:44" itemprop="dateCreated datePublished" datetime="2016-04-17T10:29:44+08:00">2016-04-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2016-12-07 20:50:55" itemprop="dateModified" datetime="2016-12-07T20:50:55+08:00">2016-12-07</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="圈子列表"><a href="#圈子列表" class="headerlink" title="圈子列表"></a>圈子列表</h3><p>可以运用Redis的List数据类型来保存最新圈子列表。</p>
-<ul>
-<li><p>在发布新的圈子的时候，我们可以进行如下操作：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LPUSH moments &lt;圈子的json串&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>如果我们需要得到最新的20条圈子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LRANGE moments 0 20</span><br></pre></td></tr></table></figure>
-<p>该操作可以获取该List的index为0到index为20的数据。</p>
-</li>
-</ul>
-<p>如果Redis缓存中不够20条圈子，还需要去数据库中读取，和Redis数据结合返回。</p>
-<ul>
-<li><p>如果圈子列表缓存了过多数据：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LTRIM moments 0 5000</span><br></pre></td></tr></table></figure>
-<p>该操作保留该List的index为0到index为5000的数据，其余数据删除。</p>
-</li>
-<li><p>如果删除了一条圈子：<br>Redis里面没有提供删除List中index为某一个值的方法。</p>
-</li>
-</ul>
-<p>但是我们可以通过如下方式删除：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LREM moments 0 &lt;删除圈子的json串&gt;</span><br></pre></td></tr></table></figure>
-<p>该操作是在圈子List中，从index为0的位置开始匹配，如果两个值相等，则删除该条。</p>
-<h3 id="积分排行榜"><a href="#积分排行榜" class="headerlink" title="积分排行榜"></a>积分排行榜</h3><p>可以用Redis的有序set来实现这个功能。</p>
-<ul>
-<li><p>获取积分的时候：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ZADD rankingList &lt;score&gt; &lt;username&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>得到排行榜前100名：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ZREVRANGE rankingList 0 99</span><br></pre></td></tr></table></figure></li>
-<li><p>用户在排行榜中的位置：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ZREVRANK rankingList &lt;username&gt;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="统计某日某篇文件的访问用户"><a href="#统计某日某篇文件的访问用户" class="headerlink" title="统计某日某篇文件的访问用户"></a>统计某日某篇文件的访问用户</h3><ul>
-<li><p>添加文章的访问用户：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SADD page:&lt;date&gt;:&lt;page_id&gt; &lt;user_id&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>获取访问用户总数量：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SCARD page:&lt;date&gt;:&lt;page_id&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>查询某用户是否访问该文章：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SISMEMBER page:&lt;date&gt;:&lt;page_id&gt; &lt;user_id&gt;</span><br></pre></td></tr></table></figure>
-<p>如果成员元素是集合的成员，返回 1 。 如果成员元素不是集合的成员，或 key 不存在，返回 0 。</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E6%95%B0%E6%8D%AE%E5%BA%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/04/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E6%95%B0%E6%8D%AE%E5%BA%93/" class="post-title-link" itemprop="url">Redis-常用命令-数据库</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-04-17 10:29:44" itemprop="dateCreated datePublished" datetime="2016-04-17T10:29:44+08:00">2016-04-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-07-11 00:22:47" itemprop="dateModified" datetime="2021-07-11T00:22:47+08:00">2021-07-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="查看Redis信息和状态"><a href="#查看Redis信息和状态" class="headerlink" title="查看Redis信息和状态"></a>查看Redis信息和状态</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">info</span><br></pre></td></tr></table></figure>
-
-<h3 id="后台启动Redis"><a href="#后台启动Redis" class="headerlink" title="后台启动Redis"></a>后台启动Redis</h3><ul>
-<li>命令加参数</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server &amp;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>配置文件中配置<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#修改daemonize为yes，即默认以后台程序方式运行（还记得前面手动使用&amp;号强制后台运行吗）。</span><br><span class="line">daemonize no</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="关闭Redis"><a href="#关闭Redis" class="headerlink" title="关闭Redis"></a>关闭Redis</h3><ul>
-<li>使用客户端redis-cli<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shutdown</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="redis-cli登陆显示中文"><a href="#redis-cli登陆显示中文" class="headerlink" title="redis-cli登陆显示中文"></a>redis-cli登陆显示中文</h3><blockquote>
-<p>登陆 redis<br><br>加上 –raw 参数，可显示中文</p>
-</blockquote>
-<h3 id="查看Redis配置"><a href="#查看Redis配置" class="headerlink" title="查看Redis配置"></a>查看Redis配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config get *</span><br></pre></td></tr></table></figure>
-
-<p>如果 bind 为空，则没有 IP 限制</p>
-<h4 id="绑定-IP-访问限制"><a href="#绑定-IP-访问限制" class="headerlink" title="绑定 IP 访问限制"></a>绑定 IP 访问限制</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bind 127.0.0.1</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1255,20 +1075,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

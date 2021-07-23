@@ -188,6 +188,294 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-2.%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-2.%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95/" class="post-title-link" itemprop="url">Java虚拟机学习-2.垃圾收集算法</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-07 22:56:20" itemprop="dateCreated datePublished" datetime="2017-01-07T22:56:20+08:00">2017-01-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-12 02:28:48" itemprop="dateModified" datetime="2021-07-12T02:28:48+08:00">2021-07-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/java2000_wl/article/details/8022293">http://blog.csdn.net/java2000_wl/article/details/8022293</a></p>
+<h2 id="跟踪收集器"><a href="#跟踪收集器" class="headerlink" title="跟踪收集器"></a>跟踪收集器</h2><p>跟踪收集器采用的为集中式的管理方式，全局记录对象之间的引用状态，执行时从一些列GC Roots的对象做为起点，从这些节点向下开始进行搜索所有的引用链，当一个对象到GC Roots 没有任何引用链时，则证明此对象是不可用的。</p>
+<p>下图中，对象Object6、Object7、Object8虽然互相引用，但他们的GC Roots是不可到达的，所以它们将会被判定为是可回收的对象。</p>
+<p><img src="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-2.%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95/GC.png" alt="GC"></p>
+<p>可作为GC Roots 的对象包括：</p>
+<ul>
+<li>虚拟机栈(栈帧中的本地变量表)中的引用对象。</li>
+<li>方法区中的类静态属性引用的对象</li>
+<li>方法区中的常量引用的对象</li>
+<li>本地方法栈中JNI的引用对象。</li>
+</ul>
+<p>主要有复制、标记清除、标记压缩三种实现算法。</p>
+<h3 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记 - 清除算法"></a>标记 - 清除算法</h3><p>标记清除算法是最基础的收集算法，其他收集算法都是基于这种思想。标记清除算法分为“标记”和“清除”两个阶段：首先标记出需要回收的对象，标记完成之后统一清除对象。</p>
+<p>它的主要缺点：</p>
+<ol>
+<li>标记和清除过程效率不高</li>
+<li>标记清除之后会产生大量不连续的内存碎片。</li>
+</ol>
+<p><img src="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-2.%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95/%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95.png" alt="标记-清除算法"></p>
+<h3 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h3><p>它将可用内存容量划分为大小相等的两块，每次只使用其中的一块。当这一块用完之后，就将还存活的对象复制到另外一块上面，然后在把已使用过的内存空间一次清理掉。这样使得每次都是对其中的一块进行内存回收，不会产生碎片等情况，只要移动堆订的指针，按顺序分配内存即可，实现简单，运行高效。</p>
+<p>主要缺点：</p>
+<ol>
+<li>内存缩小为原来的一半。</li>
+</ol>
+<p><img src="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-2.%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95/%E5%A4%8D%E5%88%B6%E7%AE%97%E6%B3%95.png" alt="复制算法"></p>
+<h3 id="标记-整理算法"><a href="#标记-整理算法" class="headerlink" title="标记 - 整理算法"></a>标记 - 整理算法</h3><p>标记操作和“标记-清除”算法一致，后续操作不只是直接清理对象，而是在清理无用对象完成后让所有存活的对象都向一端移动，并更新引用其对象的指针。</p>
+<p>主要缺点：</p>
+<ol>
+<li>在标记-清除的基础上还需进行对象的移动，成本相对较高，好处则是不会产生内存碎片。</li>
+</ol>
+<p><img src="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-2.%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95/%E6%A0%87%E8%AE%B0-%E6%95%B4%E7%90%86%E7%AE%97%E6%B3%95.png" alt="标记-整理算法"></p>
+<h2 id="引用计数收集器"><a href="#引用计数收集器" class="headerlink" title="引用计数收集器"></a>引用计数收集器</h2><p>引用计数收集器采用的是分散式管理方式，通过计数器记录对象是否被引用。当计数器为0时说明此对象不在被使用，可以被回收。</p>
+<p>主要缺点：</p>
+<ol>
+<li>循环引用的场景下无法实现回收，例如下面的图中，ObjectC和ObjectB相互引用，那么ObjectA即便释放了对ObjectC、ObjectB的引用，也无法回收。sunJDK在实现GC时未采用这种方式。</li>
+</ol>
+<p><img src="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-2.%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95/%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="引用计数收集器"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-1.%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E3%80%81%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-1.%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E3%80%81%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">Java虚拟机学习-1.体系结构、内存模型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-07 22:00:17" itemprop="dateCreated datePublished" datetime="2017-01-07T22:00:17+08:00">2017-01-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/java2000_wl/article/details/8009362">http://blog.csdn.net/java2000_wl/article/details/8009362</a></p>
+<h2 id="Java技术体系模块图"><a href="#Java技术体系模块图" class="headerlink" title="Java技术体系模块图"></a>Java技术体系模块图</h2><p><img src="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-1.%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E3%80%81%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/Java%E4%BD%93%E7%B3%BB%E5%9B%BE.png" alt="Java体系图"></p>
+<h2 id="JVM内存区域模型"><a href="#JVM内存区域模型" class="headerlink" title="JVM内存区域模型"></a>JVM内存区域模型</h2><p><img src="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-1.%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E3%80%81%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E6%A8%A1%E5%9E%8B.png" alt="JVM内存区域模型"></p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>也称”永久代”、“非堆”，它用于存储虚拟机加载的类信息、常量、静态变量、是 <strong>各个线程共享的内存区域</strong>。默认最小值为16MB，最大值为64MB，可以通过<code>-XX:PermSize</code> 和 <code>-XX:MaxPermSize</code> 参数限制方法区的大小。</p>
+<p>运行时常量池：是方法区的一部分，Class文件中除了有类的版本、字段、方法、接口等描述信息外，还有一项信息是常量池，用于存放编译器生成的各种符号引用，这部分内容将在类加载后放到方法区的运行时常量池中。</p>
+<h3 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h3><p>描述的是java 方法执行的内存模型：每个方法被执行的时候都会创建一个“栈帧”用于存储局部变量表(包括参数)、操作栈、方法出口等信息。每个方法被调用到执行完的过程，就对应着一个栈帧在虚拟机栈中从入栈到出栈的过程。声明周期与线程相同，是 <strong>线程私有的</strong>。</p>
+<p>局部变量表存放了编译器可知的各种基本数据类型(boolean、byte、char、short、int、float、long、double)、对象引用(引用指针，并非对象本身)，其中64位长度的long和double类型的数据会占用2个局部变量的空间，其余数据类型只占1个。局部变量表所需的内存空间在编译期间完成分配，当进入一个方法时，这个方法需要在栈帧中分配多大的局部变量是完全确定的，在运行期间栈帧不会改变局部变量表的大小空间。</p>
+<h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><p>与虚拟机栈基本类似，区别在于虚拟机栈为虚拟机执行的java方法服务，而本地方法栈则是为Native方法服务。</p>
+<h3 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h3><p>也叫做java 堆、GC堆是java虚拟机所管理的内存中最大的一块内存区域，也是被各个线程共享的内存区域，在JVM启动时创建。该内存区域存放了对象实例及数组(所有new的对象)。其大小通过<code>-Xms</code>(最小值)和<code>-Xmx</code>(最大值)参数设置，<code>-Xms</code>为JVM启动时申请的最小内存，默认为操作系统物理内存的1/64但小于1G，<code>-Xmx</code>为JVM可申请的最大内存，默认为物理内存的1/4但小于1G，默认当空余堆内存小于40%时，JVM会增大Heap到<code>-Xmx</code>指定的大小，可通过<code>-XX:MinHeapFreeRation=</code>来指定这个比列；当空余堆内存大于70%时，JVM会减小heap的大小到<code>-Xms</code>指定的大小，可通过<code>XX:MaxHeapFreeRation=</code>来指定这个比列，对于运行系统，为避免在运行时频繁调整Heap的大小，通常<code>-Xms</code>与<code>-Xmx</code>的值设成一样。</p>
+<p>由于现在收集器都是采用分代收集算法，堆被划分为新生代和老年代。新生代主要存储新创建的对象和尚未进入老年代的对象。老年代存储经过多次新生代GC(Minor GC)任然存活的对象。</p>
+<h4 id="新生代："><a href="#新生代：" class="headerlink" title="新生代："></a>新生代：</h4><p>程序新创建的对象都是从新生代分配内存，新生代由Eden Space和两块相同大小的Survivor Space(通常又称S0和S1或From和To)构成，可通过<code>-Xmn</code>参数来指定新生代的大小，也可以通过<code>-XX:SurvivorRation</code>来调整Eden Space及Survivor Space的大小。</p>
+<h4 id="老年代："><a href="#老年代：" class="headerlink" title="老年代："></a>老年代：</h4><p>用于存放经过多次新生代GC任然存活的对象，例如缓存对象，新建的对象也有可能直接进入老年代，主要有两种情况：</p>
+<ol>
+<li>大对象，可通过启动参数设置<code>-XX:PretenureSizeThreshold=1024</code>(单位为字节，默认为0)来代表超过多大时就不在新生代分配，而是直接在老年代分配。</li>
+<li>大的数组对象，切数组中无引用外部对象。<br>老年代所占的内存大小为<code>-Xmx</code>对应的值减去<code>-Xmn</code>对应的值。</li>
+</ol>
+<p><img src="/2017/01/07/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0/Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%A6%E4%B9%A0-1.%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E3%80%81%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/%E5%86%85%E5%AD%98%E5%9B%BE.png" alt="内存图"></p>
+<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><p>是最小的一块内存区域，它的作用是当前线程所执行的字节码的行号指示器，在虚拟机的模型里，字节码解释器工作时就是通过改变这个计数器的值来选取下一条需要执行的字节码指令，分支、循环、异常处理、线程恢复等基础功能都需要依赖计数器完成。</p>
+<h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><p>直接内存并不是虚拟机内存的一部分，也不是Java虚拟机规范中定义的内存区域。jdk1.4中新加入的NIO，引入了通道与缓冲区的IO方式，它可以调用Native方法直接分配堆外内存，这个堆外内存就是本机内存，不会影响到堆内存的大小。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/04/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-save%E5%92%8Cinsert%E5%87%BD%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/04/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-save%E5%92%8Cinsert%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">save和insert函数</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-04 16:11:32" itemprop="dateCreated datePublished" datetime="2017-01-04T16:11:32+08:00">2017-01-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-19 00:59:54" itemprop="dateModified" datetime="2021-07-19T00:59:54+08:00">2021-07-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://my.oschina.net/u/1590519/blog/342765">https://my.oschina.net/u/1590519/blog/342765</a></p>
+<p>当主键”<code>_id</code>“不存在时，都是添加一个新的文档，但主健”<code>_id</code>“存在时，就有些不同了。</p>
+<p>mongodb的save和insert函数都可以向collection里插入数据，但两者是有两个区别：</p>
+<ol>
+<li><p>使用save函数里，如果原来的对象不存在，那他们都可以向collection里插入数据，如果已经存在，save会调用update更新里面的记录，而insert则会忽略操作</p>
+</li>
+<li><p>insert可以一次性插入一个列表，而不用遍历，效率高，save则需要遍历列表，一个个插入。</p>
+</li>
+</ol>
+<p>看下这两个函数的原型就清楚了，直接输入函数名便可以查看原型，下面标红的部分就是实现了循环，对于远程调用来说，是一性次将整个列表post过来让mongodb去自己处理，效率会高些</p>
+<h3 id="insert"><a href="#insert" class="headerlink" title="insert"></a>insert</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.user.insert</span><br><span class="line">function (obj, _allow_dot) &#123;</span><br><span class="line">    if (!obj) &#123;</span><br><span class="line">        throw &quot;no object passed to insert!&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    if (!_allow_dot) &#123;</span><br><span class="line">        this._validateForStorage(obj);</span><br><span class="line">    &#125;</span><br><span class="line">    if (typeof obj._id == &quot;undefined&quot; &amp;&amp; !Array.isArray(obj)) &#123;</span><br><span class="line">        var tmp = obj;</span><br><span class="line">        obj = &#123;_id:new ObjectId&#125;;</span><br><span class="line">        for (var key in tmp) &#123;</span><br><span class="line">            obj[key] = tmp[key];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    this._db._initExtraInfo();</span><br><span class="line">    this._mongo.insert(this._fullName, obj);</span><br><span class="line">    this._lastID = obj._id;</span><br><span class="line">    this._db._getExtraInfo(&quot;Inserted&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="save"><a href="#save" class="headerlink" title="save"></a>save</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.user.save</span><br><span class="line">function (obj) &#123;</span><br><span class="line">    if (obj == null || typeof obj == &quot;undefined&quot;) &#123;</span><br><span class="line">        throw &quot;can&#x27;t save a null&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    if (typeof obj == &quot;number&quot; || typeof obj == &quot;string&quot;) &#123;</span><br><span class="line">        throw &quot;can&#x27;t save a number or string&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    if (typeof obj._id == &quot;undefined&quot;) &#123;</span><br><span class="line">        obj._id = new ObjectId;</span><br><span class="line">        return this.insert(obj);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        return this.update(&#123;_id:obj._id&#125;, obj, true);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/03/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-references/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -219,7 +507,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-04 19:42:54" itemprop="dateModified" datetime="2017-01-04T19:42:54+08:00">2017-01-04</time>
+                <time title="修改时间：2021-07-19 00:59:51" itemprop="dateModified" datetime="2021-07-19T00:59:51+08:00">2021-07-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -227,7 +515,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
                 </span>
             </span>
 
@@ -457,7 +745,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-04 19:42:54" itemprop="dateModified" datetime="2017-01-04T19:42:54+08:00">2017-01-04</time>
+                <time title="修改时间：2021-07-19 00:59:26" itemprop="dateModified" datetime="2021-07-19T00:59:26+08:00">2021-07-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -465,7 +753,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
                 </span>
             </span>
 
@@ -541,7 +829,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-07 00:27:26" itemprop="dateModified" datetime="2017-01-07T00:27:26+08:00">2017-01-07</time>
+                <time title="修改时间：2021-07-19 00:59:20" itemprop="dateModified" datetime="2021-07-19T00:59:20+08:00">2021-07-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -549,7 +837,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
                 </span>
             </span>
 
@@ -630,7 +918,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-04 19:42:54" itemprop="dateModified" datetime="2017-01-04T19:42:54+08:00">2017-01-04</time>
+                <time title="修改时间：2021-07-19 00:59:34" itemprop="dateModified" datetime="2021-07-19T00:59:34+08:00">2021-07-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -638,7 +926,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
                 </span>
             </span>
 
@@ -861,7 +1149,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-01 10:33:43" itemprop="dateModified" datetime="2017-01-01T10:33:43+08:00">2017-01-01</time>
+                <time title="修改时间：2021-07-19 00:59:45" itemprop="dateModified" datetime="2021-07-19T00:59:45+08:00">2021-07-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -869,7 +1157,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
                 </span>
             </span>
 
@@ -896,296 +1184,6 @@
 <li><code>$elemMatch</code>：数组内单个元素匹配则符合</li>
 <li><code>.</code>：数组内多个元素能分别匹配上条件即符合</li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%85%83%E6%95%B0%E6%8D%AE-information_schema%E5%BA%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%85%83%E6%95%B0%E6%8D%AE-information_schema%E5%BA%93/" class="post-title-link" itemprop="url">MySQL-元数据-information_schema库</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-29 14:34:27" itemprop="dateCreated datePublished" datetime="2016-12-29T14:34:27+08:00">2016-12-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-08-04 20:57:28" itemprop="dateModified" datetime="2017-08-04T20:57:28+08:00">2017-08-04</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在mysql中有一个information_schema数据库，这个数据库中装的是mysql的元数据，包括数据库信息、数据库中表的信息等。所以要想查询数据库占用磁盘的空间大小可以通过对information_schema数据库进行操作。</p>
-<p>information_schema中的表主要有：</p>
-<ul>
-<li>schemata表：这个表里面主要是存储在mysql中的所有的数据库的信息</li>
-<li>tables表：这个表里存储了所有数据库中的表的信息，包括每个表有多少个列等信息。</li>
-<li>columns表：这个表存储了所有表中的表字段信息。</li>
-<li>statistics表：存储了表中索引的信息。</li>
-<li>user_privileges表：存储了用户的权限信息。</li>
-<li>schema_privileges表：存储了数据库权限。</li>
-<li>table_privileges表：存储了表的权限。</li>
-<li>column_privileges表：存储了列的权限信息。</li>
-<li>character_sets表：存储了mysql可以用的字符集的信息。</li>
-<li>collations表：提供各个字符集的对照信息。</li>
-<li>collation_character_set_applicability表：相当于collations表和character_sets表的前两个字段的一个对比，记录了字符集之间的对照信息。</li>
-<li>table_constraints表：这个表主要是用于记录表的描述存在约束的表和约束类型。</li>
-<li>key_column_usage表：记录具有约束的列。</li>
-<li>routines表：记录了存储过程和函数的信息，不包含自定义的过程或函数信息。</li>
-<li>views表：记录了视图信息，需要有show view权限。</li>
-<li>triggers表：存储了触发器的信息，需要有super权限。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%85%83%E6%95%B0%E6%8D%AE-%E6%9F%A5%E8%AF%A2%E8%A1%A8%E7%9A%84%E4%BD%BF%E7%94%A8%E7%A9%BA%E9%97%B4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%85%83%E6%95%B0%E6%8D%AE-%E6%9F%A5%E8%AF%A2%E8%A1%A8%E7%9A%84%E4%BD%BF%E7%94%A8%E7%A9%BA%E9%97%B4/" class="post-title-link" itemprop="url">MySQL-元数据（information_schema库）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-29 14:34:27" itemprop="dateCreated datePublished" datetime="2016-12-29T14:34:27+08:00">2016-12-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-01-01 10:33:43" itemprop="dateModified" datetime="2017-01-01T10:33:43+08:00">2017-01-01</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">use information_schema;</span><br><span class="line"></span><br><span class="line">select concat(round(data_length/1024/1024,2),&#x27;MB&#x27;) as data_length_MB,</span><br><span class="line">concat(round(index_length/1024/1024,2),&#x27;MB&#x27;) as index_length_MB</span><br><span class="line">from tables where</span><br><span class="line">table_schema=&#x27;&lt;数据库名&gt;&#x27;</span><br><span class="line">and table_name = &#x27;&lt;表名&gt;&#x27;;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.4.3-%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%A4%84%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.4.3-%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">高性能MySQL-6.4.3-查询优化处理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-27 22:34:13" itemprop="dateCreated datePublished" datetime="2016-12-27T22:34:13+08:00">2016-12-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2017-03-11 11:12:50" itemprop="dateModified" datetime="2017-03-11T11:12:50+08:00">2017-03-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>查询的生命周期的下一步是将一个SQL转换成一个执行计划，MySQL再按照这个执行计划和存储引擎进行交互。这包括多个子阶段：解析SQL、预处理、优化SQL执行计划。这个过程中任何错误（例如语法错误）都可能终止查询。</p>
-<h3 id="语法解析器和预处理"><a href="#语法解析器和预处理" class="headerlink" title="语法解析器和预处理"></a>语法解析器和预处理</h3><p>首先，MySQL通过关键字将SQL语句进行解析，并生成一颗对应的“解析树”。MySQL解析器将使用MySQL语法规则验证和解析查询。例如，它将验证是否使用错误的关键字，或者使用关键字的顺序是否正确等，再或者它还会验证引号是否能前后正确匹配。</p>
-<p>预处理器则根据一些MySQL规则进一步检查解析树是否合法，例如，这里将检查数据表和数据列是否存在，还会解析名字和别名，看看它们是否有歧义。</p>
-<p>下一步预处理器会验证权限。这通常很快，除非服务器上有非常多的权限配置。</p>
-<h3 id="查询优化器"><a href="#查询优化器" class="headerlink" title="查询优化器"></a>查询优化器</h3><p>现在语法树被认为是合法的了，并且由优化器将其转化成执行计划。一条查询可以有很多种执行方式，最后都返回相同的结果。优化器的作用就是找到这其中最好的执行计划。</p>
-<p>MySQL使用基于成本的优化器，它将尝试预测一个查询使用某种执行计划时的成本，并选择其中成本最小的一个。最初，成本的最小单位是随机读取一个4K数据页的成本，后来（成本计算公式）变得更加复杂，并且引入了一些“因子”来估算某些操作的代价，如当执行一次WHERE条件比较的成本。可以通过查询当前会话的Last_query_cost的值来得知MySQL计算的当前查询的成本。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT SQL_NO_CACHE COUNT(*) FROM sakila.file_actor;</span><br><span class="line"></span><br><span class="line">SHOW STATUS LIKE &#x27;Last_query_cost&#x27;;</span><br></pre></td></tr></table></figure>
-
-<h4 id="有很多原因会导致MySQL优化器选择错误的执行计划"><a href="#有很多原因会导致MySQL优化器选择错误的执行计划" class="headerlink" title="有很多原因会导致MySQL优化器选择错误的执行计划"></a>有很多原因会导致MySQL优化器选择错误的执行计划</h4><ul>
-<li>统计信息不准确。MySQL以来存储引擎提供的统计信息来评估成本，但是有的存储引擎提供的信息是准确的，有的偏差可能非常大。例如，InnoDB因为其MVCC的架构，并不能维护一个数据表的行数的精确统计信息。</li>
-<li>执行计划中的成本估算不等同于实际执行的成本。所以即使统计信息精准，优化器给出的执行计划也可能不是最优的。例如有时候某个执行计划虽然需要读取更多的页面，但是它的成本却更小。因为如果这些页面都是顺序读或者这些页面都已经在内存中的话，那么它的访问成本将很小。MySQL层面并不知道哪些页面在内存中，哪些在磁盘上，所以查询实际执行过程中到底需要多少次物理I/O是无法得知的。</li>
-<li>MySQL的最优可能和你想的最优不一样。你可能希望执行时间尽可能的短，但是MySQL只是基于其成本模型选择最优的执行计划，而有些时候这并不是最快的执行方式。所以这里我们看到根据执行成本来选择执行计划并不是完美的模型。</li>
-<li>MySQL从不考虑其他并发执行的查询，这可能会影响到当前查询的速度。</li>
-<li>MySQL也并不会任何时候都是基于成本的优化。有时也会基于一些固定的规则，例如，如果存在全文搜索的MATCH()子句，则在存在全文所以的时候就使用全文索引。即使有时候使用别的索引和WHERE条件可以远比这种方式要快，MySQL也仍然会使用对应的全文索引。</li>
-<li>MySQL不会考虑不受其控制的操作的成本，例如执行存储过程或者用户自定义函数的成本。</li>
-<li>后面我们还会看到，优化器有时候无法去估算所有可能的执行计划，所以它可能错过实际上最优的执行计划。</li>
-</ul>
-<h4 id="静态优化和动态优化"><a href="#静态优化和动态优化" class="headerlink" title="静态优化和动态优化"></a>静态优化和动态优化</h4><p>MySQL的查询优化器是一个非常复杂的部件，它使用了很多优化策略来生成一个最优的执行计划。优化策略可以简单地分为两种，一种是静态优化，一种是动态优化。</p>
-<ul>
-<li>静态优化可以直接对解析树进行分析，并完成优化。例如，优化器可以通过一些简单的代数变换将WHERE条件转换成另一种等价形式。静态优化不依赖于特别的数值，如WHERE条件中带入的一些常数等。静态优化在第一次完成后就一直有效，即使使用不同的参数重复执行查询也不会发生变化。可以认为这是一种“编译时优化”。</li>
-<li>动态优化则和查询的上下文有关，也可能和很多其他因素相关，例如WHERE条件中的取值、索引中条目对应的数据行数等。这需要在每次查询的时候都重新评估，可以认为这是“运行时优化”。</li>
-</ul>
-<p>在执行语句和存储过程的时候，动态优化和静态优化的区别非常重要。MySQL对查询的静态优化只需要一次，但对查询的动态优化则在每次执行时都需要重新评估。有时候甚至在查询的执行过程中也会重新优化（例如，在关联操作中，范围检查在执行计划会针对每一行重新评估索引）。</p>
-<h4 id="下面是一些MySQL能够处理的优化类型"><a href="#下面是一些MySQL能够处理的优化类型" class="headerlink" title="下面是一些MySQL能够处理的优化类型"></a>下面是一些MySQL能够处理的优化类型</h4><h5 id="重新定义关联表的顺序"><a href="#重新定义关联表的顺序" class="headerlink" title="重新定义关联表的顺序"></a>重新定义关联表的顺序</h5><p>数据表的关联并不总是按照在查询中指定的顺序进行。决定关联的顺序是优化器很重要的一部分功能。</p>
-<h5 id="将外连接转化成内连接"><a href="#将外连接转化成内连接" class="headerlink" title="将外连接转化成内连接"></a>将外连接转化成内连接</h5><p>并不是所有的OUTER JOIN语句都必须以外连接的方式执行。诸多因素，例如WHERE条件、库表结构都可能会让外连接等价于一个内连接。MySQL能够识别这点并重写查询，让其可以调整关联顺序。</p>
-<h5 id="使用等价变换规则"><a href="#使用等价变换规则" class="headerlink" title="使用等价变换规则"></a>使用等价变换规则</h5><p>MySQL可以使用一些等价变换来简化并规范化表达式。它可以合并和减少一些比较，还可以移除一些恒成立和一些恒不成立的判断。例如：<code>(5=5 AND a&gt;5)</code>将被改写为<code>a&gt;5</code>。类似的，如果有<code>(a&lt;b AND b=c) AND a=5</code>则会改写为<code>b&gt;5 AND b=c AND a=5</code>。</p>
-<h5 id="优化COUNT-、MIN-和MAX"><a href="#优化COUNT-、MIN-和MAX" class="headerlink" title="优化COUNT()、MIN()和MAX()"></a>优化COUNT()、MIN()和MAX()</h5><p>索引和列是否可为空通常可以帮助MySQL优化这类表达式。例如，要找到某一列的最小值，只需要查询对应B-Tree索引最左端的记录，MySQL可以直接获取索引的第一行记录。在优化器生成执行计划的时候就可以利用这一点，在B-Tree索引中，优化器会将这个表达式作为一个常数对待。类似的，如果要查找一个最大值，也只需读取B-Tree索引的最后一条记录。如果MySQL使用了这种类型的优化，那么EXPLAIN中就可以看到“Select tables optimized away”。从字面意思可以看出，它表示优化器已经从执行计划中移除了该表，并以一个常数取而代之。</p>
-<p>类似的，没有任何WHERE条件的<code>COUNT(*)</code>查询通常也可以使用存储引擎提供的一些优化（例如，MyISAM维护了一个变量来存放数据表的行数）。</p>
-<h5 id="预估并转化为常数表达式"><a href="#预估并转化为常数表达式" class="headerlink" title="预估并转化为常数表达式"></a>预估并转化为常数表达式</h5><p>当MySQL检测到一个表达式可以转化为常数的时候，就会一直把该表达式作为常数进行优化处理。例如，一个用户自定义变量在查询中没有发生变化时就可以转换为一个常数。</p>
-<p>在优化阶段，有时候甚至一个查询也能转化为一个常数。一个例子是在索引列上执行MIN()函数。甚至是主键或者唯一键查找语句也可以转换为常数表达式。如果WHERE子句中使用了该类索引的常数条件，MySQL可以在查询开始阶段就先查找到这些值，这样优化器就能够直到并转换为常数表达式。</p>
-<h5 id="覆盖索引扫描"><a href="#覆盖索引扫描" class="headerlink" title="覆盖索引扫描"></a>覆盖索引扫描</h5><p>当索引中的列包含所有查询中需要使用的列的时候，MySQL就可以使用索引返回需要的数据，而无须查询对应的数据行。</p>
-<h5 id="子查询优化"><a href="#子查询优化" class="headerlink" title="子查询优化"></a>子查询优化</h5><p>MySQL在某些情况下可以将子查询转换一种效率更高的形式，从而减少多个查询多次对数据进行访问。</p>
-<h5 id="提前终止查询"><a href="#提前终止查询" class="headerlink" title="提前终止查询"></a>提前终止查询</h5><p>在发现已经满足查询需求的时候，MySQL总是能够立刻终止查询。一个典型的例子就是当使用了LIMIT子句的时候。除此之外，MySQL还有几类情况也会提前终止查询，例如发现了一个不成立的条件，这时MySQL可以立刻返回一个空结果。除此之外，MySQL在执行过程中，如果发现某些特殊的条件，则会提前终止查询</p>
-<h5 id="等值传播"><a href="#等值传播" class="headerlink" title="等值传播"></a>等值传播</h5><p>如果两个列的值通过等式关联，那么MySQL能够把其中一个列的WHERE条件传递到另一列上。</p>
-<h5 id="列表IN-的比较"><a href="#列表IN-的比较" class="headerlink" title="列表IN()的比较"></a>列表IN()的比较</h5><p>在很多数据库系统中，IN()完全等同于多个OR条件的子句，因为这两者是完全等价的。在MySQL中这点是不成立的，MySQL将IN()列表中的数据先进行排序，然后通过二分查找的方式来确定列表中的值是否满足条件，这是一个O(log n)复杂度的操作，等价地转换成OR查询的复杂度为O(n)，对于IN()列表中有大量取值的时候，MySQL的处理速度将会更快。</p>
-<h3 id="数据和所有的统计信息"><a href="#数据和所有的统计信息" class="headerlink" title="数据和所有的统计信息"></a>数据和所有的统计信息</h3><p>在服务器层有查询优化器，却没有保存数据和索引的统计信息。统计信息由存储引擎实现，不同的存储引擎可能会存储不同的统计信息（也可以按照不同的格式存储统计信息）。某些引擎，例如Archive引擎，则根本就没有存储任何统计信息！</p>
-<p>因为服务器层没有任何统计信息，所以MySQL查询优化器在生成查询的执行计划时，需要向存储引擎获取相应的统计信息。存储引擎则提供给优化器对应的统计信息，包括：每个表或者索引有多少个页面、每个表的每个索引的基数是多少、数据行和索引长度、索引的分布信息等。优化器根据这些信息来选择一个最优的执行计划。</p>
-<h3 id="MySQL如何执行关联查询"><a href="#MySQL如何执行关联查询" class="headerlink" title="MySQL如何执行关联查询"></a>MySQL如何执行关联查询</h3><p>MySQL中“关联”一词所包含的意义比一般意义上理解的要更广泛。总的来说，MySQL认为任何一个查询都是一次“关联”——并不仅仅是一个查询需要到两个表匹配才叫关联，所以在MySQL中，每一个查询，每一个片段（包括子查询、甚至基于单表的SELECT）都可能是关联。</p>
-<p>当前MySQL关联执行的策略很简单：MySQL对任何关联都执行嵌套循环关联操作，即MySQL先在一个表中循环取出单条数据，然后在嵌套循环到下一个表中寻找匹配的行，依次下去，直到找到所有表总匹配的行为止。然后根据各个表匹配的行，返回查询中需要的各个列。MySQL会尝试在最后一个关联表中找到所有匹配的行，如果最后一个关联表无法找到更多的行以后，MySQL返回到上一层次关联表，看是否能够找到更多的匹配记录，一次类推迭代执行。</p>
-<h3 id="执行计划"><a href="#执行计划" class="headerlink" title="执行计划"></a>执行计划</h3><p>和很多其他关系数据库不同，MySQL并不会生成查询字节码来执行查询。MySQL生成查询的一颗指令树，然后通过存储引擎执行完成这颗指令树并返回结果。最终的执行计划包含了重构查询的全部信息。</p>
-<p>MySQL执行计划是一颗左侧深度优先的树。</p>
-<h3 id="关联查询优化器"><a href="#关联查询优化器" class="headerlink" title="关联查询优化器"></a>关联查询优化器</h3><p>MySQL优化器最重要的一部分就是关联查询优化，它决定了都个表关联时的顺序。</p>
-<h3 id="排序优化"><a href="#排序优化" class="headerlink" title="排序优化"></a>排序优化</h3><p>无论如何排序都是一个成本很高的操作，所以从性能角度考虑，应尽可能避免排序或者尽可能避免对大量数据进行排序。</p>
-<p>当不能使用索引生成排序结果的时候，MySQL需要自己进行排序，如果数据量小则在内存中进行，如果数据量大则需要使用磁盘，不过MySQL将这个过程统一称为文件排序（filesort），即使完全是内存排序不需要任何磁盘文件时也是如此。</p>
-<p>如果需要排序的数据量小于“排序缓冲区”，MySQL使用内存进行“快速排序”操作。如果内存不够排序，那么MySQL会先将数据分块，对每个独立的块使用“快速排序”进行排序，并将各个块的排序结果存放到磁盘上，然后将各个排好序的块进行合并（merge），最后返回排序结果。</p>
-<p>MySQL有如下两种排序法：</p>
-<h4 id="两次传输排序（旧版本使用）"><a href="#两次传输排序（旧版本使用）" class="headerlink" title="两次传输排序（旧版本使用）"></a>两次传输排序（旧版本使用）</h4><p>读取行指针和需要排序的字段，对其进行排序，然后再根据排序结果读取所需要的数据行。</p>
-<p>这需要进行两次数据传输，即需要从数据表中读取两次数据，第二次读取数据的时候，因为是读取排序列进行排序后的所有记录，这会产生大量的随机I/O，所以两次数据传输的成本非常高。当使用的是MyISAM表的时候，成本可能会更高，因为MyISAM使用系统调用进行数据的读取（MyISAM非常依赖操作系统对数据的缓存）。不过这样做的优点是，在排序的时候存储尽可能少的数据，这就让“排序缓冲区”中可能容纳尽可能多的行数进行排序。</p>
-<h4 id="单次传输排序（新版本使用）"><a href="#单次传输排序（新版本使用）" class="headerlink" title="单次传输排序（新版本使用）"></a>单次传输排序（新版本使用）</h4><p>先读取查询所需要的所有列，然后在根据给定列进行排序，最后直接返回排序结果。这个算法只在MySQL 4.1和后续更新的版本才引入。因为不再需要从数据表中读取两次数据，对于I/O密集型的应用，这样做的效率高了很多。另外，相比两次传输排序，这个算法只需要一次顺序I/O读取所有的数据，而无须任何的随机I/O。缺点是，如果需要返回的列非常多、非常大，会额外占用大量的空间，而这些列对排序操作本身来说是没有任何作用的。因为单条排序记录很大，所以可能会有更多的排序块需要合并。</p>
-<p>很难说哪个算法效率更高，两种算法都有各自最好和最糟的场景。当查询需要所有列的总长度不超过参数max_length_for_sort_data时，MySQL使用“单次传输排序”，可以通过调整这个参数来影响MySQL排序算法的选择。</p>
 
       
     </div>
@@ -1272,20 +1270,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">683</span>
+          <span class="site-state-item-count">687</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">338</span>
+        <span class="site-state-item-count">340</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
