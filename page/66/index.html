@@ -188,6 +188,313 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/25/%E8%AF%AD%E8%A8%80/web/Web-Cookie%E5%92%8CSession/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/11/25/%E8%AF%AD%E8%A8%80/web/Web-Cookie%E5%92%8CSession/" class="post-title-link" itemprop="url">Web-Cookie和Session</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-11-25 19:17:39" itemprop="dateCreated datePublished" datetime="2014-11-25T19:17:39+08:00">2014-11-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/19786827/answer/28752144">https://www.zhihu.com/question/19786827/answer/28752144</a></p>
+<ol>
+<li>由于HTTP协议是无状态的协议，所以服务端需要记录用户的状态时，就需要用某种机制来识具体的用户，这个机制就是Session.典型的场景比如购物车，当你点击下单按钮时，由于HTTP协议无状态，所以并不知道是哪个用户操作的，所以服务端要为特定的用户创建了特定的Session，用用于标识这个用户，并且跟踪用户，这样才知道购物车里面有几本书。这个Session是保存在服务端的，有一个唯一标识。在服务端保存Session的方法很多，内存、数据库、文件都有。集群的时候也要考虑Session的转移，在大型的网站，一般会有专门的Session服务器集群，用来保存用户会话，这个时候 Session 信息都是放在内存的，使用一些缓存服务比如Memcached之类的来放 Session。</li>
+<li>思考一下服务端如何识别特定的客户？这个时候Cookie就登场了。每次HTTP请求的时候，客户端都会发送相应的Cookie信息到服务端。实际上大多数的应用都是用 Cookie 来实现Session跟踪的，第一次创建Session的时候，服务端会在HTTP协议中告诉客户端，需要在 Cookie 里面记录一个Session ID，以后每次请求把这个会话ID发送到服务器，我就知道你是谁了。有人问，如果客户端的浏览器禁用了 Cookie 怎么办？一般这种情况下，会使用一种叫做URL重写的技术来进行会话跟踪，即每次HTTP交互，URL后面都会被附加上一个诸如 sid=xxxxx 这样的参数，服务端据此来识别用户。</li>
+<li>Cookie其实还可以用在一些方便用户的场景下，设想你某次登陆过一个网站，下次登录的时候不想再次输入账号了，怎么办？这个信息可以写到Cookie里面，访问网站的时候，网站页面的脚本可以读取这个信息，就自动帮你把用户名给填了，能够方便一下用户。这也是Cookie名称的由来，给用户的一点甜头。</li>
+</ol>
+<h3 id="Cookie"><a href="#Cookie" class="headerlink" title="Cookie"></a>Cookie</h3><p>Cookie是客户端保存用户信息的一种机制，用来记录用户的一些信息，也是实现Session的一种方式。</p>
+<h3 id="Session"><a href="#Session" class="headerlink" title="Session"></a>Session</h3><p>Session是在服务端保存的一个数据结构，用来跟踪用户的状态，这个数据可以保存在集群、数据库、文件中。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-ORACLE%E4%B8%ADROWNUM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/11/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-ORACLE%E4%B8%ADROWNUM/" class="post-title-link" itemprop="url">Oracle-ORACLE中ROWNUM</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-11-13 20:29:44" itemprop="dateCreated datePublished" datetime="2014-11-13T20:29:44+08:00">2014-11-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ORACLE-中-ROWNUM"><a href="#ORACLE-中-ROWNUM" class="headerlink" title="ORACLE 中 ROWNUM"></a>ORACLE 中 ROWNUM</h1><hr>
+<p>假设某个表 t1(c1) 有 20 条记录。  </p>
+<p>如果用 select rownum,c1 from t1 where rownum &lt; 10, 只要是用小于号，查出来的结果很容易地与一般理解在概念上能达成一致，应该不会有任何疑问的。  </p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2014/11/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-ORACLE%E4%B8%ADROWNUM/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/06/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E7%8E%AF%E5%A2%83-profile%E3%80%81bashrc%E3%80%81bash_profile%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%81%94%E7%B3%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/11/06/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E7%8E%AF%E5%A2%83-profile%E3%80%81bashrc%E3%80%81bash_profile%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%81%94%E7%B3%BB/" class="post-title-link" itemprop="url">Linux-环境-profile、bashrc、bash_profile之间的区别和联系</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-11-06 12:03:27" itemprop="dateCreated datePublished" datetime="2014-11-06T12:03:27+08:00">2014-11-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="etc-profile"><a href="#etc-profile" class="headerlink" title="/etc/profile"></a><code>/etc/profile</code></h2><p>此文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行。并从 /etc/profile.d 目录的配置文件中搜集 shell 的设置。</p>
+<p>英文描述为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># /etc/profile</span><br><span class="line"># System wide environment and startup programs, for login setup # Functions and aliases go in /etc/bashrc</span><br><span class="line"># It&#x27;s NOT a good idea to change this file unless you know what you # are doing. It&#x27;s much better to create a custom.sh shell script in # /etc/profile.d/ to make custom changes to your environment, as this # will prevent the need for merging in future updates.</span><br></pre></td></tr></table></figure>
+<p>所以如果你有对/etc/profile有修改的话必须得重启你的修改才会生效，此修改对每个用户都生效。</p>
+<h2 id="etc-bashrc"><a href="#etc-bashrc" class="headerlink" title="/etc/bashrc"></a><code>/etc/bashrc</code></h2><p>为每一个运行 bash shell 的用户执行此文件。当 bash shell 被打开时，该文件被读取。</p>
+<p>英文描述为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># /etc/bashrc</span><br><span class="line"># System wide functions and aliases # Environment stuff goes in /etc/profile</span><br><span class="line"># It&#x27;s NOT a good idea to change this file unless you know what you # are doing. It&#x27;s much better to create a custom.sh shell script in # /etc/profile.d/ to make custom changes to your environment, as this # will prevent the need for merging in future updates.</span><br></pre></td></tr></table></figure>
+<p>如果你想对所有的使用 bash 的用户修改某个配置并在以后打开的 bash 都生效的话可以修改这个文件，修改这个文件不用重启，重新打开一个bash即可生效。</p>
+<h2 id="bash-profile"><a href="#bash-profile" class="headerlink" title="~/.bash_profile"></a><code>~/.bash_profile</code></h2><p>每个用户都可使用该文件输入专用于自己使用的 shell 信息，当用户登录时，该文件仅仅执行一次！默认情况下，他设置一些环境变量，执行用户的 .bashrc 文件。</p>
+<p>此文件类似于 /etc/profile，也是需要需要重启才会生效，/etc/profile 对所有用户生效，~/.bash_profile 只对当前用户生效。</p>
+<h2 id="bashrc"><a href="#bashrc" class="headerlink" title="~/.bashrc"></a><code>~/.bashrc</code></h2><p>该文件包含专用于你的 bash shell 的 bash 信息，当登录时以及每次打开新的 shell 时，该文件被读取.（每个用户都有一个 .bashrc 文件，在用户目录下）</p>
+<p>此文件类似于 /etc/bashrc，不需要重启生效，重新打开一个 bash 即可生效，/etc/bashrc 对所有用户新打开的 bash 都生效，但 ~/.bashrc 只对当前用户新打开的 bash 生效。</p>
+<h2 id="bash-logout"><a href="#bash-logout" class="headerlink" title="~/.bash_logout"></a><code>~/.bash_logout</code></h2><p>当每次退出系统（退出 bash shell）时，执行该文件.</p>
+<hr>
+<p>另外，/etc/profile 中设定的变量（全局）的可以作用于任何用户，而 ~/.bashrc 等中设定的变量（局部）只能继承 /etc/profile 中的变量，他们是“父子”关系。</p>
+<ul>
+<li>~/.bash_profile 是交互式 login 方式进入 bash 运行的；</li>
+<li>~/.bashrc 是交互式 non-login 方式进入 bash 运行的；</li>
+</ul>
+<p>通常二者设置大致相同，所以通常前者会调用后者。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-%E5%A4%8D%E5%88%B6%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/11/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-%E5%A4%8D%E5%88%B6%E8%A1%A8/" class="post-title-link" itemprop="url">Oracle-语法-复制表</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-11-05 12:33:32" itemprop="dateCreated datePublished" datetime="2014-11-05T12:33:32+08:00">2014-11-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>直接建相同的表<code>create table students_backup as select * from students;</code></li>
+<li>直接建相同的表结构<code>create table students_backup as select * from students where 1=2;</code></li>
+<li>如果建好了表<code>insert into students_backup select * from students;</code></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -670,386 +977,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E4%BE%8B%E5%AD%90-%E4%BB%A3%E7%A0%81%E4%B8%AD%E5%8A%A0%E8%BD%BDApplicationContext.xml%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/10/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E4%BE%8B%E5%AD%90-%E4%BB%A3%E7%A0%81%E4%B8%AD%E5%8A%A0%E8%BD%BDApplicationContext.xml%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E5%BC%8F/" class="post-title-link" itemprop="url">Spring-例子-代码中加载ApplicationContext.xml文件的方式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-10-22 15:13:25" itemprop="dateCreated datePublished" datetime="2014-10-22T15:13:25+08:00">2014-10-22</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、利用ClassPathXmlApplicationContext-可以从classpath中读取XML文件"><a href="#一、利用ClassPathXmlApplicationContext-可以从classpath中读取XML文件" class="headerlink" title="一、利用ClassPathXmlApplicationContext,可以从classpath中读取XML文件"></a>一、利用ClassPathXmlApplicationContext,可以从classpath中读取XML文件</h2><h4 id="1-读取一个文件"><a href="#1-读取一个文件" class="headerlink" title="1. 读取一个文件"></a>1. 读取一个文件</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ApplicationContext context = new ClassPathXmlApplicationContext(&quot;applicationContext.xml&quot;);</span><br><span class="line">UserDao userDao = (UserDao)context.getBean(&quot;userDao&quot;);</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2014/10/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E4%BE%8B%E5%AD%90-%E4%BB%A3%E7%A0%81%E4%B8%AD%E5%8A%A0%E8%BD%BDApplicationContext.xml%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E5%BC%8F/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/18/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E9%97%AE%E9%A2%98-%E6%8E%A5%E6%94%B6POST%E8%A1%A8%E5%8D%95%E8%AF%B7%E6%B1%82/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/10/18/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E9%97%AE%E9%A2%98-%E6%8E%A5%E6%94%B6POST%E8%A1%A8%E5%8D%95%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">SpringMVC-问题-接收POST表单请求</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-10-18 09:07:29" itemprop="dateCreated datePublished" datetime="2014-10-18T09:07:29+08:00">2014-10-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>前段时间遇到一个问题，在spring mvc 服务端接收post请求时，通过html 表单提交的时候，服务端能够接收到参数的值。但是使用httpclient4.3构造post请求，却无法接收到参数的值。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2014/10/18/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E9%97%AE%E9%A2%98-%E6%8E%A5%E6%94%B6POST%E8%A1%A8%E5%8D%95%E8%AF%B7%E6%B1%82/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/14/%E5%B7%A5%E5%85%B7/vim/vi%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/10/14/%E5%B7%A5%E5%85%B7/vim/vi%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">vi常用命令</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-10-14 17:29:48" itemprop="dateCreated datePublished" datetime="2014-10-14T17:29:48+08:00">2014-10-14</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="移动"><a href="#移动" class="headerlink" title="移动"></a>移动</h3><ul>
-<li><p><code>k</code>：上</p>
-</li>
-<li><p><code>j</code>：下</p>
-</li>
-<li><p><code>h</code>：左</p>
-</li>
-<li><p><code>l</code>：右</p>
-</li>
-<li><p><code>0</code>：将游标放在一行的开始</p>
-</li>
-<li><p><code>$</code>：将游标放在一行的结尾</p>
-</li>
-<li><p><code>w</code>：将游标移动到下一个单词</p>
-</li>
-<li><p><code>W</code>：和w功能相同，只是不计算标点符号。</p>
-</li>
-<li><p><code>b</code>：将游标移动到前一个单词</p>
-</li>
-<li><p><code>B</code>：和b功能相同，只是不计算标点符号。</p>
-</li>
-<li><p><code>(</code>：将游标放在当前句子的开始处</p>
-</li>
-<li><p><code>)</code>：酱油表放在下一句的开始处</p>
-</li>
-<li><p><code>Ctrl + F</code>：向前滚动一屏</p>
-</li>
-<li><p><code>Ctrl + B</code>：向后滚动一屏</p>
-</li>
-<li><p><code>Ctrl + G</code>：确定游标的当前位置，会将游标的行号和字符位置显示在屏幕下方。</p>
-</li>
-<li><p><code>G</code>：将游标放在文件的最后一行上</p>
-</li>
-<li><p><code>xG</code>：表示游标所要移动到的行号</p>
-</li>
-<li><p><code>:x</code>：表示将游标放在x所制定的行上</p>
-</li>
-<li><p><code>Shift + g</code> 或者 <code>:$</code>：跳到文件最后一行</p>
-</li>
-<li><p><code>gg</code> 或者 <code>:0</code>：跳到文件第一行</p>
-</li>
-</ul>
-<h3 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a>搜索</h3><ul>
-<li><code>/input</code> 搜索从光标所在处之后的input。</li>
-<li><code>?input</code> 搜索从光标所在处之前的input。</li>
-</ul>
-<p>如果正在搜索的字符存在多个实例，那么用户可以在每个实例的后面输入一个小写n，从而沿同一个方向搜索（向前或者向后），或者输入一个大写N，以便沿着当前的搜索的相反方向进行搜索。</p>
-<h3 id="退出"><a href="#退出" class="headerlink" title="退出"></a>退出</h3><ul>
-<li>q退出</li>
-<li>q!强制退出</li>
-<li>qw退出并保存</li>
-</ul>
-<h3 id="编辑"><a href="#编辑" class="headerlink" title="编辑"></a>编辑</h3><h4 id="撤销"><a href="#撤销" class="headerlink" title="撤销"></a>撤销</h4><ul>
-<li><code>u</code>：撤销操作</li>
-<li><code>ctrl + r</code>：恢复撤销</li>
-</ul>
-<h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><ul>
-<li><code>i</code>：在当前的游标位置之前插入文本</li>
-<li><code>I</code>：在当前行的开始处插入文本</li>
-<li><code>a</code>：在当前的游标位置之后插入文本</li>
-<li><code>A</code>：在当前行的结尾处插入文本</li>
-<li><code>o</code>：在游标位置的下面为文本条目创建一个新行</li>
-<li><code>O</code>：在游标位置的上面为文本条目创建一个新行</li>
-</ul>
-<h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h4><ul>
-<li><code>x</code>：删除游标所在位置的字符。如果命令前有数字n，那么将删除从游标所在位置开始的后n个字符。</li>
-<li><code>X</code>：删除游标位置前面的字符。如果命令前有数字n，那么将删除从游标所在位置开始的前n个字符。</li>
-<li><code>dw</code>：从当前的游标位置开始删除，一直到下一个单词为止（或者是多个单词，如果命令前有数字）。</li>
-<li><code>D</code>：从游标位置开始删除，一直到当前行结束。</li>
-<li><code>dd</code>：删除游标所在的行</li>
-</ul>
-<h4 id="修改"><a href="#修改" class="headerlink" title="修改"></a>修改</h4><ul>
-<li><code>cc</code>：删除当前行的内容，保留用户输入的文本</li>
-<li><code>cw</code>：修改游标所在的单词，修改范围是从游标位置一直到单词结束。该命令还是的用户进入插入模式。</li>
-<li><code>r</code>：替换游标所在的字符。完成替换之后，vi将返回命令模式。</li>
-<li><code>R</code>：覆盖从游标当前所在的字符开始的多个字符。必需按Esc停止覆盖。</li>
-<li><code>s</code>：用输入字符替换当前字符。完成后，用户任然处于插入状态下。</li>
-<li><code>S</code>：删除游标所在的行并用新文本替换。输入新文本后，vi任然保持在插入模式下。</li>
-</ul>
-<h4 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h4><ul>
-<li><code>yy</code>：单行复制</li>
-<li><code>nyy</code>：n行复制</li>
-<li><code>yw</code>：拖动（复制）当前单词，拖动的范围是从游标所在的单词一直到单词结尾</li>
-</ul>
-<h4 id="粘贴"><a href="#粘贴" class="headerlink" title="粘贴"></a>粘贴</h4><ul>
-<li><code>p</code>：在光标下一行粘贴</li>
-<li><code>P</code>：在光标上一行粘贴</li>
-</ul>
-<h4 id="高级命令"><a href="#高级命令" class="headerlink" title="高级命令"></a>高级命令</h4><ul>
-<li><code>J</code>：将当前行与它下面的行合并到一起</li>
-</ul>
-<hr>
-<p>由于终端窗口大小不同，新行从什么地方开始可能会令人混淆。新行从*后开始。<br>在命令模式下使用set nu选项可以为新行添加编号。<br>删除行编号的命令是set nonu。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/08/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E6%A6%82%E5%BF%B5-%E8%A1%A8%E7%A9%BA%E9%97%B4%E5%92%8C%E4%B8%B4%E6%97%B6%E8%A1%A8%E7%A9%BA%E9%97%B4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/10/08/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E6%A6%82%E5%BF%B5-%E8%A1%A8%E7%A9%BA%E9%97%B4%E5%92%8C%E4%B8%B4%E6%97%B6%E8%A1%A8%E7%A9%BA%E9%97%B4/" class="post-title-link" itemprop="url">Oracle-概念-表空间和临时表空间</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-10-08 09:17:44" itemprop="dateCreated datePublished" datetime="2014-10-08T09:17:44+08:00">2014-10-08</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>表空间：此空间是用来进行数据存储的（表、function、存储过程等），所以是实际物理存储区域。</p>
-<p>临时表空间：主要用途是在数据库进行排序运算[如创建索引、order by及group by、distinct、union/intersect/minus/、sort-merge及join、analyze命令]、管理索引[如创建索 引、IMP进行数据导入]、访问视图等操作时提供临时的运算空间，当运算完成之后系统会自动清理。</p>
-<p>备注：因为用途不同所以才有了区分，实际上数据库都是有默认临时空间的，但实际应用中很难满足需求，所以才需要自己创建临时空间。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/65/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/65/">65</a><span class="page-number current">66</span><a class="page-number" href="/page/67/">67</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/67/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/65/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/65/">65</a><span class="page-number current">66</span><a class="page-number" href="/page/67/">67</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/67/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1117,7 +1048,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1130,7 +1061,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

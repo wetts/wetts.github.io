@@ -188,6 +188,329 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/" class="post-title-link" itemprop="url">Mybatis-实现原理-动态代理.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-11 19:01:29" itemprop="dateCreated datePublished" datetime="2019-10-11T19:01:29+08:00">2019-10-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/94396113">https://blog.csdn.net/zzti_erlie/article/details/94396113</a></p>
+<p>mybatis 利用动态代理帮我们生成了接口的实现类，这个类就是 org.apache.ibatis.binding.MapperProxy</p>
+<h2 id="静态代理"><a href="#静态代理" class="headerlink" title="静态代理"></a>静态代理</h2><p>又是一年毕业季，很多小伙伴开始去大城市打拼。来大城市第一件事就是租房，免不了和中介打交道，因为很多房东很忙，你根本找不到他。从这个场景中就可以抽象出来代理模式</p>
+<ul>
+<li>ISubject: 被访问者资源的抽象</li>
+<li>SubjectImpl: 被访问者具体实现类（房东）</li>
+<li>SubjectProxy: 被访问者的代理实现类（中介）</li>
+</ul>
+<p>UML图如下</p>
+<p><img src="/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/1.png" alt="1"></p>
+<p>举个例子来理解一下这个设计模式</p>
+<p>老板让记录一下用户服务的响应时间，用代理模式来实现这个功能。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface IUserService &#123;</span><br><span class="line">    public void request();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class UserServiceImpl implements IUserService &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void request() &#123;</span><br><span class="line">        System.out.println(&quot;this is userService&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">public class UserServiceProxy implements IUserService &#123;</span><br><span class="line"></span><br><span class="line">    private IUserService userService;</span><br><span class="line"></span><br><span class="line">    public UserServiceProxy(IUserService userService) &#123;</span><br><span class="line">        this.userService = userService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void request() &#123;</span><br><span class="line">        long startTime = System.currentTimeMillis();</span><br><span class="line">        userService.request();</span><br><span class="line">        System.out.println(&quot;reques cost :&quot; + (System.currentTimeMillis() - startTime));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        IUserService userService = new UserServiceImpl();</span><br><span class="line">        UserServiceProxy userServiceProxy = new UserServiceProxy(userService);</span><br><span class="line">        // this is userService</span><br><span class="line">        // reques cost :0</span><br><span class="line">        userServiceProxy.request();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一切看起来都非常的美好，老板又发话了，把产品服务的响应时间也记录一下吧。又得写如下 3 个类</p>
+<ul>
+<li>IProductService </li>
+<li>ProductServiceImpl </li>
+<li>ProductServiceProxy </li>
+</ul>
+<p>UserServiceProxy 和 ProductServiceProxy 这两个代理类的逻辑都差不多，却还得写 2 次。其实这个还好，如果老板说，把现有系统的几十个服务的响应时间都记录一下吧，你是不是要疯了？这得写多少代理类啊？</p>
+<h2 id="动态代理"><a href="#动态代理" class="headerlink" title="动态代理"></a>动态代理</h2><blockquote>
+<p>黑暗总是暂时的，终究会迎来黎明，在 JDK1.3 之后引入了一种称之为动态代理（Dynamic Proxy）的机制。使用该机制，我们可以为指定的接口在系统运行期间动态地生成代理对象，从而帮助我们走出最初使用静态代理实现 AOP 的窘境</p>
+</blockquote>
+<p>动态代理的实现主要由一个类和一个接口组成，即 java.lang.reflect.Proxy 类和 java.lang.reflect.InvocationHandler 接口。</p>
+<p>让我们用动态代理来改造一下上面记录系统响应时间的功能。虽然要为 IUserService 和 IProductService 两种服务提供代理对象，但因为代理对象中要添加的横切逻辑是一样的。所以我们只需要实现一个 InvocationHandler 就可以了。代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">public class RequestCostInvocationHandler implements InvocationHandler &#123;</span><br><span class="line"></span><br><span class="line">    private Object target;</span><br><span class="line"></span><br><span class="line">    public RequestCostInvocationHandler(Object target) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	/** 被代理对象的任何方法被执行时，都会先进入这个方法 */</span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">        if (method.getName().equals(&quot;request&quot;)) &#123;</span><br><span class="line">            long startTime = System.currentTimeMillis();</span><br><span class="line">            // 执行目标对象的方法</span><br><span class="line">            method.invoke(target, args);</span><br><span class="line">            System.out.println(&quot;reques cost :&quot; + (System.currentTimeMillis() - startTime));</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">        // 3个参数解释如下</span><br><span class="line">        // classloader,生成代理类</span><br><span class="line">        // 代理类应该实现的接口</span><br><span class="line">        // 实现InvocationHandler的切面类</span><br><span class="line">        IUserService userService = (IUserService) Proxy.newProxyInstance(IUserService.class.getClassLoader(),</span><br><span class="line">                new Class[]&#123;IUserService.class&#125;, new RequestCostInvocationHandler(new UserServiceImpl()));</span><br><span class="line"></span><br><span class="line">        IProductService productService = (IProductService) Proxy.newProxyInstance(IProductService.class.getClassLoader(),</span><br><span class="line">                new Class[]&#123;IProductService.class&#125;, new RequestCostInvocationHandler(new ProductServiceImpl()));</span><br><span class="line"></span><br><span class="line">        // this is userService</span><br><span class="line">        // reques cost :0</span><br><span class="line">        userService.request();</span><br><span class="line"></span><br><span class="line">        // this is productService</span><br><span class="line">        // reques cost :0</span><br><span class="line">        productService.request();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>UML 图如下。恭喜你，你现在已经理解了 Spring AOP 是怎么回事了，就是这么简单，今天先不展开谈 Spring</p>
+<p><img src="/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/2.png" alt="2"></p>
+<p>先简单谈谈动态代理在 Mybatis 中是如何被大佬玩的出神入化的</p>
+<h2 id="Mybatis-核心设计思路"><a href="#Mybatis-核心设计思路" class="headerlink" title="Mybatis 核心设计思路"></a>Mybatis 核心设计思路</h2><p>相信用过 mybatis 的小伙伴都能理解下面这段代码，通过 roleMapper 这个接口直接从数据库中拿到一个对象</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Role role = roleMapper.getRole(3L);</span><br></pre></td></tr></table></figure>
+
+<p>直觉告诉我，一个接口是不能运行的啊，一定有接口的实现类，可是这个实现类我自己没写啊，难道 mybatis 帮我们生成了？你猜的没错，mybatis 利用动态代理帮我们生成了接口的实现类，这个类就是 org.apache.ibatis.binding.MapperProxy，我先画一下 UML 图，MapperProxy 就是下图中的 SubjectProxy 类</p>
+<p><img src="/2019/10/11/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/3.png" alt="3"><br>和上面的 UML 类图对比一下，发现不就少了一个 SubjectImpl 类吗？那应该就是 SubjectProxy 类把 SubjectImple 类要做的事情做了呗，猜对了。SubjectProxy 通过 SubjectImple 和 SubjectImple.xml 之间的映射关系知道自己应该执行什么 SQL。所以 mybatis 最核心的思路就是这么个意思，细节之类的可以看源码，理清最主要的思路，看源码就能把握住重点。</p>
+<h2 id="Mybatis插件原理"><a href="#Mybatis插件原理" class="headerlink" title="Mybatis插件原理"></a>Mybatis插件原理</h2><p>mybatis 的插件也用到了动态代理，还用到了责任链模式，我就不从源码角度分析了。说一下大概实现，我们用插件肯定是为了在原先的基础上增加新功能。增加一个插件，mybatis 就在原先类的基础上用动态代理生成一个代理对象，如果有多个插件，就在代理对象的基础上再生成代理对象，形式和如下函数差不多</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">plugin2( plugin1( start() ) )</span><br></pre></td></tr></table></figure>
+<p>我再给你写个例子，你再看看相关的源码分析文章（也许我以后会写），很快就能理解了。</p>
+<p>在 mybatis 中要想用插件，有如下 2 个步骤</p>
+<ol>
+<li>在 mybatis-config.xml 中配置插件，如下所示<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;plugins&gt;</span><br><span class="line">	&lt;plugin interceptor=&quot;org.xrq.mybatis.plugin.FirstInterceptor&quot; /&gt;</span><br><span class="line">	&lt;plugin interceptor=&quot;org.xrq.mybatis.plugin.SecondInterceptor&quot; /&gt;</span><br><span class="line">&lt;/plugins&gt;</span><br></pre></td></tr></table></figure></li>
+<li>插件类还得实现 Interceptor 接口</li>
+</ol>
+<p>我现在给一个需求，一个应用返回字符串 0，我加一个插件在字符串的左右两边加 plugin1，再加一个插件在字符串的左右两边加 plugin2，开写</p>
+<p>返回字符串的接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public interface IGetStr &#123;</span><br><span class="line">    public String getStrZero();</span><br><span class="line">    public String getStrOne();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回字符串的实现类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class GetStrImpl implements IGetStr &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String getStrZero() &#123;</span><br><span class="line">        return &quot;0&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public String getStrOne() &#123;</span><br><span class="line">        return &quot;1&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义拦截器接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public interface Interceptor &#123;</span><br><span class="line"></span><br><span class="line">    /** 执行拦截逻辑的方法 */</span><br><span class="line">    Object intercept(Invocation invocation);</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * target是被拦截的对象，它的作用是给被拦截对象生成一个代理对象，并返回它。</span><br><span class="line">     * 为了方便，可以直接使用Mybatis中org.apache.ibatis.plugin类的wrap方法（是静态方法）生成代理对象</span><br><span class="line">     * 我这里也写了一个Plugin方法</span><br><span class="line">     */</span><br><span class="line">    Object plugin(Object target);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到一个不认识的类Invocation，定义如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class Invocation &#123;</span><br><span class="line"></span><br><span class="line">    private final Object target;</span><br><span class="line">    private final Method method;</span><br><span class="line">    private final Object[] args;</span><br><span class="line"></span><br><span class="line">    public Invocation(Object target, Method method, Object[] args) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">        this.method = method;</span><br><span class="line">        this.args = args;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Object proceed() throws InvocationTargetException, IllegalAccessException &#123;</span><br><span class="line">        return method.invoke(target, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>就是简单的封装了一下目标对象，目标方法和目标方法的参数。proceed方法就是执行目标对象的目标方法</p>
+<p>Plugin 算是一个工具类，生成代理对象</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public class Plugin implements InvocationHandler &#123;</span><br><span class="line"></span><br><span class="line">    /** 目标对象 */</span><br><span class="line">    private final Object target;</span><br><span class="line">    /** Interceptor对象 */</span><br><span class="line">    private final Interceptor interceptor;</span><br><span class="line"></span><br><span class="line">    public Plugin(Object target, Interceptor interceptor) &#123;</span><br><span class="line">        this.target = target;</span><br><span class="line">        this.interceptor = interceptor;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	/** 生成代理对象 */</span><br><span class="line">    public static Object wrap(Object target, Interceptor interceptor) &#123;</span><br><span class="line">        return Proxy.newProxyInstance(target.getClass().getClassLoader(),</span><br><span class="line">                new Class[]&#123;IGetStr.class&#125;,</span><br><span class="line">                new Plugin(target, interceptor));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	/** 被代理对象的方法执行时，这个方法会被执行 */</span><br><span class="line">    @Override</span><br><span class="line">    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">    	// 只为方法getStrZero生成代理对象</span><br><span class="line">        if (method.getName().equals(&quot;getStrZero&quot;)) &#123;</span><br><span class="line">            return interceptor.intercept(new Invocation(target, method, args));</span><br><span class="line">        &#125;</span><br><span class="line">        return method.invoke(target, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>写第一个插件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">public class FirstInterceptor implements Interceptor &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    /** 执行拦截逻辑的方法 */</span><br><span class="line">    @Override</span><br><span class="line">    public Object intercept(Invocation invocation) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            return &quot;plugin1 &quot; + invocation.proceed() + &quot; plugin1&quot;;</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            return null;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /** 为原先的类生成代理对象 */</span><br><span class="line">    @Override</span><br><span class="line">    public Object plugin(Object target) &#123;</span><br><span class="line">        return Plugin.wrap(target, this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>有 2 个方法</p>
+<p>plugin 是为插件生成代理对象，用了我自己写的 Plugin 工具类<br>intercept 是增加拦截逻辑，invocation.proceed() 是执行目标对象的目标方法，前文说过了哈，这里我们只对输出做了改变</p>
+<p>第二个插件和第一个插件类似</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class SecondInterceptor implements Interceptor &#123;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object intercept(Invocation invocation) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            return &quot;plugin2 &quot; + invocation.proceed() + &quot; plugin2&quot;;</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            return null;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object plugin(Object target) &#123;</span><br><span class="line">        return Plugin.wrap(target, this);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用一个容器保存插件，这里用到了责任链模式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class InterceptorChain &#123;</span><br><span class="line"></span><br><span class="line">    /** 放拦截器 */</span><br><span class="line">    private final List&lt;Interceptor&gt; interceptors = new ArrayList&lt;Interceptor&gt;();</span><br><span class="line"></span><br><span class="line">    public Object pluginAll(Object target) &#123;</span><br><span class="line">        for (Interceptor interceptor : interceptors) &#123;</span><br><span class="line">            target = interceptor.plugin(target);</span><br><span class="line">        &#125;</span><br><span class="line">        return target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void addInterceptor(Interceptor interceptor) &#123;</span><br><span class="line">        interceptors.add(interceptor);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>pluginAll 方法是精髓，为每个插件一层一层的生成代理对象，就像套娃娃一样。</p>
+<p>验证一下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">public class Main &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">        // 配置插件</span><br><span class="line">        InterceptorChain interceptorChain = new InterceptorChain();</span><br><span class="line">        interceptorChain.addInterceptor(new FirstInterceptor());</span><br><span class="line">        interceptorChain.addInterceptor(new SecondInterceptor());</span><br><span class="line"></span><br><span class="line">        // 获得代理对象</span><br><span class="line">        IGetStr getStr = new GetStrImpl();</span><br><span class="line">        getStr = (IGetStr) interceptorChain.pluginAll(getStr);</span><br><span class="line"></span><br><span class="line">        String result = getStr.getStrZero();</span><br><span class="line">        // plugin2 plugin1 0 plugin1 plugin2</span><br><span class="line">        System.out.println(result);</span><br><span class="line"></span><br><span class="line">        result = getStr.getStrOne();</span><br><span class="line">        // 1</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>大功告成，可以看到先定义的插件先执行。</p>
+<p>类有点多，如果看的有点晕，多看几次，你就很容易理解了，我这里还是精简了很多。</p>
+<p>一个 InvocationHandler 接口被大佬玩出了新境界，果然编程这件事还得靠想象力</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/10/06/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/A%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/10/06/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/A%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" class="post-title-link" itemprop="url">A基本概念</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-06 13:40:08" itemprop="dateCreated datePublished" datetime="2019-10-06T13:40:08+08:00">2019-10-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><p>双线性映射：在数论中，一个双线性映射是由两个向量空间上的元素，生成第三个向量空间上一个元素之函数，并且该函数对每个参数都是线性的。例如矩阵乘法就是一个例子。</p>
+<ul>
+<li>矩阵乘法是双线性映射 ${\displaystyle M(m,n)\times M(n,p)\rightarrow M(m,p)}$。</li>
+<li>如果在实数 ${\displaystyle \mathbb {R} }$ 上的向量空间 ${\displaystyle V}$ 承载了内积，则内积是双线性映射 ${\displaystyle V\times V\rightarrow \mathbb {R} }$。</li>
+</ul>
+</li>
+<li><p>行列式表示空间线性变换后面积缩放的比例。</p>
+</li>
+<li><p>秩表示变换后的空间维数。更精确的定义是列空间的维数。</p>
+</li>
+<li><p>变换后落在原点的向量集合被称为所选矩阵的“零空间“（Null space）或”核“（Kernel）。</p>
+</li>
+<li><p>一个多维空间到一维空间的线性变换的对偶是多维空间中的某个特定向量。</p>
+</li>
+<li></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/10/03/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81-%E5%9F%BA%E4%BA%8EMySQL%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/10/03/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81-%E5%9F%BA%E4%BA%8EMySQL%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" class="post-title-link" itemprop="url">分布式锁-基于MySQL的分布式锁.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-03 18:39:08" itemprop="dateCreated datePublished" datetime="2019-10-03T18:39:08+08:00">2019-10-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/102769447">https://blog.csdn.net/zzti_erlie/article/details/102769447</a></p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>在分布式系统中，分布锁是一个最基础的工具类。例如，部署了2个有付款功能的微服务中，用户有可能对一个订单发起2次付款操作，而这2次请求可能被发到2个服务中，所以必须得用分布式锁防止重复提交，获取到锁的服务正常进行付款操作，获取不到锁的服务提示重复操作。</p>
+<p>我司封装了大量的基础工具类，当我们想使用分布式锁的时候只要做3件事情</p>
+<ol>
+<li>在数据库中建globallocktable表</li>
+<li>引入相应的jar包</li>
+<li>在代码中写上@Autowired GlobalLockComponent globalLockComponent即可使用这个组件</li>
+</ol>
+<p>看完这篇文章你也可以用springboot-starter的方式实现一个同样的功能。</p>
+<h2 id="建表"><a href="#建表" class="headerlink" title="建表"></a>建表</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `globallocktable` (</span><br><span class="line">  `id` int(11) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `lockKey` varchar(60) NOT NULL COMMENT &#x27;锁名称&#x27;,</span><br><span class="line">  `createTime` datetime NOT NULL COMMENT &#x27;创建时间&#x27;,</span><br><span class="line">  PRIMARY KEY (`id`),</span><br><span class="line">  UNIQUE KEY `lockKey` (`lockKey`)</span><br><span class="line">) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT=&#x27;全局锁&#x27;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="让别人使用的组件"><a href="#让别人使用的组件" class="headerlink" title="让别人使用的组件"></a>让别人使用的组件</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class GlobalLockComponent &#123;</span><br><span class="line">  </span><br><span class="line">  @Resource</span><br><span class="line">  private GlobalLockTableDAO globalLockDAO;</span><br><span class="line">  </span><br><span class="line">  /**</span><br><span class="line">   * 尝试获得锁，成功为true，失败为false</span><br><span class="line">   */</span><br><span class="line">  public boolean tryLock(String key) &#123;</span><br><span class="line">    return GlobalLockUtil.tryLock(this.globalLockDAO, key);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  /**</span><br><span class="line">   * 如果已经有其他程序占用该锁，并且超过timeoutMs（毫秒）时间，就强制清除这个锁占用</span><br><span class="line">   * 即根据key先删除记录，再添加记录</span><br><span class="line">   */</span><br><span class="line">  public boolean tryLockWithClear(String key, Long timeoutMs) &#123;</span><br><span class="line">    return GlobalLockUtil.tryLockWithClear(this.globalLockDAO, key, timeoutMs);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  /**</span><br><span class="line">   * 释放锁，根据key删除记录</span><br><span class="line">   */</span><br><span class="line">  public void releasLock(String key) &#123;</span><br><span class="line">    GlobalLockUtil.releasLock(this.globalLockDAO, key);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>锁对象定义如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class GlobalLockTable &#123;</span><br><span class="line"></span><br><span class="line">  private Integer id;</span><br><span class="line">  private String lockKey;</span><br><span class="line">  private Date createTime;</span><br><span class="line">  // 省略get和set方法</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>GlobalLockTableDAO定义如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public interface GlobalLockTableDAO &#123;</span><br><span class="line"></span><br><span class="line">  int deleteByPrimaryKey(Integer id);</span><br><span class="line">  </span><br><span class="line">  int deleteByLockKey(String lockKey);</span><br><span class="line"></span><br><span class="line">  GlobalLockTable selectByLockKey(String key);</span><br><span class="line"></span><br><span class="line">  int insertSelectiveWithTest(GlobalLockTable record);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="具体加锁和解锁逻辑"><a href="#具体加锁和解锁逻辑" class="headerlink" title="具体加锁和解锁逻辑"></a>具体加锁和解锁逻辑</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">public class GlobalLockUtil &#123;</span><br><span class="line"></span><br><span class="line">  private static Logger logger = LoggerFactory.getLogger(GlobalLockUtil.class);</span><br><span class="line"></span><br><span class="line">  private static GlobalLockTable tryLockInternal(GlobalLockTableDAO lockDAO, String key) &#123;</span><br><span class="line">    GlobalLockTable insert = new GlobalLockTable();</span><br><span class="line">    insert.setCreateTime(new Date());</span><br><span class="line">    insert.setLockKey(key);</span><br><span class="line">    // 注意的地方1</span><br><span class="line">    int count = lockDAO.insertSelectiveWithTest(insert);</span><br><span class="line">    if (count == 0) &#123;</span><br><span class="line">      GlobalLockTable ready = lockDAO.selectByLockKey(key);</span><br><span class="line">      logger.warn(&quot;can not lock the key: &#123;&#125;, &#123;&#125;, &#123;&#125;&quot;, insert.getLockKey(), ready.getCreateTime(),</span><br><span class="line">          ready.getId());</span><br><span class="line">      return ready;</span><br><span class="line">    &#125;</span><br><span class="line">    logger.info(&quot;yes got the lock by key: &#123;&#125;&quot;, insert.getId(), insert.getLockKey());</span><br><span class="line">    return null;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  /** 超时清除锁占用，并重新加锁 **/</span><br><span class="line">  public static boolean tryLockWithClear(GlobalLockTableDAO lockDAO, String key, Long timeoutMs) &#123;</span><br><span class="line">    GlobalLockTable lock = tryLockInternal(lockDAO, key);</span><br><span class="line">    if (lock == null) return true;</span><br><span class="line">    if (System.currentTimeMillis() - lock.getCreateTime().getTime() &lt;= timeoutMs) &#123;</span><br><span class="line">      logger.warn(&quot;sorry, can not get the key. : &#123;&#125;, &#123;&#125;, &#123;&#125;&quot;, key, lock.getId(), lock.getCreateTime());</span><br><span class="line">      return false;</span><br><span class="line">    &#125;</span><br><span class="line">    logger.warn(&quot;the key already timeout wthin : &#123;&#125;, &#123;&#125;, will clear&quot;, key, timeoutMs);</span><br><span class="line">    // 注意的地方2</span><br><span class="line">    int count = lockDAO.deleteByPrimaryKey(lock.getId());</span><br><span class="line">    if (count == 0) &#123;</span><br><span class="line">      logger.warn(&quot;sorry, the key already preemptived by others: &#123;&#125;, &#123;&#125;&quot;, lock.getId(), lock.getLockKey());</span><br><span class="line">      return false;</span><br><span class="line">    &#125;</span><br><span class="line">    lock = tryLockInternal(lockDAO, key);</span><br><span class="line">    return lock != null ? false : true;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  /** 加锁 **/</span><br><span class="line">  public static boolean tryLock(GlobalLockTableDAO lockDAO, String key) &#123;</span><br><span class="line">    return tryLockInternal(lockDAO, key) == null ? true : false;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  /** 解锁 **/</span><br><span class="line">  public static void releasLock(GlobalLockTableDAO lockDAO, String key) &#123;</span><br><span class="line">    lockDAO.deleteByLockKey(key);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个工具类有2个特别有意思的地方，先看注意的地方2（上面代码中标识了）</p>
+<ol>
+<li>为了避免锁长时间不释放，用Redis实现的话可以设置锁超时时间，超时自动释放（后面会写用Redis实现分布式锁）用MySQL实现的话可以先删除后添加。可以看到删除的时候使用id删的，不是用name删的。为啥呢？先自己想一下</li>
+</ol>
+<p>因为如果是通过name删的话，有可能别人删了这个锁后，又通过name加了锁，还没到超时时间，结果你却根据name删除了。通过id删的话，当返回的id=0时，说明别人已经重新加锁了，你需要重新获取。</p>
+<ol start="2">
+<li>GlobalLockTable 对象dao层的其他方法都见名知意，来看一个这个方法。即代码中的注意点1<br>可以看到每次尝试加锁的时候，并不是先select，而是直接insertSelectiveWithTest，这样就少了一个查询时间，提高了效率</li>
+</ol>
+<p>insertSelectiveWithTest的作用是当lockKey存在时不进行插入操作，返回0。当lockKey不存在时进行插入操作，返回1</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;insert id=&quot;insertSelectiveWithTest&quot; useGeneratedKeys=&quot;true&quot; keyProperty=&quot;id&quot; parameterType=&quot;com.javashitang.middleware.lock.mysql.pojo.GlobalLockTable&quot;&gt;</span><br><span class="line">  insert into `globallocktable` (`id`,</span><br><span class="line">  `lockKey`, `createTime` )</span><br><span class="line">   select #&#123;id,jdbcType=INTEGER&#125;, #&#123;lockKey,jdbcType=VARCHAR&#125;, #&#123;createTime,jdbcType=TIMESTAMP&#125;</span><br><span class="line">   from dual where not exists</span><br><span class="line">    (select 1 from globallocktable where lockKey = #&#123;lockKey,jdbcType=VARCHAR&#125;)</span><br><span class="line">&lt;/insert&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>当我们想使用时，就只写业务逻辑就行了，非常方便</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">if (!globalLockComponent.tryLock(name)) &#123;</span><br><span class="line">  // 没有获取到锁返回</span><br><span class="line">  return;</span><br><span class="line">&#125;</span><br><span class="line">try &#123;</span><br><span class="line">  // 这里写业务逻辑</span><br><span class="line">&#125; catch (Exception e) &#123;</span><br><span class="line">&#125; finally &#123;</span><br><span class="line">  globalLockComponent.releasLock(name)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/30/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -886,354 +1209,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/" class="post-title-link" itemprop="url">微积分-拉格朗日对偶性</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-09-10 13:45:42" itemprop="dateCreated datePublished" datetime="2019-09-10T13:45:42+08:00">2019-09-10</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在约束最优化问题中，常常利用拉格朗日对偶性（Lagrange duality）将原始问题转换为对偶问题，通常解对偶问题而得到原始问题的解。该方法应用在许多统计学习方法中，例如，最大熵模型与支持向量机。</p>
-<h3 id="原始问题"><a href="#原始问题" class="headerlink" title="原始问题"></a>原始问题</h3><p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%98.png" alt="原始问题"></p>
-<p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%982.png" alt="原始问题2"></p>
-<p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%983.png" alt="原始问题3"></p>
-<p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%984.png" alt="原始问题4"></p>
-<h3 id="对偶问题"><a href="#对偶问题" class="headerlink" title="对偶问题"></a>对偶问题</h3><p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98.png" alt="对偶问题"></p>
-<h3 id="原始问题和对偶问题的关系"><a href="#原始问题和对偶问题的关系" class="headerlink" title="原始问题和对偶问题的关系"></a>原始问题和对偶问题的关系</h3><p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%98%E4%B8%8E%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E6%9C%80%E4%BC%98%E5%80%BC.png" alt="原始问题与对偶问题最优值"></p>
-<p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%98%E4%B8%8E%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E6%8E%A8%E8%AE%BA1.png" alt="原始问题与对偶问题推论1"></p>
-<p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%98%E4%B8%8E%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E5%AE%9A%E7%90%862.png" alt="原始问题与对偶问题定理2"></p>
-<p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%98%E4%B8%8E%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E5%AE%9A%E7%90%863-1.png" alt="原始问题与对偶问题定理3-1"></p>
-<p><img src="/2019/09/10/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E5%AF%B9%E5%81%B6%E6%80%A7/%E5%8E%9F%E5%A7%8B%E9%97%AE%E9%A2%98%E4%B8%8E%E5%AF%B9%E5%81%B6%E9%97%AE%E9%A2%98%E5%AE%9A%E7%90%863-2.png" alt="原始问题与对偶问题定理3-2"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/" class="post-title-link" itemprop="url">矩阵求导实例</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-09-05 17:30:48" itemprop="dateCreated datePublished" datetime="2019-09-05T17:30:48+08:00">2019-09-05</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/wlzy/p/8007045.html">https://www.cnblogs.com/wlzy/p/8007045.html</a></p>
-<h2 id="前提及说明"><a href="#前提及说明" class="headerlink" title="前提及说明"></a>前提及说明</h2><p>第一次遇见矩阵求导，大多数人都是一头雾水，而搜了维基百科看也还是云里雾里，一堆的名词和一堆的表格到底都是什么呢？这里总结了我个人的学习经验，并且通过一个例子可以让你感受如何进行矩阵求导，下次再遇到需要进行矩阵求导的地方就不会措手不及。</p>
-<p>在进行概念的解说之前，首先大家需要先知道下面的这个前提：</p>
-<blockquote>
-<p>前提： 若 x 为向量，则默认 x 为列向量， xT 为行向量</p>
-</blockquote>
-<h2 id="布局的概念"><a href="#布局的概念" class="headerlink" title="布局的概念"></a>布局的概念</h2><p>布局简单地理解就是分子 y 、分母 x 是行向量还是列向量。</p>
-<ul>
-<li>分子布局（Numerator-layout）：分子为 y 或者分母为 xT (即，分子为列向量或者分母为行向量)</li>
-<li>分母布局（Denominator-layout）：分子为 yT 或者分母为 x (即，分子为行向量或者分母为列向量)</li>
-</ul>
-<p>为了更加深刻地理解两种布局的特点和区别，下面是从维基百科中布局部分拿来的例子</p>
-<h3 id="分子布局"><a href="#分子布局" class="headerlink" title="分子布局"></a>分子布局</h3><ul>
-<li>标量/向量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E5%90%91%E9%87%8F.png" alt="分子布局-标量d向量">（分母的向量为行向量）</li>
-<li>向量/标量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E6%A0%87%E9%87%8F.png" alt="分子布局-向量d标量">（分子的向量为列向量）</li>
-<li>向量/向量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E5%90%91%E9%87%8F.png" alt="分子布局-向量d向量">（分子为列向量横向平铺，分母为行向量纵向平铺）</li>
-<li>标量/矩阵：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E7%9F%A9%E9%98%B5.png" alt="分子布局-标量d矩阵">（注意这个矩阵部分是转置的，而下面的分母布局是非转置的）</li>
-<li>矩阵/标量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E5%AD%90%E5%B8%83%E5%B1%80-%E7%9F%A9%E9%98%B5d%E6%A0%87%E9%87%8F.png" alt="分子布局-矩阵d标量"></li>
-</ul>
-<h3 id="分母布局"><a href="#分母布局" class="headerlink" title="分母布局"></a>分母布局</h3><ul>
-<li>标量/向量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E5%90%91%E9%87%8F.png" alt="分母布局-标量d向量">（分母的向量为列向量）</li>
-<li>向量/标量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E6%A0%87%E9%87%8F.png" alt="分母布局-向量d标量">（分子的向量为行向量）</li>
-<li>向量/向量：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E5%90%91%E9%87%8Fd%E5%90%91%E9%87%8F.png" alt="分母布局-向量d向量">（分子为行向量纵向平铺，分母为列向量横向平铺）</li>
-<li>标量/矩阵：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%88%86%E6%AF%8D%E5%B8%83%E5%B1%80-%E6%A0%87%E9%87%8Fd%E7%9F%A9%E9%98%B5.png" alt="分母布局-标量d矩阵">（矩阵部分为原始矩阵）</li>
-</ul>
-<h2 id="一个求导的例子"><a href="#一个求导的例子" class="headerlink" title="一个求导的例子"></a>一个求导的例子</h2><h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E9%97%AE%E9%A2%98.png" alt="问题"></p>
-<blockquote>
-<p>说明： y、w为列向量，X为矩阵</p>
-</blockquote>
-<h3 id="式子演化"><a href="#式子演化" class="headerlink" title="式子演化"></a>式子演化</h3><p>看到这个例子不要急着去查表求导，先看看它的形式，是 <img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%96.png" alt="式子演化"> 的形式，这种形式一般求导较为复杂，因此为了简化运算，我们先把式子展开成下面的样子（注意：<img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%962.png" alt="式子演化2"> ： ）</p>
-<p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%963.png" alt="式子演化3"></p>
-<p>然后就可以写成四个部分求导的形式如下（累加后求导=求导后累加）： </p>
-<p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E5%BC%8F%E5%AD%90%E6%BC%94%E5%8C%964.png" alt="式子演化4"></p>
-<h3 id="求导"><a href="#求导" class="headerlink" title="求导"></a>求导</h3><ul>
-<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC1.png" alt="求导1"></li>
-</ul>
-<p>说明：分子部分为标量，分母部分为向量，找到维基百科中的Scalar-by-vector identities表格，在表格中匹配形式到第1行的位置，因为分母为列向量，因此为分母布局，对应的求导结果就是 0 。</p>
-<ul>
-<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC2.png" alt="求导2"></li>
-</ul>
-<p>说明：同样的，在维基百科中的Scalar-by-vector identities表格，在表格中匹配形式到第11行的位置。</p>
-<ul>
-<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC3.png" alt="求导3"></li>
-</ul>
-<p>说明：因为分子为标量，标量的转置等于本身，所以对分子进行转置操作，其等价于第二部分。</p>
-<ul>
-<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%B1%82%E5%AF%BC4.png" alt="求导4"></li>
-</ul>
-<p>说明：同样的，在维基百科中的Scalar-by-vector identities表格，在表格中匹配形式到第13行的位置。</p>
-<h3 id="整合"><a href="#整合" class="headerlink" title="整合"></a>整合</h3><p>把四个部分求导结果进行相应的加减就可以得到最终的结果： </p>
-<ul>
-<li><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E6%95%B4%E5%90%88.png" alt="整合"></li>
-</ul>
-<hr>
-<ul>
-<li><p>分子布局，即按照 y 和xT (相比较于x)的布局。（求导结果中分子保持原始形式，分母为转置形式）</p>
-</li>
-<li><p>分母布局, 即按照 yT 和 x (相比较于y)。（求导结果中分子为转置形式，分母保持原始形式）</p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC1.png" alt="表格1"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC2.png" alt="表格2"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC3.png" alt="表格3"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC4.png" alt="表格4"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC5.png" alt="表格5"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC6.png" alt="表格6"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC7.png" alt="表格7"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC8.png" alt="表格8"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC9.png" alt="表格9"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC10.png" alt="表格10"></p>
-</li>
-<li><p><img src="/2019/09/05/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E7%9F%A9%E9%98%B5%E6%B1%82%E5%AF%BC%E5%AE%9E%E4%BE%8B/%E8%A1%A8%E6%A0%BC11.png" alt="表格11"></p>
-</li>
-</ul>
-<hr>
-<h2 id="附录：公式推导"><a href="#附录：公式推导" class="headerlink" title="附录：公式推导"></a>附录：公式推导</h2><h3 id="公式一"><a href="#公式一" class="headerlink" title="公式一"></a>公式一</h3><p>对任意行向量 $\mathbf{w} = (w_1, w_2, \cdots w_n)$ 都有<br>$$<br>\left.\frac{\partial(\mathbf{w} \mathbf{x})}{\partial \mathbf{x}}=\left[\begin{array}{c}{\frac{\partial(\mathbf{w} \mathbf{x})}{x_{1}}} \ {\frac{\partial(\mathbf{w} \mathbf{x})}{x_{2}}} \ {\vdots} \ {\frac{\partial(\mathbf{w} \mathbf{x})}{x_{n}}}\end{array}\right]=\left[\begin{array}{c}{\frac{\partial\left(w_1 x_1+w_2 x_{2}+\cdots+w_{n} x_{n}\right)}{x_{1}}} \ {\frac{\partial\left(w_{1} x_{1}+w_{2} x_{2}+\cdots+w_{n} x_{n}\right)}{x_{2}}} \ {\vdots} \ {\frac{\partial\left(w_1 x_1+w_2 x_{2}+\cdots+w_{n} x_{n}\right)}{x_{n}}}\end{array}\right]=\left[\begin{array}{c}{w_{1}} \ {w_{2}} \ {\vdots} \ {w_{n}}\end{array}\right]=\mathbf{w}^{T}\right.<br>$$<br>同时注意,如果 $\mathbf{w}$ 表示一个列向量，则<br>$$<br>\frac{\partial\left(\mathbf{x}^{\mathrm{T}} \mathbf{w}\right)}{\partial \mathbf{x}}=\mathbf{w}<br>$$</p>
-<h3 id="公式二"><a href="#公式二" class="headerlink" title="公式二"></a>公式二</h3><p>$\mathbf{A}$ 表示一个矩阵，其中 $\mathbf{a_1, a_2, \cdots a_n}$ 表示行向量<br>$$<br>\mathbf{A}=\left(\mathbf{a}<em>{\mathbf{1}}, \mathbf{a}</em>{2}, \cdots, \mathbf{a}<em>{\mathbf{n}}\right)^{T}<br>$$<br>都有<br>$$<br>\frac{\partial(\mathbf{A} \mathbf{x})}{\partial \mathbf{x}}=\frac{\partial\left(\mathbf{a}</em>{1} \mathbf{x}, \mathbf{a}<em>{2} \mathbf{x}, \cdots, \mathbf{a}</em>{\mathbf{n}} \mathbf{x}\right)^{T}}{\partial \mathbf{x}}=\left(\mathbf{a}<em>{1}^{T}, \mathbf{a}</em>{2}^{T}, \cdots, \mathbf{a}<em>{\mathbf{n}}^{T}\right)=\mathbf{A}^{T}<br>$$<br>$\mathbf{B}$ 表示一个矩阵，其中 $\mathbf{b_1, b_2, \cdots b_n}$ 表示列向量<br>$$<br>\mathbf{B}=\left(\mathbf{b}</em>{\mathbf{1}}, \mathbf{b}<em>{2}, \cdots, \mathbf{b}</em>{\mathbf{n}}\right)<br>$$<br>都有<br>$$<br>\frac{\partial\left(\mathbf{x}^{\mathrm{T}} \mathbf{B}\right)}{\partial \mathbf{x}}=\frac{\partial\left(\mathbf{x}^{\mathrm{T}} \mathbf{b}<em>{1}, \mathbf{x}^{\mathrm{T}} \mathbf{b}</em>{2}, \cdots, \mathbf{x}^{\mathrm{T}} \mathbf{b}<em>{\mathbf{n}}\right)}{\partial \mathbf{x}}=\left(\mathbf{b}</em>{1}, \mathbf{b}<em>{2}, \cdots, \mathbf{b}</em>{\mathbf{n}}\right)=\mathbf{B}<br>$$</p>
-<h3 id="公式三"><a href="#公式三" class="headerlink" title="公式三"></a>公式三</h3><p>$$<br>\frac{\partial\left(\mathbf{x}^{\mathrm{T}} \mathbf{x}\right)}{\partial \mathbf{x}}=\left[\begin{array}{c}{\frac{\partial \mathbf{x}^{\mathrm{T}} \mathbf{x}}{x_{1}}} \ {\frac{\partial \mathbf{x}^{\mathrm{T}} \mathbf{x}}{x_2}} \ {\vdots} \ {\frac{\partial \mathbf{x}^{\mathrm{T}} \mathbf{x}}{x_{n}}}\end{array}\right]=\left[\begin{array}{c}{\frac{\partial\left(x_{1}^{2}+x_{2}^{2}+\cdots+x_{n}^{2}\right)}{x_{1}}} \ {\frac{\partial\left(x_{1}^{2}+x_{2}^{2}+\cdots+x_{n}^{2}\right)}{x_{2}}} \ {\vdots} \ {\frac{\partial\left(x_{1}^{2}+x_{2}^{2}+\cdots+x_{n}^{2}\right)}{x_{n}}}\end{array}\right]=\left[\begin{array}{c}{2 x_{1}} \ {2 x_{2}} \ {\vdots} \ {2 x_{n}}\end{array}\right]=2 \mathbf{x}<br>$$</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/" class="post-title-link" itemprop="url">微积分-拉格朗日乘子法</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-08-30 09:11:00" itemprop="dateCreated datePublished" datetime="2019-08-30T09:11:00+08:00">2019-08-30</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.matongxue.com/madocs/939.html">https://www.matongxue.com/madocs/939.html</a></p>
-<h3 id="与原点的最短距离"><a href="#与原点的最短距离" class="headerlink" title="与原点的最短距离"></a>与原点的最短距离</h3><p>假如有方程：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/1.png" alt="1"></p>
-<p>图像是这个样子滴：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/2.png" alt="2"></p>
-<p>现在我们想求其上的点与原点的最短距离：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/3.gif" alt="3"></p>
-<p>这里介绍一种解题思路。首先，与原点距离为 a 的点全部在半径为 a 的圆上：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/4.gif" alt="4"></p>
-<p>那么，我们逐渐扩大圆的半径：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/5.gif" alt="5"></p>
-<p>显然，第一次与 <img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/1.png" alt="1"> 相交的点就是距离原点最近的点：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/6.png" alt="6"></p>
-<p>此时，圆和曲线相切，也就是在该点切线相同：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/7.png" alt="7"></p>
-<p>至此，我们分析出了：<strong>在极值点，圆与曲线相切</strong></p>
-<h3 id="等高线"><a href="#等高线" class="headerlink" title="等高线"></a>等高线</h3><p><img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/8.png" alt="8"></p>
-<p>可以看作函数 <img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/9.png" alt="9"> 的等高线：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/10.png" alt="10"></p>
-<p>梯度向量：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/11.png" alt="11"></p>
-<p>是等高线的法线：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/12.png" alt="12"></p>
-<p>另外一个函数 <img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/13.png" alt="13"> 的等高线为：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/14.png" alt="14"></p>
-<p>之前的曲线 <img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/1.png" alt="1"> 就是其中值为3的等高线：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/15.png" alt="15"></p>
-<p>因此，梯度向量：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/16.png" alt="16"></p>
-<p>也垂直于等高线 <img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/1.png" alt="1">：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/17.png" alt="17"></p>
-<p>梯度向量是等高线的法线，更准确地表述是：<strong>梯度与等高线的切线垂直</strong></p>
-<h3 id="拉格朗日乘子法"><a href="#拉格朗日乘子法" class="headerlink" title="拉格朗日乘子法"></a>拉格朗日乘子法</h3><h4 id="求解"><a href="#求解" class="headerlink" title="求解"></a>求解</h4><p>根据之前的两个分析：</p>
-<ol>
-<li>在极值点，圆与曲线相切</li>
-<li>梯度与等高线的切线垂直</li>
-</ol>
-<p>综合可知，在相切点，圆的梯度向量和曲线的梯度向量平行：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/18.gif" alt="18"></p>
-<p>也就是梯度向量平行，用数学符号表示为：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/19.png" alt="19"></p>
-<p>还必须引入 <img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/1.png" alt="1"> 这个条件，否则这么多等高线，不知道指的是哪一根：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/20.png" alt="20"></p>
-<p>因此联立方程：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/21.png" alt="21"></p>
-<p>求一下试试：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/22.png" alt="22"></p>
-<p>这就是拉格朗日乘子法。</p>
-<h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>要求函数 f 在 g 约束下的极值这种问题可以表示为：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/23.png" alt="23"></p>
-<p><em>s.t.</em> 意思是subject to，服从于，约束于的意思。</p>
-<p>可以列出方程组进行求解：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/24.png" alt="24"></p>
-<p>用这个定义来翻译下刚才的例子，要求：</p>
-<p>令：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/25.png" alt="25"></p>
-<p>求：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/26.png" alt="26"></p>
-<p>联立方程进行求解：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/27.png" alt="27"></p>
-<h4 id="变形"><a href="#变形" class="headerlink" title="变形"></a>变形</h4><p>这个定义还有种变形也比较常见，要求：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/23.png" alt="23"></p>
-<p>定义：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/28.png" alt="28"></p>
-<p>求解下面方程组即可得到答案：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/29.png" alt="29"></p>
-<p>把等式左边的偏导算出来就和上面的定义是一样的了。</p>
-<h4 id="多个约束条件"><a href="#多个约束条件" class="headerlink" title="多个约束条件"></a>多个约束条件</h4><p>如果增加一个约束条件呢？比如说：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/30.png" alt="30"></p>
-<p>求：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/31.png" alt="31"></p>
-<p>从图上看约束条件是这样的：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/32.png" alt="32"></p>
-<p>很显然所求的距离是这样的：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/33.png" alt="33"></p>
-<p>那这三者的法线又有什么关系呢？<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/34.png" alt="34"> 的法线是 <img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/35.png" alt="35"> 和 <img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/36.png" alt="36"> 的法线的线性组合：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/37.png" alt="37"></p>
-<p>假设：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/38.png" alt="38"></p>
-<p>那么线性组合就表示为：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/39.png" alt="39"></p>
-<p>联立方程：<img src="/2019/08/30/%E6%95%B0%E5%AD%A6/%E5%BE%AE%E7%A7%AF%E5%88%86/%E5%BE%AE%E7%A7%AF%E5%88%86-%E6%8B%89%E6%A0%BC%E6%9C%97%E6%97%A5%E4%B9%98%E5%AD%90%E6%B3%95/40.png" alt="40"></p>
-<p>即可求解。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/9/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/11/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/9/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/11/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1301,7 +1280,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1314,7 +1293,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

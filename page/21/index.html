@@ -188,6 +188,320 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/03/02/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Solr/Solr-%E5%90%8C%E6%AD%A5MySQL%E7%9A%84%E6%95%B0%E6%8D%AE%E5%88%B0Solr%E4%B8%AD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/03/02/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Solr/Solr-%E5%90%8C%E6%AD%A5MySQL%E7%9A%84%E6%95%B0%E6%8D%AE%E5%88%B0Solr%E4%B8%AD/" class="post-title-link" itemprop="url">Solr-同步MySQL的数据到Solr中</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-03-02 11:53:11" itemprop="dateCreated datePublished" datetime="2017-03-02T11:53:11+08:00">2017-03-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><p>首先创建一个core。</p>
+</li>
+<li><p>conf下创建文件。</p>
+<ul>
+<li>managed-schema/schema.xml 这个是索引的结构定义的文件，定义了字段的名称，类型，索引与否，分词方法等</li>
+<li>solrconfig.xml 这个文件是solr的基础文件，主要配置了solr的各种web请求处理器、日志、缓存等</li>
+<li>db-data-config.xml 这个是配置连接mysql数据库的配置信息，名称可以自己修改，也是放在conf 下面(没有可以自行创建)</li>
+</ul>
+</li>
+</ul>
+<p>managed-schema/schema.xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;field name=&quot;name&quot; type=&quot;string&quot; indexed=&quot;true&quot; stored=&quot;false&quot; /&gt;</span><br><span class="line">&lt;field name=&quot;loginName&quot; type=&quot;string&quot; indexed=&quot;true&quot; stored=&quot;false&quot; /&gt;</span><br></pre></td></tr></table></figure>
+
+<p>solrconfig.xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;lib dir=&quot;/Users/wetts/.m2/repository/mysql/mysql-connector-java/5.1.38&quot; regex=&quot;.*\.jar&quot; /&gt;</span><br><span class="line">&lt;lib dir=&quot;$&#123;solr.install.dir&#125;/libexec/dist/&quot; regex=&quot;solr-dataimporthandler-.*\.jar&quot; /&gt;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;requestHandler name=&quot;/dataimport&quot; class=&quot;solr.DataImportHandler&quot;&gt;</span><br><span class="line">  &lt;lst name=&quot;defaults&quot;&gt;</span><br><span class="line">    &lt;str name=&quot;config&quot;&gt;db-data-config.xml&lt;/str&gt;</span><br><span class="line">  &lt;/lst&gt;</span><br><span class="line">&lt;/requestHandler&gt;</span><br></pre></td></tr></table></figure>
+
+<p>db-data-config.xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;dataConfig&gt;</span><br><span class="line">    &lt;dataSource type=&quot;JdbcDataSource&quot;</span><br><span class="line">              driver=&quot;com.mysql.jdbc.Driver&quot;</span><br><span class="line">              url=&quot;jdbc:mysql://127.0.0.1:3306/jeesite&quot;</span><br><span class="line">              user=&quot;root&quot;</span><br><span class="line">              encoding=&quot;UTF-8&quot;</span><br><span class="line">              password=&quot;&quot;/&gt;</span><br><span class="line">    &lt;document&gt;</span><br><span class="line">        &lt;entity name=&quot;sys_user&quot; processor=&quot;SqlEntityProcessor&quot; pk=&quot;id&quot;</span><br><span class="line">            query=&quot;select id,login_name,name from sys_user&quot;&gt;</span><br><span class="line">            &lt;field name=&quot;id&quot; column=&quot;id&quot; /&gt;</span><br><span class="line">            &lt;field name=&quot;loginName&quot; column=&quot;login_name&quot; /&gt;</span><br><span class="line">            &lt;field name=&quot;name&quot; column=&quot;name&quot; /&gt;</span><br><span class="line">        &lt;/entity&gt;</span><br><span class="line">    &lt;/document&gt;</span><br><span class="line">&lt;/dataConfig&gt;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/03/02/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Solr/Solr-Mac%E4%B8%8A%E5%AE%89%E8%A3%85Solr/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/03/02/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Solr/Solr-Mac%E4%B8%8A%E5%AE%89%E8%A3%85Solr/" class="post-title-link" itemprop="url">Solr-Mac上安装Solr</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-03-02 11:09:52" itemprop="dateCreated datePublished" datetime="2017-03-02T11:09:52+08:00">2017-03-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="安装Solr"><a href="#安装Solr" class="headerlink" title="安装Solr"></a>安装Solr</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install solr</span><br></pre></td></tr></table></figure>
+
+<h3 id="启动Solr"><a href="#启动Solr" class="headerlink" title="启动Solr"></a>启动Solr</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">solr start</span><br></pre></td></tr></table></figure>
+
+<h3 id="启动Solr案例"><a href="#启动Solr案例" class="headerlink" title="启动Solr案例"></a>启动Solr案例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">solr -e dih</span><br></pre></td></tr></table></figure>
+
+<h3 id="创建一个core"><a href="#创建一个core" class="headerlink" title="创建一个core"></a>创建一个core</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">solr create -c &lt;core的名称&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="停止Solr"><a href="#停止Solr" class="headerlink" title="停止Solr"></a>停止Solr</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">solr stop -all</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/02/04/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E6%89%B9%E9%87%8F%E5%85%B3%E9%97%AD%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/02/04/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E6%89%B9%E9%87%8F%E5%85%B3%E9%97%AD%E8%BF%9B%E7%A8%8B/" class="post-title-link" itemprop="url">Linux-命令-批量关闭进程</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-02-04 08:48:22" itemprop="dateCreated datePublished" datetime="2017-02-04T08:48:22+08:00">2017-02-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>批量关闭php进程</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep php |grep -v grep |cut -c 9-15 |xargs sudo kill -9</span><br></pre></td></tr></table></figure>
+
+<p><code>grep -v grep</code>是在列出的进程中去除含有关键字“grep”的进程。</p>
+<p><code>cut -c 9-15</code>是截取输入行的第9个字符到第15个字符，而这正好是进程号PID。</p>
+<p><code>xargs kill -9</code>中的xargs命令是用来把前面命令的输出结果（PID）作为“kill -9”命令的参数，并执行该令。 </p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/20/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/20/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE/" class="post-title-link" itemprop="url">MongoDB-常用命令-导出数据</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-20 15:27:53" itemprop="dateCreated datePublished" datetime="2017-01-20T15:27:53+08:00">2017-01-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>Mongodb中的<code>mongoexport</code>工具可以把一个collection导出成JSON格式或CSV格式的文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">E:\_soft\MongoDB\Server\3.2\bin\mongoexport</span><br><span class="line">-v</span><br><span class="line">--host 123.57.25.147:27017</span><br><span class="line">-d &quot;moments&quot;</span><br><span class="line">-c &quot;post&quot;</span><br><span class="line">--out F:\post.json  </span><br><span class="line">--type json</span><br><span class="line">--query &quot;&#123;  \&quot;createTime\&quot; : &#123;  \&quot;$gt\&quot; : ISODate(\&quot;2017-01-19T00:00:00.000+08:00\&quot;),  \&quot;$lt\&quot; : ISODate(\&quot;2017-01-20T00:00:00.000+08:00\&quot;) &#125; &#125;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>参数说明：</p>
+<ul>
+<li>-h:指明数据库宿主机的IP</li>
+<li>-u:指明数据库的用户名</li>
+<li>-p:指明数据库的密码</li>
+<li>-d:指明数据库的名字</li>
+<li>-c:指明collection的名字</li>
+<li>-f:指明要导出那些列</li>
+<li>-o:指明到要导出的文件名</li>
+<li>-q:指明导出数据的过滤条件</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/20/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC17%E7%AB%A0-%E5%91%B3%E9%81%93%E4%B8%8E%E5%90%AF%E5%8F%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -706,346 +1020,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC7%E7%AB%A0-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC7%E7%AB%A0-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">代码整洁之道-第7章-错误处理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-19 11:29:03" itemprop="dateCreated datePublished" datetime="2017-01-19T11:29:03+08:00">2017-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="使用异常而非返回码"><a href="#使用异常而非返回码" class="headerlink" title="使用异常而非返回码"></a>使用异常而非返回码</h3><p>如果使用返回码，调用者必须在调用之后即刻检查错误。</p>
-<p>遇到错误时，最好抛出一个异常。调用代码很整洁，其逻辑不会被错误处理搞乱。</p>
-<h3 id="使用不可控异常"><a href="#使用不可控异常" class="headerlink" title="使用不可控异常"></a>使用不可控异常</h3><p>Java的第一个版本中引入可控异常时，看似一个极好的点子。每个方法的签名都列出它可能传递给调用者的异常，这些异常就是方法类型的一部分。</p>
-<p>可控异常的代价就是违反了开放/闭合原则。如果你在方法中抛出可控异常，而catch语句在三个层级之上，你就得在catch语句和抛出异常处之间的每个方法签名中声明该异常。这意味着对软件中较低层级的修改，都将波及较高层级的签名。</p>
-<p>如果你在编写一套关键代码库，则可控异常有时也会有用：你必须捕获异常。但对于一般的应用开发，其依赖成本要高于收益。</p>
-<h3 id="依调用者需要定义异常类"><a href="#依调用者需要定义异常类" class="headerlink" title="依调用者需要定义异常类"></a>依调用者需要定义异常类</h3><p>来看一个不太好的异常分类例子。下面的try-catch-finally语句是对某个第三方代码库的调用。它覆盖了该调用可能抛出的所有异常：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">ACMEPort port = new ACMEPort(12);</span><br><span class="line"></span><br><span class="line">try &#123;</span><br><span class="line">  port.open();</span><br><span class="line">&#125; catch (DeviceResponseException e) &#123;</span><br><span class="line">  reportPortError(e);</span><br><span class="line">  logger.log(&quot;Device response exception&quot;, e);</span><br><span class="line">&#125; catch (ATM1212UnlockedException e) &#123;</span><br><span class="line">  reportPortError(e);</span><br><span class="line">  logger.log(&quot;Unlock exception&quot;, e);</span><br><span class="line">&#125; catch (GMXError e) &#123;</span><br><span class="line">  reportPortError(e);</span><br><span class="line">  logger.log(&quot;Device response exception&quot;);</span><br><span class="line">&#125; finally &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>语句包含了一大堆重复代码。在大多数异常处理中，不管真实原因如何，我们总是做相对标准的处理。</p>
-<p>在本例中，既然知道我们所做的事不外如此，就可以通过打包调用API、确保它返回通用异常类型，从而简化代码。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">LocalPort port = new LocalPort(12);</span><br><span class="line"></span><br><span class="line">try &#123;</span><br><span class="line">  port.open();</span><br><span class="line">&#125; catch (PortDeviceFailure e) &#123;</span><br><span class="line">  reportError(e);</span><br><span class="line">  logger.log(e.getMessage(), e);</span><br><span class="line">&#125; finally &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// LocalPort类就是简单的打包类，捕获并翻译由ACMEPort类抛出的异常：</span><br><span class="line">public class LocalPort &#123;</span><br><span class="line">  private ACMEPort innerPort;</span><br><span class="line"></span><br><span class="line">  public LocalPort(int portNumber) &#123;</span><br><span class="line">    innerPort = new ACMEPort(portNumber);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void open() &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">      innerPort.open();</span><br><span class="line">    &#125; catch (DeviceResponseException e) &#123;</span><br><span class="line">      throw new PortDeviceFailure(e);</span><br><span class="line">    &#125; catch (ATM1212UnlockedException e) &#123;</span><br><span class="line">      throw new PortDeviceFailure(e);</span><br><span class="line">    &#125; catch (GMXError e) &#123;</span><br><span class="line">      throw new PortDeviceFailure(e);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>实际上，将第三方API打包是个良好的实践手段。当你打包一个第三方API，你就降低了对它的依赖：未来你可以不太痛苦地改用其他代码库。在你测试自己的代码时，打包也有助于模拟第三方调用。</p>
-<p>打包的好处还在于你不必绑死在某个特定厂商的API设计上。你可以定义自己感觉舒服的API。在上例中，我们为port设备的错误定义了一个异常类型，然后发现这样能写出更整洁的代码。</p>
-<p>对于代码的某个特定区域，单一异常类通常可行。伴随异常发送出来的信息能够区分不同错误。如果你想要捕获某个异常，并且放过其他异常，就使用不同的异常类。</p>
-<h3 id="别返回null值"><a href="#别返回null值" class="headerlink" title="别返回null值"></a>别返回null值</h3><p>返回null值，基本上是在给自己增加工作量，也是在给调用者添乱。只要有一处没检查null值，应用程序就会失控。</p>
-<h3 id="别传递null值"><a href="#别传递null值" class="headerlink" title="别传递null值"></a>别传递null值</h3><p>除非API要求你向它传递null值，否则就要尽可能避免传递null值。</p>
-<hr>
-<p>整洁代码是可读的，但也要强固。可读与强固并不冲突，如果将错误处理隔离开看待，独立于主要逻辑之外，就能写出强固而整洁的代码。做到这一步，我们就能单独处理它，也极大地提升了代码的可维护性。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/19/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E6%9F%A5%E7%9C%8B%E7%BD%91%E7%BB%9C%E6%83%85%E5%86%B5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/19/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E6%9F%A5%E7%9C%8B%E7%BD%91%E7%BB%9C%E6%83%85%E5%86%B5/" class="post-title-link" itemprop="url">Linux-命令-查看网络情况</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-19 11:13:27" itemprop="dateCreated datePublished" datetime="2017-01-19T11:13:27+08:00">2017-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="nload"><a href="#nload" class="headerlink" title="nload"></a>nload</h2><p>让用户可以分开来监控入站流量和出站流量</p>
-<h2 id="iftop"><a href="#iftop" class="headerlink" title="iftop"></a>iftop</h2><p>可测量通过每一个套接字连接传输的数据；它采用的工作方式有别于nload。iftop使用pcap库来捕获进出网络适配器的数据包，然后汇总数据包大小和数量，搞清楚总的带宽使用情况。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC6%E7%AB%A0-%E5%AF%B9%E8%B1%A1%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/19/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93/%E7%AC%AC6%E7%AB%A0-%E5%AF%B9%E8%B1%A1%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">第6章-对象和数据结构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-19 10:55:52" itemprop="dateCreated datePublished" datetime="2017-01-19T10:55:52+08:00">2017-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>对象把数据隐藏于抽象之后，暴露操作数据的函数。</li>
-<li>数据结构暴露其数据，没有提供有意义的函数。</li>
-</ul>
-<p>这两种定义的本质，它们是对立的。</p>
-<p>对象与数据结构之间的二分原理：</p>
-<blockquote>
-<p>过程式代码（使用数据结构的代码）便于在不改动既有数据结构的前提下添加新函数，面向对象代码便于在不改动既有函数的前提下添加新类。</p>
-</blockquote>
-<p>反过来说：</p>
-<blockquote>
-<p>过程式代码难以添加新数据结构，因为必须修改所有函数。面向对象代码难以添加新函数，因为必须修改所有类。</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/18/%E8%AF%AD%E8%A8%80/Java/Java7/Java7-API-String%E7%B1%BBsubstring%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%BF%AE%E6%94%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/01/18/%E8%AF%AD%E8%A8%80/Java/Java7/Java7-API-String%E7%B1%BBsubstring%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%BF%AE%E6%94%B9/" class="post-title-link" itemprop="url">Java-API-String类substring的实现修改</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-01-18 22:28:38" itemprop="dateCreated datePublished" datetime="2017-01-18T22:28:38+08:00">2017-01-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/antineutrino/p/4213268.html">http://www.cnblogs.com/antineutrino/p/4213268.html</a></p>
-<p>Java字符串的截取操作可以通过substring来完成。有意思的是，这个方法从jdk1.0开始，一直到1.6都没有变化，但到了1.7实现方式却发生了改变。你可能会认为之所以要对一个成熟且稳定的方法做修改，一定是因为新的实现更好、效率更高吧？然而正好相反，修改后的substring的效率变低了，并且占用了更多的内存，无论是从时间上还是空间上都比不上原有的实现。下面我们来做一个比较，看看到底哪一个更好，以及为什么新版Java中要对其进行修改。</p>
-<h3 id="原有实现"><a href="#原有实现" class="headerlink" title="原有实现"></a>原有实现</h3><p>我们首先来看看原来的substring方法。前面是对参数进行检查，重点是最后一句：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">return ((beginIndex == 0) &amp;&amp; (endIndex == count)) ? this :</span><br><span class="line">  new String(offset + beginIndex, endIndex - beginIndex, value);</span><br></pre></td></tr></table></figure>
-
-<p>这里通过调用下面这个构造方法来创建一个新的字符串：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// Package private constructor which shares value array for speed.</span><br><span class="line">String(int offset, int count, char value[]) &#123;</span><br><span class="line">  this.value = value;</span><br><span class="line">  this.offset = offset;</span><br><span class="line">  this.count = count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>我们知道，Java的字符串实际上是用一个字符数组来实现的，这个构造方法通过复用字符数组value，省去了数组拷贝的开销，仅通过3个赋值语句就创建了一个新的字符串对象。从注释也可以看出这个构造方法的意图就是为了提升性能。</p>
-<h3 id="新的实现"><a href="#新的实现" class="headerlink" title="新的实现"></a>新的实现</h3><p>我们再来看看1.7中新的substring实现。前面一堆还是参数检查，直接看最后一句：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">return ((beginIndex == 0) &amp;&amp; (endIndex == value.length)) ? this</span><br><span class="line">  : new String(value, beginIndex, subLen);</span><br></pre></td></tr></table></figure>
-
-<p>与原来的差不多，但是请注意，这次调用的是另一个构造方法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public String(char[], int, int)</span><br></pre></td></tr></table></figure>
-
-<p>这个公有的构造方法和前面那个很相似（那个是包私有的），从方法签名上看区别仅仅是参数顺序不同。不过这只是表面现象，它们的内部实现却是完全不同的，这个公有的构造方法不会复用char[]数组，而是将其拷贝到一个新数组，从而创建一个新字符串。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">this.value = Arrays.copyOfRange(value, offset, offset+count);</span><br></pre></td></tr></table></figure>
-
-<p>对公有的构造方法来说，必须采用这种方式，如果仍然采用复用数组的方法，就会发生安全性问题，别人就可以对字符串中的字符进行任意的修改。后面会对此进行分析。</p>
-<h3 id="复用字符数组有没有安全隐患"><a href="#复用字符数组有没有安全隐患" class="headerlink" title="复用字符数组有没有安全隐患"></a>复用字符数组有没有安全隐患</h3><p>Java的字符串是不可变的，原因是作为字符串底层实现的字符数组是私有的，从外面无法访问。另一方面，String类的每一个可以创建新字符串的公有方法（构造方法、valueOf等），如果其接受一个字符数组作为参数，就会对该数组执行拷贝操作，这就进一步保证了只有String对象才会持有它的字符数组，因此断绝了从外部修改数组的一切可能。</p>
-<p>如果不这么做就会带来问题，字符串的不可变性也就不复存在了。比如下面这个假想的程序：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">char[] arr = new char[] &#123;&#x27;h&#x27;, &#x27;e&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;o&#x27;, &#x27; &#x27;, &#x27;w&#x27;, &#x27;o&#x27;, &#x27;r&#x27;, &#x27;l&#x27;, &#x27;d&#x27;&#125;;</span><br><span class="line">String s = new String(0, arr.length, arr); // &quot;hello world&quot;</span><br><span class="line">arr[0] = &#x27;a&#x27;; // replace the first character with &#x27;a&#x27;</span><br><span class="line">System.out.println(s); // aello world</span><br></pre></td></tr></table></figure>
-
-<p>如果构造方法没有对arr进行拷贝，那么其他人就可以在字符串外部修改该数组，由于它们引用的是同一个数组，因此对arr的修改就相当于修改了字符串。（可以通过反射来真正地实现这个假想的程序）</p>
-<p>还有一些方法，比如原来的substring方法，它们没有进行数组拷贝，而是直接复用另一个字符串的内部数组。这样做会导致安全问题吗？答案是不会，因为所有这些方法所执行的操作都是私有操作或包私有操作，属于内部实现，因此只要不对外暴露这些操作的接口就仍然是安全的。</p>
-<p>例如对substring来说，由于无论是原字符串还是新字符串，其value数组本身都是String对象的私有属性，从外部是无法访问的，因此对两个字符串来说都很安全。</p>
-<h3 id="为何要修改substring"><a href="#为何要修改substring" class="headerlink" title="为何要修改substring"></a>为何要修改substring</h3><p>原来的substring在安全上没有问题，而且性能很好，又能共享内部数组节约内存。这么看来，好像并没有什么缺点。那为什么要放弃性能更好的实现方式，而采用性能差很多的数组拷贝的方式呢？难道是Oracle的工程师脑抽才会对substring做出这样的修改吗？</p>
-<p>当然不是，原来的方法比新的好只是表面现象，因为虽然性能好，但是有一个严重的问题，那就是有可能会导致内存泄漏。看一个例子，假设一个方法从某个地方（文件、数据库或网络）取得了一个很长的字符串，然后对其进行解析并提取其中的一小段内容，这种情况经常发生在网页抓取或进行日志分析的时候。下面是示例代码。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">String aLongString = ...; // a very long string</span><br><span class="line">String aPart = data.substring(20, 40);</span><br><span class="line">return aPart;</span><br></pre></td></tr></table></figure>
-
-<p>在这里aLongString只是临时的，真正有用的是aPart，其长度只有20个字符，但是它的内部数组却是从aLongString那里共享的，因此虽然aLongString本身可以被回收，但它的内部数组却不能（如下图）。这就导致了内存泄漏。如果一个程序中这种情况经常发生有可能会导致严重的后果，如内存溢出，或性能下降。</p>
-<p><img src="/2017/01/18/%E8%AF%AD%E8%A8%80/Java/Java7/Java7-API-String%E7%B1%BBsubstring%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%BF%AE%E6%94%B9/1.png" alt="1"></p>
-<p>新的实现虽然损失了性能，而且浪费了一些存储空间，但却保证了字符串的内部数组可以和字符串对象一起被回收，从而防止发生内存泄漏，因此新的substring比原来的更健壮。</p>
-<p>实际上前面所说的那个包私有的构造方法在1.7中已经被标记为Deprecated，并且实现也修改为直接调用“public String(char[], int, int)”。到了1.8这个构造方法就被删除了。取而代之的是从1.7开始，增加了另一个共享版的构造方法，这个方法也是包私有的：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String(char[] value, boolean share) &#123;</span><br><span class="line">  // assert share : &quot;unshared not supported&quot;;</span><br><span class="line">  this.value = value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>第二个参数目前没有用到，始终为true，仅仅是为了和另一个公有构造方法“String(char[])”相区别才增加了这么一个参数。这个构造方法用来创建一个和原字符串一模一样的字符串，而不是像以前一样可以创建原字符串的一个子串。在这种情况下，共享数组不会导致内存泄漏问题，只是其用处大打折扣，因为只有很少的情况需要创建一个和原字符串一模一样的字符串，多数情况只需使用原字符串即可。这就像构造方法“String(String)”一样，应该很少有人会使用它来创建字符串吧。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>原来的substring性能好，但在一些情况下却可能导致严重的内存泄漏。新的substring没有内存泄漏的隐患，因此健壮性更好，但却是通过牺牲性能换来的。</p>
-<p>两种实现孰优孰劣还真不好说，因为在大多数情况下都不会遇到所谓的严重内存泄漏的情况，因此大部分时候新的substring都不如原来的好。但对一个运行库来说，健壮性可能更重要一些，毕竟它需要适用于任何可能遇到的情况。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/20/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><span class="page-number current">21</span><a class="page-number" href="/page/22/">22</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/22/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/20/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><span class="page-number current">21</span><a class="page-number" href="/page/22/">22</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/22/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1113,7 +1091,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1126,7 +1104,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

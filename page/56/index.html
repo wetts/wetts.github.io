@@ -188,6 +188,323 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-%E5%9F%BA%E4%BA%8E%E6%B3%A8%E8%A7%A3%E7%9A%84%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/05/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-%E5%9F%BA%E4%BA%8E%E6%B3%A8%E8%A7%A3%E7%9A%84%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">依赖注入-基于注解的配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-05-18 23:53:16" itemprop="dateCreated datePublished" datetime="2015-05-18T23:53:16+08:00">2015-05-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="注解"><a href="#注解" class="headerlink" title="注解"></a>注解</h3><ul>
+<li><code>@Component</code></li>
+<li><code>@Repository</code>：用于对DAO实现类进行标注</li>
+<li><code>@Service</code>：用于对Service实现类进行标注</li>
+<li><code>@Controller</code>：用于对Controller实现类进行标注</li>
+<li><code>@Scope</code>：指定Bean的作用范围</li>
+<li><code>@PostConstruct</code>：相当于init-method，可以在一个Bean中定义多个</li>
+<li><code>@PreDestroy</code>：相当于destroy-method，可以在一个Bean中定义多个</li>
+<li><code>@Autowired</code>：按类型注入</li>
+<li><code>@Resource</code>：按名称注入</li>
+<li><code>@Inject</code>：跟@Autowired类似，只不过没有required属性</li>
+<li><code>@Lazy</code>：设置懒加载</li>
+</ul>
+<h3 id="扫描注解"><a href="#扫描注解" class="headerlink" title="扫描注解"></a>扫描注解</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&lt;context:component-scan base-package=&quot;&quot; /&gt;</span><br><span class="line">指定路径，扫描该基路径里所有类的注解信息。</span><br><span class="line"></span><br><span class="line">&lt;context:component-scan base-package=&quot;com.wetts&quot; resource-pattern=&quot;anno/*.class&quot; /&gt;</span><br><span class="line">扫描特定的类而非基路径下的所有类。</span><br><span class="line">默认情况下resource-pattern属性的值为“**/*.class”，即基类包里的所有类。</span><br><span class="line"></span><br><span class="line">&lt;context:component-scan base-package=&quot;&quot; /&gt;</span><br><span class="line">	&lt;context:include-filter type=&quot;regex&quot; expression=&quot;&quot; /&gt;</span><br><span class="line">	&lt;context:exclude-filter type=&quot;aspecj&quot; expression=&quot;&quot; /&gt;</span><br><span class="line">&lt;/context:component-scan&gt;</span><br><span class="line">&lt;context:include-filter&gt;表示要包含的目标类，&lt;context:exclude-filter&gt;表示要排除在外的目标类。</span><br><span class="line">&lt;context:component-scan&gt;下可以拥有若干个&lt;context:include-filter&gt;和&lt;context:exclude-filter&gt;元素。</span><br><span class="line">这两个过滤元素均支持多种类型的过滤表达式：</span><br><span class="line">	annotation</span><br><span class="line">		示例：com.wetts.XxxAnnotation</span><br><span class="line">		所有标注了XxxAnnotation的类。该类型采用目标类是否标注了某个注解进行过滤。</span><br><span class="line">	assignable</span><br><span class="line">		示例：com.wetts.XxxService</span><br><span class="line">		所有继承或扩展了XxxService的类。该类型采用目标类是否继承或扩展某个特定类进行过滤。</span><br><span class="line">	aspectj</span><br><span class="line">		示例：com.wetts..*Service+</span><br><span class="line">		所有类名以Service结束的类及继承或扩展它们的类。</span><br><span class="line">	regex</span><br><span class="line">		示例：com\.wetts\.anno\..*</span><br><span class="line">		所有com.wetts.anno类包下的类。该类型采用正则表达式根据目标类的类名进行过滤。</span><br><span class="line">	custom</span><br><span class="line">		示例：com.wetts.XxxTypeFilter</span><br><span class="line">		采用XxxTypeFile通过代码的方式根据过滤规则。该类必须实现org.springframework.core.type.TypeFilter接口。</span><br></pre></td></tr></table></figure>
+
+<h3 id="Autowired和-Resource"><a href="#Autowired和-Resource" class="headerlink" title="@Autowired和@Resource"></a><code>@Autowired</code>和<code>@Resource</code></h3><h4 id="Autowired"><a href="#Autowired" class="headerlink" title="@Autowired"></a><code>@Autowired</code></h4><p>默认按类型匹配的方式，在容器中查找匹配的Bean，当有且仅有一个匹配的Bean时，Spring将其注入到@Autowired标注的变量。</p>
+<p>可以对类成员变量及方法的入参进行标注。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">public void init(@Qualifier(&quot;userDao&quot;)UserDao userDao, LogDao logDao) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果容器中没有一个和标注变量类型匹配的Bean，Spring容器启动时将报NoSuchBeanDefinitionException异常。如果希望Spring即使找不到匹配的Bean完成注入也不要抛出异常，那么可以使用@Autowired(required=false)进行标注。默认为true。</p>
+<p>如果容器中有一个以上匹配的Bean时，则可以通过@Qualifier注解限定Bean的名称。</p>
+<p>如果对类中集合的变量或方法入参进行@Autowired标注，Spring会将容器中类型匹配的所有Bean都自动注入进来。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@Autowired(required=false)</span><br><span class="line">private List&lt;Plugin&gt; plugins;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Resource"><a href="#Resource" class="headerlink" title="@Resource"></a><code>@Resource</code></h4><p>要求提供一个Bean名称的属性，如果属性为空，则自动采用标注处的变量名或方法名作为Bean的名称。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/16/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-%E5%9F%BA%E4%BA%8EJava%E7%B1%BB%E7%9A%84%E9%85%8D%E7%BD%AE-%E5%90%AF%E5%8A%A8Spring%E5%AE%B9%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/05/16/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-%E5%9F%BA%E4%BA%8EJava%E7%B1%BB%E7%9A%84%E9%85%8D%E7%BD%AE-%E5%90%AF%E5%8A%A8Spring%E5%AE%B9%E5%99%A8/" class="post-title-link" itemprop="url">依赖注入-基于Java类的配置-启动Spring容器</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-05-16 22:51:06" itemprop="dateCreated datePublished" datetime="2015-05-16T22:51:06+08:00">2015-05-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="直接通过Configuration类启动Spring容器"><a href="#直接通过Configuration类启动Spring容器" class="headerlink" title="直接通过Configuration类启动Spring容器"></a>直接通过Configuration类启动Spring容器</h3><p>Spring提供了一个AnnotationConfigApplicationContext类，它能够直接通过标注@Configuration的Java类启动Spring容器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConf.class);</span><br></pre></td></tr></table></figure>
+<p>AnnotationConfigApplicationContext还支持通过编码的方式加载多个@Configuration配置类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();</span><br><span class="line">ctx.register(DaoConfig.class);</span><br><span class="line">ctx.register(ServiceConfig.class);</span><br><span class="line">ctx.refresh(); // 刷新容器以应用这些注册的配置类</span><br></pre></td></tr></table></figure>
+<p>你也可以通过代码一个一个注册配置类，也可以通过@Import将多个配置类组装到一个配置类中，这样仅需要注册这个组装好的配置类就可以启动容器了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@Import(DaoConfig.class)</span><br></pre></td></tr></table></figure>
+
+<h3 id="通过XML配置文件引用-Configuration的配置"><a href="#通过XML配置文件引用-Configuration的配置" class="headerlink" title="通过XML配置文件引用@Configuration的配置"></a>通过XML配置文件引用@Configuration的配置</h3><p>标注了@Configuration的配置类本身相当于一个标注了@Component的类一样也是一个Bean，它可以被Spring的<code>&lt;context:component-scan&gt;</code>扫描到。</p>
+<h3 id="通过Configuration配置类引用XML配置信息"><a href="#通过Configuration配置类引用XML配置信息" class="headerlink" title="通过Configuration配置类引用XML配置信息"></a>通过Configuration配置类引用XML配置信息</h3><p>在@Configuration配置类中可通过@ImportResource引入XML配置文件，在配置类中即可直接通过@Autowired引入XML配置文件中定义的Bean</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@ImportResource(&quot;classpath:com/wetts/applicationContext.xml&quot;)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/16/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-%E5%9F%BA%E4%BA%8EJava%E7%B1%BB%E7%9A%84%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/05/16/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-%E5%9F%BA%E4%BA%8EJava%E7%B1%BB%E7%9A%84%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">依赖注入-基于Java类的配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-05-16 22:41:06" itemprop="dateCreated datePublished" datetime="2015-05-16T22:41:06+08:00">2015-05-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><code>@Configuration</code></li>
+<li><code>@Bean</code></li>
+<li><code>@Import</code>：将多个配置类组装到一个配置类中</li>
+<li><code>@ImportResource</code>：在@Configuration配置类中引入XML配置文件</li>
+<li><code>@Lazy</code>：设置懒加载</li>
+</ul>
+<hr>
+<p>标注了@Configuration，说明这个类可用于为Spring提供Bean的定义信息。类的方法处可以标注@Bean注解，Bean的类型由方法返回值类型决定，名称默认和方法名相同，也可通过入参显示指定Bean名称，如@Bean(name=”userDao”)。</p>
+<hr>
+<p>如果Bean在多个@Configuration配置类中定义，如何引用不同配置类中定义的Bean呢？</p>
+<p>由于@Configuration注解类本身已经标注了@Component注解，所以任何标注了@Configuration的类，本身也相当于注解了@Component，即它们可以像普通的Bean一样被注入到其他Bean中。</p>
+<hr>
+<p>在@Bean处，可以标注@Scope注解以控制Bean的作用范围。</p>
+<hr>
+<p>由于Spring容器会自动对@Configuration的类进行“改造”，以植入Spring容器对Bean的管理逻辑，所以使用基于Java类的配置必须保证将Spring AOP类包和CGLIB类包加载到类路径下。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/16/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-XML%E9%85%8D%E7%BD%AE-%E4%B8%80%E4%B8%AASpring%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%AF%BC%E5%85%A5%E5%8F%A6%E4%B8%80%E4%B8%AASpring%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/05/16/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-XML%E9%85%8D%E7%BD%AE-%E4%B8%80%E4%B8%AASpring%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%AF%BC%E5%85%A5%E5%8F%A6%E4%B8%80%E4%B8%AASpring%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">依赖注入-XML配置-一个Spring配置中导入另一个Spring配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-05-16 03:05:29" itemprop="dateCreated datePublished" datetime="2015-05-16T03:05:29+08:00">2015-05-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><code>&lt;import&gt;</code>将多个配置文件引入到一个文件中，进行配置文件的集成</p>
+<p><code>&lt;import resource=&quot;&quot; /&gt;</code></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/16/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-XML%E9%85%8D%E7%BD%AE-bean%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -656,429 +973,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/Spring1.0%E5%92%8C2.0%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/Spring1.0%E5%92%8C2.0%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/" class="post-title-link" itemprop="url">Spring1.0和2.0配置文件格式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-15 02:22:51" itemprop="dateCreated datePublished" datetime="2015-05-15T02:22:51+08:00">2015-05-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>Spring1.0的配置文件采用DTD格式</li>
-<li>Spring2.0以后的配置文件采用Schema格式</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/ApplicationContext%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/ApplicationContext%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">ApplicationContext体系结构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-13 23:50:09" itemprop="dateCreated datePublished" datetime="2015-05-13T23:50:09+08:00">2015-05-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><p>ApplicationEventPublisher：让容器拥有发布应用上下文事件的功能，包括容器启动事件、关闭事件等。实现了ApplicationListener事件监听接口的Bean可以接收到容器事件，并对事件进行相应处理。在ApplicationContext抽象实现类AbstractApplicationContext中，我们可以发现存在一个ApplicationEventMulticaster，它负责保存所有监听器，以便在容器产生上下文事件时通知这些事件监听者。</p>
-</li>
-<li><p>MessageSource：为应用提供i18n国际化消息访问的功能。</p>
-</li>
-<li><p>ResourcePatternResolver：所有ApplicationContext实现类都实现了类似于PathMatchingResourcePatternResolver的功能，可以通过带前缀的Ant风格的资源文件路径装载Spring的配置文件。</p>
-</li>
-<li><p>LifeCycle：该接口是Spring2.0加入的，该接口提供了start()和stop()两个方法，主要用于控制异步处理过程。在具体使用时，ApplicationContext及具体的Bean都必须同时实现该接口，ApplicationContext会将start/stop的信息传递给容器中所有实现了该接口的Bean，以达到管理和控制JMX、任务调度等目的。</p>
-</li>
-<li><p>ConfigurableApplicationContext：扩展于ApplicationContext，它新增加了两个主要的方法：refresh()和close()，让ApplicationContext具有启动、刷新和关闭应用上下文的能力。在应用上下文关闭的情况下调用refresh()即可启动应用上下文，在已经启动的状态下，调用refresh()则清除缓存并重新装载配置信息，而调用close()则可关闭应用上下文。</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/CGLib%E5%92%8CJDK%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/CGLib%E5%92%8CJDK%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/" class="post-title-link" itemprop="url">Java反射机制</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-13 00:33:09" itemprop="dateCreated datePublished" datetime="2015-05-13T00:33:09+08:00">2015-05-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Class反射对象描述类语义结构，可以从Class对象中获取构造函数、成员变量、方法类等类元素的反射对象。</p>
-<p>下面是三个最主要的反射类：</p>
-<ul>
-<li>Constructor：类的构造函数反射类。</li>
-<li>Method：类方法的反射类。</li>
-<li>Field：类的成员变量的反射类。</li>
-</ul>
-<p>通过类实例变量无法在外部访问私有变量、调用私有方法，但通过反射机制却可以绕过这个限制。</p>
-<p>在访问private、protected成员变量和方法时必须通过setAccessible(boolean access)方法取消Java语言检查，否则将抛出IllegalAccessException。如果JVM的安全管理器设置了相应的安全机制，调用该方法将抛出SecurityException。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%88%9B%E5%BB%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%88%9B%E5%BB%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">设计模式-创建型模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-07 11:03:12" itemprop="dateCreated datePublished" datetime="2015-05-07T11:03:12+08:00">2015-05-07</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">设计模式</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/zhangerqing/article/details/8194653">http://blog.csdn.net/zhangerqing/article/details/8194653</a></p>
-<h3 id="工厂方法模式（Factory-Method）"><a href="#工厂方法模式（Factory-Method）" class="headerlink" title="工厂方法模式（Factory Method）"></a>工厂方法模式（Factory Method）</h3><p>工厂方法模式分为三种：</p>
-<ul>
-<li><p>普通工厂方法模式，就是建立一个工厂类，对实现了同一接口的一些类进行实例的创建。首先看下关系图：</p>
-<p><img src="/2015/05/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%88%9B%E5%BB%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F/%E6%99%AE%E9%80%9A%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F.png" alt="普通工厂模式"></p>
-</li>
-<li><p>多个工厂方法模式，是对普通工厂方法模式的改进，在普通工厂方法模式中，如果传递的字符串出错，则不能正确创建对象，而多个工厂方法模式是提供多个工厂方法，分别创建对象。关系图：</p>
-<p><img src="/2015/05/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%88%9B%E5%BB%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F/%E5%A4%9A%E4%B8%AA%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F.png" alt="多个工厂方法模式"></p>
-</li>
-<li><p>静态工厂方法模式，将上面的多个工厂方法模式里的方法置为静态的，不需要创建实例，直接调用即可。</p>
-</li>
-</ul>
-<p>总体来说，工厂模式适合：凡是出现了大量的产品需要创建，并且具有共同的接口时，可以通过工厂方法模式进行创建。在以上的三种模式中，第一种如果传入的字符串有误，不能正确创建对象，第三种相对于第二种，不需要实例化工厂类，所以，大多数情况下，我们会选用第三种——静态工厂方法模式。</p>
-<h3 id="抽象工厂模式（Abstract-Factory）"><a href="#抽象工厂模式（Abstract-Factory）" class="headerlink" title="抽象工厂模式（Abstract Factory）"></a>抽象工厂模式（Abstract Factory）</h3><p>工厂方法模式有一个问题就是，类的创建依赖工厂类，也就是说，如果想要拓展程序，必须对工厂类进行修改，这违背了闭包原则，所以，从设计角度考虑，有一定的问题，如何解决？就用到抽象工厂模式，创建多个工厂类，这样一旦需要增加新的功能，直接增加新的工厂类就可以了，不需要修改之前的代码。因为抽象工厂不太好理解，我们先看看图，然后就和代码，就比较容易理解。</p>
-<p><img src="/2015/05/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%88%9B%E5%BB%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F/%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F.png" alt="抽象工厂模式"></p>
-<h3 id="单例模式（Singleton）"><a href="#单例模式（Singleton）" class="headerlink" title="单例模式（Singleton）"></a>单例模式（Singleton）</h3><p>单例对象（Singleton）是一种常用的设计模式。在Java应用中，单例对象能保证在一个JVM中，该对象只有一个实例存在。这样的模式有几个好处：</p>
-<ol>
-<li>某些类创建比较频繁，对于一些大型的对象，这是一笔很大的系统开销。</li>
-<li>省去了new操作符，降低了系统内存的使用频率，减轻GC压力。</li>
-<li>有些类如交易所的核心交易引擎，控制着交易流程，如果该类可以创建多个的话，系统完全乱了。（比如一个军队出现了多个司令员同时指挥，肯定会乱成一团），所以只有使用单例模式，才能保证核心交易服务器独立控制整个流程。</li>
-</ol>
-<p>首先我们写一个简单的单例类：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton &#123;  </span><br><span class="line"></span><br><span class="line">    /* 持有私有静态实例，防止被引用，此处赋值为null，目的是实现延迟加载 */  </span><br><span class="line">    private static Singleton instance = null;  </span><br><span class="line"></span><br><span class="line">    /* 私有构造方法，防止被实例化 */  </span><br><span class="line">    private Singleton() &#123;  </span><br><span class="line">    &#125;  </span><br><span class="line"></span><br><span class="line">    /* 静态工程方法，创建实例 */  </span><br><span class="line">    public static Singleton getInstance() &#123;  </span><br><span class="line">        if (instance == null) &#123;  </span><br><span class="line">            instance = new Singleton();  </span><br><span class="line">        &#125;  </span><br><span class="line">        return instance;  </span><br><span class="line">    &#125;  </span><br><span class="line"></span><br><span class="line">    /* 如果该对象被用于序列化，可以保证对象在序列化前后保持一致 */  </span><br><span class="line">    public Object readResolve() &#123;  </span><br><span class="line">        return instance;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>这个类可以满足基本要求，但是，像这样毫无线程安全保护的类，如果我们把它放入多线程的环境下，肯定就会出现问题了，如何解决？我们首先会想到对getInstance方法加synchronized关键字，如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public static synchronized Singleton getInstance() &#123;  </span><br><span class="line">    if (instance == null) &#123;  </span><br><span class="line">        instance = new Singleton();  </span><br><span class="line">    &#125;  </span><br><span class="line">    return instance;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>但是，synchronized关键字锁住的是这个对象，这样的用法，在性能上会有所下降，因为每次调用getInstance()，都要对对象上锁，事实上，只有在第一次创建对象的时候需要加锁，之后就不需要了，所以，这个地方需要改进。我们改成下面这个：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">public static Singleton getInstance() &#123;  </span><br><span class="line">    if (instance == null) &#123;  </span><br><span class="line">        synchronized (instance) &#123;  </span><br><span class="line">            if (instance == null) &#123;  </span><br><span class="line">                instance = new Singleton();  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">    return instance;  </span><br><span class="line">&#125;</span><br><span class="line">```  </span><br><span class="line">似乎解决了之前提到的问题，将synchronized关键字加在了内部，也就是说当调用的时候是不需要加锁的，只有在instance为null，并创建对象的时候才需要加锁，性能有一定的提升。但是，这样的情况，还是有可能有问题的，看下面的情况：在Java指令中创建对象和赋值操作是分开进行的，也就是说instance = new Singleton();语句是分两步执行的。但是JVM并不保证这两个操作的先后顺序，也就是说有可能JVM会为新的Singleton实例分配空间，然后直接赋值给instance成员，然后再去初始化这个Singleton实例。这样就可能出错了，我们以A、B两个线程为例：</span><br><span class="line">1. A、B线程同时进入了第一个if判断</span><br><span class="line">2. A首先进入synchronized块，由于instance为null，所以它执行instance = new Singleton();</span><br><span class="line">3. 由于JVM内部的优化机制，JVM先画出了一些分配给Singleton实例的空白内存，并赋值给instance成员（注意此时JVM没有开始初始化这个实例），然后A离开了synchronized块。</span><br><span class="line">4. B进入synchronized块，由于instance此时不是null，因此它马上离开了synchronized块并将结果返回给调用该方法的程序。</span><br><span class="line">5. 此时B线程打算使用Singleton实例，却发现它没有被初始化，于是错误发生了。</span><br><span class="line"></span><br><span class="line">所以程序还是有可能发生错误，其实程序在运行过程是很复杂的，从这点我们就可以看出，尤其是在写多线程环境下的程序更有难度，有挑战性。我们对该程序做进一步优化：</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>private static class SingletonFactory{<br>    private static Singleton instance = new Singleton();<br>}<br>public static Singleton getInstance(){<br>    return SingletonFactory.instance;<br>}   </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">实际情况是，单例模式使用内部类来维护单例的实现，JVM内部的机制能够保证当一个类被加载的时候，这个类的加载过程是线程互斥的。这样当我们第一次调用getInstance的时候，JVM能够帮我们保证instance只被创建一次，并且会保证把赋值给instance的内存初始化完毕，这样我们就不用担心上面的问题。同时该方法也只会在第一次调用的时候使用互斥机制，这样就解决了低性能问题。这样我们暂时总结一个完美的单例模式：</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>public class Singleton {  </p>
-<pre><code>/* 私有构造方法，防止被实例化 */  
-private Singleton() &#123;  
-&#125;  
-
-/* 此处使用一个内部类来维护单例 */  
-private static class SingletonFactory &#123;  
-    private static Singleton instance = new Singleton();  
-&#125;  
-
-/* 获取实例 */  
-public static Singleton getInstance() &#123;  
-    return SingletonFactory.instance;  
-&#125;  
-
-/* 如果该对象被用于序列化，可以保证对象在序列化前后保持一致 */  
-public Object readResolve() &#123;  
-    return getInstance();  
-&#125;  
-</code></pre>
-<p>}  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">其实说它完美，也不一定，如果在构造函数中抛出异常，实例将永远得不到创建，也会出错。所以说，十分完美的东西是没有的，我们只能根据实际情况，选择最适合自己应用场景的实现方法。也有人这样实现：因为我们只需要在创建类的时候进行同步，所以只要将创建和getInstance()分开，单独为创建加synchronized关键字，也是可以的：</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>public class SingletonTest {  </p>
-<pre><code>private static SingletonTest instance = null;  
-
-private SingletonTest() &#123;  
-&#125;  
-
-private static synchronized void syncInit() &#123;  
-    if (instance == null) &#123;  
-        instance = new SingletonTest();  
-    &#125;  
-&#125;  
-
-public static SingletonTest getInstance() &#123;  
-    if (instance == null) &#123;  
-        syncInit();  
-    &#125;  
-    return instance;  
-&#125;  
-</code></pre>
-<p>}  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">考虑性能的话，整个程序只需创建一次实例，所以性能也不会有什么影响。</span><br><span class="line"></span><br><span class="line">补充：采用&quot;影子实例&quot;的办法为单例对象的属性同步更新</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>public class SingletonTest {  </p>
-<pre><code>private static SingletonTest instance = null;  
-private Vector properties = null;  
-
-public Vector getProperties() &#123;  
-    return properties;  
-&#125;  
-
-private SingletonTest() &#123;  
-&#125;  
-
-private static synchronized void syncInit() &#123;  
-    if (instance == null) &#123;  
-        instance = new SingletonTest();  
-    &#125;  
-&#125;  
-
-public static SingletonTest getInstance() &#123;  
-    if (instance == null) &#123;  
-        syncInit();  
-    &#125;  
-    return instance;  
-&#125;  
-
-public void updateProperties() &#123;  
-    SingletonTest shadow = new SingletonTest();  
-    properties = shadow.getProperties();  
-&#125;  
-</code></pre>
-<p>}  </p>
-<pre><code>通过单例模式的学习告诉我们：
-1. 单例模式理解起来简单，但是具体实现起来还是有一定的难度。
-2. synchronized关键字锁定的是对象，在用的时候，一定要在恰当的地方使用（注意需要使用锁的对象和过程，可能有的时候并不是整个对象及整个过程都需要锁）。
-
-到这儿，单例模式基本已经讲完了，结尾处，笔者突然想到另一个问题，就是采用类的静态方法，实现单例模式的效果，也是可行的，此处二者有什么不同？
-
-首先，静态类不能实现接口。（从类的角度说是可以的，但是那样就破坏了静态了。因为接口中不允许有static修饰的方法，所以即使实现了也是非静态的）
-
-其次，单例可以被延迟初始化，静态类一般在第一次加载是初始化。之所以延迟加载，是因为有些类比较庞大，所以延迟加载有助于提升性能。
-
-再次，单例类可以被继承，他的方法可以被覆写。但是静态类内部方法都是static，无法被覆写。
-
-最后一点，单例类比较灵活，毕竟从实现上只是一个普通的Java类，只要满足单例的基本需求，你可以在里面随心所欲的实现一些其它功能，但是静态类不行。从上面这些概括中，基本可以看出二者的区别，但是，从另一方面讲，我们上面最后实现的那个单例模式，内部就是用一个静态类来实现的，所以，二者有很大的关联，只是我们考虑问题的层面不同罢了。两种思想的结合，才能造就出完美的解决方案，就像HashMap采用数组+链表来实现一样，其实生活中很多事情都是这样，单用不同的方法来处理问题，总是有优点也有缺点，最完美的方法是，结合各个方法的优点，才能最好的解决问题！
-
-### 建造者模式（Builder）
-工厂类模式提供的是创建单个类的模式，而建造者模式则是将各种产品集中起来进行管理，用来创建复合对象，所谓复合对象就是指某个类具有不同的属性，其实建造者模式就是前面抽象工厂模式和最后的Test结合起来得到的。
-
-建造者模式将很多功能集成到一个类里，这个类可以创造出比较复杂的东西。所以与工程模式的区别就是：工厂模式关注的是创建单个产品，而建造者模式则关注创建符合对象，多个部分。因此，是选择工厂模式还是建造者模式，依实际情况而定。
-
-### 原型模式（Prototype）
-原型模式虽然是创建型的模式，但是与工程模式没有关系，从名字即可看出，该模式的思想就是将一个对象作为原型，对其进行复制、克隆，产生一个和原对象类似的新对象。本小结会通过对象的复制，进行讲解。在Java中，复制对象是通过clone()实现的。
-
-很简单，一个原型类，只需要实现Cloneable接口，覆写clone方法，此处clone方法可以改成任意的名称，因为Cloneable接口是个空接口，你可以任意定义实现类的方法名，如cloneA或者cloneB，因为此处的重点是super.clone()这句话，super.clone()调用的是Object的clone()方法，而在Object类中，clone()是native的，具体怎么实现，我会在另一篇文章中，关于解读Java中本地方法的调用，此处不再深究。在这儿，我将结合对象的浅复制和深复制来说一下，首先需要了解对象深、浅复制的概念：
-- 浅复制：将一个对象复制后，基本数据类型的变量都会重新创建，而引用类型，指向的还是原对象所指向的。
-- 深复制：将一个对象复制后，不论是基本数据类型还有引用类型，都是重新创建的。简单来说，就是深复制进行了完全彻底的复制，而浅复制不彻底。
-
-要实现深复制，需要采用流的形式读入当前对象的二进制输入，再写出二进制数据对应的对象。
-</code></pre>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/55/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/55/">55</a><span class="page-number current">56</span><a class="page-number" href="/page/57/">57</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/57/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/55/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/55/">55</a><span class="page-number current">56</span><a class="page-number" href="/page/57/">57</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/57/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1146,7 +1044,7 @@ public void updateProperties() &#123;
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1159,7 +1057,7 @@ public void updateProperties() &#123;
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

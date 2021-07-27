@@ -188,6 +188,467 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-$where%E6%9F%A5%E8%AF%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-$where%E6%9F%A5%E8%AF%A2/" class="post-title-link" itemprop="url">MongoDB-常用命令-$where查询</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-31 13:57:22" itemprop="dateCreated datePublished" datetime="2016-12-31T13:57:22+08:00">2016-12-31</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://blog.163.com/wm_at163/blog/static/132173490201252610424458/">http://blog.163.com/wm_at163/blog/static/132173490201252610424458/</a></p>
+<p>有时候，键值对的查询方式并不能满足我们的需求，我们有如下一个集合：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.foo.find()</span><br><span class="line">&#123; “_id” : ObjectId(“4e9165cf717ed94f8289ac0c”), “bar” : “baz”, “count” : 35 &#125;</span><br><span class="line">&#123; “_id” : ObjectId(“4e916661739f1da5452a4dfe”), “bar” : “bazz”, “count” : 3 &#125;</span><br><span class="line">&#123; “_id” : ObjectId(“4e9165cf717ed94f8289ac0d”), “bar” : “baz”, “count” : 35 &#125;</span><br><span class="line">&#123; “_id” : ObjectId(“4e928bf8735a86e2c6f848ed”), “apple” : 1, “banana” : 6, “peach” : 3 &#125;</span><br><span class="line">&#123; “_id” : ObjectId(“4e928c17735a86e2c6f848ee”), “apple” : 1, “spinach” : 4, “watermelon” : 4 &#125;</span><br><span class="line">&#123; “_id” : ObjectId(“4e928d8a735a86e2c6f848ef”), “bar” : “baz”, “banana” : “baz” &#125;</span><br></pre></td></tr></table></figure>
+<p>需要返回有两个字段相同的文档，也就是要返回如下文档</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123; “_id” : ObjectId(“4e928c17735a86e2c6f848ee”), “apple” : 1, “spinach” : 4, “watermelon” : 4 &#125;</span><br><span class="line">&#123; “_id” : ObjectId(“4e928d8a735a86e2c6f848ef”), “bar” : “baz”, “banana” : “baz” &#125;</span><br></pre></td></tr></table></figure>
+<p>就需要使用”$where“并借助javascript来做了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.foo.find(&#123;“$where”:function()&#123;</span><br><span class="line">… for(var current in this)&#123;</span><br><span class="line">…   for(var other in this)&#123;</span><br><span class="line">…     if(current != other &amp;&amp; this[current] == this[other])&#123;</span><br><span class="line">…       return true;</span><br><span class="line">…     &#125;</span><br><span class="line">…   &#125;</span><br><span class="line">… &#125;</span><br><span class="line">… return false;</span><br><span class="line">… &#125;&#125;)</span><br></pre></td></tr></table></figure>
+<p>如果返回true，文档作为结果的一部分被返回；如果为false，则不会返回。</p>
+<p>$where查询有以下几种写法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; db.foo.find(&#123;“$where”:”this.x+this.y==10″&#125;)</span><br><span class="line">&gt; db.foo.find(&#123;“$where”:”function()&#123;return this.x+this.y==10;&#125;”&#125;)</span><br></pre></td></tr></table></figure>
+<p>tips：不是非常必要时，一定要避免使用”$where”查询，因为效率太低，相当的。文档在MongoDB中是以BSON格式保存的，在$where查询时，每个文档都要从BSON转换为javascript对象然后再通过”$where”中的表达式来运行。有时可以将常规查询作为前置过滤，再使用”$where”查询对结果进行调优</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-_id%E5%92%8CObjectId/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-_id%E5%92%8CObjectId/" class="post-title-link" itemprop="url">MongoDB-`_id`和ObjectId</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-31 13:21:11" itemprop="dateCreated datePublished" datetime="2016-12-31T13:21:11+08:00">2016-12-31</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://book.51cto.com/art/201112/307016.htm">http://book.51cto.com/art/201112/307016.htm</a></p>
+<h2 id="id和ObjectId"><a href="#id和ObjectId" class="headerlink" title="_id和ObjectId"></a><code>_id和ObjectId</code></h2><p>MongoDB 中存储的文档必须有一个”<code>_id</code>“ 键。这个键的值可以是任何类型的，默认是个ObjectId 对象。在一个集合里面，每个文档都有唯一的”<code>_id</code>“ 值，来确保集合里面每个文档都能被唯一标识。如果有两个集合的话，两个集合可以都有一个值为123 的”<code>_id</code>“ 键，但是每个集合里面只能有一个”<code>_id</code>“ 是123 的文档。</p>
+<h3 id="ObjectId"><a href="#ObjectId" class="headerlink" title="ObjectId"></a>ObjectId</h3><p>ObjectId 是”<code>_id</code>“ 的默认类型。它设计成轻量型的，不同的机器都能用全局唯一的同种方法方便地生成它。这是MongoDB 采用ObjectId，而不是其他比较常规的做法（比如自动增加的主键）的主要原因，因为在多个服务器上同步自动增加主键值既费力还费时。MongoDB 从一开始就设计用来作为分布式数据库，处理多个节点是一个核心要求。后面会看到ObjectId 类型在分片环境中要容易生成得多。</p>
+<p>ObjectId 使用12 字节的存储空间，每个字节两位十六进制数字，是一个24 位的字符串。由于看起来很长，不少人会觉得难以处理。但关键是要知道这个长长的ObjectId 是实际存储数据的两倍长。</p>
+<p>如果快速连续创建多个ObjectId，会发现每次只有最后几位数字有变化。另外，中间的几位数字也会变化（要是在创建的过程中停顿几秒钟）。这是ObjectId 的创建方式导致的。12 字节按照如下方式生成：</p>
+<p><img src="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-_id%E5%92%8CObjectId/1.png" alt="1"></p>
+<h4 id="ObjectId生成规则"><a href="#ObjectId生成规则" class="headerlink" title="ObjectId生成规则"></a>ObjectId生成规则</h4><h5 id="4字节：UNIX时间戳"><a href="#4字节：UNIX时间戳" class="headerlink" title="4字节：UNIX时间戳"></a>4字节：UNIX时间戳</h5><p>前4 个字节是从标准纪元开始的时间戳，单位为秒。这会带来一些有用的属性。时间戳，与随后的 5 个字节组合起来，提供了秒级别的唯一性。</p>
+<p>由于时间戳在前，这意味着ObjectId 大致会按照插入的顺序排列。这对于某些方面很有用，如将其作为索引提高效率，但是这个是没有保证的，仅仅是“大致”。</p>
+<p>这4 个字节也隐含了文档创建的时间。绝大多数驱动都会公开一个方法从ObjectId 获取这个信息。</p>
+<p>因为使用的是当前时间，很多用户担心要对服务器进行时间同步。其实没有这个必要，因为时间戳的实际值并不重要，只要其总是不停增加就好了（每秒一次）。</p>
+<h5 id="3字节：表示运行MongoDB的机器"><a href="#3字节：表示运行MongoDB的机器" class="headerlink" title="3字节：表示运行MongoDB的机器"></a>3字节：表示运行MongoDB的机器</h5><p>接下来的3 字节是所在主机的唯一标识符。通常是机器主机名的散列值。这样就可以确保不同主机生成不同的ObjectId，不产生冲突。</p>
+<h5 id="2字节：表示生成此-id的进程"><a href="#2字节：表示生成此-id的进程" class="headerlink" title="2字节：表示生成此_id的进程"></a>2字节：表示生成此_id的进程</h5><p>为了确保在同一台机器上并发的多个进程产生的ObjectId 是唯一的，接下来的两字节来自产生ObjectId 的进程标识符（PID）。</p>
+<h5 id="3字节：由一个随机数开始的计数器生成的值"><a href="#3字节：由一个随机数开始的计数器生成的值" class="headerlink" title="3字节：由一个随机数开始的计数器生成的值"></a>3字节：由一个随机数开始的计数器生成的值</h5><p>前9 字节保证了同一秒钟不同机器不同进程产生的ObjectId 是唯一的。后3 字节就是一个自动增加的计数器，确保相同进程同一秒产生的ObjectId 也是不一样的。同一秒钟最多允许每个进程拥有2563（16 777 216）个不同的ObjectId。</p>
+<h3 id="自动生成-id"><a href="#自动生成-id" class="headerlink" title="自动生成_id"></a>自动生成_id</h3><p>前面讲到，如果插入文档的时候没有”<code>_id</code>“ 键，系统会自动帮你创建一个。可以由MongoDB 服务器来做这件事情，但通常会在客户端由驱动程序完成。理由如下。</p>
+<p>虽然ObjectId 设计成轻量型的，易于生成，但是毕竟生成的时候还是产生开销。在客户端生成体现了MongoDB 的设计理念：能从服务器端转移到驱动程序来做的事，就尽量转移。这种理念背后的原因是，即便是像MongoDB 这样的可扩展数据库，扩展应用层也要比扩展数据库层容易得多。将事务交由客户端来处理，就减轻了数据库扩展的负担。</p>
+<p>在客户端生成ObjectId，驱动程序能够提供更加丰富的API。例如，驱动程序可以有自己的insert 方法，可以返回生成的ObjectId，也可以直接将其插入文档。如果驱动程序允许服务器生成ObjectId，那么将需要单独的查询，以确定插入的文档中的”<code>_id</code>“ 值。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5/" class="post-title-link" itemprop="url">MongoDB-常用命令-增删改查</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-31 10:21:13" itemprop="dateCreated datePublished" datetime="2016-12-31T10:21:13+08:00">2016-12-31</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h2><p><code>db.collection.insert()</code></p>
+<p><img src="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5/%E6%8F%92%E5%85%A5.png" alt="插入"></p>
+<p>存储在MongoDB集合中的每个文档（document）都有一个默认的主键_id，这个主键名称是固定的，它可以是MongoDB支持的任何数据类型，默认是ObjectId</p>
+<h2 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h2><p><code>db.collection.find()</code></p>
+<h3 id="数组查询"><a href="#数组查询" class="headerlink" title="数组查询"></a>数组查询</h3><table>
+<thead>
+<tr>
+<th align="center">名称</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$all</td>
+<td align="center">通过多个元素来匹配数组。</td>
+</tr>
+<tr>
+<td align="center">$size</td>
+<td align="center">查询特定长度的数组。</td>
+</tr>
+<tr>
+<td align="center">$slice</td>
+<td align="center">返回数组的一个子集合。</td>
+</tr>
+</tbody></table>
+<h4 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h4><p><code>db.food.find()</code></p>
+<p>数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;001&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;香蕉&quot;, &quot;橘子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;002&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;003&quot;, &quot;fruits&quot; : [ &quot;圣女果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="all"><a href="#all" class="headerlink" title="$all"></a>$all</h5><p>查询水果列表中既有苹果又有桃子的食品：<code>db.food.find(&#123;&quot;fruits&quot;:&#123;&quot;$all&quot;:[&quot;苹果&quot;,&quot;桃子&quot;]&#125;&#125;) --这是AND的关系</code></p>
+<p>结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;002&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
+
+<p>查询水果列表中下标为1的元素是梨子的食品：<code>db.food.find(&#123;&quot;fruits.1&quot;:&quot;梨子&quot;&#125;)</code></p>
+<p>结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;002&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;003&quot;, &quot;fruits&quot; : [ &quot;圣女果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="size"><a href="#size" class="headerlink" title="$size"></a>$size</h5><p>数组包含3个元素的文档：<code>db.food.find(&#123;&quot;fruits&quot;:&#123;&quot;$size&quot;:3&#125;&#125;)</code></p>
+<p>结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;001&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;香蕉&quot;, &quot;橘子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="slice"><a href="#slice" class="headerlink" title="$slice"></a>$slice</h5><p>返回lists后3个元素：<code>db.test.find(&#123;&#125;,&#123;&quot;lists&quot;:&#123;&quot;$slice&quot;:-3&#125;&#125;)</code></p>
+<p>结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;001&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;香蕉&quot;, &quot;橘子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;002&quot;, &quot;fruits&quot; : [ &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;003&quot;, &quot;fruits&quot; : [ &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="修改"><a href="#修改" class="headerlink" title="修改"></a>修改</h2><h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><p><code>db.collection.update(&lt;query&gt;, &lt;update&gt;, upsert:&lt;boolean&gt;, multi:&lt;boolean&gt;) </code></p>
+<table>
+<thead>
+<tr>
+<th align="center">参数</th>
+<th align="center">类型</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">query</td>
+<td align="center">document</td>
+<td align="center">要修改哪些的查询条件，类似于SQL 的 where</td>
+</tr>
+<tr>
+<td align="center">update</td>
+<td align="center">document</td>
+<td align="center">要修改的字段对应的值</td>
+</tr>
+<tr>
+<td align="center">upsert</td>
+<td align="center">boolean</td>
+<td align="center">可选的，默认值是false。如果根据查询条件没找到对应的文档，如果设置为true，相当于执行insert，如果设置为false,不做任何的操作。</td>
+</tr>
+<tr>
+<td align="center">multi</td>
+<td align="center">boolean</td>
+<td align="center">可选的，默认值是false。如果根据查询条件找到对应的多条记录是，如果设置为false时，只修改第一条，如果设置为true，全部更新。</td>
+</tr>
+</tbody></table>
+<h3 id="对单个字段进行修改"><a href="#对单个字段进行修改" class="headerlink" title="对单个字段进行修改"></a>对单个字段进行修改</h3><table>
+<thead>
+<tr>
+<th align="center">名称</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$inc</td>
+<td align="center">根据要添加的值递增该字段的值。</td>
+</tr>
+<tr>
+<td align="center">$mul</td>
+<td align="center">将该字段的值乘以指定的值</td>
+</tr>
+<tr>
+<td align="center">$rename</td>
+<td align="center">重命名字段</td>
+</tr>
+<tr>
+<td align="center">$setOnInsert</td>
+<td align="center">操作时,操作给相应的字段赋值</td>
+</tr>
+<tr>
+<td align="center">$set</td>
+<td align="center">用来指定一个键的值，如果不存在则创建它</td>
+</tr>
+<tr>
+<td align="center">$unset</td>
+<td align="center">用来指定一个键的值，如果不存在不创建创建它</td>
+</tr>
+<tr>
+<td align="center">$min</td>
+<td align="center">只有当指定的值小于现有字段值时才更新该字段。</td>
+</tr>
+<tr>
+<td align="center">$max</td>
+<td align="center">只有当指定的值大于现有字段值时才更新该字段。</td>
+</tr>
+<tr>
+<td align="center">$currentDate</td>
+<td align="center">设置当前日期字段的值，或者作为一个日期或时间戳。</td>
+</tr>
+</tbody></table>
+<h3 id="对数组进行修改"><a href="#对数组进行修改" class="headerlink" title="对数组进行修改"></a>对数组进行修改</h3><table>
+<thead>
+<tr>
+<th align="center">名称</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$</td>
+<td align="center">作为一个占位符的更新与查询条件在一个更新的第一要素</td>
+</tr>
+<tr>
+<td align="center">$addToSet</td>
+<td align="center">将元素添加到数组中，仅当它们在集合中不存在</td>
+</tr>
+<tr>
+<td align="center">$pop</td>
+<td align="center">删除数组的第一个或最后一个项</td>
+</tr>
+<tr>
+<td align="center">$pullAll</td>
+<td align="center">从数组中移除所有匹配值</td>
+</tr>
+<tr>
+<td align="center">$pull</td>
+<td align="center">移除匹配指定查询的所有数组元素</td>
+</tr>
+<tr>
+<td align="center">$pushAll</td>
+<td align="center">将所有值添加到数组中（Deprecated since version 2.4: Use the $push operator with $each instead.）</td>
+</tr>
+<tr>
+<td align="center">$push</td>
+<td align="center">将值添加到数组中，如果有的数组存在则向数组末尾添加该值，如果数组不存在则创建该数组并保存该值</td>
+</tr>
+</tbody></table>
+<h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><h3 id="删除文档"><a href="#删除文档" class="headerlink" title="删除文档"></a>删除文档</h3><p><code>db.collection.remove()</code></p>
+<p>删除orders集合的数据，集合还存在，索引都还存在</p>
+<h3 id="删除集合"><a href="#删除集合" class="headerlink" title="删除集合"></a>删除集合</h3><p><code>db.collection.drop()</code></p>
+<p>集合、索引都不存在了</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/30/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E6%95%B0%E7%BB%84-elemMatch/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/30/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E6%95%B0%E7%BB%84-elemMatch/" class="post-title-link" itemprop="url">MongoDB-elemMatch</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-30 17:45:41" itemprop="dateCreated datePublished" datetime="2016-12-30T17:45:41+08:00">2016-12-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><code>$elemMatch</code>是用来匹配数组内的元素的。</p>
+<p>与<code>.</code>容易产生混淆。</p>
+<h3 id="elemMatch与-对比"><a href="#elemMatch与-对比" class="headerlink" title="$elemMatch与.对比"></a><code>$elemMatch</code>与<code>.</code>对比</h3><h4 id="初始化源数据"><a href="#初始化源数据" class="headerlink" title="初始化源数据"></a>初始化源数据</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:11&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:12&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2&quot;:13&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:14&#125;]&#125;)</span><br><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:21&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:22&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2&quot;:23&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:24&#125;]&#125;)</span><br><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:31&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:32&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2</span><br><span class="line">&quot;:33&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:34&#125;]&#125;)</span><br><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:41&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:42&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2&quot;:43&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:44&#125;]&#125;)</span><br><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:51&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:52&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2&quot;:53&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:54&#125;]&#125;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="用-查询"><a href="#用-查询" class="headerlink" title="用.查询"></a>用<code>.</code>查询</h4><p><code>db.em.find(&#123;&quot;arr&quot;:&#123;$elemMatch: &#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:32&#125;&#125;&#125;)</code></p>
+<p>无结果集</p>
+<h4 id="用-elemMatch查询"><a href="#用-elemMatch查询" class="headerlink" title="用$elemMatch查询"></a>用<code>$elemMatch</code>查询</h4><p><code>db.em.find(&#123;&quot;arr.e1&quot;:&quot;a&quot;,&quot;arr.e2&quot;:32&#125;)</code></p>
+<p>查询结果如下：<br><img src="/2016/12/30/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E6%95%B0%E7%BB%84-elemMatch/1.png" alt="1"></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
+<li><code>$elemMatch</code>：数组内单个元素匹配则符合</li>
+<li><code>.</code>：数组内多个元素能分别匹配上条件即符合</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%85%83%E6%95%B0%E6%8D%AE-information_schema%E5%BA%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -757,294 +1218,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.3.3-%E5%88%86%E8%A7%A3%E5%85%B3%E8%81%94%E6%9F%A5%E8%AF%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.3.3-%E5%88%86%E8%A7%A3%E5%85%B3%E8%81%94%E6%9F%A5%E8%AF%A2/" class="post-title-link" itemprop="url">高性能MySQL-6.3.3-分解关联查询</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-26 22:49:12" itemprop="dateCreated datePublished" datetime="2016-12-26T22:49:12+08:00">2016-12-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>很多高性能的应用都会对关联查询进行分解。简单地，可以对每一个表进行一次单表查询，然后将结果在应用程序中进行关联。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM tag</span><br><span class="line">  JOIN tag_post ON tag_post.tag_id=tag.id</span><br><span class="line">  JOIN post ON tag_post.post_id=post.id</span><br><span class="line">WHERE tag.tag=&#x27;mysql&#x27;;</span><br></pre></td></tr></table></figure>
-<p>可以分解成下面这些查询来代替。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM tag WHERE tag=&#x27;mysql&#x27;;</span><br><span class="line">SELECT * FROM tag_post WHERE tag_id=1234;</span><br><span class="line">SELECT * FROM post WHERE post.id in (123,456,567,9098,8904);</span><br></pre></td></tr></table></figure>
-
-<p>用分解关联查询的方式重构查询有如下的优势：</p>
-<ul>
-<li>让缓存的效率更高。许多应用程序可以方便地缓存单表查询对应的结果对象。例如，上面查询中的tag已经被缓存了，那么应用就可以跳过第一个查询。再例如，应用中已经缓存了ID为123、567、9098的内容，那么第三个查询的IN()中就可以少几个ID。另外，对MySQL的查询缓存来说，如果关联中的某个表发生了变化，那么就无法使用查询缓存了，而拆分后，如果某个表很少改变，那么基于该表的查询就可以重复利用查询缓存结果了。</li>
-<li>将查询分解后，执行单个查询可以减少锁的竞争。</li>
-<li>在应用层做关联，可以更容易对数据库进行拆分，更容易做到高性能和可扩展。</li>
-<li>查询本身效率也可能会有所提升。这个例子中，使用IN()代替关联查询，可以让MySQL按照ID顺序进行查询，这可能比随机的关联要更高效。</li>
-<li>可以减少冗余数据的查询。在应用层做关联查询，意味着对于某条记录应用只需要查询一次，而在数据库中做关联查询，则可能需要重复访问一部分数据。从这点看，这样的重构还可能会减少网络和内存的消耗。</li>
-<li>更进一步，这样做相当于在应用中实现了哈希关联，而不是使用MySQL的嵌套循环关联。某些场景哈希关联的效率要高很多。</li>
-</ul>
-<p>很多场景下，通过重构查询将关联放到应用程序中将会更加高效，这样的场景有很多，比如：当应用能够方便地缓存单个查询的结果的时候、当可以将数据分布到不同的MySQL服务器上的时候、当能够使用IN()的方式代替关联查询的时候、当查询中使用同一个数据表的时候。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.3.2-%E5%88%87%E5%88%86%E6%9F%A5%E8%AF%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.3.2-%E5%88%87%E5%88%86%E6%9F%A5%E8%AF%A2/" class="post-title-link" itemprop="url">高性能MySQL-6.3.2-切分查询</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-26 22:42:33" itemprop="dateCreated datePublished" datetime="2016-12-26T22:42:33+08:00">2016-12-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>有时候对于一个大查询我们需要“分而治之”，将大查询切分成小查询，每个查询功能完全一样，只完成一小部分，每次只返回一小部分查询结果。</p>
-<p>删除旧的数据就是一个很好的例子。定期地清除大量数据时，如果用一个大的语句一次性完成的话，则可能需要一次锁住很多数据，占满整个事务日志、耗尽系统资源、阻塞很多小的但重要的查询。将一个大的DELETE语句切分成多个较小的查询可以尽可能小地影响MySQL性能，同时还可以减少MySQL复制的延迟。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.3.1-%E4%B8%80%E4%B8%AA%E5%A4%8D%E6%9D%82%E6%9F%A5%E8%AF%A2%E8%BF%98%E6%98%AF%E5%A4%9A%E4%B8%AA%E7%AE%80%E5%8D%95%E6%9F%A5%E8%AF%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.3.1-%E4%B8%80%E4%B8%AA%E5%A4%8D%E6%9D%82%E6%9F%A5%E8%AF%A2%E8%BF%98%E6%98%AF%E5%A4%9A%E4%B8%AA%E7%AE%80%E5%8D%95%E6%9F%A5%E8%AF%A2/" class="post-title-link" itemprop="url">高性能MySQL-6.3.1-一个复杂查询还是多个简单查询</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-26 22:28:29" itemprop="dateCreated datePublished" datetime="2016-12-26T22:28:29+08:00">2016-12-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>设计查询的时候一个需要考虑的重要问题是，是否需要将一个复杂的查询分成多个简单的查询。在传统实现中，总是抢到需要数据库层完成尽可能多的工作，这样做的逻辑在于以前总是认为网络通信、查询解析和优化是一件代价很高的事情。</p>
-<p>但是这样的想法对于MySQL并不适用，MySQL从设计上让连接和断开连接都很轻量级，在返回一个小的查询结果方面很高效。现代的网络速度比之前要快很多，无论是贷款还是延迟。在某些版本的MySQL上，即使在一个通用服务器上，也能够运行每秒超过10万的查询，即使是一个千兆网卡也能轻松满足每秒超过2000次的查询。所以运行多个小查询现在已经不是大问题了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.3-%E9%87%8D%E6%9E%84%E6%9F%A5%E8%AF%A2%E7%9A%84%E6%96%B9%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/6.3-%E9%87%8D%E6%9E%84%E6%9F%A5%E8%AF%A2%E7%9A%84%E6%96%B9%E5%BC%8F/" class="post-title-link" itemprop="url">高性能MySQL-6.3-重构查询的方式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-26 22:21:31" itemprop="dateCreated datePublished" datetime="2016-12-26T22:21:31+08:00">2016-12-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在优化有问题的查询时，目标应该是找到一个更优的方法获得实际需要的结果————而不一定总是需要从MySQL获取一摸一样的结果集。有时候，可以将查询转换一种写法让其返回一样的结果，但是性能更好。但也可以通过修改应用代码，用另一种方式完成查询，最终达到一样的目的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/24/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><span class="page-number current">25</span><a class="page-number" href="/page/26/">26</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/26/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/24/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><span class="page-number current">25</span><a class="page-number" href="/page/26/">26</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/26/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1112,7 +1289,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1125,7 +1302,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

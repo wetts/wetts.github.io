@@ -188,6 +188,399 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-11.%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-11.%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/" class="post-title-link" itemprop="url">Java-Reflection-11.动态代理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-09 17:53:42" itemprop="dateCreated datePublished" datetime="2016-12-09T17:53:42+08:00">2016-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-11-dynamic-proxies/">http://ifeve.com/java-reflection-11-dynamic-proxies/</a></p>
+<p>利用Java反射机制你可以在运行期动态的创建接口的实现。java.lang.reflect.Proxy类就可以实现这一功能。这个类的名字（译者注：Proxy意思为代理）就是为什么把动态接口实现叫做动态代理。动态的代理的用途十分广泛，比如数据库连接和事物管理（transaction management）还有单元测试时用到的动态mock对象以及AOP中的方法拦截功能等等都使用到了动态代理。</p>
+<h2 id="创建代理"><a href="#创建代理" class="headerlink" title="创建代理"></a>创建代理</h2><p>你可以通过使用Proxy.newProxyInstance()方法创建动态代理。newProxyInstance()方法有三个参数：</p>
+<ol>
+<li>类加载器（ClassLoader）用来加载动态代理类。</li>
+<li>一个要实现的接口的数组。</li>
+<li>一个InvocationHandler把所有方法的调用都转到代理上。</li>
+</ol>
+<p>如下例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">InvocationHandler handler = new MyInvocationHandler();</span><br><span class="line">MyInterface proxy = (MyInterface) Proxy.newProxyInstance(</span><br><span class="line">                            MyInterface.class.getClassLoader(),</span><br><span class="line">                            new Class[] &#123; MyInterface.class &#125;,</span><br><span class="line">                            handler);</span><br></pre></td></tr></table></figure>
+<p>在执行完这段代码之后，变量proxy包含一个MyInterface接口的的动态实现。所有对proxy的调用都被转向到实现了InvocationHandler接口的handler上。有关InvocationHandler的内容会在下一段介绍。</p>
+<h2 id="InvocationHandler接口"><a href="#InvocationHandler接口" class="headerlink" title="InvocationHandler接口"></a>InvocationHandler接口</h2><p>在前面提到了当你调用Proxy.newProxyInstance()方法时，你必须要传入一个InvocationHandler接口的实现。所有对动态代理对象的方法调用都会被转向到InvocationHandler接口的实现上，下面是InvocationHandler接口的定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public interface InvocationHandler&#123;</span><br><span class="line"></span><br><span class="line">  Object invoke(Object proxy, Method method, Object[] args) throws Throwable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面是它的实现类的定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class MyInvocationHandler implements InvocationHandler&#123;</span><br><span class="line"></span><br><span class="line">  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">    //do something &quot;dynamic&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>传入invoke()方法中的proxy参数是实现要代理接口的动态代理对象。通常你是不需要他的。</p>
+<p>invoke()方法中的Method对象参数代表了被动态代理的接口中要调用的方法，从这个method对象中你可以获取到这个方法名字，方法的参数，参数类型等等信息。关于这部分内容可以查阅之前有关Method的文章。</p>
+<p>Object数组参数包含了被动态代理的方法需要的方法参数。注意：原生数据类型（如int，long等等）方法参数传入等价的包装对象（如Integer， Long等等）。</p>
+<h2 id="常见用例"><a href="#常见用例" class="headerlink" title="常见用例"></a>常见用例</h2><p>动态代理常被应用到以下几种情况中</p>
+<ul>
+<li>数据库连接以及事物管理</li>
+<li>单元测试中的动态Mock对象</li>
+<li>自定义工厂与依赖注入（DI）容器之间的适配器</li>
+<li>类似AOP的方法拦截器</li>
+</ul>
+<h3 id="数据库连接以及事物管理"><a href="#数据库连接以及事物管理" class="headerlink" title="数据库连接以及事物管理"></a>数据库连接以及事物管理</h3><p>Spring框架中有一个事物代理可以让你提交/回滚一个事物。它的具体原理在 <a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-persistence/advanced-connection-and-transaction-demarcation-and-propagation.html">Advanced Connection and Transaction Demarcation and Propagation</a>一文中有详细描述，所以在这里我就简短的描述一下，方法调用序列如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">web controller --&gt; proxy.execute(...);</span><br><span class="line"></span><br><span class="line">  proxy --&gt; connection.setAutoCommit(false);</span><br><span class="line">  proxy --&gt; realAction.execute();</span><br><span class="line">    realAction does database work</span><br><span class="line">  proxy --&gt; connection.commit();</span><br></pre></td></tr></table></figure>
+
+<h3 id="单元测试中的动态Mock对象"><a href="#单元测试中的动态Mock对象" class="headerlink" title="单元测试中的动态Mock对象"></a>单元测试中的动态Mock对象</h3><p><a target="_blank" rel="noopener" href="http://butterfly.jenkov.com/">Butterfly Testing</a>工具通过动态代理来动态实现桩（stub），mock和代理类来进行单元测试。在测试类A的时候如果用到了接口B，你可以传给A一个实现了B接口的mock来代替实际的B接口实现。所有对接口B的方法调用都会被记录，你可以自己来设置B的mock中方法的返回值。</p>
+<p>而且Butterfly Testing工具可以让你在B的mock中包装真实的B接口实现，这样所有调用mock的方法都会被记录，然后把调用转向到真实的B接口实现。这样你就可以检查B中方法真实功能的调用情况。例如：你在测试DAO时你可以把真实的数据库连接包装到mock中。这样的话就与真实的情况一样，DAO可以在数据库中读写数据，mock会把对数据库的读写操作指令都传给数据库，你可以通过mock来检查DAO是不是以正确的方式来使用数据库连接，比如你可以检查是否调用了connection.close()方法。这种情况是不能简单的依靠调用DAO方法的返回值来判断的。</p>
+<h3 id="自定义工厂与依赖注入（DI）容器之间的适配器"><a href="#自定义工厂与依赖注入（DI）容器之间的适配器" class="headerlink" title="自定义工厂与依赖注入（DI）容器之间的适配器"></a>自定义工厂与依赖注入（DI）容器之间的适配器</h3><p>依赖注入容器<a target="_blank" rel="noopener" href="http://butterfly.jenkov.com/">Butterfly Container</a>有一个非常强大的特性可以让你把整个容器注入到这个容器生成的bean中。但是，如果你不想依赖这个容器的接口，这个容器可以适配你自己定义的工厂接口。你仅仅需要这个接口而不是接口的实现，这样这个工厂接口和你的类看起来就像这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public interface IMyFactory &#123;</span><br><span class="line"></span><br><span class="line">  Bean bean1();</span><br><span class="line">  Person person();</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public class MyAction&#123;</span><br><span class="line"></span><br><span class="line">  protected IMyFactory myFactory= null;</span><br><span class="line"></span><br><span class="line">  public MyAction(IMyFactory factory)&#123;</span><br><span class="line">    this.myFactory = factory;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void execute()&#123;</span><br><span class="line">    Bean bean = this.myFactory.bean();</span><br><span class="line">    Person person = this.myFactory.person();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当MyAction类调用通过容器注入到构造方法中的IMyFactory实例的方法时，这个方法调用实际先调用了IContainer.instance()方法，这个方法可以让你从容器中获取实例。这样这个对象可以把Butterfly Container容器在运行期当成一个工厂使用，比起在创建这个类的时候进行注入，这种方式显然更好。而且这种方法没有依赖到Butterfly Container中的任何接口。</p>
+<h3 id="类似AOP的方法拦截器"><a href="#类似AOP的方法拦截器" class="headerlink" title="类似AOP的方法拦截器"></a>类似AOP的方法拦截器</h3><p>Spring框架可以拦截指定bean的方法调用，你只需提供这个bean继承的接口。Spring使用动态代理来包装bean。所有对bean中方法的调用都会被代理拦截。代理可以判断在调用实际方法之前是否需要调用其他方法或者调用其他对象的方法，还可以在bean的方法调用完毕之后再调用其他的代理方法。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-10.%E6%95%B0%E7%BB%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-10.%E6%95%B0%E7%BB%84/" class="post-title-link" itemprop="url">Java-Reflection-10.数组</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-09 17:45:59" itemprop="dateCreated datePublished" datetime="2016-12-09T17:45:59+08:00">2016-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-10-arrays/">http://ifeve.com/java-reflection-10-arrays/</a></p>
+<p>利用反射机制来处理数组会有点棘手。尤其是当你想要获得一个数组的Class对象，比如int[]等等。本节会讨论通过反射机制创建数组和如何获取数组的Class对象。</p>
+<p>注意：在阅读Eyal Lupu的博客文章“<a target="_blank" rel="noopener" href="http://jroller.com/eyallupu/entry/two_side_notes_about_arrays">Two Side Notes About Arrays and Reflection</a>”之后对本文的内容做了更新。目前这个版本参考了这篇博文里面的内容。</p>
+<h2 id="java-lang-reflect-Array"><a href="#java-lang-reflect-Array" class="headerlink" title="java.lang.reflect.Array"></a>java.lang.reflect.Array</h2><p>Java反射机制通过java.lang.reflect.Array这个类来处理数组。不要把这个类与Java集合套件（Collections suite）中的java.util.Arrays混淆，java.util.Arrays是一个提供了遍历数组，将数组转化为集合等工具方法的类。</p>
+<h3 id="创建一个数组"><a href="#创建一个数组" class="headerlink" title="创建一个数组"></a>创建一个数组</h3><p>Java反射机制通过java.lang.reflect.Array类来创建数组。下面是一个如何创建数组的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int[] intArray = (int[]) Array.newInstance(int.class, 3);</span><br></pre></td></tr></table></figure>
+<p>这个例子创建一个int类型的数组。Array.newInstance()方法的第一个参数表示了我们要创建一个什么类型的数组。第二个参数表示了这个数组的空间是多大。</p>
+<h3 id="访问一个数组"><a href="#访问一个数组" class="headerlink" title="访问一个数组"></a>访问一个数组</h3><p>通过Java反射机制同样可以访问数组中的元素。具体可以使用Array.get(…)和Array.set(…)方法来访问。下面是一个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">int[] intArray = (int[]) Array.newInstance(int.class, 3);</span><br><span class="line"></span><br><span class="line">Array.set(intArray, 0, 123);</span><br><span class="line">Array.set(intArray, 1, 456);</span><br><span class="line">Array.set(intArray, 2, 789);</span><br><span class="line"></span><br><span class="line">System.out.println(&quot;intArray[0] = &quot; + Array.get(intArray, 0));</span><br><span class="line">System.out.println(&quot;intArray[1] = &quot; + Array.get(intArray, 1));</span><br><span class="line">System.out.println(&quot;intArray[2] = &quot; + Array.get(intArray, 2));</span><br></pre></td></tr></table></figure>
+<p>这个例子会输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">intArray[0] = 123</span><br><span class="line">intArray[1] = 456</span><br><span class="line">intArray[2] = 789</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取数组的Class对象"><a href="#获取数组的Class对象" class="headerlink" title="获取数组的Class对象"></a>获取数组的Class对象</h3><p>在我编写<a target="_blank" rel="noopener" href="http://butterfly.jenkov.com/">Butterfly DI Container</a>的脚本语言时，当我想通过反射获取数组的Class对象时遇到了一点麻烦。如果不通过反射的话你可以这样来获取数组的Class对象：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class stringArrayClass = String[].class;</span><br></pre></td></tr></table></figure>
+<p>如果使用Class.forName()方法来获取Class对象则不是那么简单。比如你可以像这样来获得一个原生数据类型（primitive）int数组的Class对象：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class intArray = Class.forName(&quot;[I&quot;);</span><br></pre></td></tr></table></figure>
+<p>在JVM中字母I代表int类型，左边的‘[’代表我想要的是一个int类型的数组，这个规则同样适用于其他的原生数据类型。<br>对于普通对象类型的数组有一点细微的不同：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class stringArrayClass = Class.forName(&quot;[Ljava.lang.String;&quot;);</span><br></pre></td></tr></table></figure>
+<p>注意‘[L’的右边是类名，类名的右边是一个‘;’符号。这个的含义是一个指定类型的数组。</p>
+<p>需要注意的是，你不能通过Class.forName()方法获取一个原生数据类型的Class对象。下面这两个例子都会报ClassNotFoundException：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class intClass1 = Class.forName(&quot;I&quot;);</span><br><span class="line">Class intClass2 = Class.forName(&quot;int&quot;);</span><br></pre></td></tr></table></figure>
+<p>我通常会用下面这个方法来获取普通对象以及原生对象的Class对象：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public Class getClass(String className)&#123;</span><br><span class="line"></span><br><span class="line">  if(&quot;int&quot; .equals(className)) return int .class;</span><br><span class="line">  if(&quot;long&quot;.equals(className)) return long.class;</span><br><span class="line">  ...</span><br><span class="line">  return Class.forName(className);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一旦你获取了类型的Class对象，你就有办法轻松的获取到它的数组的Class对象，你可以通过指定的类型创建一个空的数组，然后通过这个空的数组来获取数组的Class对象。这样做有点讨巧，不过很有效。如下例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class theClass = getClass(theClassName);</span><br><span class="line">Class stringArrayClass = Array.newInstance(theClass, 0).getClass();</span><br></pre></td></tr></table></figure>
+<p>这是一个特别的方式来获取指定类型的指定数组的Class对象。无需使用类名或其他方式来获取这个Class对象。</p>
+<p>为了确保Class对象是不是代表一个数组，你可以使用Class.isArray()方法来进行校验：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class stringArrayClass = Array.newInstance(String.class, 0).getClass();</span><br><span class="line">System.out.println(&quot;is array: &quot; + stringArrayClass.isArray());</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取数组的成员类型"><a href="#获取数组的成员类型" class="headerlink" title="获取数组的成员类型"></a>获取数组的成员类型</h3><p>一旦你获取了一个数组的Class对象，你就可以通过Class.getComponentType()方法获取这个数组的成员类型。成员类型就是数组存储的数据类型。例如，数组int[]的成员类型就是一个Class对象int.class。String[]的成员类型就是java.lang.String类的Class对象。</p>
+<p>下面是一个访问数组成员类型的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String[] strings = new String[3];</span><br><span class="line">Class stringArrayClass = strings.getClass();</span><br><span class="line">Class stringArrayComponentType = stringArrayClass.getComponentType();</span><br><span class="line">System.out.println(stringArrayComponentType);</span><br></pre></td></tr></table></figure>
+<p>下面这个例子会打印“java.lang.String”代表这个数组的成员类型是字符串。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-8.%E6%B3%A8%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-8.%E6%B3%A8%E8%A7%A3/" class="post-title-link" itemprop="url">Java-Reflection-8.注解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-09 17:16:02" itemprop="dateCreated datePublished" datetime="2016-12-09T17:16:02+08:00">2016-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-8-annotation/">http://ifeve.com/java-reflection-8-annotation/</a></p>
+<p>利用Java反射机制可以在运行期获取Java类的注解信息。</p>
+<h2 id="什么是注解"><a href="#什么是注解" class="headerlink" title="什么是注解"></a>什么是注解</h2><p>注解是Java 5的一个新特性。注解是插入你代码中的一种注释或者说是一种元数据（meta data）。这些注解信息可以在编译期使用预编译工具进行处理（pre-compiler tools），也可以在运行期使用Java反射机制进行处理。下面是一个类注解的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@MyAnnotation(name=&quot;someName&quot;,  value = &quot;Hello World&quot;)</span><br><span class="line">public class TheClass &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>在TheClass类定义的上面有一个@MyAnnotation的注解。注解的定义与接口的定义相似，下面是MyAnnotation注解的定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@Retention(RetentionPolicy.RUNTIME)</span><br><span class="line">@Target(ElementType.TYPE)</span><br><span class="line">public @interface MyAnnotation &#123;</span><br><span class="line"></span><br><span class="line">  public String name();</span><br><span class="line"></span><br><span class="line">  public String value();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在interface前面的@符号表名这是一个注解，一旦你定义了一个注解之后你就可以将其应用到你的代码中，就像之前我们的那个例子那样。</p>
+<p>在注解定义中的两个指示<code>@Retention(RetentionPolicy.RUNTIME)</code>和<code>@Target(ElementType.TYPE)</code>，说明了这个注解该如何使用。</p>
+<p><code>@Retention(RetentionPolicy.RUNTIME)</code>表示这个注解可以在运行期通过反射访问。如果你没有在注解定义的时候使用这个指示那么这个注解的信息不会保留到运行期，这样反射就无法获取它的信息。</p>
+<p><code>@Target(ElementType.TYPE)</code>表示这个注解只能用在类型上面（比如类跟接口）。你同样可以把Type改为Field或者Method，或者你可以不用这个指示，这样的话你的注解在类，方法和变量上就都可以使用了。</p>
+<p>关于Java注解更详细的讲解可以访问<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java/annotations.html">Java Annotations tutorial</a>。</p>
+<h2 id="类注解"><a href="#类注解" class="headerlink" title="类注解"></a>类注解</h2><p>你可以在运行期访问类，方法或者变量的注解信息，下是一个访问类注解的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Class aClass = TheClass.class;</span><br><span class="line">Annotation[] annotations = aClass.getAnnotations();</span><br><span class="line"></span><br><span class="line">for(Annotation annotation : annotations)&#123;</span><br><span class="line">    if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">        MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">        System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">        System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你还可以像下面这样指定访问一个类的注解：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Class aClass = TheClass.class;</span><br><span class="line">Annotation annotation = aClass.getAnnotation(MyAnnotation.class);</span><br><span class="line"></span><br><span class="line">if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">    MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">    System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">    System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="方法注解"><a href="#方法注解" class="headerlink" title="方法注解"></a>方法注解</h2><p>下面是一个方法注解的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class TheClass &#123;</span><br><span class="line"></span><br><span class="line">  @MyAnnotation(name=&quot;someName&quot;,  value = &quot;Hello World&quot;)</span><br><span class="line">  public void doSomething()&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你可以像这样访问方法注解：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Method method = ... //获取方法对象</span><br><span class="line">Annotation[] annotations = method.getDeclaredAnnotations();</span><br><span class="line"></span><br><span class="line">for(Annotation annotation : annotations)&#123;</span><br><span class="line">    if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">        MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">        System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">        System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你可以像这样访问指定的方法注解：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Method method = ... // 获取方法对象</span><br><span class="line">Annotation annotation = method.getAnnotation(MyAnnotation.class);</span><br><span class="line"></span><br><span class="line">if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">    MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">    System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">    System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="参数注解"><a href="#参数注解" class="headerlink" title="参数注解"></a>参数注解</h2><p>方法参数也可以添加注解，就像下面这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class TheClass &#123;</span><br><span class="line"></span><br><span class="line">  public static void doSomethingElse(@MyAnnotation(name=&quot;aName&quot;, value=&quot;aValue&quot;) String parameter)&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你可以通过Method对象来访问方法参数注解：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Method method = ... //获取方法对象</span><br><span class="line">Annotation[][] parameterAnnotations = method.getParameterAnnotations();</span><br><span class="line">Class[] parameterTypes = method.getParameterTypes();</span><br><span class="line"></span><br><span class="line">int i=0;</span><br><span class="line">for(Annotation[] annotations : parameterAnnotations)&#123;</span><br><span class="line">  Class parameterType = parameterTypes[i++];</span><br><span class="line"></span><br><span class="line">  for(Annotation annotation : annotations)&#123;</span><br><span class="line">    if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">        MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">        System.out.println(&quot;param: &quot; + parameterType.getName());</span><br><span class="line">        System.out.println(&quot;name : &quot; + myAnnotation.name());</span><br><span class="line">        System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要注意的是Method.getParameterAnnotations()方法返回一个注解类型的二维数组，每一个方法的参数包含一个注解数组。</p>
+<h2 id="变量注解"><a href="#变量注解" class="headerlink" title="变量注解"></a>变量注解</h2><p>下面是一个变量注解的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class TheClass &#123;</span><br><span class="line"></span><br><span class="line">  @MyAnnotation(name=&quot;someName&quot;,  value = &quot;Hello World&quot;)</span><br><span class="line">  public String myField = null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你可以像这样来访问变量的注解：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Field field = ... //获取方法对象&lt;/pre&gt;</span><br><span class="line">Annotation[] annotations = field.getDeclaredAnnotations();</span><br><span class="line"></span><br><span class="line">for(Annotation annotation : annotations)&#123;</span><br><span class="line">  if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">    MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">    System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">    System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你可以像这样访问指定的变量注解：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Field field = ...//获取方法对象&lt;/pre&gt;</span><br><span class="line">Annotation annotation = field.getAnnotation(MyAnnotation.class);</span><br><span class="line"></span><br><span class="line">if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">  MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">  System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">  System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-9.%E6%B3%9B%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-9.%E6%B3%9B%E5%9E%8B/" class="post-title-link" itemprop="url">Java-Reflection-9.泛型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-09 17:16:02" itemprop="dateCreated datePublished" datetime="2016-12-09T17:16:02+08:00">2016-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-9-generics/">http://ifeve.com/java-reflection-9-generics/</a></p>
+<p>我常常在一些文章以及论坛中读到说Java泛型信息在编译期被擦除（erased）所以你无法在运行期获得有关泛型的信息。其实这种说法并不完全正确的，在一些情况下是可以在运行期获取到泛型的信息。这些情况其实覆盖了一些我们需要泛型信息的需求。在本节中我们会演示一下这些情况。</p>
+<h2 id="运用泛型反射的经验法则"><a href="#运用泛型反射的经验法则" class="headerlink" title="运用泛型反射的经验法则"></a>运用泛型反射的经验法则</h2><p>下面是两个典型的使用泛型的场景：</p>
+<ol>
+<li>声明一个需要被参数化（parameterizable）的类/接口。</li>
+<li>使用一个参数化类。</li>
+</ol>
+<p>当你声明一个类或者接口的时候你可以指明这个类或接口可以被参数化，java.util.List接口就是典型的例子。你可以运用泛型机制创建一个标明存储的是String类型list，这样比你创建一个Object的list要更好。</p>
+<p>当你想在运行期参数化类型本身，比如你想检查java.util.List类的参数化类型，你是没有办法能知道他具体的参数化类型是什么。这样一来这个类型就可以是一个应用中所有的类型。但是，当你检查一个使用了被参数化的类型的变量或者方法，你可以获得这个被参数化类型的具体参数。总之：</p>
+<p>你不能在运行期获知一个被参数化的类型的具体参数类型是什么，但是你可以在用到这个被参数化类型的方法以及变量中找到他们，换句话说就是获知他们具体的参数化类型。（意思是，虽然我们不能在运行期获取到一个泛型类的参数类型信息,但是可以通过一些有用到这个泛型类的方法或者变量中来找到他们的参数类型信息）</p>
+<p>在下面的段落中会向你演示这类情况。</p>
+<h2 id="泛型方法返回类型"><a href="#泛型方法返回类型" class="headerlink" title="泛型方法返回类型"></a>泛型方法返回类型</h2><p>如果你获得了java.lang.reflect.Method对象，那么你就可以获取到这个方法的泛型返回类型信息。如果方法是在一个被参数化类型之中（译者注：如T fun()）那么你无法获取他的具体类型，但是如果方法返回一个泛型类（译者注：如List fun()）那么你就可以获得这个泛型类的具体参数化类型。你可以在“<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-reflection/generics.html">Java Reflection: Methods</a>”中阅读到有关如何获取Method对象的相关内容。下面这个例子定义了一个类这个类中的方法返回类型是一个泛型类型：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class MyClass &#123;</span><br><span class="line"></span><br><span class="line">  protected List&lt;String&gt; stringList = ...;</span><br><span class="line"></span><br><span class="line">  public List&lt;String&gt; getStringList()&#123;</span><br><span class="line">    return this.stringList;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以获取getStringList()方法的泛型返回类型，换句话说，我们可以检测到getStringList()方法返回的是List而不仅仅只是一个List。如下例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Method method = MyClass.class.getMethod(&quot;getStringList&quot;, null);</span><br><span class="line">Type returnType = method.getGenericReturnType();</span><br><span class="line"></span><br><span class="line">if(returnType instanceof ParameterizedType)&#123;</span><br><span class="line">  ParameterizedType type = (ParameterizedType) returnType;</span><br><span class="line">  Type[] typeArguments = type.getActualTypeArguments();</span><br><span class="line">  for(Type typeArgument : typeArguments)&#123;</span><br><span class="line">    Class typeArgClass = (Class) typeArgument;</span><br><span class="line">    System.out.println(&quot;typeArgClass = &quot; + typeArgClass);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码会打印出 “typeArgClass = java.lang.String”，Type[]数组typeArguments只有一个结果 – 一个代表java.lang.String的Class类的实例。Class类实现了Type接口。</p>
+<h2 id="泛型方法参数类型"><a href="#泛型方法参数类型" class="headerlink" title="泛型方法参数类型"></a>泛型方法参数类型</h2><p>你同样可以通过反射来获取方法参数的泛型类型，下面这个例子定义了一个类，这个类中的方法的参数是一个被参数化的List：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class MyClass &#123;</span><br><span class="line"></span><br><span class="line">  protected List&lt;String&gt; stringList = ...;</span><br><span class="line"></span><br><span class="line">  public void setStringList(List&lt;String&gt; list)&#123;</span><br><span class="line">    this.stringList = list;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你可以像这样来获取方法的泛型参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">method = Myclass.class.getMethod(&quot;setStringList&quot;, List.class);</span><br><span class="line">Type[] genericParameterTypes = method.getGenericParameterTypes();</span><br><span class="line"></span><br><span class="line">for(Type genericParameterType : genericParameterTypes)&#123;</span><br><span class="line">  if(genericParameterType instanceof ParameterizedType)&#123;</span><br><span class="line">    ParameterizedType aType = (ParameterizedType) genericParameterType;</span><br><span class="line">    Type[] parameterArgTypes = aType.getActualTypeArguments();</span><br><span class="line"></span><br><span class="line">    for(Type parameterArgType : parameterArgTypes)&#123;</span><br><span class="line">      Class parameterArgClass = (Class) parameterArgType;</span><br><span class="line">      System.out.println(&quot;parameterArgClass = &quot; + parameterArgClass);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码会打印出”parameterArgType = java.lang.String”。Type[]数组parameterArgTypes只有一个结果 – 一个代表java.lang.String的Class类的实例。Class类实现了Type接口。</p>
+<h2 id="泛型变量类型"><a href="#泛型变量类型" class="headerlink" title="泛型变量类型"></a>泛型变量类型</h2><p>同样可以通过反射来访问公有（Public）变量的泛型类型，无论这个变量是一个类的静态成员变量或是实例成员变量。你可以在“<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-reflection/fields.html">Java Reflection: Fields</a>”中阅读到有关如何获取Field对象的相关内容。这是之前的一个例子，一个定义了一个名为stringList的成员变量的类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public class MyClass &#123;</span><br><span class="line"></span><br><span class="line">  public List&lt;String&gt; stringList = ...;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Field field = MyClass.class.getField(&quot;stringList&quot;);</span><br><span class="line">Type genericFieldType = field.getGenericType();</span><br><span class="line"></span><br><span class="line">if(genericFieldType instanceof ParameterizedType)&#123;</span><br><span class="line">  ParameterizedType aType = (ParameterizedType) genericFieldType;</span><br><span class="line">  Type[] fieldArgTypes = aType.getActualTypeArguments();</span><br><span class="line"></span><br><span class="line">  for(Type fieldArgType : fieldArgTypes)&#123;</span><br><span class="line">    Class fieldArgClass = (Class) fieldArgType;</span><br><span class="line">    System.out.println(&quot;fieldArgClass = &quot; + fieldArgClass);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这段代码会打印出”fieldArgClass = java.lang.String”。Type[]数组fieldArgClass只有一个结果 – 一个代表java.lang.String的Class类的实例。Class类实现了Type接口。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-7.%E7%A7%81%E6%9C%89%E5%8F%98%E9%87%8F%E5%92%8C%E7%A7%81%E6%9C%89%E6%96%B9%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -712,381 +1105,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-1.Java%E5%8F%8D%E5%B0%84%E6%8C%87%E5%8D%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-1.Java%E5%8F%8D%E5%B0%84%E6%8C%87%E5%8D%97/" class="post-title-link" itemprop="url">Java-Reflection-1.Java反射指南</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 16:36:11" itemprop="dateCreated datePublished" datetime="2016-12-09T16:36:11+08:00">2016-12-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-tutorial/">http://ifeve.com/java-reflection-tutorial/</a></p>
-<p>Java反射机制可以让我们在编译期(Compile Time)之外的运行期(Runtime)检查类，接口，变量以及方法的信息。反射还可以让我们在运行期实例化对象，调用方法，通过调用get/set方法获取变量的值。</p>
-<p>Java反射机制功能强大而且非常实用。举个例子，你可以用反射机制把Java对象映射到数据库表，就像Butterfly Persistence所做的那样，或者把脚本中的一段语句在运行期映射到相应的对象调用方法上，就像 Butterfly Container在解析它的配置脚本时所做的那样。</p>
-<p>目前在互联网上已经有不胜枚举的Java反射指南，然而大多数的指南包括Sun公司所发布的反射指南中都仅仅只是介绍了一些反射的表面内容以及它的潜能。</p>
-<p>在这个系列的文章中，我们会比其他指南更深入的去理解Java反射机制，它会阐述Java反射机制的基本原理包括如何去使用数组，注解，泛型以及动态代理还有类的动态加载以及类的重载的实现。同时也会向你展示如何实现一些比较有特性的功能，比如从一个类中读取所有的get/set方法，或者访问一个类的私有变量以及私有方法。在这个系列的指南中同时也会说明一些非反射相关的但是令人困惑的问题，比如哪些泛型信息在运行时是有效的，一些人声称所有的泛型信息在运行期都会消失，其实这是不对的。</p>
-<p>该系列文章中所描述介绍的是Java 6版本的反射机制。</p>
-<h4 id="Java反射的例子"><a href="#Java反射的例子" class="headerlink" title="Java反射的例子"></a>Java反射的例子</h4><p>下面是一个Java反射的简单例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Method[] methods = MyObject.class.getMethods();</span><br><span class="line"></span><br><span class="line">for(Method method : methods)&#123;</span><br><span class="line">    System.out.println(&quot;method = &quot; + method.getName());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在这个例子中通过调用MyObject类的class属性获取对应的Class类的对象，通过这个Class类的对象获取MyObject类中的方法集合。迭代这个方法的集合并且打印每个方法的名字。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E6%95%B4%E5%90%88Swagger2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E6%95%B4%E5%90%88Swagger2/" class="post-title-link" itemprop="url">SpringMVC-整合Swagger2</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 10:13:04" itemprop="dateCreated datePublished" datetime="2016-12-09T10:13:04+08:00">2016-12-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在SpringMVC项目中使用Swagger2。</p>
-<h2 id="添加Swagger2依赖"><a href="#添加Swagger2依赖" class="headerlink" title="添加Swagger2依赖"></a>添加Swagger2依赖</h2><p>向<code>pom.xml</code>中添加</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;io.springfox&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;springfox-swagger2&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.6.1&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;io.springfox&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;springfox-swagger-ui&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.6.1&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-
-<h2 id="创建Swagger2配置类"><a href="#创建Swagger2配置类" class="headerlink" title="创建Swagger2配置类"></a>创建Swagger2配置类</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@EnableWebMvc //NOTE: Only needed in a non-springboot application</span><br><span class="line">@EnableSwagger2</span><br><span class="line">public class MySwaggerConfig &#123;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public Docket createRestApi() &#123;</span><br><span class="line">        return new Docket(DocumentationType.SWAGGER_2)</span><br><span class="line">                .apiInfo(apiInfo())</span><br><span class="line">                .select()</span><br><span class="line">                .paths(PathSelectors.any())</span><br><span class="line">                .build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private ApiInfo apiInfo() &#123;</span><br><span class="line">        return new ApiInfoBuilder()</span><br><span class="line">                .title(&quot;SpringMVC 中使用Swagger2构建RESTful APIs&quot;)</span><br><span class="line">                .description(&quot;SpringMVC 中使用Swagger2构建RESTful APIs&quot;)</span><br><span class="line">                .termsOfServiceUrl(&quot;https://wetts.github.io/&quot;)</span><br><span class="line">                .contact(new Contact(&quot;wetts&quot;, &quot;https://wetts.github.io/&quot;, &quot;zhang.wetts@163.com&quot;))</span><br><span class="line">                .version(&quot;1.0&quot;)</span><br><span class="line">                .build();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置Spring配置文件"><a href="#配置Spring配置文件" class="headerlink" title="配置Spring配置文件"></a>配置Spring配置文件</h2><p>在SpringMVC的配置文件中添加</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean class=&quot;com.wetts.restful.demo.MySwaggerConfig&quot;&gt;&lt;/bean&gt;</span><br><span class="line"></span><br><span class="line">&lt;mvc:resources location=&quot;classpath:/META-INF/resources/&quot; mapping=&quot;swagger-ui.html&quot;/&gt;</span><br><span class="line">&lt;mvc:resources location=&quot;classpath:/META-INF/resources/webjars/&quot; mapping=&quot;/webjars/**&quot;/&gt;</span><br></pre></td></tr></table></figure>
-
-<h2 id="添加Controller中内容"><a href="#添加Controller中内容" class="headerlink" title="添加Controller中内容"></a>添加Controller中内容</h2><h3 id="Api"><a href="#Api" class="headerlink" title="@Api"></a>@Api</h3><p>用在类上，说明该类的作用</p>
-<p><code>@Api(value = &quot;UserController&quot;, description = &quot;用户相关api&quot;)</code></p>
-<h3 id="ApiOperation"><a href="#ApiOperation" class="headerlink" title="@ApiOperation"></a>@ApiOperation</h3><p>用在方法上，说明方法的作用</p>
-<p><code>@ApiOperation(value = &quot;查找用户&quot;, notes = &quot;查找用户&quot;, httpMethod = &quot;GET&quot;, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)</code></p>
-<h3 id="ApiImplicitParams"><a href="#ApiImplicitParams" class="headerlink" title="@ApiImplicitParams"></a>@ApiImplicitParams</h3><p>用在方法上包含一组参数说明</p>
-<h3 id="ApiImplicitParam"><a href="#ApiImplicitParam" class="headerlink" title="@ApiImplicitParam"></a>@ApiImplicitParam</h3><p>用在@ApiImplicitParams注解中，指定一个请求参数的各个方面</p>
-<ul>
-<li>paramType：参数放在哪个地方</li>
-<li>path（用于restful接口）–&gt;请求参数的获取：@PathVariable</li>
-<li>name：参数名</li>
-<li>dataType：参数类型</li>
-<li>required：参数是否必须传</li>
-<li>value：参数的意思</li>
-<li>defaultValue：参数的默认值<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@ApiImplicitParams(&#123;</span><br><span class="line">        @ApiImplicitParam(name = &quot;id&quot;, value = &quot;唯一id&quot;, required = true, dataType = &quot;Long&quot;, paramType = &quot;path&quot;),</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="ApiResponses"><a href="#ApiResponses" class="headerlink" title="@ApiResponses"></a>@ApiResponses</h3><p>用于表示一组响应</p>
-<h3 id="ApiResponse"><a href="#ApiResponse" class="headerlink" title="@ApiResponse"></a>@ApiResponse</h3><p>用在@ApiResponses中，一般用于表达一个错误的响应信息</p>
-<ul>
-<li>code：数字，例如400</li>
-<li>message：信息，例如”请求参数没填好”</li>
-<li>response：抛出异常的类</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@ApiResponses(value = &#123;  </span><br><span class="line">          @ApiResponse(code = 400, message = &quot;No Name Provided&quot;)  </span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
-
-<h3 id="ApiModel"><a href="#ApiModel" class="headerlink" title="@ApiModel"></a>@ApiModel</h3><p>描述一个Model的信息（这种一般用在post创建的时候，使用@RequestBody这样的场景，请求参数无法使用@ApiImplicitParam注解进行描述的时候）</p>
-<p><code>@ApiModel(value = &quot;用户实体类&quot;)</code></p>
-<h3 id="ApiModelProperty"><a href="#ApiModelProperty" class="headerlink" title="@ApiModelProperty"></a>@ApiModelProperty</h3><p>描述一个model的属性</p>
-<p><code>@ApiModelProperty(value = &quot;登录用户&quot;)</code></p>
-<h2 id="启动项目后访问路径"><a href="#启动项目后访问路径" class="headerlink" title="启动项目后访问路径"></a>启动项目后访问路径</h2><p><code>http://localhost:8080/swagger-ui.html</code>访问路径</p>
-<p><code>http://localhost:8080/v2/api-docs</code> 文档json路径</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/07/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E8%AF%AD%E6%B3%95-proxy_pass%E4%B8%AD%E7%9A%84%E8%B7%AF%E5%BE%84%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/07/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E8%AF%AD%E6%B3%95-proxy_pass%E4%B8%AD%E7%9A%84%E8%B7%AF%E5%BE%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Nginx-语法-proxy_pass中的路径问题</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-07 22:57:17" itemprop="dateCreated datePublished" datetime="2016-12-07T22:57:17+08:00">2016-12-07</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="用-来匹配"><a href="#用-来匹配" class="headerlink" title="用^~来匹配"></a>用<code>^~</code>来匹配</h2><p><code>http://127.0.0.1:81/demo/test.html</code></p>
-<h3 id="http-host"><a href="#http-host" class="headerlink" title="http://host/"></a><code>http://host/</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代理到<code>http://127.0.0.1:8080/test.html</code></p>
-<h3 id="http-host-1"><a href="#http-host-1" class="headerlink" title="http://host"></a><code>http://host</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代理到<code>http://127.0.0.1:8080/demo/test.html</code></p>
-<h3 id="http-host-lt-path-gt"><a href="#http-host-lt-path-gt" class="headerlink" title="http://host/&lt;path&gt;/"></a><code>http://host/&lt;path&gt;/</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080/a/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代理到<code>http://127.0.0.1:8080/a/test.html</code></p>
-<h3 id="http-host-lt-path-gt-1"><a href="#http-host-lt-path-gt-1" class="headerlink" title="http://host/&lt;path&gt;"></a><code>http://host/&lt;path&gt;</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080/a;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代理到<code>http://127.0.0.1:8080/atest.html</code></p>
-<h2 id="用-来匹配-1"><a href="#用-来匹配-1" class="headerlink" title="用=来匹配"></a>用<code>=</code>来匹配</h2><p><code>http://127.0.0.1:81/demo/</code></p>
-<h3 id="http-host-2"><a href="#http-host-2" class="headerlink" title="http://host/"></a><code>http://host/</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location = /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代理到<code>http://127.0.0.1:8080/</code></p>
-<h3 id="http-host-3"><a href="#http-host-3" class="headerlink" title="http://host"></a><code>http://host</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location = /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代理到<code>http://127.0.0.1:8080/demo/</code></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="post-title-link" itemprop="url">Java-API-容器-HashMap死循环</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-06 18:53:32" itemprop="dateCreated datePublished" datetime="2016-12-06T18:53:32+08:00">2016-12-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://coolshell.cn/articles/9606.html">http://coolshell.cn/articles/9606.html</a></p>
-<h2 id="问题的症状"><a href="#问题的症状" class="headerlink" title="问题的症状"></a>问题的症状</h2><p>从前我们的Java代码因为一些原因使用了HashMap这个东西，但是当时的程序是单线程的，一切都没有问题。后来，我们的程序性能有问题，所以需要变成多线程的，于是，变成多线程后到了线上，发现程序经常占了100%的CPU，查看堆栈，你会发现程序都Hang在了HashMap.get()这个方法上了，重启程序后问题消失。但是过段时间又会来。而且，这个问题在测试环境里可能很难重现。</p>
-<p>我们简单的看一下我们自己的代码，我们就知道HashMap被多个线程操作。而Java的文档说HashMap是非线程安全的，应该用ConcurrentHashMap。</p>
-<p>但是在这里我们可以来研究一下原因。</p>
-<h2 id="Hash表数据结构"><a href="#Hash表数据结构" class="headerlink" title="Hash表数据结构"></a>Hash表数据结构</h2><p>我需要简单地说一下HashMap这个经典的数据结构。</p>
-<p>HashMap通常会用一个指针数组（假设为table[]）来做分散所有的key，当一个key被加入时，会通过Hash算法通过key算出这个数组的下标i，然后就把这个&lt;key, value&gt;插到table[i]中，如果有两个不同的key被算在了同一个i，那么就叫冲突，又叫碰撞，这样会在table[i]上形成一个链表。</p>
-<p>我们知道，如果table[]的尺寸很小，比如只有2个，如果要放进10个keys的话，那么碰撞非常频繁，于是一个O(1)的查找算法，就变成了链表遍历，性能变成了O(n)，这是Hash表的缺陷（可参看《<a target="_blank" rel="noopener" href="http://coolshell.cn/articles/6424.html">Hash Collision DoS 问题</a>》）。</p>
-<p>所以，Hash表的尺寸和容量非常的重要。一般来说，Hash表这个容器当有数据要插入时，都会检查容量有没有超过设定的thredhold，如果超过，需要增大Hash表的尺寸，但是这样一来，整个Hash表里的无素都需要被重算一遍。这叫rehash，这个成本相当的大。</p>
-<p>相信大家对这个基础知识已经很熟悉了。</p>
-<h2 id="HashMap的rehash源代码"><a href="#HashMap的rehash源代码" class="headerlink" title="HashMap的rehash源代码"></a>HashMap的rehash源代码</h2><p>下面，我们来看一下Java的HashMap的源代码。</p>
-<p>Put一个Key,Value对到Hash表中：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public V put(K key, V value)</span><br><span class="line">&#123;</span><br><span class="line">  ......</span><br><span class="line">  //算Hash值</span><br><span class="line">  int hash = hash(key.hashCode());</span><br><span class="line">  int i = indexFor(hash, table.length);</span><br><span class="line">  //如果该key已被插入，则替换掉旧的value （链接操作）</span><br><span class="line">  for (Entry&lt;K,V&gt; e = table[i]; e != null; e = e.next) &#123;</span><br><span class="line">    Object k;</span><br><span class="line">    if (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</span><br><span class="line">      V oldValue = e.value;</span><br><span class="line">      e.value = value;</span><br><span class="line">      e.recordAccess(this);</span><br><span class="line">      return oldValue;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  modCount++;</span><br><span class="line">  //该key不存在，需要增加一个结点</span><br><span class="line">  addEntry(hash, key, value, i);</span><br><span class="line">  return null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>检查容量是否超标</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void addEntry(int hash, K key, V value, int bucketIndex)</span><br><span class="line">&#123;</span><br><span class="line">  Entry&lt;K,V&gt; e = table[bucketIndex];</span><br><span class="line">  table[bucketIndex] = new Entry&lt;K,V&gt;(hash, key, value, e);</span><br><span class="line">  //查看当前的size是否超过了我们设定的阈值threshold，如果超过，需要resize</span><br><span class="line">  if (size++ &gt;= threshold)</span><br><span class="line">    resize(2 * table.length);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>新建一个更大尺寸的hash表，然后把数据从老的Hash表中迁移到新的Hash表中。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">void resize(int newCapacity)</span><br><span class="line">&#123;</span><br><span class="line">  Entry[] oldTable = table;</span><br><span class="line">  int oldCapacity = oldTable.length;</span><br><span class="line">  ......</span><br><span class="line">  //创建一个新的Hash Table</span><br><span class="line">  Entry[] newTable = new Entry[newCapacity];</span><br><span class="line">  //将Old Hash Table上的数据迁移到New Hash Table上</span><br><span class="line">  transfer(newTable);</span><br><span class="line">  table = newTable;</span><br><span class="line">  threshold = (int)(newCapacity * loadFactor);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>迁移的源代码，注意高亮处：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">void transfer(Entry[] newTable)</span><br><span class="line">&#123;</span><br><span class="line">  Entry[] src = table;</span><br><span class="line">  int newCapacity = newTable.length;</span><br><span class="line">  //下面这段代码的意思是：</span><br><span class="line">  //  从OldTable里摘一个元素出来，然后放到NewTable中</span><br><span class="line">  for (int j = 0; j &lt; src.length; j++) &#123;</span><br><span class="line">    Entry&lt;K,V&gt; e = src[j];</span><br><span class="line">    if (e != null) &#123;</span><br><span class="line">      src[j] = null;</span><br><span class="line">      do &#123;</span><br><span class="line">          Entry&lt;K,V&gt; next = e.next;</span><br><span class="line">          int i = indexFor(e.hash, newCapacity);</span><br><span class="line">          e.next = newTable[i];</span><br><span class="line">          newTable[i] = e;</span><br><span class="line">          e = next;</span><br><span class="line">      &#125; while (e != null);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>好了，这个代码算是比较正常的。而且没有什么问题。</p>
-<h2 id="正常的ReHash的过程"><a href="#正常的ReHash的过程" class="headerlink" title="正常的ReHash的过程"></a>正常的ReHash的过程</h2><p>画了个图做了个演示。</p>
-<ul>
-<li>我假设了我们的hash算法就是简单的用key mod 一下表的大小（也就是数组的长度）。</li>
-<li>最上面的是old hash 表，其中的Hash表的size=2, 所以key = 3, 7, 5，在mod 2以后都冲突在table[1]这里了。</li>
-<li>接下来的三个步骤是Hash表 resize成4，然后所有的&lt;key,value&gt; 重新rehash的过程</li>
-</ul>
-<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap01.png" alt="HashMap01"></p>
-<h2 id="并发下的Rehash"><a href="#并发下的Rehash" class="headerlink" title="并发下的Rehash"></a>并发下的Rehash</h2><h3 id="1）假设我们有两个线程。我用红色和浅蓝色标注了一下。"><a href="#1）假设我们有两个线程。我用红色和浅蓝色标注了一下。" class="headerlink" title="1）假设我们有两个线程。我用红色和浅蓝色标注了一下。"></a>1）假设我们有两个线程。我用红色和浅蓝色标注了一下。</h3><p>我们再回头看一下我们的 transfer代码中的这个细节：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">do &#123;</span><br><span class="line">    Entry&lt;K,V&gt; next = e.next; // &lt;--假设线程一执行到这里就被调度挂起了</span><br><span class="line">    int i = indexFor(e.hash, newCapacity);</span><br><span class="line">    e.next = newTable[i];</span><br><span class="line">    newTable[i] = e;</span><br><span class="line">    e = next;</span><br><span class="line">&#125; while (e != null);</span><br></pre></td></tr></table></figure>
-<p>而我们的线程二执行完成了。于是我们有下面的这个样子。</p>
-<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap02.png" alt="HashMap02"></p>
-<p>注意，因为Thread1的 e 指向了key(3)，而next指向了key(7)，其在线程二rehash后，指向了线程二重组后的链表。我们可以看到链表的顺序被反转后。</p>
-<h3 id="2）线程一被调度回来执行。"><a href="#2）线程一被调度回来执行。" class="headerlink" title="2）线程一被调度回来执行。"></a>2）线程一被调度回来执行。</h3><p>先是执行 newTalbe[i] = e;</p>
-<p>然后是e = next，导致了e指向了key(7)，</p>
-<p>而下一次循环的next = e.next导致了next指向了key(3)</p>
-<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap03.png" alt="HashMap03"></p>
-<h3 id="3）一切安好。"><a href="#3）一切安好。" class="headerlink" title="3）一切安好。"></a>3）一切安好。</h3><p>线程一接着工作。把key(7)摘下来，放到newTable[i]的第一个，然后把e和next往下移。</p>
-<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap04.png" alt="HashMap04"></p>
-<h3 id="4）环形链接出现。"><a href="#4）环形链接出现。" class="headerlink" title="4）环形链接出现。"></a>4）环形链接出现。</h3><p>e.next = newTable[i] 导致  key(3).next 指向了 key(7)</p>
-<p>注意：此时的key(7).next 已经指向了key(3)， 环形链表就这样出现了。</p>
-<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap05.png" alt="HashMap05"></p>
-<p>于是，当我们的线程一调用到，HashTable.get(11)时，悲剧就出现了——Infinite Loop。</p>
-<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2><p>有人把这个问题报给了Sun，不过Sun不认为这个是一个问题。因为HashMap本来就不支持并发。要并发就用ConcurrentHashmap</p>
-<p><a target="_blank" rel="noopener" href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6423457">http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6423457</a></p>
-<p>我在这里把这个事情记录下来，只是为了让大家了解并体会一下并发环境下的危险。</p>
-<p>参考：<a target="_blank" rel="noopener" href="http://mailinator.blogspot.com/2009/06/beautiful-race-condition.html">http://mailinator.blogspot.com/2009/06/beautiful-race-condition.html</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/31/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><span class="page-number current">32</span><a class="page-number" href="/page/33/">33</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/33/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/31/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><span class="page-number current">32</span><a class="page-number" href="/page/33/">33</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/33/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1154,7 +1176,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1167,7 +1189,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

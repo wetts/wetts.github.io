@@ -188,6 +188,450 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">Java-聊聊并发-6.ConcurrentLinkedQueue的实现原理分析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-19 17:46:13" itemprop="dateCreated datePublished" datetime="2016-12-19T17:46:13+08:00">2016-12-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/concurrentlinkedqueue/">http://ifeve.com/concurrentlinkedqueue/</a></p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在并发编程中我们有时候需要使用线程安全的队列。如果我们要实现一个线程安全的队列有两种实现方式一种是使用阻塞算法，另一种是使用非阻塞算法。使用阻塞算法的队列可以用一个锁（入队和出队用同一把锁）或两个锁（入队和出队用不同的锁）等方式来实现，而非阻塞的实现方式则可以使用循环CAS的方式来实现，本文让我们一起来研究下Doug Lea是如何使用非阻塞的方式来实现线程安全队列ConcurrentLinkedQueue的，相信从大师身上我们能学到不少并发编程的技巧。</p>
+<h2 id="ConcurrentLinkedQueue的介绍"><a href="#ConcurrentLinkedQueue的介绍" class="headerlink" title="ConcurrentLinkedQueue的介绍"></a>ConcurrentLinkedQueue的介绍</h2><p>ConcurrentLinkedQueue是一个基于链接节点的无界线程安全队列，它采用先进先出的规则对节点进行排序，当我们添加一个元素的时候，它会添加到队列的尾部，当我们获取一个元素时，它会返回队列头部的元素。它采用了“wait－free”算法来实现，该算法在Michael &amp; Scott算法上进行了一些修改, Michael &amp; Scott算法的详细信息可以参见参考资料一。</p>
+<h2 id="ConcurrentLinkedQueue的结构"><a href="#ConcurrentLinkedQueue的结构" class="headerlink" title="ConcurrentLinkedQueue的结构"></a>ConcurrentLinkedQueue的结构</h2><p>我们通过ConcurrentLinkedQueue的类图来分析一下它的结构。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/ConcurrentLinkedQueue%E7%B1%BB%E5%9B%BE.png" alt="ConcurrentLinkedQueue类图.png"></p>
+<p>ConcurrentLinkedQueue由head节点和tair节点组成，每个节点（Node）由节点元素（item）和指向下一个节点的引用(next)组成，节点与节点之间就是通过这个next关联起来，从而组成一张链表结构的队列。默认情况下head节点存储的元素为空，tair节点等于head节点。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private transient volatile Node&lt;e&gt; tail = head;</span><br></pre></td></tr></table></figure>
+
+<h2 id="入队列"><a href="#入队列" class="headerlink" title="入队列"></a>入队列</h2><p><strong>入队列就是将入队节点添加到队列的尾部</strong>。为了方便理解入队时队列的变化，以及head节点和tair节点的变化，每添加一个节点我就做了一个队列的快照图。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/ConcurrentLinekedQueue%E9%98%9F%E5%88%97%E5%85%A5%E9%98%9F%E7%BB%93%E6%9E%84%E5%8F%98%E5%8C%96%E5%9B%BE.png" alt="ConcurrentLinekedQueue队列入队结构变化图"></p>
+<ol>
+<li>第一步添加元素1。队列更新head节点的next节点为元素1节点。又因为tail节点默认情况下等于head节点，所以它们的next节点都指向元素1节点。</li>
+<li>第二步添加元素2。队列首先设置元素1节点的next节点为元素2节点，然后更新tail节点指向元素2节点。</li>
+<li>第三步添加元素3，设置tail节点的next节点为元素3节点。</li>
+<li>第四步添加元素4，设置元素3的next节点为元素4节点，然后将tail节点指向元素4节点。</li>
+</ol>
+<p>通过debug入队过程并观察head节点和tail节点的变化，发现入队主要做两件事情，第一是将入队节点设置成当前队列尾节点的下一个节点。第二是更新tail节点，如果tail节点的next节点不为空，则将入队节点设置成tail节点，如果tail节点的next节点为空，则将入队节点设置成tail的next节点，所以tail节点不总是尾节点，理解这一点对于我们研究源码会非常有帮助。</p>
+<p>上面的分析让我们从单线程入队的角度来理解入队过程，但是多个线程同时进行入队情况就变得更加复杂，因为可能会出现其他线程插队的情况。如果有一个线程正在入队，那么它必须先获取尾节点，然后设置尾节点的下一个节点为入队节点，但这时可能有另外一个线程插队了，那么队列的尾节点就会发生变化，这时当前线程要暂停入队操作，然后重新获取尾节点。让我们再通过源码来详细分析下它是如何使用CAS算法来入队的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">public boolean offer(E e) &#123;</span><br><span class="line"></span><br><span class="line">    if (e == null) throw new NullPointerException();</span><br><span class="line"></span><br><span class="line">    //入队前，创建一个入队节点</span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; n = new Node&lt;/e&gt;&lt;e&gt;(e);</span><br><span class="line">    retry:</span><br><span class="line"></span><br><span class="line">    //死循环，入队不成功反复入队。</span><br><span class="line">    for (;;) &#123;</span><br><span class="line">        //创建一个指向tail节点的引用</span><br><span class="line">        Node&lt;/e&gt;&lt;e&gt; t = tail;</span><br><span class="line">        //p用来表示队列的尾节点，默认情况下等于tail节点。</span><br><span class="line">        Node&lt;/e&gt;&lt;e&gt; p = t;</span><br><span class="line"></span><br><span class="line">        for (int hops = 0; ; hops++) &#123;</span><br><span class="line">        //获得p节点的下一个节点。</span><br><span class="line">            Node&lt;/e&gt;&lt;e&gt; next = succ(p);</span><br><span class="line"></span><br><span class="line">            //next节点不为空，说明p不是尾节点，需要更新p后在将它指向next节点</span><br><span class="line">            if (next != null) &#123;</span><br><span class="line">                //循环了两次及其以上，并且当前节点还是不等于尾节点</span><br><span class="line">                if (hops &gt; HOPS &amp;&amp; t != tail)</span><br><span class="line">                    continue retry;</span><br><span class="line"></span><br><span class="line">                p = next;</span><br><span class="line">            &#125;</span><br><span class="line">            //如果p是尾节点，则设置p节点的next节点为入队节点。</span><br><span class="line">            else if (p.casNext(null, n)) &#123;</span><br><span class="line">              //如果tail节点有大于等于1个next节点，则将入队节点设置成tair节点，更新失败了也没关系，因为失败了表示有其他线程成功更新了tair节点。</span><br><span class="line"></span><br><span class="line">                if (hops &gt;= HOPS)</span><br><span class="line">                    casTail(t, n); // 更新tail节点，允许失败</span><br><span class="line"></span><br><span class="line">                return true;</span><br><span class="line">            &#125;</span><br><span class="line">            // p有next节点,表示p的next节点是尾节点，则重新设置p节点</span><br><span class="line">            else &#123;</span><br><span class="line">                p = succ(p);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>从源代码角度来看整个入队过程主要做二件事情</strong>。第一是定位出尾节点，第二是使用CAS算法能将入队节点设置成尾节点的next节点，如不成功则重试。</p>
+<p><strong>第一步定位尾节点</strong>。tail节点并不总是尾节点，所以每次入队都必须先通过tail节点来找到尾节点，尾节点可能就是tail节点，也可能是tail节点的next节点。代码中循环体中的第一个if就是判断tail是否有next节点，有则表示next节点可能是尾节点。获取tail节点的next节点需要注意的是p节点等于p的next节点的情况，只有一种可能就是p节点和p的next节点都等于空，表示这个队列刚初始化，正准备添加第一次节点，所以需要返回head节点。获取p节点的next节点代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">final Node&lt;/e&gt;&lt;e&gt; succ(Node&lt;/e&gt;&lt;e&gt; p) &#123;</span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; next = p.getNext();</span><br><span class="line">    return (p == next) ? head : next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>第二步设置入队节点为尾节点</strong>。p.casNext(null, n)方法用于将入队节点设置为当前队列尾节点的next节点，p如果是null表示p是当前队列的尾节点，如果不为null表示有其他线程更新了尾节点，则需要重新获取当前队列的尾节点。</p>
+<p><strong>hops的设计意图</strong>。上面分析过对于先进先出的队列入队所要做的事情就是将入队节点设置成尾节点，doug lea写的代码和逻辑还是稍微有点复杂。那么我用以下方式来实现行不行？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public boolean offer(E e) &#123;</span><br><span class="line"></span><br><span class="line">    if (e == null)</span><br><span class="line">        throw new NullPointerException();</span><br><span class="line"></span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; n = new Node&lt;/e&gt;&lt;e&gt;(e);</span><br><span class="line"></span><br><span class="line">    for (;;) &#123;</span><br><span class="line">        Node&lt;/e&gt;&lt;e&gt; t = tail;</span><br><span class="line"></span><br><span class="line">        if (t.casNext(null, n) &amp;&amp; casTail(t, n)) &#123;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>让tail节点永远作为队列的尾节点，这样实现代码量非常少，而且逻辑非常清楚和易懂。但是这么做有个缺点就是每次都需要使用循环CAS更新tail节点。如果能减少CAS更新tail节点的次数，就能提高入队的效率，所以doug lea使用hops变量来控制并减少tail节点的更新频率，并不是每次节点入队后都将 tail节点更新成尾节点，而是当 tail节点和尾节点的距离大于等于常量HOPS的值（默认等于1）时才更新tail节点，tail和尾节点的距离越长使用CAS更新tail节点的次数就会越少，但是距离越长带来的负面效果就是每次入队时定位尾节点的时间就越长，因为循环体需要多循环一次来定位出尾节点，但是这样仍然能提高入队的效率，因为从本质上来看它通过增加对volatile变量的读操作来减少了对volatile变量的写操作，而对volatile变量的写操作开销要远远大于读操作，所以入队效率会有所提升。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private static final int HOPS = 1;</span><br></pre></td></tr></table></figure>
+<p>还有一点需要注意的是入队方法永远返回true，所以不要通过返回值判断入队是否成功。</p>
+<h2 id="出队列"><a href="#出队列" class="headerlink" title="出队列"></a>出队列</h2><p>出队列的就是从队列里返回一个节点元素，并清空该节点对元素的引用。让我们通过每个节点出队的快照来观察下head节点的变化。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/%E5%87%BA%E9%98%9F%E5%88%97.png" alt="出队列"></p>
+<p>从上图可知，并不是每次出队时都更新head节点，当head节点里有元素时，直接弹出head节点里的元素，而不会更新head节点。只有当head节点里没有元素时，出队操作才会更新head节点。这种做法也是通过hops变量来减少使用CAS更新head节点的消耗，从而提高出队效率。让我们再通过源码来深入分析下出队过程。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">public E poll() &#123;</span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; h = head;</span><br><span class="line">    // p表示头节点，需要出队的节点</span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; p = h;</span><br><span class="line"></span><br><span class="line">    for (int hops = 0;; hops++) &#123;</span><br><span class="line">        // 获取p节点的元素</span><br><span class="line">        E item = p.getItem();</span><br><span class="line">        // 如果p节点的元素不为空，使用CAS设置p节点引用的元素为null,如果成功则返回p节点的元素。</span><br><span class="line">        if (item != null &amp;&amp; p.casItem(item, null)) &#123;</span><br><span class="line">            if (hops &gt;= HOPS) &#123;</span><br><span class="line">                //将p节点下一个节点设置成head节点</span><br><span class="line">                Node&lt;/e&gt;&lt;e&gt; q = p.getNext();</span><br><span class="line">                updateHead(h, (q != null) ? q : p);</span><br><span class="line">            &#125;</span><br><span class="line">            return item;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 如果头节点的元素为空或头节点发生了变化，这说明头节点已经被另外一个线程修改了。那么获取p节点的下一个节点</span><br><span class="line">        Node&lt;/e&gt;&lt;e&gt; next = succ(p);</span><br><span class="line">        // 如果p的下一个节点也为空，说明这个队列已经空了</span><br><span class="line">        if (next == null) &#123;</span><br><span class="line">            // 更新头节点。</span><br><span class="line">            updateHead(h, p);</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 如果下一个元素不为空，则将头节点的下一个节点设置成头节点</span><br><span class="line">        p = next;</span><br><span class="line">    &#125;</span><br><span class="line">    return null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先获取头节点的元素，然后判断头节点元素是否为空，如果为空，表示另外一个线程已经进行了一次出队操作将该节点的元素取走，如果不为空，则使用CAS的方式将头节点的引用设置成null，如果CAS成功，则直接返回头节点的元素，如果不成功，表示另外一个线程已经进行了一次出队操作更新了head节点，导致元素发生了变化，需要重新获取头节点。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-5.%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-5.%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Java-聊聊并发-Java-聊聊并发-5.原子操作的实现原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-19 17:15:27" itemprop="dateCreated datePublished" datetime="2016-12-19T17:15:27+08:00">2016-12-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/atomic-operation/">http://ifeve.com/atomic-operation/</a></p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>原子（atom）本意是“不能被进一步分割的最小粒子”，而原子操作（atomic operation）意为”不可被中断的一个或一系列操作” 。在多处理器上实现原子操作就变得有点复杂。本文让我们一起来聊一聊在Inter处理器和Java里是如何实现原子操作的。</p>
+<h2 id="术语定义"><a href="#术语定义" class="headerlink" title="术语定义"></a>术语定义</h2><ul>
+<li>缓存行（Cache line）：缓存的最小操作单位</li>
+<li>比较并交换（Compare and Swap）：CAS操作需要输入两个数值，一个旧值（期望操作前的值）和一个新值，在操作期间先比较下在旧值有没有发生变化，如果没有发生变化，才交换成新值，发生了变化则不交换。</li>
+<li>CPU流水线（CPU pipeline）：CPU流水线的工作方式就象工业生产上的装配流水线，在CPU中由5<del>6个不同功能的电路单元组成一条指令处理流水线，然后将一条X86指令分成5</del>6步后再由这些电路单元分别执行，这样就能实现在一个CPU时钟周期完成一条指令，因此提高CPU的运算速度。</li>
+<li>内存顺序冲突（Memory order violation）：内存顺序冲突一般是由假共享引起，假共享是指多个CPU同时修改同一个缓存行的不同部分而引起其中一个CPU的操作无效，当出现这个内存顺序冲突时，CPU必须清空流水线。</li>
+</ul>
+<h2 id="处理器如何实现原子操作"><a href="#处理器如何实现原子操作" class="headerlink" title="处理器如何实现原子操作"></a>处理器如何实现原子操作</h2><p>32位IA-32处理器使用基于对缓存加锁或总线加锁的方式来实现多处理器之间的原子操作。</p>
+<h3 id="处理器自动保证基本内存操作的原子性"><a href="#处理器自动保证基本内存操作的原子性" class="headerlink" title="处理器自动保证基本内存操作的原子性"></a>处理器自动保证基本内存操作的原子性</h3><p>首先处理器会自动保证基本的内存操作的原子性。处理器保证从系统内存当中读取或者写入一个字节是原子的，意思是当一个处理器读取一个字节时，其他处理器不能访问这个字节的内存地址。奔腾6和最新的处理器能自动保证单处理器对同一个缓存行里进行16/32/64位的操作是原子的，但是复杂的内存操作处理器不能自动保证其原子性，比如跨总线宽度，跨多个缓存行，跨页表的访问。但是处理器提供总线锁定和缓存锁定两个机制来保证复杂内存操作的原子性。</p>
+<h3 id="使用总线锁保证原子性"><a href="#使用总线锁保证原子性" class="headerlink" title="使用总线锁保证原子性"></a>使用总线锁保证原子性</h3><p>第一个机制是通过总线锁保证原子性。如果多个处理器同时对共享变量进行读改写（i++就是经典的读改写操作）操作，那么共享变量就会被多个处理器同时进行操作，这样读改写操作就不是原子的，操作完之后共享变量的值会和期望的不一致，举个例子：如果i=1,我们进行两次i++操作，我们期望的结果是3，但是有可能结果是2。如下图<br>1</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-5.%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/1.png" alt="（例1）"></p>
+<p>原因是有可能多个处理器同时从各自的缓存中读取变量i，分别进行加一操作，然后分别写入系统内存当中。那么想要保证读改写共享变量的操作是原子的，就必须保证CPU1读改写共享变量的时候，CPU2不能操作缓存了该共享变量内存地址的缓存。</p>
+<p><strong>处理器使用总线锁就是来解决这个问题的</strong>。所谓总线锁就是使用处理器提供的一个LOCK＃信号，当一个处理器在总线上输出此信号时，其他处理器的请求将被阻塞住,那么该处理器可以独占使用共享内存。</p>
+<h3 id="使用缓存锁保证原子性"><a href="#使用缓存锁保证原子性" class="headerlink" title="使用缓存锁保证原子性"></a>使用缓存锁保证原子性</h3><p><strong>第二个机制是通过缓存锁定保证原子性</strong>。在同一时刻我们只需保证对某个内存地址的操作是原子性即可，但总线锁定把CPU和内存之间通信锁住了，这使得锁定期间，其他处理器不能操作其他内存地址的数据，所以总线锁定的开销比较大，最近的处理器在某些场合下使用缓存锁定代替总线锁定来进行优化。</p>
+<p>频繁使用的内存会缓存在处理器的L1，L2和L3高速缓存里，那么原子操作就可以直接在处理器内部缓存中进行，并不需要声明总线锁，在奔腾6和最近的处理器中可以使用“缓存锁定”的方式来实现复杂的原子性。所谓“缓存锁定”就是如果缓存在处理器缓存行中内存区域在LOCK操作期间被锁定，当它执行锁操作回写内存时，处理器不在总线上声言LOCK＃信号，而是修改内部的内存地址，并允许它的缓存一致性机制来保证操作的原子性，因为缓存一致性机制会阻止同时修改被两个以上处理器缓存的内存区域数据，当其他处理器回写已被锁定的缓存行的数据时会起缓存行无效，在例1中，当CPU1修改缓存行中的i时使用缓存锁定，那么CPU2就不能同时缓存了i的缓存行。</p>
+<p><strong>但是有两种情况下处理器不会使用缓存锁定</strong>。第一种情况是：当操作的数据不能被缓存在处理器内部，或操作的数据跨多个缓存行（cache line），则处理器会调用总线锁定。第二种情况是：有些处理器不支持缓存锁定。对于Inter486和奔腾处理器,就算锁定的内存区域在处理器的缓存行中也会调用总线锁定。</p>
+<p>以上两个机制我们可以通过Inter处理器提供了很多LOCK前缀的指令来实现。比如位测试和修改指令BTS，BTR，BTC，交换指令XADD，CMPXCHG和其他一些操作数和逻辑指令，比如ADD（加），OR（或）等，被这些指令操作的内存区域就会加锁，导致其他处理器不能同时访问它。</p>
+<h2 id="JAVA如何实现原子操作"><a href="#JAVA如何实现原子操作" class="headerlink" title="JAVA如何实现原子操作"></a>JAVA如何实现原子操作</h2><p>在java中可以通过锁和循环CAS的方式来实现原子操作。</p>
+<h3 id="使用循环CAS实现原子操作"><a href="#使用循环CAS实现原子操作" class="headerlink" title="使用循环CAS实现原子操作"></a>使用循环CAS实现原子操作</h3><p>JVM中的CAS操作正是利用了上一节中提到的处理器提供的CMPXCHG指令实现的。自旋CAS实现的基本思路就是循环进行CAS操作直到成功为止，以下代码实现了一个基于CAS线程安全的计数器方法safeCount和一个非线程安全的计数器count。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">private AtomicInteger atomicI = new AtomicInteger(0);</span><br><span class="line">private int i = 0;</span><br><span class="line"></span><br><span class="line">public static void main(String[] args) &#123;</span><br><span class="line">    final Counter cas = new Counter();</span><br><span class="line">    List&lt;Thread&gt; ts = new ArrayList&lt;Thread&gt;(600);</span><br><span class="line">    long start = System.currentTimeMillis();</span><br><span class="line"></span><br><span class="line">    for (int j = 0; j &lt; 100; j++) &#123;</span><br><span class="line">        Thread t = new Thread(new Runnable() &#123;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                for (int i = 0; i &lt; 10000; i++) &#123;</span><br><span class="line">                    cas.count();</span><br><span class="line">                    cas.safeCount();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        ts.add(t);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    for (Thread t : ts) &#123;</span><br><span class="line">        t.start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 等待所有线程执行完成</span><br><span class="line">    for (Thread t : ts) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            t.join();</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println(cas.i);</span><br><span class="line">    System.out.println(cas.atomicI.get());</span><br><span class="line">    System.out.println(System.currentTimeMillis() - start);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line">* 使用CAS实现线程安全计数器</span><br><span class="line">*/</span><br><span class="line">private void safeCount() &#123;</span><br><span class="line">    for (;;) &#123;</span><br><span class="line">        int i = atomicI.get();</span><br><span class="line">        boolean suc = atomicI.compareAndSet(i, ++i);</span><br><span class="line">        if (suc) &#123;</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line">* 非线程安全计数器</span><br><span class="line">*/</span><br><span class="line">private void count() &#123;</span><br><span class="line">      i++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从Java1.5开始JDK的并发包里提供了一些类来支持原子操作，如<a target="_blank" rel="noopener" href="http://www.cjsdn.net/doc/jdk60/java/util/concurrent/atomic/AtomicBoolean.html">AtomicBoolean</a>（用原子方式更新的 boolean 值），<a target="_blank" rel="noopener" href="http://www.cjsdn.net/doc/jdk60/java/util/concurrent/atomic/AtomicInteger.html">AtomicInteger</a>（用原子方式更新的 int 值），<a target="_blank" rel="noopener" href="http://www.cjsdn.net/doc/jdk60/java/util/concurrent/atomic/AtomicLong.html">AtomicLong</a>（用原子方式更新的 long 值），这些原子包装类还提供了有用的工具方法，比如以原子的方式将当前值自增1和自减1。</p>
+<p>在Java并发包中有一些并发框架也使用了自旋CAS的方式来实现原子操作，比如LinkedTransferQueue类的Xfer方法。CAS虽然很高效的解决原子操作，但是CAS仍然存在三大问题。ABA问题，循环时间长开销大和只能保证一个共享变量的原子操作。</p>
+<h4 id="ABA问题。"><a href="#ABA问题。" class="headerlink" title="ABA问题。"></a>ABA问题。</h4><p>因为CAS需要在操作值的时候检查下值有没有发生变化，如果没有发生变化则更新，但是如果一个值原来是A，变成了B，又变成了A，那么使用CAS进行检查时会发现它的值没有发生变化，但是实际上却变化了。ABA问题的解决思路就是使用版本号。在变量前面追加上版本号，每次变量更新的时候把版本号加一，那么A－B－A 就会变成1A-2B－3A。<br>从Java1.5开始JDK的atomic包里提供了一个类AtomicStampedReference来解决ABA问题。这个类的compareAndSet方法作用是首先检查当前引用是否等于预期引用，并且当前标志是否等于预期标志，如果全部相等，则以原子方式将该引用和该标志的值设置为给定的更新值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public boolean compareAndSet(</span><br><span class="line"></span><br><span class="line">   V expectedReference,//预期引用</span><br><span class="line">   V newReference,//更新后的引用</span><br><span class="line">  int expectedStamp, //预期标志</span><br><span class="line">  int newStamp //更新后的标志</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h4 id="循环时间长开销大。"><a href="#循环时间长开销大。" class="headerlink" title="循环时间长开销大。"></a>循环时间长开销大。</h4><p>自旋CAS如果长时间不成功，会给CPU带来非常大的执行开销。如果JVM能支持处理器提供的pause指令那么效率会有一定的提升，pause指令有两个作用，第一它可以延迟流水线执行指令（de-pipeline）,使CPU不会消耗过多的执行资源，延迟的时间取决于具体实现的版本，在一些处理器上延迟时间是零。第二它可以避免在退出循环的时候因内存顺序冲突（memory order violation）而引起CPU流水线被清空（CPU pipeline flush），从而提高CPU的执行效率。</p>
+<h4 id="只能保证一个共享变量的原子操作。"><a href="#只能保证一个共享变量的原子操作。" class="headerlink" title="只能保证一个共享变量的原子操作。"></a>只能保证一个共享变量的原子操作。</h4><p>当对一个共享变量执行操作时，我们可以使用循环CAS的方式来保证原子操作，但是对多个共享变量操作时，循环CAS就无法保证操作的原子性，这个时候就可以用锁，或者有一个取巧的办法，就是把多个共享变量合并成一个共享变量来操作。比如有两个共享变量i=2,j=a，合并一下ij=2a，然后用CAS来操作ij。从Java1.5开始JDK提供了 <strong>AtomicReference类来保证引用对象之间的原子性，你可以把多个变量放在一个对象里来进行CAS操作</strong>。</p>
+<h3 id="使用锁机制实现原子操作"><a href="#使用锁机制实现原子操作" class="headerlink" title="使用锁机制实现原子操作"></a>使用锁机制实现原子操作</h3><p>锁机制保证了只有获得锁的线程能够操作锁定的内存区域。JVM内部实现了很多种锁机制，有偏向锁，轻量级锁和互斥锁，有意思的是除了偏向锁，JVM实现锁的方式都用到的循环CAS，当一个线程想进入同步块的时候使用循环CAS的方式来获取锁，当它退出同步块的时候使用循环CAS释放锁。详细说明可以参见文章Java SE1.6中的Synchronized。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/" class="post-title-link" itemprop="url">Java-聊聊并发-4.深入分析ConcurrentHashMap</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-19 16:55:22" itemprop="dateCreated datePublished" datetime="2016-12-19T16:55:22+08:00">2016-12-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/concurrenthashmap/">http://ifeve.com/concurrenthashmap/</a></p>
+<h2 id="术语定义"><a href="#术语定义" class="headerlink" title="术语定义"></a>术语定义</h2><ul>
+<li>哈希算法（hash algorithm）：是一种将任意内容的输入转换成相同长度输出的加密方式，其输出被称为哈希值。</li>
+<li>哈希表（hash table）根据设定的哈希函数H(key)和处理冲突方法将一组关键字映象到一个有限的地址区间上，并以关键字在地址区间中的象作为记录在表中的存储位置，这种表称为哈希表或散列，所得存储位置称为哈希地址或散列地址。</li>
+</ul>
+<h2 id="线程不安全的HashMap"><a href="#线程不安全的HashMap" class="headerlink" title="线程不安全的HashMap"></a>线程不安全的HashMap</h2><p>因为多线程环境下，使用Hashmap进行put操作会引起死循环，导致CPU利用率接近100%，所以在并发情况下不能使用HashMap。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">final HashMap&lt;String, String&gt; map = new HashMap&lt;String, String&gt;(2);</span><br><span class="line"></span><br><span class="line">Thread t = new Thread(new Runnable() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        for (int i = 0; i &lt; 10000; i++) &#123;</span><br><span class="line">            new Thread(new Runnable() &#123;</span><br><span class="line">                @Override</span><br><span class="line">                public void run() &#123;</span><br><span class="line">                    map.put(UUID.randomUUID().toString(), &quot;&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;, &quot;ftf&quot; + i).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, &quot;ftf&quot;);</span><br><span class="line">t.start();</span><br><span class="line">t.join();</span><br></pre></td></tr></table></figure>
+
+<h2 id="效率低下的HashTable容器"><a href="#效率低下的HashTable容器" class="headerlink" title="效率低下的HashTable容器"></a>效率低下的HashTable容器</h2><p>HashTable容器使用synchronized来保证线程安全，但在线程竞争激烈的情况下HashTable的效率非常低下。因为当一个线程访问HashTable的同步方法时，其他线程访问HashTable的同步方法时，可能会进入阻塞或轮询状态。如线程1使用put进行添加元素，线程2不但不能使用put方法添加元素，并且也不能使用get方法来获取元素，所以竞争越激烈效率越低。</p>
+<h2 id="ConcurrentHashMap的锁分段技术"><a href="#ConcurrentHashMap的锁分段技术" class="headerlink" title="ConcurrentHashMap的锁分段技术"></a>ConcurrentHashMap的锁分段技术</h2><p>HashTable容器在竞争激烈的并发环境下表现出效率低下的原因，是因为所有访问HashTable的线程都必须竞争同一把锁，那假如容器里有多把锁，每一把锁用于锁容器其中一部分数据，那么当多线程访问容器里不同数据段的数据时，线程间就不会存在锁竞争，从而可以有效的提高并发访问效率，这就是ConcurrentHashMap所使用的锁分段技术，首先将数据分成一段一段的存储，然后给每一段数据配一把锁，当一个线程占用锁访问其中一个段数据的时候，其他段的数据也能被其他线程访问。</p>
+<h2 id="ConcurrentHashMap的结构"><a href="#ConcurrentHashMap的结构" class="headerlink" title="ConcurrentHashMap的结构"></a>ConcurrentHashMap的结构</h2><p>我们通过ConcurrentHashMap的类图来分析ConcurrentHashMap的结构。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/ConcurrentHashMap%E7%B1%BB%E5%9B%BE.png" alt="ConcurrentHashMap类图"></p>
+<p>ConcurrentHashMap是由Segment数组结构和HashEntry数组结构组成。Segment是一种可重入锁ReentrantLock，在ConcurrentHashMap里扮演锁的角色，HashEntry则用于存储键值对数据。一个ConcurrentHashMap里包含一个Segment数组，Segment的结构和HashMap类似，是一种数组和链表结构， 一个Segment里包含一个HashEntry数组，每个HashEntry是一个链表结构的元素， 每个Segment守护者一个HashEntry数组里的元素,当对HashEntry数组的数据进行修改时，必须首先获得它对应的Segment锁。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/ConcurrentHashMap%E7%BB%93%E6%9E%84%E5%9B%BE.png" alt="ConcurrentHashMap结构图"></p>
+<h2 id="ConcurrentHashMap的初始化"><a href="#ConcurrentHashMap的初始化" class="headerlink" title="ConcurrentHashMap的初始化"></a>ConcurrentHashMap的初始化</h2><p>ConcurrentHashMap初始化方法是通过initialCapacity，loadFactor, concurrencyLevel几个参数来初始化segments数组，段偏移量segmentShift，段掩码segmentMask和每个segment里的HashEntry数组。</p>
+<p><strong>初始化segments数组</strong>。让我们来看一下初始化segmentShift，segmentMask和segments数组的源代码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">if (concurrencyLevel &gt; MAX_SEGMENTS)</span><br><span class="line">  concurrencyLevel = MAX_SEGMENTS;</span><br><span class="line"></span><br><span class="line">// Find power-of-two sizes best matching arguments</span><br><span class="line">int sshift = 0;</span><br><span class="line">int ssize = 1;</span><br><span class="line"></span><br><span class="line">while (ssize &lt; concurrencyLevel) &#123;</span><br><span class="line">  ++sshift;</span><br><span class="line">  ssize &lt;&lt;= 1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">segmentShift = 32 - sshift;</span><br><span class="line">segmentMask = ssize - 1;</span><br><span class="line">this.segments = Segment.newArray(ssize);</span><br></pre></td></tr></table></figure>
+<p>由上面的代码可知segments数组的长度ssize通过concurrencyLevel计算得出。为了能通过按位与的哈希算法来定位segments数组的索引，必须保证segments数组的长度是2的N次方（power-of-two size），所以必须计算出一个是大于或等于concurrencyLevel的最小的2的N次方值来作为segments数组的长度。假如concurrencyLevel等于14，15或16，ssize都会等于16，即容器里锁的个数也是16。注意concurrencyLevel的最大大小是65535，意味着segments数组的长度最大为65536，对应的二进制是16位。</p>
+<p><strong>初始化segmentShift和segmentMask</strong>。这两个全局变量在定位segment时的哈希算法里需要使用，sshift等于ssize从1向左移位的次数，在默认情况下concurrencyLevel等于16，1需要向左移位移动4次，所以sshift等于4。segmentShift用于定位参与hash运算的位数，segmentShift等于32减sshift，所以等于28，这里之所以用32是因为ConcurrentHashMap里的hash()方法输出的最大数是32位的，后面的测试中我们可以看到这点。segmentMask是哈希运算的掩码，等于ssize减1，即15，掩码的二进制各个位的值都是1。因为ssize的最大长度是65536，所以segmentShift最大值是16，segmentMask最大值是65535，对应的二进制是16位，每个位都是1。</p>
+<p><strong>初始化每个Segment</strong>。输入参数initialCapacity是ConcurrentHashMap的初始化容量，loadfactor是每个segment的负载因子，在构造方法里需要通过这两个参数来初始化数组中的每个segment。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">if (initialCapacity &gt; MAXIMUM_CAPACITY)</span><br><span class="line">  initialCapacity = MAXIMUM_CAPACITY;</span><br><span class="line"></span><br><span class="line">int c = initialCapacity / ssize;</span><br><span class="line">if (c * ssize &lt; initialCapacity)</span><br><span class="line">  ++c;</span><br><span class="line"></span><br><span class="line">int cap = 1;</span><br><span class="line"></span><br><span class="line">while (cap &lt; c)</span><br><span class="line">  cap &lt;&lt;= 1;</span><br><span class="line"></span><br><span class="line">for (int i = 0; i &lt; this.segments.length; ++i)</span><br><span class="line">  this.segments[i] = new Segment&lt;K,V&gt;(cap, loadFactor);</span><br></pre></td></tr></table></figure>
+<p>上面代码中的变量cap就是segment里HashEntry数组的长度，它等于initialCapacity除以ssize的倍数c，如果c大于1，就会取大于等于c的2的N次方值，所以cap不是1，就是2的N次方。segment的容量threshold＝(int)cap*loadFactor，默认情况下initialCapacity等于16，loadfactor等于0.75，通过运算cap等于1，threshold等于零。</p>
+<h3 id="定位Segment"><a href="#定位Segment" class="headerlink" title="定位Segment"></a>定位Segment</h3><p>既然ConcurrentHashMap使用分段锁Segment来保护不同段的数据，那么在插入和获取元素的时候，必须先通过哈希算法定位到Segment。可以看到ConcurrentHashMap会首先使用Wang/Jenkins hash的变种算法对元素的hashCode进行一次再哈希。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">private static int hash(int h) &#123;</span><br><span class="line">  h += (h &lt;&lt; 15) ^ 0xffffcd7d; h ^= (h &gt;&gt;&gt; 10);</span><br><span class="line">  h += (h &lt;&lt; 3); h ^= (h &gt;&gt;&gt; 6);</span><br><span class="line">  h += (h &lt;&lt; 2) + (h &lt;&lt; 14); return h ^ (h &gt;&gt;&gt; 16);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再哈希，其目的是为了减少哈希冲突，使元素能够均匀的分布在不同的Segment上，从而提高容器的存取效率。假如哈希的质量差到极点，那么所有的元素都在一个Segment中，不仅存取元素缓慢，分段锁也会失去意义。我做了一个测试，不通过再哈希而直接执行哈希计算。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(Integer.parseInt(&quot;0001111&quot;, 2) &amp; 15);</span><br><span class="line">System.out.println(Integer.parseInt(&quot;0011111&quot;, 2) &amp; 15);</span><br><span class="line">System.out.println(Integer.parseInt(&quot;0111111&quot;, 2) &amp; 15);</span><br><span class="line">System.out.println(Integer.parseInt(&quot;1111111&quot;, 2) &amp; 15);</span><br></pre></td></tr></table></figure>
+<p>计算后输出的哈希值全是15，通过这个例子可以发现如果不进行再哈希，哈希冲突会非常严重，因为只要低位一样，无论高位是什么数，其哈希值总是一样。我们再把上面的二进制数据进行再哈希后结果如下，为了方便阅读，不足32位的高位补了0，每隔四位用竖线分割下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0100｜0111｜0110｜0111｜1101｜1010｜0100｜1110</span><br><span class="line">1111｜0111｜0100｜0011｜0000｜0001｜1011｜1000</span><br><span class="line">0111｜0111｜0110｜1001｜0100｜0110｜0011｜1110</span><br><span class="line">1000｜0011｜0000｜0000｜1100｜1000｜0001｜1010</span><br></pre></td></tr></table></figure>
+<p>可以发现每一位的数据都散列开了，通过这种再哈希能让数字的每一位都能参加到哈希运算当中，从而减少哈希冲突。ConcurrentHashMap通过以下哈希算法定位segment。</p>
+<p>默认情况下segmentShift为28，segmentMask为15，再哈希后的数最大是32位二进制数据，向右无符号移动28位，意思是让高4位参与到hash运算中， (hash &gt;&gt;&gt; segmentShift) &amp; segmentMask的运算结果分别是4，15，7和8，可以看到hash值没有发生冲突。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">final Segment&lt;K,V&gt; segmentFor(int hash) &#123;</span><br><span class="line">  return segments[(hash &gt;&gt;&gt; segmentShift) &amp; segmentMask];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ConcurrentHashMap的get操作"><a href="#ConcurrentHashMap的get操作" class="headerlink" title="ConcurrentHashMap的get操作"></a>ConcurrentHashMap的get操作</h2><p>Segment的get操作实现非常简单和高效。先经过一次再哈希，然后使用这个哈希值通过哈希运算定位到segment，再通过哈希算法定位到元素，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public V get(Object key) &#123;</span><br><span class="line">  int hash = hash(key.hashCode());</span><br><span class="line">  return segmentFor(hash).get(key, hash);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>get操作的高效之处在于整个get过程不需要加锁，除非读到的值是空的才会加锁重读，我们知道HashTable容器的get方法是需要加锁的，那么ConcurrentHashMap的get操作是如何做到不加锁的呢？原因是它的get方法里将要使用的共享变量都定义成volatile，如用于统计当前Segement大小的count字段和用于存储值的HashEntry的value。定义成volatile的变量，能够在线程之间保持可见性，能够被多线程同时读，并且保证不会读到过期的值，但是只能被单线程写（有一种情况可以被多线程写，就是写入的值不依赖于原值），在get操作里只需要读不需要写共享变量count和value，所以可以不用加锁。之所以不会读到过期的值，是根据java内存模型的happen before原则，对volatile字段的写入操作先于读操作，即使两个线程同时修改和获取volatile变量，get操作也能拿到最新的值，这是用volatile替换锁的经典应用场景。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">transient volatile int count;</span><br><span class="line">volatile V value;</span><br></pre></td></tr></table></figure>
+<p>在定位元素的代码里我们可以发现定位HashEntry和定位Segment的哈希算法虽然一样，都与数组的长度减去一相与，但是相与的值不一样，定位Segment使用的是元素的hashcode通过再哈希后得到的值的高位，而定位HashEntry直接使用的是再哈希后的值。其目的是避免两次哈希后的值一样，导致元素虽然在Segment里散列开了，但是却没有在HashEntry里散列开。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hash &gt;&gt;&gt; segmentShift) &amp; segmentMask//定位Segment所使用的hash算法</span><br><span class="line">int index = hash &amp; (tab.length - 1);// 定位HashEntry所使用的hash算法</span><br></pre></td></tr></table></figure>
+
+<h2 id="ConcurrentHashMap的Put操作"><a href="#ConcurrentHashMap的Put操作" class="headerlink" title="ConcurrentHashMap的Put操作"></a>ConcurrentHashMap的Put操作</h2><p>由于put方法里需要对共享变量进行写入操作，所以为了线程安全，在操作共享变量时必须得加锁。Put方法首先定位到Segment，然后在Segment里进行插入操作。插入操作需要经历两个步骤，第一步判断是否需要对Segment里的HashEntry数组进行扩容，第二步定位添加元素的位置然后放在HashEntry数组里。</p>
+<p><strong>是否需要扩容</strong>。在插入元素前会先判断Segment里的HashEntry数组是否超过容量（threshold），如果超过阀值，数组进行扩容。值得一提的是，Segment的扩容判断比HashMap更恰当，因为HashMap是在插入元素后判断元素是否已经到达容量的，如果到达了就进行扩容，但是很有可能扩容之后没有新元素插入，这时HashMap就进行了一次无效的扩容。</p>
+<p><strong>如何扩容</strong>。扩容的时候首先会创建一个两倍于原容量的数组，然后将原数组里的元素进行再hash后插入到新的数组里。为了高效ConcurrentHashMap不会对整个容器进行扩容，而只对某个segment进行扩容。</p>
+<h2 id="ConcurrentHashMap的size操作"><a href="#ConcurrentHashMap的size操作" class="headerlink" title="ConcurrentHashMap的size操作"></a>ConcurrentHashMap的size操作</h2><p>如果我们要统计整个ConcurrentHashMap里元素的大小，就必须统计所有Segment里元素的大小后求和。Segment里的全局变量count是一个volatile变量，那么在多线程场景下，我们是不是直接把所有Segment的count相加就可以得到整个ConcurrentHashMap大小了呢？不是的，虽然相加时可以获取每个Segment的count的最新值，但是拿到之后可能累加前使用的count发生了变化，那么统计结果就不准了。所以最安全的做法，是在统计size的时候把所有Segment的put，remove和clean方法全部锁住，但是这种做法显然非常低效。</p>
+<p>因为在累加count操作过程中，之前累加过的count发生变化的几率非常小，所以ConcurrentHashMap的做法是先尝试2次通过不锁住Segment的方式来统计各个Segment大小，如果统计的过程中，容器的count发生了变化，则再采用加锁的方式来统计所有Segment的大小。</p>
+<p>那么ConcurrentHashMap是如何判断在统计的时候容器是否发生了变化呢？使用modCount变量，在put , remove和clean方法里操作元素前都会将变量modCount进行加1，那么在统计size前后比较modCount是否发生变化，从而得知容器的大小是否发生变化。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-3.Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%88%86%E6%9E%90%E5%92%8C%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-3.Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%88%86%E6%9E%90%E5%92%8C%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">Java-聊聊并发-3.Java线程池的分析和使用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-19 14:16:37" itemprop="dateCreated datePublished" datetime="2016-12-19T14:16:37+08:00">2016-12-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-threadpool/">http://ifeve.com/java-threadpool/</a></p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>合理利用线程池能够带来三个好处。</p>
+<ol>
+<li>降低资源消耗。通过重复利用已创建的线程降低线程创建和销毁造成的消耗。</li>
+<li>提高响应速度。当任务到达时，任务可以不需要的等到线程创建就能立即执行。</li>
+<li>提高线程的可管理性。线程是稀缺资源，如果无限制的创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以进行统一的分配，调优和监控。但是要做到合理的利用线程池，必须对其原理了如指掌。</li>
+</ol>
+<h2 id="线程池的使用"><a href="#线程池的使用" class="headerlink" title="线程池的使用"></a>线程池的使用</h2><h3 id="线程池的创建"><a href="#线程池的创建" class="headerlink" title="线程池的创建"></a>线程池的创建</h3><p>我们可以通过ThreadPoolExecutor来创建一个线程池。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">new ThreadPoolExecutor(corePoolSize, maximumPoolSize,</span><br><span class="line">  keepAliveTime, milliseconds, runnableTaskQueue, threadFactory, handler);</span><br></pre></td></tr></table></figure>
+<p>创建一个线程池需要输入几个参数：</p>
+<ul>
+<li>corePoolSize（线程池的基本大小）：当提交一个任务到线程池时，线程池会创建一个线程来执行任务，即使其他空闲的基本线程能够执行新任务也会创建线程，等到需要执行的任务数大于线程池基本大小时就不再创建。如果调用了线程池的prestartAllCoreThreads方法，线程池会提前创建并启动所有基本线程。</li>
+<li>runnableTaskQueue（任务队列）：用于保存等待执行的任务的阻塞队列。可以选择以下几个阻塞队列。<ul>
+<li>ArrayBlockingQueue：是一个基于数组结构的有界阻塞队列，此队列按 FIFO（先进先出）原则对元素进行排序。</li>
+<li>LinkedBlockingQueue：一个基于链表结构的阻塞队列，此队列按FIFO （先进先出） 排序元素，吞吐量通常要高于ArrayBlockingQueue。静态工厂方法Executors.newFixedThreadPool()使用了这个队列。</li>
+<li>SynchronousQueue：一个不存储元素的阻塞队列。每个插入操作必须等到另一个线程调用移除操作，否则插入操作一直处于阻塞状态，吞吐量通常要高于LinkedBlockingQueue，静态工厂方法Executors.newCachedThreadPool使用了这个队列。</li>
+<li>PriorityBlockingQueue：一个具有优先级得无限阻塞队列。</li>
+</ul>
+</li>
+<li>maximumPoolSize（线程池最大大小）：线程池允许创建的最大线程数。如果队列满了，并且已创建的线程数小于最大线程数，则线程池会再创建新的线程执行任务。值得注意的是如果使用了无界的任务队列这个参数就没什么效果。</li>
+<li>ThreadFactory：用于设置创建线程的工厂，可以通过线程工厂给每个创建出来的线程设置更有意义的名字，Debug和定位问题时非常又帮助。</li>
+<li>RejectedExecutionHandler（饱和策略）：当队列和线程池都满了，说明线程池处于饱和状态，那么必须采取一种策略处理提交的新任务。这个策略默认情况下是AbortPolicy，表示无法处理新任务时抛出异常。以下是JDK1.5提供的四种策略。n  AbortPolicy：直接抛出异常。<ul>
+<li>CallerRunsPolicy：只用调用者所在线程来运行任务。</li>
+<li>DiscardOldestPolicy：丢弃队列里最近的一个任务，并执行当前任务。</li>
+<li>DiscardPolicy：不处理，丢弃掉。</li>
+<li>当然也可以根据应用场景需要来实现RejectedExecutionHandler接口自定义策略。如记录日志或持久化不能处理的任务。</li>
+</ul>
+</li>
+<li>keepAliveTime（线程活动保持时间）：线程池的工作线程空闲后，保持存活的时间。所以如果任务很多，并且每个任务执行的时间比较短，可以调大这个时间，提高线程的利用率。</li>
+<li>TimeUnit（线程活动保持时间的单位）：可选的单位有天（DAYS），小时（HOURS），分钟（MINUTES），毫秒(MILLISECONDS)，微秒(MICROSECONDS, 千分之一毫秒)和毫微秒(NANOSECONDS, 千分之一微秒)。</li>
+</ul>
+<h3 id="向线程池提交任务"><a href="#向线程池提交任务" class="headerlink" title="向线程池提交任务"></a>向线程池提交任务</h3><p>我们可以使用execute提交的任务，但是execute方法没有返回值，所以无法判断任务知否被线程池执行成功。通过以下代码可知execute方法输入的任务是一个Runnable类的实例。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">threadsPool.execute(new Runnable() &#123;</span><br><span class="line"></span><br><span class="line">  @Override</span><br><span class="line">  public void run() &#123;</span><br><span class="line">  // TODO Auto-generated method stub</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>我们也可以使用submit 方法来提交任务，它会返回一个future,那么我们可以通过这个future来判断任务是否执行成功，通过future的get方法来获取返回值，get方法会阻塞住直到任务完成，而使用get(long timeout, TimeUnit unit)方法则会阻塞一段时间后立即返回，这时有可能任务没有执行完。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">try &#123;</span><br><span class="line"></span><br><span class="line">  Object s = future.get();</span><br><span class="line">&#125; catch (InterruptedException e) &#123;</span><br><span class="line">  // 处理中断异常</span><br><span class="line">&#125; catch (ExecutionException e) &#123;</span><br><span class="line">  // 处理无法执行任务异常</span><br><span class="line">&#125; finally &#123;</span><br><span class="line">  // 关闭线程池</span><br><span class="line">  executor.shutdown();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="线程池的关闭"><a href="#线程池的关闭" class="headerlink" title="线程池的关闭"></a>线程池的关闭</h3><p>我们可以通过调用线程池的shutdown或shutdownNow方法来关闭线程池，但是它们的实现原理不同，shutdown的原理是只是将线程池的状态设置成SHUTDOWN状态，然后中断所有没有正在执行任务的线程。shutdownNow的原理是遍历线程池中的工作线程，然后逐个调用线程的interrupt方法来中断线程，所以无法响应中断的任务可能永远无法终止。shutdownNow会首先将线程池的状态设置成STOP，然后尝试停止所有的正在执行或暂停任务的线程，并返回等待执行任务的列表。</p>
+<p>只要调用了这两个关闭方法的其中一个，isShutdown方法就会返回true。当所有的任务都已关闭后,才表示线程池关闭成功，这时调用isTerminaed方法会返回true。至于我们应该调用哪一种方法来关闭线程池，应该由提交到线程池的任务特性决定，通常调用shutdown来关闭线程池，如果任务不一定要执行完，则可以调用shutdownNow。</p>
+<h2 id="线程池的分析"><a href="#线程池的分析" class="headerlink" title="线程池的分析"></a>线程池的分析</h2><p>流程分析：线程池的主要工作流程如下图：</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-3.Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%88%86%E6%9E%90%E5%92%8C%E4%BD%BF%E7%94%A8/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%BB%E8%A6%81%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png" alt="Java线程池主要工作流程"></p>
+<p>从上图我们可以看出，当提交一个新任务到线程池时，线程池的处理流程如下：</p>
+<ol>
+<li>首先线程池判断基本线程池是否已满？没满，创建一个工作线程来执行任务。满了，则进入下个流程。</li>
+<li>其次线程池判断工作队列是否已满？没满，则将新提交的任务存储在工作队列里。满了，则进入下个流程。</li>
+<li>最后线程池判断整个线程池是否已满？没满，则创建一个新的工作线程来执行任务，满了，则交给饱和策略来处理这个任务。</li>
+</ol>
+<p><strong>源码分析</strong>。上面的流程分析让我们很直观的了解的线程池的工作原理，让我们再通过源代码来看看是如何实现的。线程池执行任务的方法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">public void execute(Runnable command) &#123;</span><br><span class="line"></span><br><span class="line">  if (command == null)</span><br><span class="line">    throw new NullPointerException();</span><br><span class="line"></span><br><span class="line">  //如果线程数小于基本线程数，则创建线程并执行当前任务</span><br><span class="line">  if (poolSize &gt;= corePoolSize || !addIfUnderCorePoolSize(command)) &#123;</span><br><span class="line">    //如线程数大于等于基本线程数或线程创建失败，则将当前任务放到工作队列中。</span><br><span class="line">    if (runState == RUNNING &amp;&amp; workQueue.offer(command)) &#123;</span><br><span class="line">      if (runState != RUNNING || poolSize == 0)</span><br><span class="line">        ensureQueuedTaskHandled(command);</span><br><span class="line">    &#125;</span><br><span class="line">    //如果线程池不处于运行中或任务无法放入队列，并且当前线程数量小于最大允许的线程数量，则创建一个线程执行任务。</span><br><span class="line">    else if (!addIfUnderMaximumPoolSize(command))</span><br><span class="line">      //抛出RejectedExecutionException异常</span><br><span class="line">      reject(command); // is shutdown or saturated</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>工作线程</strong>。线程池创建线程时，会将线程封装成工作线程Worker，Worker在执行完任务后，还会无限循环获取工作队列里的任务来执行。我们可以从Worker的run方法里看到这点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public void run() &#123;</span><br><span class="line"></span><br><span class="line">  try &#123;</span><br><span class="line">    Runnable task = firstTask;</span><br><span class="line">    firstTask = null;</span><br><span class="line">    while (task != null || (task = getTask()) != null) &#123;</span><br><span class="line">      runTask(task);</span><br><span class="line">      task = null;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; finally &#123;</span><br><span class="line">    workerDone(this);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="合理的配置线程池"><a href="#合理的配置线程池" class="headerlink" title="合理的配置线程池"></a>合理的配置线程池</h2><p>要想合理的配置线程池，就必须首先分析任务特性，可以从以下几个角度来进行分析：</p>
+<ol>
+<li>任务的性质：CPU密集型任务，IO密集型任务和混合型任务。</li>
+<li>任务的优先级：高，中和低。</li>
+<li>任务的执行时间：长，中和短。</li>
+<li>任务的依赖性：是否依赖其他系统资源，如数据库连接。</li>
+</ol>
+<p>任务性质不同的任务可以用不同规模的线程池分开处理。CPU密集型任务配置尽可能少的线程数量，如配置Ncpu+1个线程的线程池。IO密集型任务则由于需要等待IO操作，线程并不是一直在执行任务，则配置尽可能多的线程，如2*Ncpu。混合型的任务，如果可以拆分，则将其拆分成一个CPU密集型任务和一个IO密集型任务，只要这两个任务执行的时间相差不是太大，那么分解后执行的吞吐率要高于串行执行的吞吐率，如果这两个任务执行时间相差太大，则没必要进行分解。我们可以通过Runtime.getRuntime().availableProcessors()方法获得当前设备的CPU个数。</p>
+<p>优先级不同的任务可以使用优先级队列PriorityBlockingQueue来处理。它可以让优先级高的任务先得到执行，需要注意的是如果一直有优先级高的任务提交到队列里，那么优先级低的任务可能永远不能执行。</p>
+<p>执行时间不同的任务可以交给不同规模的线程池来处理，或者也可以使用优先级队列，让执行时间短的任务先执行。</p>
+<p>依赖数据库连接池的任务，因为线程提交SQL后需要等待数据库返回结果，如果等待的时间越长CPU空闲时间就越长，那么线程数应该设置越大，这样才能更好的利用CPU。</p>
+<p><strong>建议使用有界队列</strong>，有界队列能增加系统的稳定性和预警能力，可以根据需要设大一点，比如几千。有一次我们组使用的后台任务线程池的队列和线程池全满了，不断的抛出抛弃任务的异常，通过排查发现是数据库出现了问题，导致执行SQL变得非常缓慢，因为后台任务线程池里的任务全是需要向数据库查询和插入数据的，所以导致线程池里的工作线程全部阻塞住，任务积压在线程池里。如果当时我们设置成无界队列，线程池的队列就会越来越多，有可能会撑满内存，导致整个系统不可用，而不只是后台任务出现问题。当然我们的系统所有的任务是用的单独的服务器部署的，而我们使用不同规模的线程池跑不同类型的任务，但是出现这样问题时也会影响到其他任务。</p>
+<h2 id="线程池的监控"><a href="#线程池的监控" class="headerlink" title="线程池的监控"></a>线程池的监控</h2><p><strong>通过线程池提供的参数进行监控</strong>。线程池里有一些属性在监控线程池的时候可以使用</p>
+<ul>
+<li>taskCount：线程池需要执行的任务数量。</li>
+<li>completedTaskCount：线程池在运行过程中已完成的任务数量。小于或等于taskCount。</li>
+<li>largestPoolSize：线程池曾经创建过的最大线程数量。通过这个数据可以知道线程池是否满过。如等于线程池的最大大小，则表示线程池曾经满了。</li>
+<li>getPoolSize:线程池的线程数量。如果线程池不销毁的话，池里的线程不会自动销毁，所以这个大小只增不减。</li>
+<li>getActiveCount：获取活动的线程数。</li>
+</ul>
+<p><strong>通过扩展线程池进行监控</strong>。通过继承线程池并重写线程池的beforeExecute，afterExecute和terminated方法，我们可以在任务执行前，执行后和线程池关闭前干一些事情。如监控任务的平均执行时间，最大执行时间和最小执行时间等。这几个方法在线程池里是空方法。如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">protected void beforeExecute(Thread t, Runnable r) &#123; &#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-2.Java%20SE1.6%E4%B8%AD%E7%9A%84Synchronized/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1103,467 +1547,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/16/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Why%20is%20Java%20Vector%20class%20considered%20obsolete%20or%20deprecated/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/16/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Why%20is%20Java%20Vector%20class%20considered%20obsolete%20or%20deprecated/" class="post-title-link" itemprop="url">Why is Java Vector class considered obsolete or deprecated</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-16 15:44:29" itemprop="dateCreated datePublished" datetime="2016-12-16T15:44:29+08:00">2016-12-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/1386275/why-is-java-vector-class-considered-obsolete-or-deprecated">http://stackoverflow.com/questions/1386275/why-is-java-vector-class-considered-obsolete-or-deprecated</a></p>
-<p>问题是：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Why is Java Vector considered a legacy class, obsolete or deprecated?</span><br><span class="line"></span><br><span class="line">Isn&#x27;t its use valid when working with concurrency?</span><br><span class="line"></span><br><span class="line">And if I don&#x27;t want to manually synchronize objects and just want to use a thread-safe collection without needing to make fresh copies of the underlying array (as CopyOnWriteArrayList does), then is it fine to use Vector?</span><br><span class="line"></span><br><span class="line">What about Stack, which is a subclass of Vector, what should I use instead of it?</span><br></pre></td></tr></table></figure>
-
-<p>解答：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Vector synchronizes on each individual operation. That&#x27;s almost never what you want to do.</span><br><span class="line"></span><br><span class="line">Generally you want to synchronize a whole sequence of operations. Synchronizing individual operations is both less safe (if you iterate over a Vector, for instance, you still need to take out a lock to avoid anyone else changing the collection at the same time, which would cause a ConcurrentModificationException in the iterating thread) but also slower (why take out a lock repeatedly when once will be enough)?</span><br><span class="line"></span><br><span class="line">Of course, it also has the overhead of locking even when you don&#x27;t need to.</span><br><span class="line"></span><br><span class="line">Basically, it&#x27;s a very flawed approach to synchronization in most situations. As Mr Brian Henk pointed out, you can decorate a collection using the calls such as Collections.synchronizedList - the fact that Vector combines both the &quot;resized array&quot; collection implementation with the &quot;synchronize every operation&quot; bit is another example of poor design; the decoration approach gives cleaner separation of concerns.</span><br><span class="line"></span><br><span class="line">As for a Stack equivalent - I&#x27;d look at Deque/ArrayDeque to start with.</span><br></pre></td></tr></table></figure>
-
-<p>从JDK1.0开始，Vector便存在JDK中，Vector是一个线程安全的列表，采用数组实现。其线程安全的实现方式是对所有操作都加上了synchronized关键字，这种方式严重影响效率，因此，不再推荐使用Vector了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/" class="post-title-link" itemprop="url">Intellij-debug-多线程debug</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-15 17:00:13" itemprop="dateCreated datePublished" datetime="2016-12-15T17:00:13+08:00">2016-12-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="右键断点或者断点设置"><a href="#右键断点或者断点设置" class="headerlink" title="右键断点或者断点设置"></a>右键断点或者断点设置</h3><p><img src="/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/1.1.png" alt="1.1"><br>或者<br><img src="/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/1.2.png" alt="1.2"></p>
-<h3 id="debug运行"><a href="#debug运行" class="headerlink" title="debug运行"></a>debug运行</h3><p>在箭头处切换线程</p>
-<p><img src="/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/2.png" alt="2"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%EF%BC%88Eden%20Space%E3%80%81Survivor%20Space%E3%80%81Old%20Gen%E3%80%81Code%20Cache%E5%92%8CPerm%20Gen%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%EF%BC%88Eden%20Space%E3%80%81Survivor%20Space%E3%80%81Old%20Gen%E3%80%81Code%20Cache%E5%92%8CPerm%20Gen%EF%BC%89/" class="post-title-link" itemprop="url">JVM内存区域详解（Eden Space、Survivor Space、Old Gen、Code Cache和Perm Gen）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-14 20:04:11" itemprop="dateCreated datePublished" datetime="2016-12-14T20:04:11+08:00">2016-12-14</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>JVM区域总体分两类，heap区和非heap区。 </p>
-<p>heap区又分为： </p>
-<ul>
-<li>Eden Space（伊甸园）、 </li>
-<li>Survivor Space(幸存者区)、 </li>
-<li>Old Gen（老年代）。</li>
-</ul>
-<p>非heap区又分： </p>
-<ul>
-<li>Code Cache(代码缓存区)； </li>
-<li>Perm Gen（永久代）； </li>
-<li>Jvm Stack(Java虚拟机栈)； </li>
-<li>Local Method Statck(本地方法栈)；</li>
-</ul>
-<p>下面我们对每一个内存区域做详细介绍。 </p>
-<h3 id="Eden-Space"><a href="#Eden-Space" class="headerlink" title="Eden Space"></a>Eden Space</h3><p>字面意思是伊甸园，对象被创建的时候首先放到这个区域，进行垃圾回收后，不能被回收的对象被放入到空的survivor区域。</p>
-<h3 id="Survivor-Space"><a href="#Survivor-Space" class="headerlink" title="Survivor Space"></a>Survivor Space</h3><p>幸存者区，用于保存在eden space内存区域中经过垃圾回收后没有被回收的对象。Survivor有两个，分别为To Survivor、 From Survivor，这个两个区域的空间大小是一样的。执行垃圾回收的时候Eden区域不能被回收的对象被放入到空的survivor（也就是To Survivor，同时Eden区域的内存会在垃圾回收的过程中全部释放），另一个survivor（即From Survivor）里不能被回收的对象也会被放入这个survivor（即To Survivor），然后To Survivor 和 From Survivor的标记会互换，始终保证一个survivor是空的。</p>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%EF%BC%88Eden%20Space%E3%80%81Survivor%20Space%E3%80%81Old%20Gen%E3%80%81Code%20Cache%E5%92%8CPerm%20Gen%EF%BC%89/1.png" alt="1"></p>
-<p>Eden Space和Survivor Space都属于新生代，新生代中执行的垃圾回收被称之为Minor GC（因为是对新生代进行垃圾回收，所以又被称为Young GC），每一次Young GC后留下来的对象age加1。</p>
-<p>注：GC为Garbage Collection，垃圾回收。</p>
-<h3 id="Old-Gen"><a href="#Old-Gen" class="headerlink" title="Old Gen"></a>Old Gen</h3><p>老年代，用于存放新生代中经过多次垃圾回收仍然存活的对象，也有可能是新生代分配不了内存的大对象会直接进入老年代。经过多次垃圾回收都没有被回收的对象，这些对象的年代已经足够old了，就会放入到老年代。</p>
-<p>当老年代被放满的之后，虚拟机会进行垃圾回收，称之为Major GC。由于Major GC除并发GC外均需对整个堆进行扫描和回收，因此又称为Full GC。</p>
-<p>heap区即堆内存，整个堆大小=年轻代大小 + 老年代大小。堆内存默认为物理内存的1/64(&lt;1GB)；默认空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制，可以通过MinHeapFreeRatio参数进行调整；默认空余堆内存大于70%时，JVM会减少堆直到-Xms的最小限制，可以通过MaxHeapFreeRatio参数进行调整。</p>
-<p>下面我们来认识下非堆内存（非heap区） </p>
-<h3 id="Code-Cache"><a href="#Code-Cache" class="headerlink" title="Code Cache"></a>Code Cache</h3><p>代码缓存区，它主要用于存放JIT所编译的代码。CodeCache代码缓冲区的大小在client模式下默认最大是32m，在server模式下默认是48m，这个值也是可以设置的，它所对应的JVM参数为ReservedCodeCacheSize 和 InitialCodeCacheSize，可以通过如下的方式来为Java程序设置。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:ReservedCodeCacheSize=128m</span><br></pre></td></tr></table></figure>
-<p>CodeCache缓存区是可能被充满的，当CodeCache满时，后台会收到CodeCache is full的警告信息，如下所示：<code>“CompilerThread0” java.lang.OutOfMemoryError: requested 2854248 bytes for Chunk::new. Out of swap space?</code></p>
-<p>注：JIT编译器是在程序运行期间，将Java字节码编译成平台相关的二进制代码。正因为此编译行为发生在程序运行期间，所以该编译器被称为Just-In-Time编译器。</p>
-<h3 id="Perm-Gen"><a href="#Perm-Gen" class="headerlink" title="Perm Gen"></a>Perm Gen</h3><p>全称是Permanent Generation space，是指内存的永久保存区域，因而称之为永久代。这个内存区域用于存放Class和Meta的信息，Class在被 Load的时候被放入这个区域。因为Perm里存储的东西永远不会被JVM垃圾回收的，所以如果你的应用程序LOAD很多CLASS的话，就很可能出现PermGen space错误。默认大小为物理内存的1/64。</p>
-<hr>
-<p>简单来讲，jvm的内存回收过程是这样的：</p>
-<p>对象在Eden Space创建，当Eden Space满了的时候，gc就把所有在Eden Space中的对象扫描一次，把所有有效的对象复制到第一个Survivor Space，同时把无效的对象所占用的空间释放。当Eden Space再次变满了的时候，就启动移动程序把Eden Space中有效的对象复制到第二个Survivor Space，同时，也将第一个Survivor Space中的有效对象复制到第二个Survivor Space。如果填充到第二个Survivor Space中的有效对象被第一个Survivor Space或Eden Space中的对象引用，那么这些对象就是长期存在的，此时这些对象将被复制到Permanent Generation。</p>
-<p>若垃圾收集器依据这种小幅度的调整收集不能腾出足够的空间，就会运行Full GC，此时jvm gc停止所有在堆中运行的线程并执行清除动作。</p>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%EF%BC%88Eden%20Space%E3%80%81Survivor%20Space%E3%80%81Old%20Gen%E3%80%81Code%20Cache%E5%92%8CPerm%20Gen%EF%BC%89/2.png" alt="2"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/" class="post-title-link" itemprop="url">GC算法&垃圾收集器</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-14 17:44:23" itemprop="dateCreated datePublished" datetime="2016-12-14T17:44:23+08:00">2016-12-14</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>垃圾收集 Garbage Collection 通常被称为“GC”，它诞生于1960年 MIT 的 Lisp 语言，经过半个多世纪，目前已经十分成熟了。</p>
-<p>jvm 中，程序计数器、虚拟机栈、本地方法栈都是随线程而生随线程而灭，栈帧随着方法的进入和退出做入栈和出栈操作，实现了自动的内存清理，因此，我们的内存垃圾回收主要集中于 java 堆和方法区中，在程序运行期间，这部分内存的分配和使用都是动态的.</p>
-<h2 id="对象存活判断"><a href="#对象存活判断" class="headerlink" title="对象存活判断"></a>对象存活判断</h2><p>判断对象是否存活一般有两种方式：</p>
-<ul>
-<li>引用计数：每个对象有一个引用计数属性，新增一个引用时计数加1，引用释放时计数减1，计数为0时可以回收。此方法简单，无法解决对象相互循环引用的问题。（JVM没有采用这种，因为互相引用，会导致回收不了）</li>
-<li>可达性分析（Reachability Analysis）：从GC Roots开始向下搜索，搜索所走过的路径称为引用链。当一个对象到GC Roots没有任何引用链相连时，则证明此对象是不可用的。不可达对象。</li>
-</ul>
-<p>在Java语言中，GC Roots包括：</p>
-<ul>
-<li>虚拟机栈中引用的对象。</li>
-<li>方法区中类静态属性实体引用的对象。</li>
-<li>方法区中常量引用的对象。</li>
-<li>本地方法栈中JNI引用的对象。</li>
-</ul>
-<h2 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h2><h3 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h3><p>“标记-清除”（Mark-Sweep）算法，如它的名字一样，算法分为“标记”和“清除”两个阶段：首先标记出所有需要回收的对象，在标记完成后统一回收掉所有被标记的对象。之所以说它是最基础的收集算法，是因为后续的收集算法都是基于这种思路并对其缺点进行改进而得到的。</p>
-<p>它的主要缺点有两个：一个是效率问题，标记和清除过程的效率都不高；另外一个是空间问题，标记清除之后会产生大量不连续的内存碎片，空间碎片太多可能会导致，当程序在以后的运行过程中需要分配较大对象时无法找到足够的连续内存而不得不提前触发另一次垃圾收集动作。</p>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95.png" alt="标记-清除算法"></p>
-<h3 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h3><p>“复制”（Copying）的收集算法，它将可用内存按容量划分为大小相等的两块，每次只使用其中的一块。当这一块的内存用完了，就将还存活着的对象复制到另外一块上面，然后再把已使用过的内存空间一次清理掉。</p>
-<p>这样使得每次都是对其中的一块进行内存回收，内存分配时也就不用考虑内存碎片等复杂情况，只要移动堆顶指针，按顺序分配内存即可，实现简单，运行高效。只是这种算法的代价是将内存缩小为原来的一半，持续复制长生存期的对象则导致效率降低。</p>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/%E5%A4%8D%E5%88%B6%E7%AE%97%E6%B3%95.png" alt="复制算法"></p>
-<h3 id="标记-压缩算法"><a href="#标记-压缩算法" class="headerlink" title="标记-压缩算法"></a>标记-压缩算法</h3><p>复制收集算法在对象存活率较高时就要执行较多的复制操作，效率将会变低。更关键的是，如果不想浪费50%的空间，就需要有额外的空间进行分配担保，以应对被使用的内存中所有对象都100%存活的极端情况，所以在老年代一般不能直接选用这种算法。</p>
-<p>根据老年代的特点，有人提出了另外一种“标记-整理”（Mark-Compact）算法，标记过程仍然与“标记-清除”算法一样，但后续步骤不是直接对可回收对象进行清理，而是让所有存活的对象都向一端移动，然后直接清理掉端边界以外的内存</p>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/%E6%A0%87%E8%AE%B0-%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95.png" alt="标记-压缩算法"></p>
-<h3 id="分代收集算法"><a href="#分代收集算法" class="headerlink" title="分代收集算法"></a>分代收集算法</h3><p>GC分代的基本假设：绝大部分对象的生命周期都非常短暂，存活时间短。</p>
-<p>“分代收集”（Generational Collection）算法，把Java堆分为新生代和老年代，这样就可以根据各个年代的特点采用最适当的收集算法。在新生代中，每次垃圾收集时都发现有大批对象死去，只有少量存活，那就选用复制算法，只需要付出少量存活对象的复制成本就可以完成收集。而老年代中因为对象存活率高、没有额外空间对它进行分配担保，就必须使用“标记-清理”或“标记-整理”算法来进行回收。</p>
-<h2 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h2><p>如果说收集算法是内存回收的方法论，垃圾收集器就是内存回收的具体实现</p>
-<h3 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h3><p>串行收集器是最古老，最稳定以及效率高的收集器，可能会产生较长的停顿，只使用一个线程去回收。新生代、老年代使用串行回收；新生代复制算法、老年代标记-压缩；垃圾收集的过程中会Stop The World（服务暂停）</p>
-<p>参数控制：</p>
-<ul>
-<li><strong>-XX:+UseSerialGC</strong> 串行收集器</li>
-</ul>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/Serial%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="Serial收集器"></p>
-<h3 id="ParNew收集器"><a href="#ParNew收集器" class="headerlink" title="ParNew收集器"></a>ParNew收集器</h3><p>ParNew收集器其实就是Serial收集器的多线程版本。新生代并行，老年代串行；新生代复制算法、老年代标记-压缩</p>
-<p>参数控制：</p>
-<ul>
-<li><strong>-XX:+UseParNewGC</strong> ParNew收集器</li>
-<li><strong>-XX:ParallelGCThreads</strong> 限制线程数量</li>
-</ul>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/ParNew%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="ParNew收集器"></p>
-<h3 id="Parallel收集器"><a href="#Parallel收集器" class="headerlink" title="Parallel收集器"></a>Parallel收集器</h3><p>Parallel Scavenge收集器类似ParNew收集器，Parallel收集器更关注系统的吞吐量。可以通过参数来打开自适应调节策略，虚拟机会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或最大的吞吐量；也可以通过参数控制GC的时间不大于多少毫秒或者比例；新生代复制算法、老年代标记-压缩</p>
-<p>参数控制：</p>
-<ul>
-<li><strong>-XX:+UseParallelGC</strong> 使用Parallel收集器+ 老年代串行</li>
-</ul>
-<h3 id="Parallel-Old-收集器"><a href="#Parallel-Old-收集器" class="headerlink" title="Parallel Old 收集器"></a>Parallel Old 收集器</h3><p>Parallel Old是Parallel Scavenge收集器的老年代版本，使用多线程和“标记－整理”算法。这个收集器是在JDK 1.6中才开始提供</p>
-<p>参数控制：</p>
-<ul>
-<li><strong>-XX:+UseParallelOldGC</strong> 使用Parallel收集器+ 老年代并行</li>
-</ul>
-<h3 id="CMS收集器"><a href="#CMS收集器" class="headerlink" title="CMS收集器"></a>CMS收集器</h3><p>CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器。目前很大一部分的Java应用都集中在互联网站或B/S系统的服务端上，这类应用尤其重视服务的响应速度，希望系统停顿时间最短，以给用户带来较好的体验。</p>
-<p>从名字（包含“Mark Sweep”）上就可以看出CMS收集器是基于“标记-清除”算法实现的，它的运作过程相对于前面几种收集器来说要更复杂一些，整个过程分为4个步骤，包括： </p>
-<ul>
-<li>初始标记（CMS initial mark）</li>
-<li>并发标记（CMS concurrent mark）</li>
-<li>重新标记（CMS remark）</li>
-<li>并发清除（CMS concurrent sweep）</li>
-</ul>
-<p>其中初始标记、重新标记这两个步骤仍然需要“Stop The World”。初始标记仅仅只是标记一下GC Roots能直接关联到的对象，速度很快，并发标记阶段就是进行GC Roots Tracing的过程，而重新标记阶段则是为了修正并发标记期间，因用户程序继续运作而导致标记产生变动的那一部分对象的标记记录，这个阶段的停顿时间一般会比初始标记阶段稍长一些，但远比并发标记的时间短。 </p>
-<p>由于整个过程中耗时最长的并发标记和并发清除过程中，收集器线程都可以与用户线程一起工作，所以总体上来说，CMS收集器的内存回收过程是与用户线程一起并发地执行。老年代收集器（新生代使用ParNew）</p>
-<p>优点:并发收集、低停顿 </p>
-<p>缺点：产生大量空间碎片、并发阶段会降低吞吐量</p>
-<p>参数控制：</p>
-<ul>
-<li><strong>-XX:+UseConcMarkSweepGC</strong> 使用CMS收集器</li>
-<li><strong>-XX:+ UseCMSCompactAtFullCollection</strong> Full GC后，进行一次碎片整理；整理过程是独占的，会引起停顿时间变长</li>
-<li><strong>-XX:+CMSFullGCsBeforeCompaction</strong> 设置进行几次Full GC后，进行一次碎片整理</li>
-<li><strong>-XX:ParallelCMSThreads</strong> 设定CMS的线程数量（一般情况约等于可用CPU数量）</li>
-</ul>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/CMS%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="CMS收集器"></p>
-<h3 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h3><p>G1是目前技术发展的最前沿成果之一，HotSpot开发团队赋予它的使命是未来可以替换掉JDK1.5中发布的CMS收集器。与CMS收集器相比G1收集器有以下特点：</p>
-<ol>
-<li>空间整合，G1收集器采用标记整理算法，不会产生内存空间碎片。分配大对象时不会因为无法找到连续空间而提前触发下一次GC。</li>
-<li>可预测停顿，这是G1的另一大优势，降低停顿时间是G1和CMS的共同关注点，但G1除了追求低停顿外，还能建立可预测的停顿时间模型，能让使用者明确指定在一个长度为N毫秒的时间片段内，消耗在垃圾收集上的时间不得超过N毫秒，这几乎已经是实时Java（RTSJ）的垃圾收集器的特征了。</li>
-</ol>
-<p>上面提到的垃圾收集器，收集的范围都是整个新生代或者老年代，而G1不再是这样。使用G1收集器时，Java堆的内存布局与其他收集器有很大差别，它将整个Java堆划分为多个大小相等的独立区域（Region），虽然还保留有新生代和老年代的概念，但新生代和老年代不再是物理隔阂了，它们都是一部分（可以不连续）Region的集合。</p>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/G1%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="G1收集器"></p>
-<p>G1的新生代收集跟ParNew类似，当新生代占用达到一定比例的时候，开始出发收集。和CMS类似，G1收集器收集老年代对象会有短暂停顿。</p>
-<p>收集步骤：</p>
-<ol>
-<li><p>标记阶段，首先初始标记(Initial-Mark),这个阶段是停顿的(Stop the World Event)，并且会触发一次普通Mintor GC。对应GC log:GC pause (young) (inital-mark)</p>
-</li>
-<li><p>Root Region Scanning，程序运行过程中会回收survivor区(存活到老年代)，这一过程必须在young GC之前完成。</p>
-</li>
-<li><p>Concurrent Marking，在整个堆中进行并发标记(和应用程序并发执行)，此过程可能被young GC中断。在并发标记阶段，若发现区域对象中的所有对象都是垃圾，那个这个区域会被立即回收(图中打X)。同时，并发标记过程中，会计算每个区域的对象活性(区域中存活对象的比例)。</p>
-<p> ![Concurrent Marking](GC算法&amp;垃圾收集器/Concurrent Marking.png)</p>
-</li>
-<li><p>Remark, 再标记，会有短暂停顿(STW)。再标记阶段是用来收集 并发标记阶段 产生新的垃圾(并发阶段和应用程序一同运行)；G1中采用了比CMS更快的初始快照算法:snapshot-at-the-beginning (SATB)。</p>
-</li>
-<li><p>Copy/Clean up，多线程清除失活对象，会有STW。G1将回收区域的存活对象拷贝到新区域，清除Remember Sets，并发清空回收区域并把它返回到空闲区域链表中。</p>
-</li>
-</ol>
-<p>![Copy&amp;Clean up](GC算法&amp;垃圾收集器/Copy&amp;Clean up.png)</p>
-<ol start="6">
-<li>复制/清除过程后。回收区域的活性对象已经被集中回收到深蓝色和深绿色区域。</li>
-</ol>
-<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/%E5%A4%8D%E5%88%B6&%E6%B8%85%E9%99%A4.png" alt="复制&amp;清除"></p>
-<h2 id="常用的收集器组合"><a href="#常用的收集器组合" class="headerlink" title="常用的收集器组合"></a>常用的收集器组合</h2><table>
-<thead>
-<tr>
-<th align="center"></th>
-<th align="center">新生代GC策略</th>
-<th align="center">年老代GC策略</th>
-<th align="center">说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">组合1</td>
-<td align="center">Serial</td>
-<td align="center">Serial Old</td>
-<td align="center">Serial和Serial Old都是单线程进行GC，特点就是GC时暂停所有应用线程。</td>
-</tr>
-<tr>
-<td align="center">组合2</td>
-<td align="center">Serial</td>
-<td align="center">CMS+Serial Old</td>
-<td align="center">CMS（Concurrent Mark Sweep）是并发GC，实现GC线程和应用线程并发工作，不需要暂停所有应用线程。另外，当CMS进行GC失败时，会自动使用Serial Old策略进行GC。</td>
-</tr>
-<tr>
-<td align="center">组合3</td>
-<td align="center">ParNew</td>
-<td align="center">CMS</td>
-<td align="center">使用-XX:+UseParNewGC选项来开启。ParNew是Serial的并行版本，可以指定GC线程数，默认GC线程数为CPU的数量。可以使用-XX:ParallelGCThreads选项指定GC的线程数。 \n如果指定了选项-XX:+UseConcMarkSweepGC选项，则新生代默认使用ParNew GC策略。</td>
-</tr>
-<tr>
-<td align="center">组合4</td>
-<td align="center">ParNew</td>
-<td align="center">Serial Old</td>
-<td align="center">使用-XX:+UseParNewGC选项来开启。新生代使用ParNew GC策略，年老代默认使用Serial Old GC策略。</td>
-</tr>
-<tr>
-<td align="center">组合5</td>
-<td align="center">Parallel Scavenge</td>
-<td align="center">Serial Old</td>
-<td align="center">Parallel Scavenge策略主要是关注一个可控的吞吐量：应用程序运行时间 / (应用程序运行时间 + GC时间)，可见这会使得CPU的利用率尽可能的高，适用于后台持久运行的应用程序，而不适用于交互较多的应用程序。</td>
-</tr>
-<tr>
-<td align="center">组合6</td>
-<td align="center">Parallel Scavenge</td>
-<td align="center">Parallel Old</td>
-<td align="center">Parallel Old是Serial Old的并行版本</td>
-</tr>
-<tr>
-<td align="center">组合7</td>
-<td align="center">G1GC</td>
-<td align="center">G1GC</td>
-<td align="center">-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC #开启 \n -XX:MaxGCPauseMillis =50 #暂停时间目标 \n -XX:GCPauseIntervalMillis =200 #暂停间隔目标 \n -XX:+G1YoungGenSize=512m #年轻代大小 \n -XX:SurvivorRatio=6 #幸存区比例</td>
-</tr>
-</tbody></table>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/26/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/26/">26</a><span class="page-number current">27</span><a class="page-number" href="/page/28/">28</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/28/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/26/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/26/">26</a><span class="page-number current">27</span><a class="page-number" href="/page/28/">28</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/28/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1631,7 +1618,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1644,7 +1631,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

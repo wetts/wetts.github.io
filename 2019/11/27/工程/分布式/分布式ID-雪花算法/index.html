@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;85837641 一分布式ID的特点全局唯一性不能出现有重复的ID标识，这是基本要求。 递增性确保生成ID对于用户或业务是递增的。 高可用性确保任何时候都能生成正确的ID。 高性能性在高并发的环境下依然表现良好。 分布式ID的常见解决方案UUIDJava自带的生成一串唯一随机36位字符串（32个字符串+4个“-”）的算法。它可以保证唯">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式ID-雪花算法.md">
+<meta property="og:url" content="https://wetts.github.io/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;85837641 一分布式ID的特点全局唯一性不能出现有重复的ID标识，这是基本要求。 递增性确保生成ID对于用户或业务是递增的。 高可用性确保任何时候都能生成正确的ID。 高性能性在高并发的环境下依然表现良好。 分布式ID的常见解决方案UUIDJava自带的生成一串唯一随机36位字符串（32个字符串+4个“-”）的算法。它可以保证唯">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/1.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/2.png">
+<meta property="og:image" content="https://wetts.github.io/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/3.png">
+<meta property="article:published_time" content="2019-11-27T06:58:57.000Z">
+<meta property="article:modified_time" content="2021-07-27T08:47:20.963Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="ID">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/1.jpg">
+
+<link rel="canonical" href="https://wetts.github.io/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>分布式ID-雪花算法.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分布式ID-雪花算法.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-27 14:58:57" itemprop="dateCreated datePublished" datetime="2019-11-27T14:58:57+08:00">2019-11-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/85837641">https://zhuanlan.zhihu.com/p/85837641</a></p>
+<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><h2 id="分布式ID的特点"><a href="#分布式ID的特点" class="headerlink" title="分布式ID的特点"></a>分布式ID的特点</h2><h3 id="全局唯一性"><a href="#全局唯一性" class="headerlink" title="全局唯一性"></a>全局唯一性</h3><p>不能出现有重复的ID标识，这是基本要求。</p>
+<h3 id="递增性"><a href="#递增性" class="headerlink" title="递增性"></a>递增性</h3><p>确保生成ID对于用户或业务是递增的。</p>
+<h3 id="高可用性"><a href="#高可用性" class="headerlink" title="高可用性"></a>高可用性</h3><p>确保任何时候都能生成正确的ID。</p>
+<h3 id="高性能性"><a href="#高性能性" class="headerlink" title="高性能性"></a>高性能性</h3><p>在高并发的环境下依然表现良好。</p>
+<h2 id="分布式ID的常见解决方案"><a href="#分布式ID的常见解决方案" class="headerlink" title="分布式ID的常见解决方案"></a>分布式ID的常见解决方案</h2><h3 id="UUID"><a href="#UUID" class="headerlink" title="UUID"></a>UUID</h3><p>Java自带的生成一串唯一随机36位字符串（32个字符串+4个“-”）的算法。它可以保证唯一性，且据说够用N亿年，但是其业务可读性差，无法有序递增。</p>
+<h3 id="SnowFlake"><a href="#SnowFlake" class="headerlink" title="SnowFlake"></a>SnowFlake</h3><p>今天的主角雪花算法，它是Twitter开源的由64位整数组成分布式ID，性能较高，并且在单机上递增。 具体参考：<code>https://github.com/twitter-archive/snowflake</code></p>
+<h3 id="UidGenerator"><a href="#UidGenerator" class="headerlink" title="UidGenerator"></a>UidGenerator</h3><p>UidGenerator是百度开源的分布式ID生成器，其基于雪花算法实现。 具体参考：<code>https://github.com/baidu/uid-generator/blob/master/README.zh_cn.md</code></p>
+<h3 id="Leaf"><a href="#Leaf" class="headerlink" title="Leaf"></a>Leaf</h3><p>Leaf是美团开源的分布式ID生成器，能保证全局唯一，趋势递增，但需要依赖关系数据库、Zookeeper等中间件。 具体参考：<code>https://tech.meituan.com/MT_Leaf.html</code></p>
+<h2 id="雪花算法的概要"><a href="#雪花算法的概要" class="headerlink" title="雪花算法的概要"></a>雪花算法的概要</h2><p>SnowFlake是Twitter公司采用的一种算法，目的是在分布式系统中产生全局唯一且趋势递增的ID。</p>
+<p><img src="/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/1.jpg" alt="1"></p>
+<h3 id="组成部分（64bit）"><a href="#组成部分（64bit）" class="headerlink" title="组成部分（64bit）"></a>组成部分（64bit）</h3><ol>
+<li>第一位 占用1bit，其值始终是0，没有实际作用。</li>
+<li>时间戳 占用41bit，精确到毫秒，总共可以容纳约69年的时间。</li>
+<li>工作机器id 占用10bit，其中高位5bit是数据中心ID，低位5bit是工作节点ID，做多可以容纳1024个节点。</li>
+<li>序列号 占用12bit，每个节点每毫秒0开始不断累加，最多可以累加到4095，一共可以产生4096个ID。</li>
+</ol>
+<p>SnowFlake算法在同一毫秒内最多可以生成多少个全局唯一ID呢：： 同一毫秒的ID数量 = 1024 X 4096 = 4194304</p>
+<h2 id="雪花算法的实现"><a href="#雪花算法的实现" class="headerlink" title="雪花算法的实现"></a>雪花算法的实现</h2><p>雪花算法的实现主要依赖于数据中心ID和数据节点ID这两个参数，具体实现如下。</p>
+<h3 id="JAVA实现"><a href="#JAVA实现" class="headerlink" title="JAVA实现"></a>JAVA实现</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br></pre></td><td class="code"><pre><span class="line">public class SnowflakeIdWorker &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 开始时间截 (2015-01-01)</span><br><span class="line">     */</span><br><span class="line">    private final long twepoch = 1420041600000L;</span><br><span class="line">    /**</span><br><span class="line">     * 机器id所占的位数</span><br><span class="line">     */</span><br><span class="line">    private final long workerIdBits = 5L;</span><br><span class="line">    /**</span><br><span class="line">     * 数据标识id所占的位数</span><br><span class="line">     */</span><br><span class="line">    private final long datacenterIdBits = 5L;</span><br><span class="line">    /**</span><br><span class="line">     * 支持的最大机器id，结果是31 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)</span><br><span class="line">     */</span><br><span class="line">    private final long maxWorkerId = -1L ^ (-1L &lt;&lt; workerIdBits);</span><br><span class="line">    /**</span><br><span class="line">     * 支持的最大数据标识id，结果是31</span><br><span class="line">     */</span><br><span class="line">    private final long maxDatacenterId = -1L ^ (-1L &lt;&lt; datacenterIdBits);</span><br><span class="line">    /**</span><br><span class="line">     * 序列在id中占的位数</span><br><span class="line">     */</span><br><span class="line">    private final long sequenceBits = 12L;</span><br><span class="line">    /**</span><br><span class="line">     * 机器ID向左移12位</span><br><span class="line">     */</span><br><span class="line">    private final long workerIdShift = sequenceBits;</span><br><span class="line">    /**</span><br><span class="line">     * 数据标识id向左移17位(12+5)</span><br><span class="line">     */</span><br><span class="line">    private final long datacenterIdShift = sequenceBits + workerIdBits;</span><br><span class="line">    /**</span><br><span class="line">     * 时间截向左移22位(5+5+12)</span><br><span class="line">     */</span><br><span class="line">    private final long timestampLeftShift = sequenceBits + workerIdBits + datacenterIdBits;</span><br><span class="line">    /**</span><br><span class="line">     * 生成序列的掩码，这里为4095 (0b111111111111=0xfff=4095)</span><br><span class="line">     */</span><br><span class="line">    private final long sequenceMask = -1L ^ (-1L &lt;&lt; sequenceBits);</span><br><span class="line">    /**</span><br><span class="line">     * 工作机器ID(0~31)</span><br><span class="line">     */</span><br><span class="line">    private long workerId;</span><br><span class="line">    /**</span><br><span class="line">     * 数据中心ID(0~31)</span><br><span class="line">     */</span><br><span class="line">    private long datacenterId;</span><br><span class="line">    /**</span><br><span class="line">     * 毫秒内序列(0~4095)</span><br><span class="line">     */</span><br><span class="line">    private long sequence = 0L;</span><br><span class="line">    /**</span><br><span class="line">     * 上次生成ID的时间截</span><br><span class="line">     */</span><br><span class="line">    private long lastTimestamp = -1L;</span><br><span class="line">    /**</span><br><span class="line">     * 构造函数</span><br><span class="line">     * @param workerId     工作ID (0~31)</span><br><span class="line">     * @param datacenterId 数据中心ID (0~31)</span><br><span class="line">     */</span><br><span class="line">    public SnowflakeIdWorker(long workerId, long datacenterId) &#123;</span><br><span class="line">        if (workerId &gt; maxWorkerId || workerId &lt; 0) &#123;</span><br><span class="line">            throw new IllegalArgumentException(String.format(&quot;worker Id can&#x27;t be greater than %d or less than 0&quot;, maxWorkerId));</span><br><span class="line">        &#125;</span><br><span class="line">        if (datacenterId &gt; maxDatacenterId || datacenterId &lt; 0) &#123;</span><br><span class="line">            throw new IllegalArgumentException(String.format(&quot;datacenter Id can&#x27;t be greater than %d or less than 0&quot;, maxDatacenterId));</span><br><span class="line">        &#125;</span><br><span class="line">        this.workerId = workerId;</span><br><span class="line">        this.datacenterId = datacenterId;</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * 获得下一个ID (该方法是线程安全的)</span><br><span class="line">     * @return SnowflakeId</span><br><span class="line">     */</span><br><span class="line">    public synchronized long nextId() &#123;</span><br><span class="line">        long timestamp = timeGen();</span><br><span class="line">        // 如果当前时间小于上一次ID生成的时间戳，说明系统时钟回退过这个时候应当抛出异常</span><br><span class="line">        if (timestamp &lt; lastTimestamp) &#123;</span><br><span class="line">            throw new RuntimeException(</span><br><span class="line">                    String.format(&quot;Clock moved backwards.  Refusing to generate id for %d milliseconds&quot;, lastTimestamp - timestamp));</span><br><span class="line">        &#125;</span><br><span class="line">        // 如果是同一时间生成的，则进行毫秒内序列</span><br><span class="line">        if (lastTimestamp == timestamp) &#123;</span><br><span class="line">            sequence = (sequence + 1) &amp; sequenceMask;</span><br><span class="line">            // 毫秒内序列溢出</span><br><span class="line">            if (sequence == 0) &#123;</span><br><span class="line">                //阻塞到下一个毫秒,获得新的时间戳</span><br><span class="line">                timestamp = tilNextMillis(lastTimestamp);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        // 时间戳改变，毫秒内序列重置</span><br><span class="line">        else &#123;</span><br><span class="line">            sequence = 0L;</span><br><span class="line">        &#125;</span><br><span class="line">        // 上次生成ID的时间截</span><br><span class="line">        lastTimestamp = timestamp;</span><br><span class="line">        // 移位并通过或运算拼到一起组成64位的ID</span><br><span class="line">        return ((timestamp - twepoch) &lt;&lt; timestampLeftShift) //</span><br><span class="line">                | (datacenterId &lt;&lt; datacenterIdShift) //</span><br><span class="line">                | (workerId &lt;&lt; workerIdShift) //</span><br><span class="line">                | sequence;</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * 阻塞到下一个毫秒，直到获得新的时间戳</span><br><span class="line">     * @param lastTimestamp 上次生成ID的时间截</span><br><span class="line">     * @return 当前时间戳</span><br><span class="line">     */</span><br><span class="line">    protected long tilNextMillis(long lastTimestamp) &#123;</span><br><span class="line">        long timestamp = timeGen();</span><br><span class="line">        while (timestamp &lt;= lastTimestamp) &#123;</span><br><span class="line">            timestamp = timeGen();</span><br><span class="line">        &#125;</span><br><span class="line">        return timestamp;</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * 返回以毫秒为单位的当前时间</span><br><span class="line">     * @return 当前时间(毫秒)</span><br><span class="line">     */</span><br><span class="line">    protected long timeGen() &#123;</span><br><span class="line">        return System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws InterruptedException &#123;</span><br><span class="line">        SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);</span><br><span class="line">        for (int i = 0; i &lt; 10; i++) &#123;</span><br><span class="line">            long id = idWorker.nextId();</span><br><span class="line">            Thread.sleep(1);</span><br><span class="line">            System.out.println(id);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Python实现"><a href="#Python实现" class="headerlink" title="Python实现"></a>Python实现</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"># coding: utf-8</span><br><span class="line">import time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class InvalidSystemClock(Exception):</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    时钟回拨异常</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    pass</span><br><span class="line"></span><br><span class="line"># 64位ID的划分</span><br><span class="line">WORKER_ID_BITS = 5</span><br><span class="line">DATACENTER_ID_BITS = 5</span><br><span class="line">SEQUENCE_BITS = 12</span><br><span class="line"></span><br><span class="line"># 最大取值计算</span><br><span class="line">MAX_WORKER_ID = -1 ^ (-1 &lt;&lt; WORKER_ID_BITS)  # 2**5-1 0b11111</span><br><span class="line">MAX_DATACENTER_ID = -1 ^ (-1 &lt;&lt; DATACENTER_ID_BITS)</span><br><span class="line"></span><br><span class="line"># 移位偏移计算</span><br><span class="line">WOKER_ID_SHIFT = SEQUENCE_BITS</span><br><span class="line">DATACENTER_ID_SHIFT = SEQUENCE_BITS + WORKER_ID_BITS</span><br><span class="line">TIMESTAMP_LEFT_SHIFT = SEQUENCE_BITS + WORKER_ID_BITS + DATACENTER_ID_BITS</span><br><span class="line"></span><br><span class="line"># 序号循环掩码</span><br><span class="line">SEQUENCE_MASK = -1 ^ (-1 &lt;&lt; SEQUENCE_BITS)</span><br><span class="line"></span><br><span class="line"># 开始时间截 (2015-01-01)</span><br><span class="line">TWEPOCH = 1420041600000</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class IdWorker(object):</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    用于生成IDs</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    def __init__(self, datacenter_id, worker_id, sequence=0):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        初始化</span><br><span class="line">        :param datacenter_id: 数据中心（机器区域）ID</span><br><span class="line">        :param worker_id: 机器ID</span><br><span class="line">        :param sequence: 其实序号</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        # sanity check</span><br><span class="line">        if worker_id &gt; MAX_WORKER_ID or worker_id &lt; 0:</span><br><span class="line">            raise ValueError(&#x27;worker_id值越界&#x27;)</span><br><span class="line"></span><br><span class="line">        if datacenter_id &gt; MAX_DATACENTER_ID or datacenter_id &lt; 0:</span><br><span class="line">            raise ValueError(&#x27;datacenter_id值越界&#x27;)</span><br><span class="line"></span><br><span class="line">        self.worker_id = worker_id</span><br><span class="line">        self.datacenter_id = datacenter_id</span><br><span class="line">        self.sequence = sequence</span><br><span class="line"></span><br><span class="line">        self.last_timestamp = -1  # 上次计算的时间戳</span><br><span class="line"></span><br><span class="line">    def _gen_timestamp(self):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        生成整数时间戳</span><br><span class="line">        :return:int timestamp</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        return int(time.time() * 1000)</span><br><span class="line"></span><br><span class="line">    def get_id(self):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        获取新ID</span><br><span class="line">        :return:</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        timestamp = self._gen_timestamp()</span><br><span class="line"></span><br><span class="line">        # 时钟回拨</span><br><span class="line">        if timestamp &lt; self.last_timestamp:</span><br><span class="line">            raise InvalidSystemClock</span><br><span class="line"></span><br><span class="line">        if timestamp == self.last_timestamp:</span><br><span class="line">            self.sequence = (self.sequence + 1) &amp; SEQUENCE_MASK</span><br><span class="line">            if self.sequence == 0:</span><br><span class="line">                timestamp = self._til_next_millis(self.last_timestamp)</span><br><span class="line">        else:</span><br><span class="line">            self.sequence = 0</span><br><span class="line"></span><br><span class="line">        self.last_timestamp = timestamp</span><br><span class="line"></span><br><span class="line">        new_id = ((timestamp - TWEPOCH) &lt;&lt; TIMESTAMP_LEFT_SHIFT) | (self.datacenter_id &lt;&lt; DATACENTER_ID_SHIFT) | \</span><br><span class="line">                 (self.worker_id &lt;&lt; WOKER_ID_SHIFT) | self.sequence</span><br><span class="line">        return new_id</span><br><span class="line"></span><br><span class="line">    def _til_next_millis(self, last_timestamp):</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        等到下一毫秒</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        timestamp = self._gen_timestamp()</span><br><span class="line">        while timestamp &lt;= last_timestamp:</span><br><span class="line">            timestamp = self._gen_timestamp()</span><br><span class="line">        return timestamp</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ == &#x27;__main__&#x27;:</span><br><span class="line">    worker = IdWorker(0, 0)</span><br><span class="line">    print(worker.get_id())</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/ycb1689/article/details/89331634">https://blog.csdn.net/ycb1689/article/details/89331634</a></p>
+<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="snowflake简介"><a href="#snowflake简介" class="headerlink" title="snowflake简介"></a>snowflake简介</h2><p>互联网快速发展的今天，分布式应用系统已经见怪不怪，在分布式系统中，我们需要各种各样的ID，既然是ID那么必然是要保证全局唯一，除此之外，不同当业务还需要不同的特性，比如像并发巨大的业务要求ID生成效率高，吞吐大；比如某些银行类业务，需要按每日日期制定交易流水号；又比如我们希望用户的ID是随机的，无序的，纯数字的，且位数长度是小于10位的。等等，不同的业务场景需要的ID特性各不一样，于是，衍生了各种ID生成器，但大多数利用数据库控制ID的生成，性能受数据库并发能力限制，那么有没有一款不需要依赖任何中间件（如数据库，分布式缓存服务等）的ID生成器呢？本着取之于开源，用之于开源的原则，今天，特此介绍Twitter开源的一款分布式自增ID算法snowflake，并附上算法原理推导和演算过程！</p>
+<p>snowflake算法是一款本地生成的（ID生成过程不依赖任何中间件，无网络通信），保证ID全局唯一，并且ID总体有序递增，性能每秒生成300w＋。</p>
+<p><img src="/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/2.png" alt="2"></p>
+<ul>
+<li>1bit:一般是符号位，不做处理</li>
+<li>41bit:用来记录时间戳，这里可以记录69年，如果设置好起始时间比如今年是2018年，那么可以用到2089年，到时候怎么办？要是这个系统能用69年，我相信这个系统早都重构了好多次了。</li>
+<li>10bit:10bit用来记录机器ID，总共可以记录1024台机器，一般用前5位代表数据中心ID，后面5位是某个数据中心的机器ID</li>
+<li>12bit:循环位，用来对同一个毫秒之内产生不同的ID，12位可以最多记录4095个，也就是在同一个机器同一毫秒最多记录4095个，多余的需要进行等待下毫秒。</li>
+</ul>
+<blockquote>
+<p>总体来说，在工作节点达到1024顶配的场景下，SnowFlake算法在同一毫秒内最多可以生成多少个全局唯一ID呢？这是一个简单的乘法：</p>
+<p>同一毫秒的ID数量 = 1024 X 4096 = 4194304</p>
+<p>400多万个ID，这个数字在绝大多数并发场景下都是够用的。</p>
+<p>snowflake 算法中，第三个部分是工作机器ID，可以结合上一节的命名方法，并通过Zookeeper管理workId，免去手动频繁修改集群节点，免去配置机器ID的麻烦。</p>
+</blockquote>
+<p>上面只是一个将64bit划分的标准，当然也不一定这么做，可以根据不同业务的具体场景来划分，比如下面给出一个业务场景：</p>
+<ul>
+<li>服务目前QPS10万，预计几年之内会发展到百万。</li>
+<li>当前机器三地部署，上海，北京，深圳都有。</li>
+<li>当前机器10台左右，预计未来会增加至百台。</li>
+</ul>
+<p>这个时候我们根据上面的场景可以再次合理的划分62bit,QPS几年之内会发展到百万，那么每毫秒就是千级的请求，目前10台机器那么每台机器承担百级的请求，为了保证扩展，后面的循环位可以限制到1024，也就是2^10，那么循环位10位就足够了。</p>
+<p>机器三地部署我们可以用3bit总共8来表示机房位置，当前的机器10台，为了保证扩展到百台那么可以用7bit 128来表示，时间位依然是41bit,那么还剩下64-10-3-7-41-1 = 2bit,还剩下2bit可以用来进行扩展。</p>
+<p><img src="/2019/11/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8FID-%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95/3.png" alt="3"></p>
+<p>适用场景：当我们需要无序不能被猜测的ID，并且需要一定高性能，且需要long型，那么就可以使用我们雪花算法。比如常见的订单ID，用雪花算法别人就发猜测你每天的订单量是多少。</p>
+<p>上面定义了雪花算法的实现，在nextId中是我们生成雪花算法的关键。</p>
+<h2 id="防止时钟回拨"><a href="#防止时钟回拨" class="headerlink" title="防止时钟回拨"></a>防止时钟回拨</h2><p>因为机器的原因会发生时间回拨，我们的雪花算法是强依赖我们的时间的，如果时间发生回拨，有可能会生成重复的ID，在我们上面的nextId中我们用当前时间和上一次的时间进行判断，如果当前时间小于上一次的时间那么肯定是发生了回拨，普通的算法会直接抛出异常,这里我们可以对其进行优化,一般分为两个情况:</p>
+<ul>
+<li>如果时间回拨时间较短，比如配置5ms以内，那么可以直接等待一定的时间，让机器的时间追上来。</li>
+<li>如果时间的回拨时间较长，我们不能接受这么长的阻塞等待，那么又有两个策略:<ol>
+<li>直接拒绝，抛出异常，打日志，通知RD时钟回滚。</li>
+<li>利用扩展位，上面我们讨论过不同业务场景位数可能用不到那么多，那么我们可以把扩展位数利用起来了，比如当这个时间回拨比较长的时候，我们可以不需要等待，直接在扩展位加1。2位的扩展位允许我们有3次大的时钟回拨，一般来说就够了，如果其超过三次我们还是选择抛出异常，打日志。</li>
+</ol>
+</li>
+</ul>
+<p>通过上面的几种策略可以比较的防护我们的时钟回拨，防止出现回拨之后大量的异常出现。下面是修改之后的代码，这里修改了时钟回拨的逻辑:</p>
+<p>最终代码如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br><span class="line">478</span><br><span class="line">479</span><br><span class="line">480</span><br><span class="line">481</span><br><span class="line">482</span><br><span class="line">483</span><br><span class="line">484</span><br><span class="line">485</span><br><span class="line">486</span><br><span class="line">487</span><br><span class="line">488</span><br><span class="line">489</span><br><span class="line">490</span><br><span class="line">491</span><br><span class="line">492</span><br><span class="line">493</span><br><span class="line">494</span><br><span class="line">495</span><br><span class="line">496</span><br><span class="line">497</span><br><span class="line">498</span><br><span class="line">499</span><br><span class="line">500</span><br><span class="line">501</span><br><span class="line">502</span><br><span class="line">503</span><br><span class="line">504</span><br><span class="line">505</span><br><span class="line">506</span><br><span class="line">507</span><br><span class="line">508</span><br><span class="line">509</span><br></pre></td><td class="code"><pre><span class="line">import org.apache.commons.lang3.RandomUtils;</span><br><span class="line">import org.apache.commons.lang3.StringUtils;</span><br><span class="line">import org.slf4j.Logger;</span><br><span class="line">import org.slf4j.LoggerFactory;</span><br><span class="line"> </span><br><span class="line">import java.lang.management.ManagementFactory;</span><br><span class="line">import java.net.InetAddress;</span><br><span class="line">import java.net.NetworkInterface;</span><br><span class="line">import java.net.UnknownHostException;</span><br><span class="line">import java.text.SimpleDateFormat;</span><br><span class="line">import java.util.*;</span><br><span class="line">import java.util.concurrent.ConcurrentHashMap;</span><br><span class="line">import java.util.concurrent.CountDownLatch;</span><br><span class="line">import java.util.concurrent.TimeUnit;</span><br><span class="line">import java.util.concurrent.locks.LockSupport;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">/**</span><br><span class="line"> * 分布式全局ID雪花算法解决方案</span><br><span class="line"> *</span><br><span class="line"> * 防止时钟回拨</span><br><span class="line"> * 因为机器的原因会发生时间回拨，我们的雪花算法是强依赖我们的时间的，如果时间发生回拨，</span><br><span class="line"> * 有可能会生成重复的ID，在我们上面的nextId中我们用当前时间和上一次的时间进行判断，</span><br><span class="line"> * 如果当前时间小于上一次的时间那么肯定是发生了回拨，</span><br><span class="line"> * 普通的算法会直接抛出异常,这里我们可以对其进行优化,一般分为两个情况:</span><br><span class="line"> * 如果时间回拨时间较短，比如配置5ms以内，那么可以直接等待一定的时间，让机器的时间追上来。</span><br><span class="line"> * 如果时间的回拨时间较长，我们不能接受这么长的阻塞等待，那么又有两个策略:</span><br><span class="line"> * 直接拒绝，抛出异常，打日志，通知RD时钟回滚。</span><br><span class="line"> * 利用扩展位，上面我们讨论过不同业务场景位数可能用不到那么多，那么我们可以把扩展位数利用起来了，</span><br><span class="line"> * 比如当这个时间回拨比较长的时候，我们可以不需要等待，直接在扩展位加1。</span><br><span class="line"> * 2位的扩展位允许我们有3次大的时钟回拨，一般来说就够了，如果其超过三次我们还是选择抛出异常，打日志。</span><br><span class="line"> * 通过上面的几种策略可以比较的防护我们的时钟回拨，防止出现回拨之后大量的异常出现。下面是修改之后的代码，这里修改了时钟回拨的逻辑:</span><br><span class="line"> */</span><br><span class="line">public class SnowflakeIdFactory &#123;</span><br><span class="line"> </span><br><span class="line">    private static final Logger log = LoggerFactory.getLogger(SnowflakeIdFactory.class);</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * EPOCH是服务器第一次上线时间点, 设置后不允许修改</span><br><span class="line">     * 2018/9/29日，从此时开始计算，可以用到2089年</span><br><span class="line">     */</span><br><span class="line">    private static long EPOCH = 1538211907857L;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 每台workerId服务器有3个备份workerId, 备份workerId数量越多, 可靠性越高, 但是可部署的sequence ID服务越少</span><br><span class="line">     */</span><br><span class="line">    private static final long BACKUP_COUNT = 3;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * worker id 的bit数，最多支持8192个节点</span><br><span class="line">     */</span><br><span class="line">    private static final long workerIdBits = 5L;</span><br><span class="line">    /**</span><br><span class="line">     * 数据中心标识位数</span><br><span class="line">     */</span><br><span class="line">    private static final long dataCenterIdBits = 5L;</span><br><span class="line">    /**</span><br><span class="line">     * 序列号，支持单节点最高每毫秒的最大ID数4096</span><br><span class="line">     * 毫秒内自增位</span><br><span class="line">     */</span><br><span class="line">    private static final long sequenceBits = 12L;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 机器ID偏左移12位</span><br><span class="line">     */</span><br><span class="line">    private static final long workerIdShift = sequenceBits;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 数据中心ID左移17位(12+5)</span><br><span class="line">     */</span><br><span class="line">    private static final long dataCenterIdShift = sequenceBits + workerIdBits;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 时间毫秒左移22位(5+5+12)</span><br><span class="line">     */</span><br><span class="line">    private static final long timestampLeftShift = sequenceBits + workerIdBits + dataCenterIdBits;</span><br><span class="line">    /**</span><br><span class="line">     * sequence掩码，确保sequnce不会超出上限</span><br><span class="line">     * 最大的序列号，4096</span><br><span class="line">     * -1 的补码（二进制全1）右移12位, 然后取反</span><br><span class="line">     * 生成序列的掩码，这里为4095 (0b111111111111=0xfff=4095)</span><br><span class="line">     */</span><br><span class="line">    private static final long sequenceMask = -1L ^ (-1L &lt;&lt; sequenceBits);</span><br><span class="line"> </span><br><span class="line">    //private final static long sequenceMask = ~(-1L &lt;&lt; sequenceBits);</span><br><span class="line">    /**</span><br><span class="line">     * 实际的最大workerId的值 结果是31，8091</span><br><span class="line">     * workerId原则上上限为1024, 但是需要为每台sequence服务预留BACKUP_AMOUNT个workerId,</span><br><span class="line">     * (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数)</span><br><span class="line">     */</span><br><span class="line">    //private static final long maxWorkerId = (1L &lt;&lt; workerIdBits) / (BACKUP_COUNT + 1);</span><br><span class="line"> </span><br><span class="line">    //原来代码 -1 的补码（二进制全1）右移13位, 然后取反</span><br><span class="line">    private static final long maxWorkerId = -1L ^ (-1L &lt;&lt; workerIdBits);</span><br><span class="line">    //private final static long maxWorkerId = ~(-1L &lt;&lt; workerIdBits);</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 支持的最大数据标识id，结果是31</span><br><span class="line">     */</span><br><span class="line">    private static final long maxDataCenterId = -1L ^ (-1L &lt;&lt; dataCenterIdBits);</span><br><span class="line">    /**</span><br><span class="line">     * long workerIdBits = 5L;</span><br><span class="line">     * -1L 的二进制: 1111111111111111111111111111111111111111111111111111111111111111</span><br><span class="line">     * -1L&lt;&lt;workerIdBits = -32 ,二进制: 1111111111111111111111111111111111111111111111111111111111100000</span><br><span class="line">     *  workerMask= -1L ^ -32 = 31, 二进制: 11111</span><br><span class="line">     */</span><br><span class="line">    private static long workerMask= -1L ^ (-1L &lt;&lt; workerIdBits);</span><br><span class="line">    //进程编码</span><br><span class="line">    private long processId = 1L;</span><br><span class="line">    private static long processMask=-1L ^ (-1L &lt;&lt; dataCenterIdBits);</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 工作机器ID(0~31)</span><br><span class="line">     * snowflake算法给workerId预留了10位，即workId的取值范围为[0, 1023]，</span><br><span class="line">     * 事实上实际生产环境不大可能需要部署1024个分布式ID服务，</span><br><span class="line">     * 所以：将workerId取值范围缩小为[0, 511]，[512, 1023]</span><br><span class="line">     * 这个范围的workerId当做备用workerId。workId为0的备用workerId是512，</span><br><span class="line">     * workId为1的备用workerId是513，以此类推</span><br><span class="line">     */</span><br><span class="line">    private static long workerId;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 数据中心ID(0~31)</span><br><span class="line">     */</span><br><span class="line">    private long dataCenterId;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 当前毫秒生成的序列</span><br><span class="line">     */</span><br><span class="line">    private long sequence = 0L;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 上次生成ID的时间戳</span><br><span class="line">     */</span><br><span class="line">    private long lastTimestamp = -1L;</span><br><span class="line"> </span><br><span class="line">    private long extension = 0L;</span><br><span class="line">    private long maxExtension =  0L;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 保留workerId和lastTimestamp, 以及备用workerId和其对应的lastTimestamp</span><br><span class="line">     */</span><br><span class="line">    private static Map&lt;Long, Long&gt; workerIdLastTimeMap = new ConcurrentHashMap&lt;&gt;();</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 最大容忍时间, 单位毫秒, 即如果时钟只是回拨了该变量指定的时间, 那么等待相应的时间即可;</span><br><span class="line">     * 考虑到sequence服务的高性能, 这个值不易过大</span><br><span class="line">     */</span><br><span class="line">    private static final long MAX_BACKWARD_MS = 3;</span><br><span class="line">    private static SnowflakeIdFactory idWorker;</span><br><span class="line"> </span><br><span class="line">    static &#123;</span><br><span class="line">        idWorker = new SnowflakeIdFactory();</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    static &#123;</span><br><span class="line">        Calendar calendar = Calendar.getInstance();</span><br><span class="line">        calendar.set(2018, Calendar.NOVEMBER, 1);</span><br><span class="line">        calendar.set(Calendar.HOUR_OF_DAY, 0);</span><br><span class="line">        calendar.set(Calendar.MINUTE, 0);</span><br><span class="line">        calendar.set(Calendar.SECOND, 0);</span><br><span class="line">        calendar.set(Calendar.MILLISECOND, 0);</span><br><span class="line">        // EPOCH是服务器第一次上线时间点, 设置后不允许修改</span><br><span class="line">        EPOCH = calendar.getTimeInMillis();</span><br><span class="line"> </span><br><span class="line">        // 初始化workerId和其所有备份workerId与lastTimestamp</span><br><span class="line">        // 假设workerId为0且BACKUP_AMOUNT为4, 那么map的值为: &#123;0:0L, 256:0L, 512:0L, 768:0L&#125;</span><br><span class="line">        // 假设workerId为2且BACKUP_AMOUNT为4, 那么map的值为: &#123;2:0L, 258:0L, 514:0L, 770:0L&#125;</span><br><span class="line">       /* for (int i = 0; i&lt;= BACKUP_COUNT; i++)&#123;</span><br><span class="line">            workerIdLastTimeMap.put(workerId + (i * maxWorkerId), 0L);</span><br><span class="line">        &#125;*/</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    //成员类，IdGenUtils的实例对象的保存域</span><br><span class="line">    private static class SnowflakeIdGenHolder &#123;</span><br><span class="line">        private static final SnowflakeIdFactory instance = new SnowflakeIdFactory();</span><br><span class="line">    &#125;</span><br><span class="line">    //外部调用获取IdGenUtils的实例对象，确保不可变</span><br><span class="line">    public static SnowflakeIdFactory getInstance()&#123;</span><br><span class="line">        return SnowflakeIdGenHolder.instance;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 静态工具类</span><br><span class="line">     *</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public static Long generateId()&#123;</span><br><span class="line">        long id = idWorker.nextId();</span><br><span class="line">        return id;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    //初始化构造，无参构造有参函数，默认节点都是0</span><br><span class="line">    public SnowflakeIdFactory()&#123;</span><br><span class="line">        //this(0L, 0L);</span><br><span class="line">        this.dataCenterId = getDataCenterId(maxDataCenterId);</span><br><span class="line">        //获取机器编码</span><br><span class="line">        this.workerId = getWorkerId(dataCenterId, maxWorkerId);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 构造函数</span><br><span class="line">     * @param workerId 工作ID (0~31)</span><br><span class="line">     * @param dataCenterId 数据中心ID (0~31)</span><br><span class="line">     */</span><br><span class="line">    public SnowflakeIdFactory(long workerId, long dataCenterId) &#123;</span><br><span class="line">        if (workerId &gt; maxWorkerId || workerId &lt; 0) &#123;</span><br><span class="line">            throw new IllegalArgumentException(String.format(&quot;worker Id can&#x27;t be greater than %d or less than 0&quot;, maxWorkerId));</span><br><span class="line">        &#125;</span><br><span class="line">        if (dataCenterId &gt; maxDataCenterId || dataCenterId &lt; 0) &#123;</span><br><span class="line">            throw new IllegalArgumentException(String.format(&quot;datacenter Id can&#x27;t be greater than %d or less than 0&quot;, maxDataCenterId));</span><br><span class="line">        &#125;</span><br><span class="line">        this.workerId = workerId;</span><br><span class="line">        this.dataCenterId = dataCenterId;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">   /**</span><br><span class="line">     * 获取带自定义前缀的全局唯一编码</span><br><span class="line">     */</span><br><span class="line">    public String getStrCodingByPrefix(String prefix)&#123;</span><br><span class="line">        Long ele = this.nextId();</span><br><span class="line">        return prefix + ele.toString();</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 获得下一个ID (该方法是线程安全的)</span><br><span class="line">     * 在单节点上获得下一个ID，使用Synchronized控制并发，而非CAS的方式，</span><br><span class="line">     * 是因为CAS不适合并发量非常高的场景。</span><br><span class="line">     *</span><br><span class="line">     * 考虑时钟回拨</span><br><span class="line">     * 缺陷: 如果连续两次时钟回拨, 可能还是会有问题, 但是这种概率极低极低</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    public synchronized long nextId() &#123;</span><br><span class="line">        long currentTimestamp = timeGen();</span><br><span class="line">        // 当发生时钟回拨时</span><br><span class="line">        if (currentTimestamp &lt; lastTimestamp)&#123;</span><br><span class="line">            // 如果时钟回拨在可接受范围内, 等待即可</span><br><span class="line">            long offset = lastTimestamp - currentTimestamp;</span><br><span class="line">            if ( offset &lt;= MAX_BACKWARD_MS)&#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    //睡（lastTimestamp - currentTimestamp）ms让其追上</span><br><span class="line">                    LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(offset));</span><br><span class="line">                    //时间偏差大小小于5ms，则等待两倍时间</span><br><span class="line">                    //wait(offset &lt;&lt; 1);</span><br><span class="line">                    //Thread.sleep(waitTimestamp);</span><br><span class="line"> </span><br><span class="line">                    currentTimestamp = timeGen();</span><br><span class="line">                    //如果时间还小于当前时间，那么利用扩展字段加1</span><br><span class="line">                    //或者是采用抛异常并上报</span><br><span class="line">                    if (currentTimestamp &lt; lastTimestamp) &#123;</span><br><span class="line">                        //扩展字段</span><br><span class="line">                        //extension += 1;</span><br><span class="line">                        //if (extension &gt; maxExtension) &#123;</span><br><span class="line">                            //服务器时钟被调整了,ID生成器停止服务.</span><br><span class="line">                            throw new RuntimeException(String.format(&quot;Clock moved backwards.  Refusing to generate id for %d milliseconds&quot;, lastTimestamp - currentTimestamp));</span><br><span class="line">                        //&#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; catch (Exception e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;else &#123;</span><br><span class="line">                //扩展字段</span><br><span class="line">                /*extension += 1;</span><br><span class="line">                if (extension &gt; maxExtension) &#123;</span><br><span class="line">                    //服务器时钟被调整了,ID生成器停止服务.</span><br><span class="line">                    throw new RuntimeException(String.format(&quot;Clock moved backwards.  Refusing to generate id for %d milliseconds&quot;, lastTimestamp - currentTimestamp));</span><br><span class="line">                &#125;*/</span><br><span class="line">                tryGenerateKeyOnBackup(currentTimestamp);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        //对时钟回拨简单处理</span><br><span class="line">       /* if (currentTimestamp &lt; lastTimestamp) &#123;</span><br><span class="line">            //服务器时钟被调整了,ID生成器停止服务.</span><br><span class="line">            throw new RuntimeException(String.format(&quot;Clock moved backwards.  Refusing to generate id for %d milliseconds&quot;, lastTimestamp - currentTimestamp));</span><br><span class="line">        &#125;*/</span><br><span class="line"> </span><br><span class="line">        // 如果和最后一次请求处于同一毫秒, 那么sequence+1</span><br><span class="line">        if (lastTimestamp == currentTimestamp) &#123;</span><br><span class="line">            // 如果当前生成id的时间还是上次的时间，那么对sequence序列号进行+1</span><br><span class="line">            sequence = (sequence + 1) &amp; sequenceMask;</span><br><span class="line">            if (sequence == 0) &#123;</span><br><span class="line">                //自旋等待到下一毫秒</span><br><span class="line">                currentTimestamp = waitUntilNextTime(lastTimestamp);</span><br><span class="line">            &#125;</span><br><span class="line">            //判断是否溢出,也就是每毫秒内超过4095，当为4096时，与sequenceMask相与，sequence就等于0</span><br><span class="line">            /*if (sequence == sequenceMask) &#123;</span><br><span class="line">                // 当前毫秒生成的序列数已经大于最大值，那么阻塞到下一个毫秒再获取新的时间戳</span><br><span class="line">                currentTimestamp = this.waitUntilNextTime(lastTimestamp);</span><br><span class="line">            &#125;*/</span><br><span class="line"> </span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            // 如果是一个更近的时间戳, 那么sequence归零</span><br><span class="line">            sequence = 0L;</span><br><span class="line">        &#125;</span><br><span class="line">        // 更新上次生成id的时间戳</span><br><span class="line">        lastTimestamp = currentTimestamp;</span><br><span class="line"> </span><br><span class="line">        // 更新map中保存的workerId对应的lastTimestamp</span><br><span class="line">        //workerIdLastTimeMap.put(this.workerId, lastTimestamp);</span><br><span class="line"> </span><br><span class="line">        if (log.isDebugEnabled()) &#123;</span><br><span class="line">            log.debug(&quot;&#123;&#125;-&#123;&#125;-&#123;&#125;&quot;, new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss.SSS&quot;).format(new Date(lastTimestamp)), workerId, sequence);</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        // 进行移位操作生成int64的唯一ID</span><br><span class="line">        //时间戳右移动23位</span><br><span class="line">        long timestamp = (currentTimestamp - EPOCH) &lt;&lt; timestampLeftShift;</span><br><span class="line"> </span><br><span class="line">        //workerId 右移动10位</span><br><span class="line">        long workerId = this.workerId &lt;&lt; workerIdShift;</span><br><span class="line"> </span><br><span class="line">        //dataCenterId 右移动(sequenceBits + workerIdBits = 17位)</span><br><span class="line">        long dataCenterId = this.dataCenterId &lt;&lt; dataCenterIdShift;</span><br><span class="line">        return timestamp | dataCenterId | workerId | sequence;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 尝试在workerId的备份workerId上生成</span><br><span class="line">     * 核心优化代码在方法tryGenerateKeyOnBackup()中，BACKUP_COUNT即备份workerId数越多，</span><br><span class="line">     * sequence服务避免时钟回拨影响的能力越强，但是可部署的sequence服务越少，</span><br><span class="line">     * 设置BACKUP_COUNT为3，最多可以部署1024/(3+1)即256个sequence服务，完全够用，</span><br><span class="line">     * 抗时钟回拨影响的能力也得到非常大的保障。</span><br><span class="line">     * @param currentMillis 当前时间</span><br><span class="line">     */</span><br><span class="line">    private long tryGenerateKeyOnBackup(long currentMillis)&#123;</span><br><span class="line">        // 遍历所有workerId(包括备用workerId, 查看哪些workerId可用)</span><br><span class="line">        for (Map.Entry&lt;Long, Long&gt; entry:workerIdLastTimeMap.entrySet())&#123;</span><br><span class="line">            this.workerId = entry.getKey();</span><br><span class="line">            // 取得备用workerId的lastTime</span><br><span class="line">            Long tempLastTime = entry.getValue();</span><br><span class="line">            lastTimestamp = tempLastTime==null?0L:tempLastTime;</span><br><span class="line"> </span><br><span class="line">            // 如果找到了合适的workerId</span><br><span class="line">            if (lastTimestamp&lt;=currentMillis)&#123;</span><br><span class="line">                return lastTimestamp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        // 如果所有workerId以及备用workerId都处于时钟回拨, 那么抛出异常</span><br><span class="line">        throw new IllegalStateException(&quot;Clock is moving backwards, current time is &quot;</span><br><span class="line">                +currentMillis+&quot; milliseconds, workerId map = &quot; + workerIdLastTimeMap);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 阻塞到下一个毫秒，直到获得新的时间戳</span><br><span class="line">     * @param lastTimestamp 上次生成ID的时间截</span><br><span class="line">     * @return 当前时间戳</span><br><span class="line">     */</span><br><span class="line">    protected long waitUntilNextTime(long lastTimestamp) &#123;</span><br><span class="line">        long timestamp = timeGen();</span><br><span class="line">        while (timestamp &lt;= lastTimestamp) &#123;</span><br><span class="line">            timestamp = timeGen();</span><br><span class="line">        &#125;</span><br><span class="line">        return timestamp;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    protected long timeGen() &#123;</span><br><span class="line">        return System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     *  获取WorkerId</span><br><span class="line">     * @param dataCenterId</span><br><span class="line">     * @param maxWorkerId</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    protected static long getWorkerId(long dataCenterId, long maxWorkerId) &#123;</span><br><span class="line">        StringBuffer mpid = new StringBuffer();</span><br><span class="line">        mpid.append(dataCenterId);</span><br><span class="line">        String name = ManagementFactory.getRuntimeMXBean().getName();</span><br><span class="line">        if (!name.isEmpty()) &#123;</span><br><span class="line">           // GET jvmPid</span><br><span class="line">           mpid.append(name.split(&quot;@&quot;)[0]);</span><br><span class="line">        &#125;</span><br><span class="line">       // MAC + PID 的 hashcode 获取16个低位</span><br><span class="line">        return (mpid.toString().hashCode() &amp; 0xffff) % (maxWorkerId + 1);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    /**</span><br><span class="line">     * 获取机器编码 用来做数据ID</span><br><span class="line">     * 数据标识id部分 通常不建议采用下面的MAC地址方式，</span><br><span class="line">     * 因为用户通过破解很容易拿到MAC进行破坏</span><br><span class="line">     */</span><br><span class="line">    protected static long getDataCenterId(long tempMaxDataCenterId) &#123;</span><br><span class="line">        if (tempMaxDataCenterId &lt; 0L  || tempMaxDataCenterId &gt; maxDataCenterId) &#123;</span><br><span class="line">            tempMaxDataCenterId = maxDataCenterId;</span><br><span class="line">        &#125;</span><br><span class="line">        long id = 0L;</span><br><span class="line">        try &#123;</span><br><span class="line">            InetAddress ip = InetAddress.getLocalHost();</span><br><span class="line">            NetworkInterface network = NetworkInterface.getByInetAddress(ip);</span><br><span class="line">            if (network == null) &#123;</span><br><span class="line">                id = 1L;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                byte[] mac = network.getHardwareAddress();</span><br><span class="line">                id = ((0x000000FF &amp; (long) mac[mac.length - 1])</span><br><span class="line">                        | (0x0000FF00 &amp; (((long) mac[mac.length - 2]) &lt;&lt; 8))) &gt;&gt; 6;</span><br><span class="line">                id = id % (tempMaxDataCenterId + 1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            System.out.println(&quot; getDatacenterId: &quot; + e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">        return id;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    public static void testProductIdByMoreThread(int dataCenterId, int workerId, int n) throws InterruptedException &#123;</span><br><span class="line">        List&lt;Thread&gt; tlist = new ArrayList&lt;&gt;();</span><br><span class="line">        Set&lt;Long&gt; setAll = new HashSet&lt;&gt;();</span><br><span class="line">        CountDownLatch cdLatch = new CountDownLatch(10);</span><br><span class="line">        long start = System.currentTimeMillis();</span><br><span class="line">        int threadNo = dataCenterId;</span><br><span class="line">        Map&lt;String,SnowflakeIdFactory&gt; idFactories = new HashMap&lt;&gt;();</span><br><span class="line">        for(int i=0;i&lt;10;i++)&#123;</span><br><span class="line">            //用线程名称做map key.</span><br><span class="line">            idFactories.put(&quot;snowflake&quot;+i,new SnowflakeIdFactory(workerId, threadNo++));</span><br><span class="line">        &#125;</span><br><span class="line">        for(int i=0;i&lt;10;i++)&#123;</span><br><span class="line">            Thread temp =new Thread(new Runnable() &#123;</span><br><span class="line">                @Override</span><br><span class="line">                public void run() &#123;</span><br><span class="line">                    Set&lt;Long&gt; setId = new HashSet&lt;&gt;();</span><br><span class="line">                    SnowflakeIdFactory idWorker = idFactories.get(Thread.currentThread().getName());</span><br><span class="line">                    for(int j=0;j&lt;n;j++)&#123;</span><br><span class="line">                        setId.add(idWorker.nextId());</span><br><span class="line">                    &#125;</span><br><span class="line">                    synchronized (setAll)&#123;</span><br><span class="line">                        setAll.addAll(setId);</span><br><span class="line">                        log.info(&quot;&#123;&#125;生产了&#123;&#125;个id,并成功加入到setAll中.&quot;,Thread.currentThread().getName(),n);</span><br><span class="line">                    &#125;</span><br><span class="line">                    cdLatch.countDown();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,&quot;snowflake&quot;+i);</span><br><span class="line">            tlist.add(temp);</span><br><span class="line">        &#125;</span><br><span class="line">        for(int j=0;j&lt;10;j++)&#123;</span><br><span class="line">            tlist.get(j).start();</span><br><span class="line">        &#125;</span><br><span class="line">        cdLatch.await();</span><br><span class="line"> </span><br><span class="line">        long end1 = System.currentTimeMillis() - start;</span><br><span class="line"> </span><br><span class="line">        log.info(&quot;共耗时:&#123;&#125;毫秒,预期应该生产&#123;&#125;个id, 实际合并总计生成ID个数:&#123;&#125;&quot;,end1,10*n,setAll.size());</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    public static void testProductId(int dataCenterId, int workerId, int n)&#123;</span><br><span class="line">        SnowflakeIdFactory idWorker = new SnowflakeIdFactory(workerId, dataCenterId);</span><br><span class="line">        SnowflakeIdFactory idWorker2 = new SnowflakeIdFactory(workerId+1, dataCenterId);</span><br><span class="line">        Set&lt;Long&gt; setOne = new HashSet&lt;&gt;();</span><br><span class="line">        Set&lt;Long&gt; setTow = new HashSet&lt;&gt;();</span><br><span class="line">        long start = System.currentTimeMillis();</span><br><span class="line">        for (int i = 0; i &lt; n; i++) &#123;</span><br><span class="line">            setOne.add(idWorker.nextId());//加入set</span><br><span class="line">        &#125;</span><br><span class="line">        long end1 = System.currentTimeMillis() - start;</span><br><span class="line">        log.info(&quot;第一批ID预计生成&#123;&#125;个,实际生成&#123;&#125;个&lt;&lt;&lt;&lt;*&gt;&gt;&gt;&gt;共耗时:&#123;&#125;&quot;,n,setOne.size(),end1);</span><br><span class="line"> </span><br><span class="line">        for (int i = 0; i &lt; n; i++) &#123;</span><br><span class="line">            setTow.add(idWorker2.nextId());//加入set</span><br><span class="line">        &#125;</span><br><span class="line">        long end2 = System.currentTimeMillis() - start;</span><br><span class="line">        log.info(&quot;第二批ID预计生成&#123;&#125;个,实际生成&#123;&#125;个&lt;&lt;&lt;&lt;*&gt;&gt;&gt;&gt;共耗时:&#123;&#125;&quot;,n,setTow.size(),end2);</span><br><span class="line"> </span><br><span class="line">        setOne.addAll(setTow);</span><br><span class="line">        log.info(&quot;合并总计生成ID个数:&#123;&#125;&quot;,setOne.size());</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    public static void testPerSecondProductIdNums()&#123;</span><br><span class="line">        SnowflakeIdFactory idWorker = new SnowflakeIdFactory(1, 2);</span><br><span class="line">        long start = System.currentTimeMillis();</span><br><span class="line">        int count = 0;</span><br><span class="line">        for (int i = 0; System.currentTimeMillis()-start&lt;1000; i++,count=i) &#123;</span><br><span class="line">            /**  测试方法一: 此用法纯粹的生产ID,每秒生产ID个数为300w+ */</span><br><span class="line">            idWorker.nextId();</span><br><span class="line">            /**  测试方法二: 在log中打印,同时获取ID,此用法生产ID的能力受限于log.error()的吞吐能力.</span><br><span class="line">             * 每秒徘徊在10万左右. */</span><br><span class="line">            //log.error(&quot;&#123;&#125;&quot;,idWorker.nextId());</span><br><span class="line">        &#125;</span><br><span class="line">        long end = System.currentTimeMillis()-start;</span><br><span class="line">        System.out.println(end);</span><br><span class="line">        System.out.println(count);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        /** case1: 测试每秒生产id个数?</span><br><span class="line">         *   结论: 每秒生产id个数300w+ */</span><br><span class="line">        testPerSecondProductIdNums();</span><br><span class="line"> </span><br><span class="line">        /** case2: 单线程-测试多个生产者同时生产N个id,验证id是否有重复?</span><br><span class="line">         *   结论: 验证通过,没有重复. */</span><br><span class="line">        //testProductId(1,2,10000);//验证通过!</span><br><span class="line">        //testProductId(1,2,20000);//验证通过!</span><br><span class="line"> </span><br><span class="line">        /** case3: 多线程-测试多个生产者同时生产N个id, 全部id在全局范围内是否会重复?</span><br><span class="line">         *   结论: 验证通过,没有重复. */</span><br><span class="line">       /* try &#123;</span><br><span class="line">            testProductIdByMoreThread(1,2,100000);//单机测试此场景,性能损失至少折半!</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;*/</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+              <a href="/tags/ID/" rel="tag"># ID</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/11/20/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python%E4%B8%ADTrue%E5%92%8CFalse%E7%9A%84%E5%90%AB%E4%B9%89/" rel="prev" title="Python中True和False的含义.md">
+      <i class="fa fa-chevron-left"></i> Python中True和False的含义.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/12/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%A0%91/%E4%BA%8C%E5%8F%89%E6%A0%91%E3%80%81B%E6%A0%91%E3%80%81B+%E6%A0%91%E3%80%81B*%E6%A0%91/" rel="next" title="二叉树、B树、B+树、B*树.md">
+      二叉树、B树、B+树、B*树.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80"><span class="nav-number">1.</span> <span class="nav-text">一</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8FID%E7%9A%84%E7%89%B9%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">分布式ID的特点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A8%E5%B1%80%E5%94%AF%E4%B8%80%E6%80%A7"><span class="nav-number">1.1.1.</span> <span class="nav-text">全局唯一性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%92%E5%A2%9E%E6%80%A7"><span class="nav-number">1.1.2.</span> <span class="nav-text">递增性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="nav-number">1.1.3.</span> <span class="nav-text">高可用性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%80%A7%E8%83%BD%E6%80%A7"><span class="nav-number">1.1.4.</span> <span class="nav-text">高性能性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8FID%E7%9A%84%E5%B8%B8%E8%A7%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">1.2.</span> <span class="nav-text">分布式ID的常见解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#UUID"><span class="nav-number">1.2.1.</span> <span class="nav-text">UUID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SnowFlake"><span class="nav-number">1.2.2.</span> <span class="nav-text">SnowFlake</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UidGenerator"><span class="nav-number">1.2.3.</span> <span class="nav-text">UidGenerator</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leaf"><span class="nav-number">1.2.4.</span> <span class="nav-text">Leaf</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95%E7%9A%84%E6%A6%82%E8%A6%81"><span class="nav-number">1.3.</span> <span class="nav-text">雪花算法的概要</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%84%E6%88%90%E9%83%A8%E5%88%86%EF%BC%8864bit%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">组成部分（64bit）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.4.</span> <span class="nav-text">雪花算法的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JAVA%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.4.1.</span> <span class="nav-text">JAVA实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Python%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.4.2.</span> <span class="nav-text">Python实现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C"><span class="nav-number">2.</span> <span class="nav-text">二</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#snowflake%E7%AE%80%E4%BB%8B"><span class="nav-number">2.1.</span> <span class="nav-text">snowflake简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%B2%E6%AD%A2%E6%97%B6%E9%92%9F%E5%9B%9E%E6%8B%A8"><span class="nav-number">2.2.</span> <span class="nav-text">防止时钟回拨</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'df516bb83e9fc44084e83bff41a2e636',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

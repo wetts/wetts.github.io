@@ -188,6 +188,393 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/12/%E8%AF%AD%E8%A8%80/Java/%E8%A7%84%E8%8C%83/Java-%E6%B3%A8%E9%87%8A-%E6%B3%A8%E9%87%8A%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/04/12/%E8%AF%AD%E8%A8%80/Java/%E8%A7%84%E8%8C%83/Java-%E6%B3%A8%E9%87%8A-%E6%B3%A8%E9%87%8A%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/" class="post-title-link" itemprop="url">Java-注释-注释中的标签</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-04-12 23:24:13" itemprop="dateCreated datePublished" datetime="2015-04-12T23:24:13+08:00">2015-04-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="常用Java注释标签（Java-comment-tags）"><a href="#常用Java注释标签（Java-comment-tags）" class="headerlink" title="常用Java注释标签（Java comment tags）"></a>常用Java注释标签（Java comment tags）</h2><h3 id="author-作者"><a href="#author-作者" class="headerlink" title="@author  作者"></a>@author  作者</h3><p>适用范围：文件、类、方法</p>
+<p>（<em>多个作者使用多个@author标签标识，java doc中显示按输入时间顺序罗列。</em>）</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @author Leo. Yao</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="param-输入参数的名称-说明"><a href="#param-输入参数的名称-说明" class="headerlink" title="@param  输入参数的名称  说明"></a>@param  输入参数的名称  说明</h3><p>适用范围：方法</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @param str the String用来存放输出信息。</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="return-输出参数说明"><a href="#return-输出参数说明" class="headerlink" title="@return 输出参数说明"></a>@return 输出参数说明</h3><p>适用范围：方法</p>
+<p>例：     </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">* @return    &lt;code&gt;true&lt;/code&gt;执行成功;</span><br><span class="line">*            &lt;code&gt;false&lt;/code&gt;执行失败.</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="since-JDK版本"><a href="#since-JDK版本" class="headerlink" title="@since JDK版本"></a>@since JDK版本</h3><p>用于标识编译该文件所需要的JDK环境。</p>
+<p>适用范围：文件、类</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @since JDK1.6</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="version-版本号"><a href="#version-版本号" class="headerlink" title="@version 版本号"></a>@version 版本号</h3><p>用于标识注释对象的版本号</p>
+<p>适用范围：文件、类、方法</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @version 1.0</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="see-链接目标"><a href="#see-链接目标" class="headerlink" title="@see 链接目标"></a>@see 链接目标</h3><p>表示参考。会在java 文档中生成一个超链接，链接到参考的类容。使用中的感觉是@see不需要包路径，对我这种懒人比较喜欢，相对{@link }这种既要加大括号，有需要包路径，我还是选择偷懒，当然你要是不介意使用import导入要link的类，那就可以达到@see的效果，所以总体来说，还是选择@see，当然两个在特殊场合下还是用法不一样的</p>
+<p>用法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">@see #field</span><br><span class="line">@see #Constructor(Type, Type...)</span><br><span class="line">@see #Constructor(Type id, Type id...)</span><br><span class="line">@see #method(Type, Type,...)</span><br><span class="line">@see #method(Type id, Type, id...)</span><br><span class="line">@see Class</span><br><span class="line">@see Class#field</span><br><span class="line">@see Class#Constructor(Type, Type...)</span><br><span class="line">@see Class#Constructor(Type id, Type id)</span><br><span class="line">@see Class#method(Type, Type,...)</span><br><span class="line">@see Class#method(Type id, Type id,...)</span><br><span class="line">@see package.Class</span><br><span class="line">@see package.Class#field</span><br><span class="line">@see package.Class#Constructor(Type, Type...)</span><br><span class="line">@see package.Class#Constructor(Type id, Type id)</span><br><span class="line">@see package.Class#method(Type, Type,...)</span><br><span class="line">@see package.Class#method(Type id, Type, id)</span><br><span class="line">@see package</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="throws-异常"><a href="#throws-异常" class="headerlink" title="@throws 异常"></a>@throws 异常</h3><p>标识出方法可能抛出的异常</p>
+<p>适用范围：方法<br>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* @throws IOException  If an input or output exception occurred</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h3 id="deprecated-解释"><a href="#deprecated-解释" class="headerlink" title="@deprecated 解释"></a>@deprecated 解释</h3><p>标识对象过期</p>
+<p>适用范围：文件、类、方法
+ </p>
+<h3 id="link-链接地址"><a href="#link-链接地址" class="headerlink" title="@link 链接地址"></a>@link 链接地址</h3><p>链接到一个目标，用法类似@see。但常放在注释的解释中形如{@link …}</p>
+<p>例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * @deprecated      As of JDK 1.1, replaced by</span><br><span class="line"> *                         &#123;@link #setBounds(int,int,int,int)&#125;</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<h2 id="Java注释的使用顺序"><a href="#Java注释的使用顺序" class="headerlink" title="Java注释的使用顺序"></a>Java注释的使用顺序</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">* @author      (classes and interfaces only, required)</span><br><span class="line">* @version     (classes and interfaces only, required. See footnote 1)</span><br><span class="line">* @param       (methods and constructors only)</span><br><span class="line">* @return      (methods only)</span><br><span class="line">* @exception   (@throws is a synonym added in Javadoc 1.2)</span><br><span class="line">* @see        </span><br><span class="line">* @since      </span><br><span class="line">* @serial      (or @serialField or @serialData)</span><br><span class="line">* @deprecated  (see How and When To Deprecate APIs)</span><br></pre></td></tr></table></figure>
+<p> </p>
+<h2 id="简单常见的HTML嵌入"><a href="#简单常见的HTML嵌入" class="headerlink" title="简单常见的HTML嵌入"></a>简单常见的HTML嵌入</h2><h3 id="lt-P-gt"><a href="#lt-P-gt" class="headerlink" title="&lt;P&gt;"></a><code>&lt;P&gt;</code></h3><p>用于分段</p>
+<h3 id="lt-code-gt"><a href="#lt-code-gt" class="headerlink" title="&lt;code&gt;"></a><code>&lt;code&gt;</code></h3><p>标签用于表示计算机源代码或者其他机器可以阅读的文本内容。<code>&lt;code&gt;</code> 标签就是为软件代码的编写者设计的。包含在该标签内的文本将用等宽、类似电传打字机样式的字体（Courier）显示出来只应该在表示计算机程序源代码或者其他机器可以阅读的文本内容上使用 <code>&lt;code&gt;</code> 标签。虽然<code>&lt;code&gt;</code> 标签通常只是把文本变成等宽字体，但它暗示着这段文本是源程序代码。将来的浏览器有可能会加入其他显示效果。例如，程序员的浏览器可能会寻找 <code>&lt;code&gt;</code> 片段，并执行某些额外的文本格式化处理，如循环和条件判断语句的特殊缩进等。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/10/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5-%E4%B8%89%E5%B1%82%E6%A8%A1%E5%BC%8F%E4%B8%A4%E7%BA%A7%E6%98%A0%E5%83%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/04/10/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5-%E4%B8%89%E5%B1%82%E6%A8%A1%E5%BC%8F%E4%B8%A4%E7%BA%A7%E6%98%A0%E5%83%8F/" class="post-title-link" itemprop="url">数据库-基本概念-三层模式两级映像</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-04-10 00:43:17" itemprop="dateCreated datePublished" datetime="2015-04-10T00:43:17+08:00">2015-04-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>我们首先，谈谈模式的概念，模式为某种事物的标准形式或使人可以照着做的标准样式。这个词用在数据库中，它是由英文的Schema翻译过来的。在数据库管理系统中，其模式是指数据模式（data schema），是数据抽象的结果表示，如用关系模型抽象学生的基本信息表示为：学生(学号,姓名,性别,出生年月,入校年月,专业编号)，此表示即为一种数据模式。<br>在数据库管理系统中，将数据按三层结构来抽象，这实质上是与数据库的设计步骤密不可分的。</p>
+<h3 id="数据库的设计"><a href="#数据库的设计" class="headerlink" title="数据库的设计"></a>数据库的设计</h3><ol>
+<li>首先应分析现实要求，即做需求分析，需求分析的任务就是通过调查、访谈、讨论，分析用户的业务流程，从而得出用户的需求，并用数据流程图、数据字典将用户需求描述出来；</li>
+<li>其次，在需求分析的基础上，进行数据库概念设计，这种设计与具体的数据库管理系统无关，其任务是抽象出各用户所要求的数据视图（对应于外模式概念），最后综合为全局的数据视图（对应于模式概念），用概念数据模型来抽象，可用ER模型或对象模型。</li>
+<li>第三步，将用ER模型或对象模型表示的数据视图，转换为关系模式，并对所得关系模式进行优化处理，这就是所谓的数据库逻辑设计（这一步仍然对应于外模式和模式）；</li>
+<li>第四步，在逻辑设计的基础上，将所得的数据模式组织存储到物理介质上，这就是数据库的物理设计（这一步对应于内模式）；</li>
+<li>最后，就是数据库的安全设计，即允许什么样的用户访问数据库，以及合法用户访问数据库中数据的权限等问题。</li>
+</ol>
+<p>美国家标准协会(American National Standard Institute，ANSI)的数据库管理系统研究小组于1978年提出了标准化的建议，将数据库结构分为3级：面向用户或应用程序员的用户级、面向建立和维护数据库人员的概念级、面向系统程序员的物理级。用户级对应外模式，概念级对应模式，物理级对应内模式，使不同级别的用户对数据库形成不同的视图。所谓视图，就是指观察、认识和理解数据的范围、角度和方法，是数据库在用户“眼中”的反映，很显然，不同层次(级别)用户所“看到”的数据库是不相同的。</p>
+<h2 id="三层模式"><a href="#三层模式" class="headerlink" title="三层模式"></a>三层模式</h2><h3 id="模式"><a href="#模式" class="headerlink" title="模式"></a>模式</h3><p>模式又称概念模式或逻辑模式，对应于概念级。它是由数据库设计者综合所有用户的数据，按照统一的观点构造的全局逻辑结构，是对数据库中全部数据的逻辑结构和特征的总体描述，是所有用户的公共数据视图(全局视图，数据库的表，字段的类型等等)。它是由数据库管理系统提供的数据模式描述语言(Data Description Language，DDL)来描述、定义的，体现、反映了数据库系统的整体观。</p>
+<h3 id="外模式"><a href="#外模式" class="headerlink" title="外模式"></a>外模式</h3><p>外模式又称子模式，对应于用户级。它是某个或某几个用户所看到的数据库的数据视图，是与某一应用有关的数据的逻辑表示。外模式是从模式导出的一个子集，包含模式中允许特定用户使用的那部分数据。用户可以通过外模式描述语言来描述、定义对应于用户的数据记录(外模式)，也可以利用数据操纵语言(Data Manipulation Language，DML)对这些数据记录进行处理。外模式反映了数据库的用户观（视图、查出数据的表）。</p>
+<h3 id="内模式"><a href="#内模式" class="headerlink" title="内模式"></a>内模式</h3><p>内模式又称存储模式，对应于物理级，它是数据库中全体数据的内部表示或底层描述，它描述了数据在存储介质上的存储方式及物理结构（顺序存储、按照B树结构存储还是按hash方法存储），对应着实际存储在外存储介质上的数据库。内模式由内模式描述语言来描述、定义，它是数据库的存储观。</p>
+<p>在一个数据库系统中，只有唯一的数据库，因而作为定义、描述数据库存储结构的内模式和定义、描述数据库逻辑结构的模式，也是惟一的，但建立在数据库系统之上的应用则是非常广泛、多样的，所以对应的外模式不是惟一的，也不可能是惟一的。</p>
+<hr>
+<p>数据库的三级模式是数据库在三个级别 (层次)上的抽象，使用户能够逻辑地、抽象地处理数据而不必关心数据在计算机中的物理表示和存储。实际上 ，对于一个数据库系统而言一有物理级数据库是客观存在的，它是进行数据库操作的基础，概念级数据库中不过是物理数据库的一种逻辑的、抽象的描述(即模式)，用户级数据库则是用户与数据库的接口，它是概念级数据库的一个子集(外模式)。</p>
+<p>用户应用程序根据外模式进行数据操作，通过外模式一模式映射，定义和建立某个外模式与模式间的对应关系，将外模式与模式联系起来，当模式发生改变时，只要改变其映射，就可以使外模式保持不变，对应的应用程序也可保持不变；另一方面，通过模式一内模式映射，定义建立数据的逻辑结构(模式)与存储结构(内模式)间的对应关系，当数据的存储结构发生变化时，只需改变模式一内模式映射，就能保持模式不变，因此应用程序也可以保持不变。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/10/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5-%E6%95%B0%E6%8D%AE%E6%8A%BD%E8%B1%A1%E7%9A%84%E7%BA%A7%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/04/10/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5-%E6%95%B0%E6%8D%AE%E6%8A%BD%E8%B1%A1%E7%9A%84%E7%BA%A7%E5%88%AB/" class="post-title-link" itemprop="url">数据库-基本概念-数据抽象的级别</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-04-10 00:30:02" itemprop="dateCreated datePublished" datetime="2015-04-10T00:30:02+08:00">2015-04-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="数据抽象的过程"><a href="#数据抽象的过程" class="headerlink" title="数据抽象的过程"></a>数据抽象的过程</h2><p>模型是对现实世界的抽象。在数据库技术中，我们用数据模型的概念描述数据库的结构和语义，对现实世界的数据进行抽象。<br>从现实的信息到数据库存储的数据以及用户使用的数据是一个逐步抽象的过程。</p>
+<p>根据抽象的级别定义了四种模型：概念模型，逻辑数据模型，外部数据模型，和内部数据模型。</p>
+<ul>
+<li>概念模型：表达用户需求观点的数据全局逻辑结构</li>
+<li>逻辑模型：表达计算机实现观点的DB全局逻辑结构的模型</li>
+<li>外部模型：表达用户使用观点的DB局部逻辑结构的模型</li>
+<li>内部模型：表达DB物理结构的模型</li>
+</ul>
+<p>数据抽象的过程，也就是数据库设计的过程，具体步骤：</p>
+<ol>
+<li>根据用户需求，设计数据库的概念模型</li>
+<li>根据转换规则，把概念模型转换成数据库的逻辑模型</li>
+<li>根据用户的也不特点，设计不同的外部模型，给程序员使用</li>
+<li>数据库实现时，要根据逻辑模型设计其内部模型。</li>
+</ol>
+<h3 id="概念模型"><a href="#概念模型" class="headerlink" title="概念模型"></a>概念模型</h3><p>概念模型的抽象级别最高，特点：</p>
+<ol>
+<li>表达了数据的整体逻辑结构，它是系统用户对整个应用项目涉及的数据的全面描述</li>
+<li>概念模型是从用户需求的观点出发，对数据建模</li>
+<li>概念模型对立与软件和硬件。</li>
+<li>概念模型是数据库设计人员与用户之间进行交流的工具。</li>
+</ol>
+<p>ER模型：ER模型只能说明实体间语义的联系，还不能进一步说明详细的数据结构。在数据库设计时，遇到实际问题总是先设计一个ER模型，然后把ER模型转换成计算机能够实现的数据模型。</p>
+<h3 id="逻辑模型"><a href="#逻辑模型" class="headerlink" title="逻辑模型"></a>逻辑模型</h3><p>特点：</p>
+<ol>
+<li>表达了DB的整体逻辑结构，但它是设计人员对整个应用项目数据库的全面描述</li>
+<li>逻辑模型从数据库实现的观点出发，对数据建模。</li>
+<li>逻辑模型独立于硬件，但是依赖于软件（DBMS）</li>
+<li>逻辑模型是数据库设计人员与应用程序员之间进行交流的工具。</li>
+</ol>
+<p>逻辑模型主要有：层次，网状，关系等三种</p>
+<h4 id="层次模型"><a href="#层次模型" class="headerlink" title="层次模型"></a>层次模型</h4><p>用树形结构表示实体类型及实体间联系的数据模型称为层次模型<br>树中的节点是记录类型，上一层记录与下一层记录之间的联系是1：N的关系</p>
+<p>特点：</p>
+<ul>
+<li>记录之间的联系通过指针实现，查询效率较高。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>只能表示1：N联系</li>
+<li>由于层次顺序的严格和复杂，引起数据的查询和更新操作很复杂，因此应用程序的编写也比较复杂</li>
+</ul>
+<h4 id="网状模型"><a href="#网状模型" class="headerlink" title="网状模型"></a>网状模型</h4><p>用有向图结构表示实体类型及实体间联系的数据模型称为网状模型。</p>
+<p>特点：记录之间的联系通过指针实现，M:N联系也容易实现，查询效率较高。</p>
+<p>与文件系统的数据管理方式相比，层次模型和网状模型是一个飞跃，但致命你给的缺点是数据结构复杂和编程复杂。</p>
+<h4 id="关系模型"><a href="#关系模型" class="headerlink" title="关系模型"></a>关系模型</h4><p>关系模型的主要特征是用二维表格表达实体集。</p>
+<p>关系模型和层次，网状模型的最大差别是用关键码而不是用指针导航数据，其表格简单，用户易懂，用户只需用简单的查询语句就可以对数据库进行操作，不涉及存储结构，访问技术等细节，关系模型是数学化的模型哦。</p>
+<h3 id="外部模型"><a href="#外部模型" class="headerlink" title="外部模型"></a>外部模型</h3><p>在应用系统中,常常是根据业务的特点化划分成若干个业务单位,每一个业务单位都有特定的约束和需求.在实际使用时,可以为不同的业务单位设计不同的外部模型.</p>
+<p>外部模型的特点:</p>
+<ul>
+<li>外部模型是逻辑模型的一个逻辑子集.</li>
+<li>外部模型独立于硬件,依赖于软件.</li>
+<li>外部模型反映了用户使用数据库的特定.</li>
+</ul>
+<h3 id="内部模型"><a href="#内部模型" class="headerlink" title="内部模型"></a>内部模型</h3><p>内部模型又称为物理模型,是数据库最低层的抽象,它描述了在磁盘或磁带上的存储方式,存取设备和存取方法.</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-fn%E6%A0%87%E7%AD%BE-trim()%E5%87%BD%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-fn%E6%A0%87%E7%AD%BE-trim()%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">jstl-fn标签-trim()函数</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-04-07 16:02:10" itemprop="dateCreated datePublished" datetime="2015-04-07T16:02:10+08:00">2015-04-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>fn:trim()函数将字符串两端的空白符移除。</p>
+<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;fn.trim(&lt;string&gt;)&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-fn%E6%A0%87%E7%AD%BE-trim()%E5%87%BD%E6%95%B0/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-fn%E6%A0%87%E7%AD%BE-length()%E5%87%BD%E6%95%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -641,318 +1028,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-remove%E6%A0%87%E7%AD%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-remove%E6%A0%87%E7%AD%BE/" class="post-title-link" itemprop="url">jstl-c标签-remove标签</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-04-07 12:53:26" itemprop="dateCreated datePublished" datetime="2015-04-07T12:53:26+08:00">2015-04-07</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>&lt;c:remove&gt;标签用于移除一个变量，可以指定这个变量的作用域，若未指定，则默认为变量第一次出现的作用域。</p>
-<p>这个标签不是特别有用，不过可以用来确保JSP完成清理工作。</p>
-<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;c:remove var=&quot;&lt;string&gt;&quot; scope=&quot;&lt;string&gt;&quot;/&gt;</span><br></pre></td></tr></table></figure>
-
-<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-remove%E6%A0%87%E7%AD%BE/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-redirect%E6%A0%87%E7%AD%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-redirect%E6%A0%87%E7%AD%BE/" class="post-title-link" itemprop="url">jstl-c标签-redirect标签</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-04-07 11:57:29" itemprop="dateCreated datePublished" datetime="2015-04-07T11:57:29+08:00">2015-04-07</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>&lt;c:redirect&gt;标签通过自动重写URL来将浏览器重定向至一个新的URL，它提供内容相关的URL，并且支持c:param标签。</p>
-<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;c:redirect url=&quot;&lt;string&gt;&quot; context=&quot;&lt;string&gt;&quot;/&gt;</span><br></pre></td></tr></table></figure>
-
-<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-redirect%E6%A0%87%E7%AD%BE/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-param%E6%A0%87%E7%AD%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-param%E6%A0%87%E7%AD%BE/" class="post-title-link" itemprop="url">jstl-c标签-param标签</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-04-07 11:36:51" itemprop="dateCreated datePublished" datetime="2015-04-07T11:36:51+08:00">2015-04-07</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>&lt;c:param&gt;标签用于在&lt;c:url&gt;标签中指定参数，而且与URL编码相关。</p>
-<p>在&lt;c:param&gt;标签内，name属性表明参数的名称，value属性表明参数的值。</p>
-<h3 id="语法"><a href="#语法" class="headerlink" title="语法:"></a>语法:</h3>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-param%E6%A0%87%E7%AD%BE/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-out%E6%A0%87%E7%AD%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-out%E6%A0%87%E7%AD%BE/" class="post-title-link" itemprop="url">jstl-c标签-out标签</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-04-07 11:29:04" itemprop="dateCreated datePublished" datetime="2015-04-07T11:29:04+08:00">2015-04-07</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>&lt;c:out&gt;标签用来显示一个表达式的结果，与&lt;%= %&gt;作用相似，它们的区别就是&lt;c:out&gt;标签可以直接通过”.”操作符来访问属性。</p>
-<p>举例来说，如果想要访问customer.address.street，只需要这样写：&lt;c:out value=”customer.address.street”&gt;。</p>
-<p>&lt;c:out&gt;标签会自动忽略XML标记字符，所以它们不会被当做标签来处理。</p>
-<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/04/07/%E8%AF%AD%E8%A8%80/Java/JavaEE/JavaEE_jstl/jstl-c%E6%A0%87%E7%AD%BE-out%E6%A0%87%E7%AD%BE/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/60/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/60/">60</a><span class="page-number current">61</span><a class="page-number" href="/page/62/">62</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/62/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/60/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/60/">60</a><span class="page-number current">61</span><a class="page-number" href="/page/62/">62</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/62/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1020,7 +1099,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1033,7 +1112,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

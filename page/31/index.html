@@ -188,6 +188,382 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-1.%E4%BB%8B%E7%BB%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-1.%E4%BB%8B%E7%BB%8D/" class="post-title-link" itemprop="url">Java-并发性和多线程-1.介绍</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 15:35:32" itemprop="dateCreated datePublished" datetime="2016-12-12T15:35:32+08:00">2016-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-concurrency-thread/">http://ifeve.com/java-concurrency-thread/</a></p>
+<p>在过去单CPU时代，单任务在一个时间点只能执行单一程序。之后发展到多任务阶段，计算机能在同一时间点并行执行多任务或多进程。虽然并不是真正意义上的“同一时间点”，而是多个任务或进程共享一个CPU，并交由操作系统来完成多任务间对CPU的运行切换，以使得每个任务都有机会获得一定的时间片运行。</p>
+<p>随着多任务对软件开发者带来的新挑战，程序不在能假设独占所有的CPU时间、所有的内存和其他计算机资源。一个好的程序榜样是在其不再使用这些资源时对其进行释放，以使得其他程序能有机会使用这些资源。</p>
+<p>再后来发展到多线程技术，使得在一个程序内部能拥有多个线程并行执行。一个线程的执行可以被认为是一个CPU在执行该程序。当一个程序运行在多线程下，就好像有多个CPU在同时执行该程序。</p>
+<p>多线程比多任务更加有挑战。多线程是在同一个程序内部并行执行，因此会对相同的内存空间进行并发读写操作。这可能是在单线程程序中从来不会遇到的问题。其中的一些错误也未必会在单CPU机器上出现，因为两个线程从来不会得到真正的并行执行。然而，更现代的计算机伴随着多核CPU的出现，也就意味着不同的线程能被不同的CPU核得到真正意义的并行执行。</p>
+<p>如果一个线程在读一个内存时，另一个线程正向该内存进行写操作，那进行读操作的那个线程将获得什么结果呢？是写操作之前旧的值？还是写操作成功之后的新值？或是一半新一半旧的值？或者，如果是两个线程同时写同一个内存，在操作完成后将会是什么结果呢？是第一个线程写入的值？还是第二个线程写入的值？还是两个线程写入的一个混合值？因此如没有合适的预防措施，任何结果都是可能的。而且这种行为的发生甚至不能预测，所以结果也是不确定性的。</p>
+<h2 id="Java的多线程和并发性"><a href="#Java的多线程和并发性" class="headerlink" title="Java的多线程和并发性"></a>Java的多线程和并发性</h2><p>Java是最先支持多线程的开发的语言之一，Java从一开始就支持了多线程能力，因此Java开发者能常遇到上面描述的问题场景。这也是我想为Java并发技术而写这篇系列的原因。作为对自己的笔记，和对其他Java开发的追随者都可获益的。</p>
+<p>该系列主要关注Java多线程，但有些在多线程中出现的问题会和多任务以及分布式系统中出现的存在类似，因此该系列会将多任务和分布式系统方面作为参考，所以叫法上称为“并发性”，而不是“多线程”。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-11.%E7%BA%BF%E7%A8%8B%E9%80%9A%E4%BF%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-11.%E7%BA%BF%E7%A8%8B%E9%80%9A%E4%BF%A1/" class="post-title-link" itemprop="url">Java-并发性和多线程-6.竞态条件与临界区</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 15:20:42" itemprop="dateCreated datePublished" datetime="2016-12-12T15:20:42+08:00">2016-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/thread-signaling/">http://ifeve.com/thread-signaling/</a></p>
+<p>线程通信的目标是使线程间能够互相发送信号。另一方面，线程通信使线程能够等待其他线程的信号。</p>
+<p>例如，线程B可以等待线程A的一个信号，这个信号会通知线程B数据已经准备好了。本文将讲解以下几个JAVA线程间通信的主题：</p>
+<ol>
+<li>通过共享对象通信</li>
+<li>忙等待</li>
+<li>wait(),notify()和notifyAll()</li>
+<li>丢失的信号</li>
+<li>假唤醒</li>
+<li>多线程等待相同信号</li>
+<li>不要对常量字符串或全局对象调用wait()</li>
+</ol>
+<h2 id="通过共享对象通信"><a href="#通过共享对象通信" class="headerlink" title="通过共享对象通信"></a>通过共享对象通信</h2><p>线程间发送信号的一个简单方式是在共享对象的变量里设置信号值。线程A在一个同步块里设置boolean型成员变量hasDataToProcess为true，线程B也在同步块里读取hasDataToProcess这个成员变量。这个简单的例子使用了一个持有信号的对象，并提供了set和check方法:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class MySignal&#123;</span><br><span class="line"></span><br><span class="line">  protected boolean hasDataToProcess = false;</span><br><span class="line"></span><br><span class="line">  public synchronized boolean hasDataToProcess()&#123;</span><br><span class="line">    return this.hasDataToProcess;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void setHasDataToProcess(boolean hasData)&#123;</span><br><span class="line">    this.hasDataToProcess = hasData;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>线程A和B必须获得指向一个MySignal共享实例的引用，以便进行通信。如果它们持有的引用指向不同的MySingal实例，那么彼此将不能检测到对方的信号。需要处理的数据可以存放在一个共享缓存区里，它和MySignal实例是分开存放的。</p>
+<h2 id="忙等待-Busy-Wait"><a href="#忙等待-Busy-Wait" class="headerlink" title="忙等待(Busy Wait)"></a>忙等待(Busy Wait)</h2><p>准备处理数据的线程B正在等待数据变为可用。换句话说，它在等待线程A的一个信号，这个信号使hasDataToProcess()返回true。线程B运行在一个循环里，以等待这个信号：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">protected MySignal sharedSignal = ...</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">while(!sharedSignal.hasDataToProcess())&#123;</span><br><span class="line">  //do nothing... busy waiting</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="wait-notify-和notifyAll"><a href="#wait-notify-和notifyAll" class="headerlink" title="wait(),notify()和notifyAll()"></a>wait(),notify()和notifyAll()</h2><p>忙等待没有对运行等待线程的CPU进行有效的利用，除非平均等待时间非常短。否则，让等待线程进入睡眠或者非运行状态更为明智，直到它接收到它等待的信号。</p>
+<p>Java有一个内建的等待机制来允许线程在等待信号的时候变为非运行状态。java.lang.Object 类定义了三个方法，wait()、notify()和notifyAll()来实现这个等待机制。</p>
+<p>一个线程一旦调用了任意对象的wait()方法，就会变为非运行状态，直到另一个线程调用了同一个对象的notify()方法。为了调用wait()或者notify()，线程必须先获得那个对象的锁。也就是说，线程必须在同步块里调用wait()或者notify()。以下是MySingal的修改版本——使用了wait()和notify()的MyWaitNotify：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public class MonitorObject&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class MyWaitNotify&#123;</span><br><span class="line"></span><br><span class="line">  MonitorObject myMonitorObject = new MonitorObject();</span><br><span class="line"></span><br><span class="line">  public void doWait()&#123;</span><br><span class="line">    synchronized(myMonitorObject)&#123;</span><br><span class="line">      try&#123;</span><br><span class="line">        myMonitorObject.wait();</span><br><span class="line">      &#125; catch(InterruptedException e)&#123;...&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void doNotify()&#123;</span><br><span class="line">    synchronized(myMonitorObject)&#123;</span><br><span class="line">      myMonitorObject.notify();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>等待线程将调用doWait()，而唤醒线程将调用doNotify()。当一个线程调用一个对象的notify()方法，正在等待该对象的所有线程中将有一个线程被唤醒并允许执行（校注：这个将被唤醒的线程是随机的，不可以指定唤醒哪个线程）。同时也提供了一个notifyAll()方法来唤醒正在等待一个给定对象的所有线程。</p>
+<p>如你所见，不管是等待线程还是唤醒线程都在同步块里调用wait()和notify()。这是强制性的！一个线程如果没有持有对象锁，将不能调用wait()，notify()或者notifyAll()。否则，会抛出IllegalMonitorStateException异常。（<em>校注：JVM是这么实现的，当你调用wait时候它首先要检查下当前线程是否是锁的拥有者，不是则抛出IllegalMonitorStateExcept，参考JVM源码的 1422行。</em>）</p>
+<p>但是，这怎么可能？等待线程在同步块里面执行的时候，不是一直持有监视器对象（myMonitor对象）的锁吗？等待线程不能阻塞唤醒线程进入doNotify()的同步块吗？答案是：的确不能。一旦线程调用了wait()方法，它就释放了所持有的监视器对象上的锁。这将允许其他线程也可以调用wait()或者notify()。</p>
+<p>一旦一个线程被唤醒，不能立刻就退出wait()的方法调用，直到调用notify()的线程退出了它自己的同步块。换句话说：被唤醒的线程必须重新获得监视器对象的锁，才可以退出wait()的方法调用，因为wait方法调用运行在同步块里面。如果多个线程被notifyAll()唤醒，那么在同一时刻将只有一个线程可以退出wait()方法，因为每个线程在退出wait()前必须获得监视器对象的锁。</p>
+<h2 id="丢失的信号（Missed-Signals）"><a href="#丢失的信号（Missed-Signals）" class="headerlink" title="丢失的信号（Missed Signals）"></a>丢失的信号（Missed Signals）</h2><p>notify()和notifyAll()方法不会保存调用它们的方法，因为当这两个方法被调用时，有可能没有线程处于等待状态。通知信号过后便丢弃了。因此，如果一个线程先于被通知线程调用wait()前调用了notify()，等待的线程将错过这个信号。这可能是也可能不是个问题。不过，在某些情况下，这可能使等待线程永远在等待，不再醒来，因为线程错过了唤醒信号。<br>为了避免丢失信号，必须把它们保存在信号类里。在MyWaitNotify的例子中，通知信号应被存储在MyWaitNotify实例的一个成员变量里。以下是MyWaitNotify的修改版本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public class MyWaitNotify2&#123;</span><br><span class="line"></span><br><span class="line">  MonitorObject myMonitorObject = new MonitorObject();</span><br><span class="line">  boolean wasSignalled = false;</span><br><span class="line"></span><br><span class="line">  public void doWait()&#123;</span><br><span class="line">    synchronized(myMonitorObject)&#123;</span><br><span class="line">      if(!wasSignalled)&#123;</span><br><span class="line">        try&#123;</span><br><span class="line">          myMonitorObject.wait();</span><br><span class="line">        &#125; catch(InterruptedException e)&#123;...&#125;</span><br><span class="line">      &#125;</span><br><span class="line">      //clear signal and continue running.</span><br><span class="line">      wasSignalled = false;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void doNotify()&#123;</span><br><span class="line">    synchronized(myMonitorObject)&#123;</span><br><span class="line">      wasSignalled = true;</span><br><span class="line">      myMonitorObject.notify();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>留意doNotify()方法在调用notify()前把wasSignalled变量设为true。同时，留意doWait()方法在调用wait()前会检查wasSignalled变量。事实上，如果没有信号在前一次doWait()调用和这次doWait()调用之间的时间段里被接收到，它将只调用wait()。（<em>校注：为了避免信号丢失， 用一个变量来保存是否被通知过。在notify前，设置自己已经被通知过。在wait后，设置自己没有被通知过，需要等待通知。</em>）</p>
+<h2 id="假唤醒"><a href="#假唤醒" class="headerlink" title="假唤醒"></a>假唤醒</h2><p>由于莫名其妙的原因，线程有可能在没有调用过notify()和notifyAll()的情况下醒来。这就是所谓的假唤醒（spurious wakeups）。无端端地醒过来了。</p>
+<p>如果在MyWaitNotify2的doWait()方法里发生了假唤醒，等待线程即使没有收到正确的信号，也能够执行后续的操作。这可能导致你的应用程序出现严重问题。</p>
+<p>为了防止假唤醒，保存信号的成员变量将在一个while循环里接受检查，而不是在if表达式里。这样的一个while循环叫做自旋锁（<em>校注：这种做法要慎重，目前的JVM实现自旋会消耗CPU，如果长时间不调用doNotify方法，doWait方法会一直自旋，CPU会消耗太大</em>）。被唤醒的线程会自旋直到自旋锁(while循环)里的条件变为false。以下MyWaitNotify2的修改版本展示了这点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public class MyWaitNotify3&#123;</span><br><span class="line"></span><br><span class="line">  MonitorObject myMonitorObject = new MonitorObject();</span><br><span class="line">  boolean wasSignalled = false;</span><br><span class="line"></span><br><span class="line">  public void doWait()&#123;</span><br><span class="line">    synchronized(myMonitorObject)&#123;</span><br><span class="line">      while(!wasSignalled)&#123;</span><br><span class="line">        try&#123;</span><br><span class="line">          myMonitorObject.wait();</span><br><span class="line">         &#125; catch(InterruptedException e)&#123;...&#125;</span><br><span class="line">      &#125;</span><br><span class="line">      //clear signal and continue running.</span><br><span class="line">      wasSignalled = false;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void doNotify()&#123;</span><br><span class="line">    synchronized(myMonitorObject)&#123;</span><br><span class="line">      wasSignalled = true;</span><br><span class="line">      myMonitorObject.notify();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>留意wait()方法是在while循环里，而不在if表达式里。如果等待线程没有收到信号就唤醒，wasSignalled变量将变为false,while循环会再执行一次，促使醒来的线程回到等待状态。</p>
+<h2 id="多个线程等待相同信号"><a href="#多个线程等待相同信号" class="headerlink" title="多个线程等待相同信号"></a>多个线程等待相同信号</h2><p>如果你有多个线程在等待，被notifyAll()唤醒，但只有一个被允许继续执行，使用while循环也是个好方法。每次只有一个线程可以获得监视器对象锁，意味着只有一个线程可以退出wait()调用并清除wasSignalled标志（设为false）。一旦这个线程退出doWait()的同步块，其他线程退出wait()调用，并在while循环里检查wasSignalled变量值。但是，这个标志已经被第一个唤醒的线程清除了，所以其余醒来的线程将回到等待状态，直到下次信号到来。</p>
+<h2 id="不要在字符串常量或全局对象中调用wait"><a href="#不要在字符串常量或全局对象中调用wait" class="headerlink" title="不要在字符串常量或全局对象中调用wait()"></a>不要在字符串常量或全局对象中调用wait()</h2><p>（<em>校注：本章说的字符串常量指的是值为常量的变量</em>）</p>
+<p>本文早期的一个版本在MyWaitNotify例子里使用字符串常量（””）作为管程对象。以下是那个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public class MyWaitNotify&#123;</span><br><span class="line"></span><br><span class="line">  String myMonitorObject = &quot;&quot;;</span><br><span class="line">  boolean wasSignalled = false;</span><br><span class="line"></span><br><span class="line">  public void doWait()&#123;</span><br><span class="line">    synchronized(myMonitorObject)&#123;</span><br><span class="line">      while(!wasSignalled)&#123;</span><br><span class="line">        try&#123;</span><br><span class="line">          myMonitorObject.wait();</span><br><span class="line">        &#125; catch(InterruptedException e)&#123;...&#125;</span><br><span class="line">      &#125;</span><br><span class="line">      //clear signal and continue running.</span><br><span class="line">      wasSignalled = false;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void doNotify()&#123;</span><br><span class="line">    synchronized(myMonitorObject)&#123;</span><br><span class="line">      wasSignalled = true;</span><br><span class="line">      myMonitorObject.notify();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在空字符串作为锁的同步块(或者其他常量字符串)里调用wait()和notify()产生的问题是，JVM/编译器内部会把常量字符串转换成同一个对象。这意味着，即使你有2个不同的MyWaitNotify实例，它们都引用了相同的空字符串实例。同时也意味着存在这样的风险：在第一个MyWaitNotify实例上调用doWait()的线程会被在第二个MyWaitNotify实例上调用doNotify()的线程唤醒。这种情况可以画成以下这张图：</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-11.%E7%BA%BF%E7%A8%8B%E9%80%9A%E4%BF%A1/strings-wait-notify.png" alt="strings-wait-notify.png"></p>
+<p>起初这可能不像个大问题。毕竟，如果doNotify()在第二个MyWaitNotify实例上被调用，真正发生的事不外乎线程A和B被错误的唤醒了 。这个被唤醒的线程（A或者B）将在while循环里检查信号值，然后回到等待状态，因为doNotify()并没有在第一个MyWaitNotify实例上调用，而这个正是它要等待的实例。这种情况相当于引发了一次假唤醒。线程A或者B在信号值没有更新的情况下唤醒。但是代码处理了这种情况，所以线程回到了等待状态。记住，即使4个线程在相同的共享字符串实例上调用wait()和notify()，doWait()和doNotify()里的信号还会被2个MyWaitNotify实例分别保存。在MyWaitNotify1上的一次doNotify()调用可能唤醒MyWaitNotify2的线程，但是信号值只会保存在MyWaitNotify1里。</p>
+<p>问题在于，由于doNotify()仅调用了notify()而不是notifyAll()，即使有4个线程在相同的字符串（空字符串）实例上等待，只能有一个线程被唤醒。所以，如果线程A或B被发给C或D的信号唤醒，它会检查自己的信号值，看看有没有信号被接收到，然后回到等待状态。而C和D都没被唤醒来检查它们实际上接收到的信号值，这样信号便丢失了。这种情况相当于前面所说的丢失信号的问题。C和D被发送过信号，只是都不能对信号作出回应。</p>
+<p>如果doNotify()方法调用notifyAll()，而非notify()，所有等待线程都会被唤醒并依次检查信号值。线程A和B将回到等待状态，但是C或D只有一个线程注意到信号，并退出doWait()方法调用。C或D中的另一个将回到等待状态，因为获得信号的线程在退出doWait()的过程中清除了信号值(置为false)。</p>
+<p>看过上面这段后，你可能会设法使用notifyAll()来代替notify()，但是这在性能上是个坏主意。在只有一个线程能对信号进行响应的情况下，没有理由每次都去唤醒所有线程。</p>
+<p>所以：<strong>在wait()/notify()机制中，不要使用全局对象，字符串常量等</strong>。应该使用对应唯一的对象。例如，每一个MyWaitNotify3的实例（前一节的例子）拥有一个属于自己的监视器对象，而不是在空字符串上调用wait()/notify()。</p>
+<p>校注：管程 (英语：Monitors，也称为监视器) 是对多个工作线程实现互斥访问共享资源的对象或模块。这些共享资源一般是硬件设备或一群变量。管程实现了在一个时间点，最多只有一个线程在执行它的某个子程序。与那些通过修改数据结构实现互斥访问的并发程序设计相比，管程很大程度上简化了程序设计。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/Java8/Java8-%E6%96%B0%E7%89%B9%E6%80%A7%EF%BC%9A%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8E%BB%E9%87%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/Java8/Java8-%E6%96%B0%E7%89%B9%E6%80%A7%EF%BC%9A%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8E%BB%E9%87%8D/" class="post-title-link" itemprop="url">Java8-新特性：字符串去重</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 15:18:44" itemprop="dateCreated datePublished" datetime="2016-12-12T15:18:44+08:00">2016-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/string-deduplication-new-feature/">http://ifeve.com/string-deduplication-new-feature/</a></p>
+<p>8月19日，Oracle发布了JDK 8u20，JDK 8u20包含很多新特性，比如Java编译器更新、支持在运行时通过API来修改MinHeapFreeRatio和MaxHeapFreeRatio参数、新的GC调优指南文档。不过在众多新特性中，最令人期待的还属字符串去重（String Deduplication ）。如何减少内存占用一直是一个永恒的话题，而在Java应用中，经常会看到String对象会占用应用30%的内存，它是Java中最常用的对象之一。新的字符串去重特性可以帮助减少应用中String对象的内存占用，目前该特性只适用于G1垃圾收集器，并且默认不被开启。</p>
+<p>Fabian Lange解释了字符串去重特性的实现方式：</p>
+<blockquote>
+<p>垃圾收集器会在访问String对象时对其字符数组进行标记，并将String的哈希值以及弱引用保存到一个数组中。当垃圾收集器发现另一个具有相同哈希值的String对象时，它就会逐字符比对这两个对象。如果他们完全匹配，那其中一个String就会被修改指向到另一个String的字符数组。由于第一个字符数组已经不再被引用，所以它也就可以被回收了。垃圾收集器会尽量减少整个操作的开销，比如某个String对象扫描未发现有重复，那接下来的一段时间内它不会再被检查。</p>
+</blockquote>
+<p>紧接着，Fabian Lange通过代码的方式解释了字符串去重特性的神奇效果。首先使用Java 8 Update 20通过参数<code>-Xmx256m -XX:+UseG1GC</code>运行以下代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">public class LotsOfStrings &#123;</span><br><span class="line"></span><br><span class="line">  private static final LinkedList&lt;String&gt; LOTS_OF_STRINGS = new LinkedList&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  public static void main(String[] args) throws Exception &#123;</span><br><span class="line">    int iteration = 0;</span><br><span class="line">    while (true) &#123;</span><br><span class="line">      for (int i = 0; i &lt; 100; i++) &#123;</span><br><span class="line">        for (int j = 0; j &lt; 1000; j++) &#123;</span><br><span class="line">          LOTS_OF_STRINGS.add(new String(&quot;String &quot; + j));</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      iteration++;</span><br><span class="line">      System.out.println(&quot;Survived Iteration: &quot; + iteration);</span><br><span class="line">      Thread.sleep(100);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码会在30次循环之后因OutOfMemoryError异常而结束运行。在使用参数 <code>-XX:+UseStringDeduplication -XX:+PrintStringDeduplicationStatistics</code>开启字符串去重特性后，程序可以多运行一段时间。通过JVM的日志也可以详细了解整个去重过程的详细信息。请读者自行测试。</p>
+<p>最后，Fabian Lange还解释了字符串去重与字符串驻留的区别，它们很相似，除了字符串驻留重用了整个的String实例，而字符串去重只是针对String的字符数组。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-10.Java%E5%90%8C%E6%AD%A5%E5%9D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-10.Java%E5%90%8C%E6%AD%A5%E5%9D%97/" class="post-title-link" itemprop="url">Java-并发性和多线程-6.竞态条件与临界区</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 15:11:51" itemprop="dateCreated datePublished" datetime="2016-12-12T15:11:51+08:00">2016-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/synchronized-blocks/">http://ifeve.com/synchronized-blocks/</a></p>
+<p>Java 同步块（synchronized block）用来标记方法或者代码块是同步的。Java同步块用来避免竞争。本文介绍以下内容：</p>
+<ul>
+<li>Java同步关键字（synchronzied）</li>
+<li>实例方法同步</li>
+<li>静态方法同步</li>
+<li>实例方法中同步块</li>
+<li>静态方法中同步块</li>
+<li>Java同步示例</li>
+</ul>
+<h2 id="Java-同步关键字（synchronized）"><a href="#Java-同步关键字（synchronized）" class="headerlink" title="Java 同步关键字（synchronized）"></a>Java 同步关键字（synchronized）</h2><p>Java中的同步块用synchronized标记。同步块在Java中是同步在某个对象上。所有同步在一个对象上的同步块在同时只能被一个线程进入并执行操作。所有其他等待进入该同步块的线程将被阻塞，直到执行该同步块中的线程退出。</p>
+<p>有四种不同的同步块：</p>
+<ol>
+<li>实例方法</li>
+<li>静态方法</li>
+<li>实例方法中的同步块</li>
+<li>静态方法中的同步块</li>
+</ol>
+<p>上述同步块都同步在不同对象上。实际需要那种同步块视具体情况而定。</p>
+<h3 id="实例方法同步"><a href="#实例方法同步" class="headerlink" title="实例方法同步"></a>实例方法同步</h3><p>下面是一个同步的实例方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public synchronized void add(int value)&#123;</span><br><span class="line">  this.count += value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意在方法声明中同步（synchronized ）关键字。这告诉Java该方法是同步的。</p>
+<p>Java实例方法同步是同步在拥有该方法的对象上。这样，每个实例其方法同步都同步在不同的对象上，即该方法所属的实例。只有一个线程能够在实例方法同步块中运行。如果有多个实例存在，那么一个线程一次可以在一个实例同步块中执行操作。一个实例一个线程。</p>
+<h3 id="静态方法同步"><a href="#静态方法同步" class="headerlink" title="静态方法同步"></a>静态方法同步</h3><p>静态方法同步和实例方法同步方法一样，也使用synchronized 关键字。Java静态方法同步如下示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public static synchronized void add(int value)&#123;</span><br><span class="line">  count += value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同样，这里synchronized 关键字告诉Java这个方法是同步的。</p>
+<p>静态方法的同步是指同步在该方法所在的类对象上。因为在Java虚拟机中一个类只能对应一个类对象，所以同时只允许一个线程执行同一个类中的静态同步方法。</p>
+<p>对于不同类中的静态同步方法，一个线程可以执行每个类中的静态同步方法而无需等待。不管类中的那个静态同步方法被调用，一个类只能由一个线程同时执行。</p>
+<h3 id="实例方法中的同步块"><a href="#实例方法中的同步块" class="headerlink" title="实例方法中的同步块"></a>实例方法中的同步块</h3><p>有时你不需要同步整个方法，而是同步方法中的一部分。Java可以对方法的一部分进行同步。</p>
+<p>在非同步的Java方法中的同步块的例子如下所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public void add(int value)&#123;</span><br><span class="line"></span><br><span class="line">  synchronized(this)&#123;</span><br><span class="line">     this.count += value;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>示例使用Java同步块构造器来标记一块代码是同步的。该代码在执行时和同步方法一样。</p>
+<p>注意Java同步块构造器用括号将对象括起来。在上例中，使用了“this”，即为调用add方法的实例本身。在同步构造器中用括号括起来的对象叫做监视器对象。上述代码使用监视器对象同步，同步实例方法使用调用方法本身的实例作为监视器对象。</p>
+<p>一次只有一个线程能够在同步于同一个监视器对象的Java方法内执行。</p>
+<p>下面两个例子都同步他们所调用的实例对象上，因此他们在同步的执行效果上是等效的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public class MyClass &#123;</span><br><span class="line"></span><br><span class="line">   public synchronized void log1(String msg1, String msg2)&#123;</span><br><span class="line">      log.writeln(msg1);</span><br><span class="line">      log.writeln(msg2);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   public void log2(String msg1, String msg2)&#123;</span><br><span class="line">      synchronized(this)&#123;</span><br><span class="line">         log.writeln(msg1);</span><br><span class="line">         log.writeln(msg2);</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上例中，每次只有一个线程能够在两个同步块中任意一个方法内执行。</p>
+<p>如果第二个同步块不是同步在this实例对象上，那么两个方法可以被线程同时执行。</p>
+<h3 id="静态方法中的同步块"><a href="#静态方法中的同步块" class="headerlink" title="静态方法中的同步块"></a>静态方法中的同步块</h3><p>和上面类似，下面是两个静态方法同步的例子。这些方法同步在该方法所属的类对象上。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public class MyClass &#123;</span><br><span class="line"></span><br><span class="line">    public static synchronized void log1(String msg1, String msg2)&#123;</span><br><span class="line">       log.writeln(msg1);</span><br><span class="line">       log.writeln(msg2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void log2(String msg1, String msg2)&#123;</span><br><span class="line">       synchronized(MyClass.class)&#123;</span><br><span class="line">          log.writeln(msg1);</span><br><span class="line">          log.writeln(msg2);</span><br><span class="line">       &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这两个方法不允许同时被线程访问。</p>
+<p>如果第二个同步块不是同步在MyClass.class这个对象上。那么这两个方法可以同时被线程访问。</p>
+<h2 id="Java同步实例"><a href="#Java同步实例" class="headerlink" title="Java同步实例"></a>Java同步实例</h2><p>在下面例子中，启动了两个线程，都调用Counter类同一个实例的add方法。因为同步在该方法所属的实例上，所以同时只能有一个线程访问该方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">public class Counter&#123;</span><br><span class="line"></span><br><span class="line">  long count = 0;</span><br><span class="line"></span><br><span class="line">  public synchronized void add(long value)&#123;</span><br><span class="line">    this.count += value;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class CounterThread extends Thread&#123;</span><br><span class="line"></span><br><span class="line">  protected Counter counter = null;</span><br><span class="line"></span><br><span class="line">  public CounterThread(Counter counter)&#123;</span><br><span class="line">    this.counter = counter;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void run() &#123;</span><br><span class="line">    for(int i=0; i&lt;10; i++)&#123;</span><br><span class="line">       counter.add(i);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class Example &#123;</span><br><span class="line"></span><br><span class="line">  public static void main(String[] args)&#123;</span><br><span class="line">    Counter counter = new Counter();</span><br><span class="line">    Thread  threadA = new CounterThread(counter);</span><br><span class="line">    Thread  threadB = new CounterThread(counter);</span><br><span class="line"></span><br><span class="line">    threadA.start();</span><br><span class="line">    threadB.start();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建了两个线程。他们的构造器引用同一个Counter实例。Counter.add方法是同步在实例上，是因为add方法是实例方法并且被标记上synchronized关键字。因此每次只允许一个线程调用该方法。另外一个线程必须要等到第一个线程退出add()方法时，才能继续执行方法。</p>
+<p>如果两个线程引用了两个不同的Counter实例，那么他们可以同时调用add()方法。这些方法调用了不同的对象，因此这些方法也就同步在不同的对象上。这些方法调用将不会被阻塞。如下面这个例子所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class Example &#123;</span><br><span class="line"></span><br><span class="line">  public static void main(String[] args)&#123;</span><br><span class="line">    Counter counterA = new Counter();</span><br><span class="line">    Counter counterB = new Counter();</span><br><span class="line">    Thread  threadA = new CounterThread(counterA);</span><br><span class="line">    Thread  threadB = new CounterThread(counterB);</span><br><span class="line"></span><br><span class="line">    threadA.start();</span><br><span class="line">    threadB.start();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意这两个线程，threadA和threadB，不再引用同一个counter实例。CounterA和counterB的add方法同步在他们所属的对象上。调用counterA的add方法将不会阻塞调用counterB的add方法。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-24.CAS/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -668,403 +1044,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-11.%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-11.%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/" class="post-title-link" itemprop="url">Java-Reflection-11.动态代理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 17:53:42" itemprop="dateCreated datePublished" datetime="2016-12-09T17:53:42+08:00">2016-12-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-11-dynamic-proxies/">http://ifeve.com/java-reflection-11-dynamic-proxies/</a></p>
-<p>利用Java反射机制你可以在运行期动态的创建接口的实现。java.lang.reflect.Proxy类就可以实现这一功能。这个类的名字（译者注：Proxy意思为代理）就是为什么把动态接口实现叫做动态代理。动态的代理的用途十分广泛，比如数据库连接和事物管理（transaction management）还有单元测试时用到的动态mock对象以及AOP中的方法拦截功能等等都使用到了动态代理。</p>
-<h2 id="创建代理"><a href="#创建代理" class="headerlink" title="创建代理"></a>创建代理</h2><p>你可以通过使用Proxy.newProxyInstance()方法创建动态代理。newProxyInstance()方法有三个参数：</p>
-<ol>
-<li>类加载器（ClassLoader）用来加载动态代理类。</li>
-<li>一个要实现的接口的数组。</li>
-<li>一个InvocationHandler把所有方法的调用都转到代理上。</li>
-</ol>
-<p>如下例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">InvocationHandler handler = new MyInvocationHandler();</span><br><span class="line">MyInterface proxy = (MyInterface) Proxy.newProxyInstance(</span><br><span class="line">                            MyInterface.class.getClassLoader(),</span><br><span class="line">                            new Class[] &#123; MyInterface.class &#125;,</span><br><span class="line">                            handler);</span><br></pre></td></tr></table></figure>
-<p>在执行完这段代码之后，变量proxy包含一个MyInterface接口的的动态实现。所有对proxy的调用都被转向到实现了InvocationHandler接口的handler上。有关InvocationHandler的内容会在下一段介绍。</p>
-<h2 id="InvocationHandler接口"><a href="#InvocationHandler接口" class="headerlink" title="InvocationHandler接口"></a>InvocationHandler接口</h2><p>在前面提到了当你调用Proxy.newProxyInstance()方法时，你必须要传入一个InvocationHandler接口的实现。所有对动态代理对象的方法调用都会被转向到InvocationHandler接口的实现上，下面是InvocationHandler接口的定义：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public interface InvocationHandler&#123;</span><br><span class="line"></span><br><span class="line">  Object invoke(Object proxy, Method method, Object[] args) throws Throwable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>下面是它的实现类的定义：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class MyInvocationHandler implements InvocationHandler&#123;</span><br><span class="line"></span><br><span class="line">  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">    //do something &quot;dynamic&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>传入invoke()方法中的proxy参数是实现要代理接口的动态代理对象。通常你是不需要他的。</p>
-<p>invoke()方法中的Method对象参数代表了被动态代理的接口中要调用的方法，从这个method对象中你可以获取到这个方法名字，方法的参数，参数类型等等信息。关于这部分内容可以查阅之前有关Method的文章。</p>
-<p>Object数组参数包含了被动态代理的方法需要的方法参数。注意：原生数据类型（如int，long等等）方法参数传入等价的包装对象（如Integer， Long等等）。</p>
-<h2 id="常见用例"><a href="#常见用例" class="headerlink" title="常见用例"></a>常见用例</h2><p>动态代理常被应用到以下几种情况中</p>
-<ul>
-<li>数据库连接以及事物管理</li>
-<li>单元测试中的动态Mock对象</li>
-<li>自定义工厂与依赖注入（DI）容器之间的适配器</li>
-<li>类似AOP的方法拦截器</li>
-</ul>
-<h3 id="数据库连接以及事物管理"><a href="#数据库连接以及事物管理" class="headerlink" title="数据库连接以及事物管理"></a>数据库连接以及事物管理</h3><p>Spring框架中有一个事物代理可以让你提交/回滚一个事物。它的具体原理在 <a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-persistence/advanced-connection-and-transaction-demarcation-and-propagation.html">Advanced Connection and Transaction Demarcation and Propagation</a>一文中有详细描述，所以在这里我就简短的描述一下，方法调用序列如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">web controller --&gt; proxy.execute(...);</span><br><span class="line"></span><br><span class="line">  proxy --&gt; connection.setAutoCommit(false);</span><br><span class="line">  proxy --&gt; realAction.execute();</span><br><span class="line">    realAction does database work</span><br><span class="line">  proxy --&gt; connection.commit();</span><br></pre></td></tr></table></figure>
-
-<h3 id="单元测试中的动态Mock对象"><a href="#单元测试中的动态Mock对象" class="headerlink" title="单元测试中的动态Mock对象"></a>单元测试中的动态Mock对象</h3><p><a target="_blank" rel="noopener" href="http://butterfly.jenkov.com/">Butterfly Testing</a>工具通过动态代理来动态实现桩（stub），mock和代理类来进行单元测试。在测试类A的时候如果用到了接口B，你可以传给A一个实现了B接口的mock来代替实际的B接口实现。所有对接口B的方法调用都会被记录，你可以自己来设置B的mock中方法的返回值。</p>
-<p>而且Butterfly Testing工具可以让你在B的mock中包装真实的B接口实现，这样所有调用mock的方法都会被记录，然后把调用转向到真实的B接口实现。这样你就可以检查B中方法真实功能的调用情况。例如：你在测试DAO时你可以把真实的数据库连接包装到mock中。这样的话就与真实的情况一样，DAO可以在数据库中读写数据，mock会把对数据库的读写操作指令都传给数据库，你可以通过mock来检查DAO是不是以正确的方式来使用数据库连接，比如你可以检查是否调用了connection.close()方法。这种情况是不能简单的依靠调用DAO方法的返回值来判断的。</p>
-<h3 id="自定义工厂与依赖注入（DI）容器之间的适配器"><a href="#自定义工厂与依赖注入（DI）容器之间的适配器" class="headerlink" title="自定义工厂与依赖注入（DI）容器之间的适配器"></a>自定义工厂与依赖注入（DI）容器之间的适配器</h3><p>依赖注入容器<a target="_blank" rel="noopener" href="http://butterfly.jenkov.com/">Butterfly Container</a>有一个非常强大的特性可以让你把整个容器注入到这个容器生成的bean中。但是，如果你不想依赖这个容器的接口，这个容器可以适配你自己定义的工厂接口。你仅仅需要这个接口而不是接口的实现，这样这个工厂接口和你的类看起来就像这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public interface IMyFactory &#123;</span><br><span class="line"></span><br><span class="line">  Bean bean1();</span><br><span class="line">  Person person();</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public class MyAction&#123;</span><br><span class="line"></span><br><span class="line">  protected IMyFactory myFactory= null;</span><br><span class="line"></span><br><span class="line">  public MyAction(IMyFactory factory)&#123;</span><br><span class="line">    this.myFactory = factory;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void execute()&#123;</span><br><span class="line">    Bean bean = this.myFactory.bean();</span><br><span class="line">    Person person = this.myFactory.person();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当MyAction类调用通过容器注入到构造方法中的IMyFactory实例的方法时，这个方法调用实际先调用了IContainer.instance()方法，这个方法可以让你从容器中获取实例。这样这个对象可以把Butterfly Container容器在运行期当成一个工厂使用，比起在创建这个类的时候进行注入，这种方式显然更好。而且这种方法没有依赖到Butterfly Container中的任何接口。</p>
-<h3 id="类似AOP的方法拦截器"><a href="#类似AOP的方法拦截器" class="headerlink" title="类似AOP的方法拦截器"></a>类似AOP的方法拦截器</h3><p>Spring框架可以拦截指定bean的方法调用，你只需提供这个bean继承的接口。Spring使用动态代理来包装bean。所有对bean中方法的调用都会被代理拦截。代理可以判断在调用实际方法之前是否需要调用其他方法或者调用其他对象的方法，还可以在bean的方法调用完毕之后再调用其他的代理方法。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-10.%E6%95%B0%E7%BB%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-10.%E6%95%B0%E7%BB%84/" class="post-title-link" itemprop="url">Java-Reflection-10.数组</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 17:45:59" itemprop="dateCreated datePublished" datetime="2016-12-09T17:45:59+08:00">2016-12-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-10-arrays/">http://ifeve.com/java-reflection-10-arrays/</a></p>
-<p>利用反射机制来处理数组会有点棘手。尤其是当你想要获得一个数组的Class对象，比如int[]等等。本节会讨论通过反射机制创建数组和如何获取数组的Class对象。</p>
-<p>注意：在阅读Eyal Lupu的博客文章“<a target="_blank" rel="noopener" href="http://jroller.com/eyallupu/entry/two_side_notes_about_arrays">Two Side Notes About Arrays and Reflection</a>”之后对本文的内容做了更新。目前这个版本参考了这篇博文里面的内容。</p>
-<h2 id="java-lang-reflect-Array"><a href="#java-lang-reflect-Array" class="headerlink" title="java.lang.reflect.Array"></a>java.lang.reflect.Array</h2><p>Java反射机制通过java.lang.reflect.Array这个类来处理数组。不要把这个类与Java集合套件（Collections suite）中的java.util.Arrays混淆，java.util.Arrays是一个提供了遍历数组，将数组转化为集合等工具方法的类。</p>
-<h3 id="创建一个数组"><a href="#创建一个数组" class="headerlink" title="创建一个数组"></a>创建一个数组</h3><p>Java反射机制通过java.lang.reflect.Array类来创建数组。下面是一个如何创建数组的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int[] intArray = (int[]) Array.newInstance(int.class, 3);</span><br></pre></td></tr></table></figure>
-<p>这个例子创建一个int类型的数组。Array.newInstance()方法的第一个参数表示了我们要创建一个什么类型的数组。第二个参数表示了这个数组的空间是多大。</p>
-<h3 id="访问一个数组"><a href="#访问一个数组" class="headerlink" title="访问一个数组"></a>访问一个数组</h3><p>通过Java反射机制同样可以访问数组中的元素。具体可以使用Array.get(…)和Array.set(…)方法来访问。下面是一个例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">int[] intArray = (int[]) Array.newInstance(int.class, 3);</span><br><span class="line"></span><br><span class="line">Array.set(intArray, 0, 123);</span><br><span class="line">Array.set(intArray, 1, 456);</span><br><span class="line">Array.set(intArray, 2, 789);</span><br><span class="line"></span><br><span class="line">System.out.println(&quot;intArray[0] = &quot; + Array.get(intArray, 0));</span><br><span class="line">System.out.println(&quot;intArray[1] = &quot; + Array.get(intArray, 1));</span><br><span class="line">System.out.println(&quot;intArray[2] = &quot; + Array.get(intArray, 2));</span><br></pre></td></tr></table></figure>
-<p>这个例子会输出：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">intArray[0] = 123</span><br><span class="line">intArray[1] = 456</span><br><span class="line">intArray[2] = 789</span><br></pre></td></tr></table></figure>
-
-<h3 id="获取数组的Class对象"><a href="#获取数组的Class对象" class="headerlink" title="获取数组的Class对象"></a>获取数组的Class对象</h3><p>在我编写<a target="_blank" rel="noopener" href="http://butterfly.jenkov.com/">Butterfly DI Container</a>的脚本语言时，当我想通过反射获取数组的Class对象时遇到了一点麻烦。如果不通过反射的话你可以这样来获取数组的Class对象：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class stringArrayClass = String[].class;</span><br></pre></td></tr></table></figure>
-<p>如果使用Class.forName()方法来获取Class对象则不是那么简单。比如你可以像这样来获得一个原生数据类型（primitive）int数组的Class对象：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class intArray = Class.forName(&quot;[I&quot;);</span><br></pre></td></tr></table></figure>
-<p>在JVM中字母I代表int类型，左边的‘[’代表我想要的是一个int类型的数组，这个规则同样适用于其他的原生数据类型。<br>对于普通对象类型的数组有一点细微的不同：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class stringArrayClass = Class.forName(&quot;[Ljava.lang.String;&quot;);</span><br></pre></td></tr></table></figure>
-<p>注意‘[L’的右边是类名，类名的右边是一个‘;’符号。这个的含义是一个指定类型的数组。</p>
-<p>需要注意的是，你不能通过Class.forName()方法获取一个原生数据类型的Class对象。下面这两个例子都会报ClassNotFoundException：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class intClass1 = Class.forName(&quot;I&quot;);</span><br><span class="line">Class intClass2 = Class.forName(&quot;int&quot;);</span><br></pre></td></tr></table></figure>
-<p>我通常会用下面这个方法来获取普通对象以及原生对象的Class对象：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public Class getClass(String className)&#123;</span><br><span class="line"></span><br><span class="line">  if(&quot;int&quot; .equals(className)) return int .class;</span><br><span class="line">  if(&quot;long&quot;.equals(className)) return long.class;</span><br><span class="line">  ...</span><br><span class="line">  return Class.forName(className);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>一旦你获取了类型的Class对象，你就有办法轻松的获取到它的数组的Class对象，你可以通过指定的类型创建一个空的数组，然后通过这个空的数组来获取数组的Class对象。这样做有点讨巧，不过很有效。如下例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class theClass = getClass(theClassName);</span><br><span class="line">Class stringArrayClass = Array.newInstance(theClass, 0).getClass();</span><br></pre></td></tr></table></figure>
-<p>这是一个特别的方式来获取指定类型的指定数组的Class对象。无需使用类名或其他方式来获取这个Class对象。</p>
-<p>为了确保Class对象是不是代表一个数组，你可以使用Class.isArray()方法来进行校验：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class stringArrayClass = Array.newInstance(String.class, 0).getClass();</span><br><span class="line">System.out.println(&quot;is array: &quot; + stringArrayClass.isArray());</span><br></pre></td></tr></table></figure>
-
-<h3 id="获取数组的成员类型"><a href="#获取数组的成员类型" class="headerlink" title="获取数组的成员类型"></a>获取数组的成员类型</h3><p>一旦你获取了一个数组的Class对象，你就可以通过Class.getComponentType()方法获取这个数组的成员类型。成员类型就是数组存储的数据类型。例如，数组int[]的成员类型就是一个Class对象int.class。String[]的成员类型就是java.lang.String类的Class对象。</p>
-<p>下面是一个访问数组成员类型的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String[] strings = new String[3];</span><br><span class="line">Class stringArrayClass = strings.getClass();</span><br><span class="line">Class stringArrayComponentType = stringArrayClass.getComponentType();</span><br><span class="line">System.out.println(stringArrayComponentType);</span><br></pre></td></tr></table></figure>
-<p>下面这个例子会打印“java.lang.String”代表这个数组的成员类型是字符串。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-8.%E6%B3%A8%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-8.%E6%B3%A8%E8%A7%A3/" class="post-title-link" itemprop="url">Java-Reflection-8.注解</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 17:16:02" itemprop="dateCreated datePublished" datetime="2016-12-09T17:16:02+08:00">2016-12-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-8-annotation/">http://ifeve.com/java-reflection-8-annotation/</a></p>
-<p>利用Java反射机制可以在运行期获取Java类的注解信息。</p>
-<h2 id="什么是注解"><a href="#什么是注解" class="headerlink" title="什么是注解"></a>什么是注解</h2><p>注解是Java 5的一个新特性。注解是插入你代码中的一种注释或者说是一种元数据（meta data）。这些注解信息可以在编译期使用预编译工具进行处理（pre-compiler tools），也可以在运行期使用Java反射机制进行处理。下面是一个类注解的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@MyAnnotation(name=&quot;someName&quot;,  value = &quot;Hello World&quot;)</span><br><span class="line">public class TheClass &#123;&#125;</span><br></pre></td></tr></table></figure>
-<p>在TheClass类定义的上面有一个@MyAnnotation的注解。注解的定义与接口的定义相似，下面是MyAnnotation注解的定义：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@Retention(RetentionPolicy.RUNTIME)</span><br><span class="line">@Target(ElementType.TYPE)</span><br><span class="line">public @interface MyAnnotation &#123;</span><br><span class="line"></span><br><span class="line">  public String name();</span><br><span class="line"></span><br><span class="line">  public String value();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在interface前面的@符号表名这是一个注解，一旦你定义了一个注解之后你就可以将其应用到你的代码中，就像之前我们的那个例子那样。</p>
-<p>在注解定义中的两个指示<code>@Retention(RetentionPolicy.RUNTIME)</code>和<code>@Target(ElementType.TYPE)</code>，说明了这个注解该如何使用。</p>
-<p><code>@Retention(RetentionPolicy.RUNTIME)</code>表示这个注解可以在运行期通过反射访问。如果你没有在注解定义的时候使用这个指示那么这个注解的信息不会保留到运行期，这样反射就无法获取它的信息。</p>
-<p><code>@Target(ElementType.TYPE)</code>表示这个注解只能用在类型上面（比如类跟接口）。你同样可以把Type改为Field或者Method，或者你可以不用这个指示，这样的话你的注解在类，方法和变量上就都可以使用了。</p>
-<p>关于Java注解更详细的讲解可以访问<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java/annotations.html">Java Annotations tutorial</a>。</p>
-<h2 id="类注解"><a href="#类注解" class="headerlink" title="类注解"></a>类注解</h2><p>你可以在运行期访问类，方法或者变量的注解信息，下是一个访问类注解的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Class aClass = TheClass.class;</span><br><span class="line">Annotation[] annotations = aClass.getAnnotations();</span><br><span class="line"></span><br><span class="line">for(Annotation annotation : annotations)&#123;</span><br><span class="line">    if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">        MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">        System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">        System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>你还可以像下面这样指定访问一个类的注解：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Class aClass = TheClass.class;</span><br><span class="line">Annotation annotation = aClass.getAnnotation(MyAnnotation.class);</span><br><span class="line"></span><br><span class="line">if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">    MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">    System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">    System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="方法注解"><a href="#方法注解" class="headerlink" title="方法注解"></a>方法注解</h2><p>下面是一个方法注解的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class TheClass &#123;</span><br><span class="line"></span><br><span class="line">  @MyAnnotation(name=&quot;someName&quot;,  value = &quot;Hello World&quot;)</span><br><span class="line">  public void doSomething()&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>你可以像这样访问方法注解：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Method method = ... //获取方法对象</span><br><span class="line">Annotation[] annotations = method.getDeclaredAnnotations();</span><br><span class="line"></span><br><span class="line">for(Annotation annotation : annotations)&#123;</span><br><span class="line">    if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">        MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">        System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">        System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>你可以像这样访问指定的方法注解：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Method method = ... // 获取方法对象</span><br><span class="line">Annotation annotation = method.getAnnotation(MyAnnotation.class);</span><br><span class="line"></span><br><span class="line">if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">    MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">    System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">    System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="参数注解"><a href="#参数注解" class="headerlink" title="参数注解"></a>参数注解</h2><p>方法参数也可以添加注解，就像下面这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class TheClass &#123;</span><br><span class="line"></span><br><span class="line">  public static void doSomethingElse(@MyAnnotation(name=&quot;aName&quot;, value=&quot;aValue&quot;) String parameter)&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>你可以通过Method对象来访问方法参数注解：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Method method = ... //获取方法对象</span><br><span class="line">Annotation[][] parameterAnnotations = method.getParameterAnnotations();</span><br><span class="line">Class[] parameterTypes = method.getParameterTypes();</span><br><span class="line"></span><br><span class="line">int i=0;</span><br><span class="line">for(Annotation[] annotations : parameterAnnotations)&#123;</span><br><span class="line">  Class parameterType = parameterTypes[i++];</span><br><span class="line"></span><br><span class="line">  for(Annotation annotation : annotations)&#123;</span><br><span class="line">    if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">        MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">        System.out.println(&quot;param: &quot; + parameterType.getName());</span><br><span class="line">        System.out.println(&quot;name : &quot; + myAnnotation.name());</span><br><span class="line">        System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>需要注意的是Method.getParameterAnnotations()方法返回一个注解类型的二维数组，每一个方法的参数包含一个注解数组。</p>
-<h2 id="变量注解"><a href="#变量注解" class="headerlink" title="变量注解"></a>变量注解</h2><p>下面是一个变量注解的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public class TheClass &#123;</span><br><span class="line"></span><br><span class="line">  @MyAnnotation(name=&quot;someName&quot;,  value = &quot;Hello World&quot;)</span><br><span class="line">  public String myField = null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>你可以像这样来访问变量的注解：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Field field = ... //获取方法对象&lt;/pre&gt;</span><br><span class="line">Annotation[] annotations = field.getDeclaredAnnotations();</span><br><span class="line"></span><br><span class="line">for(Annotation annotation : annotations)&#123;</span><br><span class="line">  if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">    MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">    System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">    System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>你可以像这样访问指定的变量注解：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Field field = ...//获取方法对象&lt;/pre&gt;</span><br><span class="line">Annotation annotation = field.getAnnotation(MyAnnotation.class);</span><br><span class="line"></span><br><span class="line">if(annotation instanceof MyAnnotation)&#123;</span><br><span class="line">  MyAnnotation myAnnotation = (MyAnnotation) annotation;</span><br><span class="line">  System.out.println(&quot;name: &quot; + myAnnotation.name());</span><br><span class="line">  System.out.println(&quot;value: &quot; + myAnnotation.value());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-9.%E6%B3%9B%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-9.%E6%B3%9B%E5%9E%8B/" class="post-title-link" itemprop="url">Java-Reflection-9.泛型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 17:16:02" itemprop="dateCreated datePublished" datetime="2016-12-09T17:16:02+08:00">2016-12-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-9-generics/">http://ifeve.com/java-reflection-9-generics/</a></p>
-<p>我常常在一些文章以及论坛中读到说Java泛型信息在编译期被擦除（erased）所以你无法在运行期获得有关泛型的信息。其实这种说法并不完全正确的，在一些情况下是可以在运行期获取到泛型的信息。这些情况其实覆盖了一些我们需要泛型信息的需求。在本节中我们会演示一下这些情况。</p>
-<h2 id="运用泛型反射的经验法则"><a href="#运用泛型反射的经验法则" class="headerlink" title="运用泛型反射的经验法则"></a>运用泛型反射的经验法则</h2><p>下面是两个典型的使用泛型的场景：</p>
-<ol>
-<li>声明一个需要被参数化（parameterizable）的类/接口。</li>
-<li>使用一个参数化类。</li>
-</ol>
-<p>当你声明一个类或者接口的时候你可以指明这个类或接口可以被参数化，java.util.List接口就是典型的例子。你可以运用泛型机制创建一个标明存储的是String类型list，这样比你创建一个Object的list要更好。</p>
-<p>当你想在运行期参数化类型本身，比如你想检查java.util.List类的参数化类型，你是没有办法能知道他具体的参数化类型是什么。这样一来这个类型就可以是一个应用中所有的类型。但是，当你检查一个使用了被参数化的类型的变量或者方法，你可以获得这个被参数化类型的具体参数。总之：</p>
-<p>你不能在运行期获知一个被参数化的类型的具体参数类型是什么，但是你可以在用到这个被参数化类型的方法以及变量中找到他们，换句话说就是获知他们具体的参数化类型。（意思是，虽然我们不能在运行期获取到一个泛型类的参数类型信息,但是可以通过一些有用到这个泛型类的方法或者变量中来找到他们的参数类型信息）</p>
-<p>在下面的段落中会向你演示这类情况。</p>
-<h2 id="泛型方法返回类型"><a href="#泛型方法返回类型" class="headerlink" title="泛型方法返回类型"></a>泛型方法返回类型</h2><p>如果你获得了java.lang.reflect.Method对象，那么你就可以获取到这个方法的泛型返回类型信息。如果方法是在一个被参数化类型之中（译者注：如T fun()）那么你无法获取他的具体类型，但是如果方法返回一个泛型类（译者注：如List fun()）那么你就可以获得这个泛型类的具体参数化类型。你可以在“<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-reflection/generics.html">Java Reflection: Methods</a>”中阅读到有关如何获取Method对象的相关内容。下面这个例子定义了一个类这个类中的方法返回类型是一个泛型类型：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class MyClass &#123;</span><br><span class="line"></span><br><span class="line">  protected List&lt;String&gt; stringList = ...;</span><br><span class="line"></span><br><span class="line">  public List&lt;String&gt; getStringList()&#123;</span><br><span class="line">    return this.stringList;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们可以获取getStringList()方法的泛型返回类型，换句话说，我们可以检测到getStringList()方法返回的是List而不仅仅只是一个List。如下例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Method method = MyClass.class.getMethod(&quot;getStringList&quot;, null);</span><br><span class="line">Type returnType = method.getGenericReturnType();</span><br><span class="line"></span><br><span class="line">if(returnType instanceof ParameterizedType)&#123;</span><br><span class="line">  ParameterizedType type = (ParameterizedType) returnType;</span><br><span class="line">  Type[] typeArguments = type.getActualTypeArguments();</span><br><span class="line">  for(Type typeArgument : typeArguments)&#123;</span><br><span class="line">    Class typeArgClass = (Class) typeArgument;</span><br><span class="line">    System.out.println(&quot;typeArgClass = &quot; + typeArgClass);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这段代码会打印出 “typeArgClass = java.lang.String”，Type[]数组typeArguments只有一个结果 – 一个代表java.lang.String的Class类的实例。Class类实现了Type接口。</p>
-<h2 id="泛型方法参数类型"><a href="#泛型方法参数类型" class="headerlink" title="泛型方法参数类型"></a>泛型方法参数类型</h2><p>你同样可以通过反射来获取方法参数的泛型类型，下面这个例子定义了一个类，这个类中的方法的参数是一个被参数化的List：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class MyClass &#123;</span><br><span class="line"></span><br><span class="line">  protected List&lt;String&gt; stringList = ...;</span><br><span class="line"></span><br><span class="line">  public void setStringList(List&lt;String&gt; list)&#123;</span><br><span class="line">    this.stringList = list;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>你可以像这样来获取方法的泛型参数：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">method = Myclass.class.getMethod(&quot;setStringList&quot;, List.class);</span><br><span class="line">Type[] genericParameterTypes = method.getGenericParameterTypes();</span><br><span class="line"></span><br><span class="line">for(Type genericParameterType : genericParameterTypes)&#123;</span><br><span class="line">  if(genericParameterType instanceof ParameterizedType)&#123;</span><br><span class="line">    ParameterizedType aType = (ParameterizedType) genericParameterType;</span><br><span class="line">    Type[] parameterArgTypes = aType.getActualTypeArguments();</span><br><span class="line"></span><br><span class="line">    for(Type parameterArgType : parameterArgTypes)&#123;</span><br><span class="line">      Class parameterArgClass = (Class) parameterArgType;</span><br><span class="line">      System.out.println(&quot;parameterArgClass = &quot; + parameterArgClass);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这段代码会打印出”parameterArgType = java.lang.String”。Type[]数组parameterArgTypes只有一个结果 – 一个代表java.lang.String的Class类的实例。Class类实现了Type接口。</p>
-<h2 id="泛型变量类型"><a href="#泛型变量类型" class="headerlink" title="泛型变量类型"></a>泛型变量类型</h2><p>同样可以通过反射来访问公有（Public）变量的泛型类型，无论这个变量是一个类的静态成员变量或是实例成员变量。你可以在“<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-reflection/fields.html">Java Reflection: Fields</a>”中阅读到有关如何获取Field对象的相关内容。这是之前的一个例子，一个定义了一个名为stringList的成员变量的类。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public class MyClass &#123;</span><br><span class="line"></span><br><span class="line">  public List&lt;String&gt; stringList = ...;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Field field = MyClass.class.getField(&quot;stringList&quot;);</span><br><span class="line">Type genericFieldType = field.getGenericType();</span><br><span class="line"></span><br><span class="line">if(genericFieldType instanceof ParameterizedType)&#123;</span><br><span class="line">  ParameterizedType aType = (ParameterizedType) genericFieldType;</span><br><span class="line">  Type[] fieldArgTypes = aType.getActualTypeArguments();</span><br><span class="line"></span><br><span class="line">  for(Type fieldArgType : fieldArgTypes)&#123;</span><br><span class="line">    Class fieldArgClass = (Class) fieldArgType;</span><br><span class="line">    System.out.println(&quot;fieldArgClass = &quot; + fieldArgClass);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这段代码会打印出”fieldArgClass = java.lang.String”。Type[]数组fieldArgClass只有一个结果 – 一个代表java.lang.String的Class类的实例。Class类实现了Type接口。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/30/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><span class="page-number current">31</span><a class="page-number" href="/page/32/">32</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/32/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/30/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><span class="page-number current">31</span><a class="page-number" href="/page/32/">32</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/32/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1132,7 +1115,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1145,7 +1128,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

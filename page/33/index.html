@@ -188,6 +188,377 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-1.Java%E5%8F%8D%E5%B0%84%E6%8C%87%E5%8D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-1.Java%E5%8F%8D%E5%B0%84%E6%8C%87%E5%8D%97/" class="post-title-link" itemprop="url">Java-Reflection-1.Java反射指南</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-09 16:36:11" itemprop="dateCreated datePublished" datetime="2016-12-09T16:36:11+08:00">2016-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-reflection-tutorial/">http://ifeve.com/java-reflection-tutorial/</a></p>
+<p>Java反射机制可以让我们在编译期(Compile Time)之外的运行期(Runtime)检查类，接口，变量以及方法的信息。反射还可以让我们在运行期实例化对象，调用方法，通过调用get/set方法获取变量的值。</p>
+<p>Java反射机制功能强大而且非常实用。举个例子，你可以用反射机制把Java对象映射到数据库表，就像Butterfly Persistence所做的那样，或者把脚本中的一段语句在运行期映射到相应的对象调用方法上，就像 Butterfly Container在解析它的配置脚本时所做的那样。</p>
+<p>目前在互联网上已经有不胜枚举的Java反射指南，然而大多数的指南包括Sun公司所发布的反射指南中都仅仅只是介绍了一些反射的表面内容以及它的潜能。</p>
+<p>在这个系列的文章中，我们会比其他指南更深入的去理解Java反射机制，它会阐述Java反射机制的基本原理包括如何去使用数组，注解，泛型以及动态代理还有类的动态加载以及类的重载的实现。同时也会向你展示如何实现一些比较有特性的功能，比如从一个类中读取所有的get/set方法，或者访问一个类的私有变量以及私有方法。在这个系列的指南中同时也会说明一些非反射相关的但是令人困惑的问题，比如哪些泛型信息在运行时是有效的，一些人声称所有的泛型信息在运行期都会消失，其实这是不对的。</p>
+<p>该系列文章中所描述介绍的是Java 6版本的反射机制。</p>
+<h4 id="Java反射的例子"><a href="#Java反射的例子" class="headerlink" title="Java反射的例子"></a>Java反射的例子</h4><p>下面是一个Java反射的简单例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Method[] methods = MyObject.class.getMethods();</span><br><span class="line"></span><br><span class="line">for(Method method : methods)&#123;</span><br><span class="line">    System.out.println(&quot;method = &quot; + method.getName());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个例子中通过调用MyObject类的class属性获取对应的Class类的对象，通过这个Class类的对象获取MyObject类中的方法集合。迭代这个方法的集合并且打印每个方法的名字。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E6%95%B4%E5%90%88Swagger2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E6%95%B4%E5%90%88Swagger2/" class="post-title-link" itemprop="url">SpringMVC-整合Swagger2</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-09 10:13:04" itemprop="dateCreated datePublished" datetime="2016-12-09T10:13:04+08:00">2016-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在SpringMVC项目中使用Swagger2。</p>
+<h2 id="添加Swagger2依赖"><a href="#添加Swagger2依赖" class="headerlink" title="添加Swagger2依赖"></a>添加Swagger2依赖</h2><p>向<code>pom.xml</code>中添加</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;io.springfox&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;springfox-swagger2&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.6.1&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;io.springfox&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;springfox-swagger-ui&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.6.1&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建Swagger2配置类"><a href="#创建Swagger2配置类" class="headerlink" title="创建Swagger2配置类"></a>创建Swagger2配置类</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@EnableWebMvc //NOTE: Only needed in a non-springboot application</span><br><span class="line">@EnableSwagger2</span><br><span class="line">public class MySwaggerConfig &#123;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public Docket createRestApi() &#123;</span><br><span class="line">        return new Docket(DocumentationType.SWAGGER_2)</span><br><span class="line">                .apiInfo(apiInfo())</span><br><span class="line">                .select()</span><br><span class="line">                .paths(PathSelectors.any())</span><br><span class="line">                .build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private ApiInfo apiInfo() &#123;</span><br><span class="line">        return new ApiInfoBuilder()</span><br><span class="line">                .title(&quot;SpringMVC 中使用Swagger2构建RESTful APIs&quot;)</span><br><span class="line">                .description(&quot;SpringMVC 中使用Swagger2构建RESTful APIs&quot;)</span><br><span class="line">                .termsOfServiceUrl(&quot;https://wetts.github.io/&quot;)</span><br><span class="line">                .contact(new Contact(&quot;wetts&quot;, &quot;https://wetts.github.io/&quot;, &quot;zhang.wetts@163.com&quot;))</span><br><span class="line">                .version(&quot;1.0&quot;)</span><br><span class="line">                .build();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置Spring配置文件"><a href="#配置Spring配置文件" class="headerlink" title="配置Spring配置文件"></a>配置Spring配置文件</h2><p>在SpringMVC的配置文件中添加</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean class=&quot;com.wetts.restful.demo.MySwaggerConfig&quot;&gt;&lt;/bean&gt;</span><br><span class="line"></span><br><span class="line">&lt;mvc:resources location=&quot;classpath:/META-INF/resources/&quot; mapping=&quot;swagger-ui.html&quot;/&gt;</span><br><span class="line">&lt;mvc:resources location=&quot;classpath:/META-INF/resources/webjars/&quot; mapping=&quot;/webjars/**&quot;/&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="添加Controller中内容"><a href="#添加Controller中内容" class="headerlink" title="添加Controller中内容"></a>添加Controller中内容</h2><h3 id="Api"><a href="#Api" class="headerlink" title="@Api"></a>@Api</h3><p>用在类上，说明该类的作用</p>
+<p><code>@Api(value = &quot;UserController&quot;, description = &quot;用户相关api&quot;)</code></p>
+<h3 id="ApiOperation"><a href="#ApiOperation" class="headerlink" title="@ApiOperation"></a>@ApiOperation</h3><p>用在方法上，说明方法的作用</p>
+<p><code>@ApiOperation(value = &quot;查找用户&quot;, notes = &quot;查找用户&quot;, httpMethod = &quot;GET&quot;, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)</code></p>
+<h3 id="ApiImplicitParams"><a href="#ApiImplicitParams" class="headerlink" title="@ApiImplicitParams"></a>@ApiImplicitParams</h3><p>用在方法上包含一组参数说明</p>
+<h3 id="ApiImplicitParam"><a href="#ApiImplicitParam" class="headerlink" title="@ApiImplicitParam"></a>@ApiImplicitParam</h3><p>用在@ApiImplicitParams注解中，指定一个请求参数的各个方面</p>
+<ul>
+<li>paramType：参数放在哪个地方</li>
+<li>path（用于restful接口）–&gt;请求参数的获取：@PathVariable</li>
+<li>name：参数名</li>
+<li>dataType：参数类型</li>
+<li>required：参数是否必须传</li>
+<li>value：参数的意思</li>
+<li>defaultValue：参数的默认值<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@ApiImplicitParams(&#123;</span><br><span class="line">        @ApiImplicitParam(name = &quot;id&quot;, value = &quot;唯一id&quot;, required = true, dataType = &quot;Long&quot;, paramType = &quot;path&quot;),</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="ApiResponses"><a href="#ApiResponses" class="headerlink" title="@ApiResponses"></a>@ApiResponses</h3><p>用于表示一组响应</p>
+<h3 id="ApiResponse"><a href="#ApiResponse" class="headerlink" title="@ApiResponse"></a>@ApiResponse</h3><p>用在@ApiResponses中，一般用于表达一个错误的响应信息</p>
+<ul>
+<li>code：数字，例如400</li>
+<li>message：信息，例如”请求参数没填好”</li>
+<li>response：抛出异常的类</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@ApiResponses(value = &#123;  </span><br><span class="line">          @ApiResponse(code = 400, message = &quot;No Name Provided&quot;)  </span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="ApiModel"><a href="#ApiModel" class="headerlink" title="@ApiModel"></a>@ApiModel</h3><p>描述一个Model的信息（这种一般用在post创建的时候，使用@RequestBody这样的场景，请求参数无法使用@ApiImplicitParam注解进行描述的时候）</p>
+<p><code>@ApiModel(value = &quot;用户实体类&quot;)</code></p>
+<h3 id="ApiModelProperty"><a href="#ApiModelProperty" class="headerlink" title="@ApiModelProperty"></a>@ApiModelProperty</h3><p>描述一个model的属性</p>
+<p><code>@ApiModelProperty(value = &quot;登录用户&quot;)</code></p>
+<h2 id="启动项目后访问路径"><a href="#启动项目后访问路径" class="headerlink" title="启动项目后访问路径"></a>启动项目后访问路径</h2><p><code>http://localhost:8080/swagger-ui.html</code>访问路径</p>
+<p><code>http://localhost:8080/v2/api-docs</code> 文档json路径</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/07/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E8%AF%AD%E6%B3%95-proxy_pass%E4%B8%AD%E7%9A%84%E8%B7%AF%E5%BE%84%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/07/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E8%AF%AD%E6%B3%95-proxy_pass%E4%B8%AD%E7%9A%84%E8%B7%AF%E5%BE%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Nginx-语法-proxy_pass中的路径问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-07 22:57:17" itemprop="dateCreated datePublished" datetime="2016-12-07T22:57:17+08:00">2016-12-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="用-来匹配"><a href="#用-来匹配" class="headerlink" title="用^~来匹配"></a>用<code>^~</code>来匹配</h2><p><code>http://127.0.0.1:81/demo/test.html</code></p>
+<h3 id="http-host"><a href="#http-host" class="headerlink" title="http://host/"></a><code>http://host/</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理到<code>http://127.0.0.1:8080/test.html</code></p>
+<h3 id="http-host-1"><a href="#http-host-1" class="headerlink" title="http://host"></a><code>http://host</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理到<code>http://127.0.0.1:8080/demo/test.html</code></p>
+<h3 id="http-host-lt-path-gt"><a href="#http-host-lt-path-gt" class="headerlink" title="http://host/&lt;path&gt;/"></a><code>http://host/&lt;path&gt;/</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080/a/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理到<code>http://127.0.0.1:8080/a/test.html</code></p>
+<h3 id="http-host-lt-path-gt-1"><a href="#http-host-lt-path-gt-1" class="headerlink" title="http://host/&lt;path&gt;"></a><code>http://host/&lt;path&gt;</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ^~ /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080/a;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理到<code>http://127.0.0.1:8080/atest.html</code></p>
+<h2 id="用-来匹配-1"><a href="#用-来匹配-1" class="headerlink" title="用=来匹配"></a>用<code>=</code>来匹配</h2><p><code>http://127.0.0.1:81/demo/</code></p>
+<h3 id="http-host-2"><a href="#http-host-2" class="headerlink" title="http://host/"></a><code>http://host/</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location = /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理到<code>http://127.0.0.1:8080/</code></p>
+<h3 id="http-host-3"><a href="#http-host-3" class="headerlink" title="http://host"></a><code>http://host</code></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location = /demo/ &#123;</span><br><span class="line">  proxy_pass http://127.0.0.1:8080;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代理到<code>http://127.0.0.1:8080/demo/</code></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="post-title-link" itemprop="url">Java-API-容器-HashMap死循环</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-06 18:53:32" itemprop="dateCreated datePublished" datetime="2016-12-06T18:53:32+08:00">2016-12-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://coolshell.cn/articles/9606.html">http://coolshell.cn/articles/9606.html</a></p>
+<h2 id="问题的症状"><a href="#问题的症状" class="headerlink" title="问题的症状"></a>问题的症状</h2><p>从前我们的Java代码因为一些原因使用了HashMap这个东西，但是当时的程序是单线程的，一切都没有问题。后来，我们的程序性能有问题，所以需要变成多线程的，于是，变成多线程后到了线上，发现程序经常占了100%的CPU，查看堆栈，你会发现程序都Hang在了HashMap.get()这个方法上了，重启程序后问题消失。但是过段时间又会来。而且，这个问题在测试环境里可能很难重现。</p>
+<p>我们简单的看一下我们自己的代码，我们就知道HashMap被多个线程操作。而Java的文档说HashMap是非线程安全的，应该用ConcurrentHashMap。</p>
+<p>但是在这里我们可以来研究一下原因。</p>
+<h2 id="Hash表数据结构"><a href="#Hash表数据结构" class="headerlink" title="Hash表数据结构"></a>Hash表数据结构</h2><p>我需要简单地说一下HashMap这个经典的数据结构。</p>
+<p>HashMap通常会用一个指针数组（假设为table[]）来做分散所有的key，当一个key被加入时，会通过Hash算法通过key算出这个数组的下标i，然后就把这个&lt;key, value&gt;插到table[i]中，如果有两个不同的key被算在了同一个i，那么就叫冲突，又叫碰撞，这样会在table[i]上形成一个链表。</p>
+<p>我们知道，如果table[]的尺寸很小，比如只有2个，如果要放进10个keys的话，那么碰撞非常频繁，于是一个O(1)的查找算法，就变成了链表遍历，性能变成了O(n)，这是Hash表的缺陷（可参看《<a target="_blank" rel="noopener" href="http://coolshell.cn/articles/6424.html">Hash Collision DoS 问题</a>》）。</p>
+<p>所以，Hash表的尺寸和容量非常的重要。一般来说，Hash表这个容器当有数据要插入时，都会检查容量有没有超过设定的thredhold，如果超过，需要增大Hash表的尺寸，但是这样一来，整个Hash表里的无素都需要被重算一遍。这叫rehash，这个成本相当的大。</p>
+<p>相信大家对这个基础知识已经很熟悉了。</p>
+<h2 id="HashMap的rehash源代码"><a href="#HashMap的rehash源代码" class="headerlink" title="HashMap的rehash源代码"></a>HashMap的rehash源代码</h2><p>下面，我们来看一下Java的HashMap的源代码。</p>
+<p>Put一个Key,Value对到Hash表中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public V put(K key, V value)</span><br><span class="line">&#123;</span><br><span class="line">  ......</span><br><span class="line">  //算Hash值</span><br><span class="line">  int hash = hash(key.hashCode());</span><br><span class="line">  int i = indexFor(hash, table.length);</span><br><span class="line">  //如果该key已被插入，则替换掉旧的value （链接操作）</span><br><span class="line">  for (Entry&lt;K,V&gt; e = table[i]; e != null; e = e.next) &#123;</span><br><span class="line">    Object k;</span><br><span class="line">    if (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</span><br><span class="line">      V oldValue = e.value;</span><br><span class="line">      e.value = value;</span><br><span class="line">      e.recordAccess(this);</span><br><span class="line">      return oldValue;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  modCount++;</span><br><span class="line">  //该key不存在，需要增加一个结点</span><br><span class="line">  addEntry(hash, key, value, i);</span><br><span class="line">  return null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>检查容量是否超标</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void addEntry(int hash, K key, V value, int bucketIndex)</span><br><span class="line">&#123;</span><br><span class="line">  Entry&lt;K,V&gt; e = table[bucketIndex];</span><br><span class="line">  table[bucketIndex] = new Entry&lt;K,V&gt;(hash, key, value, e);</span><br><span class="line">  //查看当前的size是否超过了我们设定的阈值threshold，如果超过，需要resize</span><br><span class="line">  if (size++ &gt;= threshold)</span><br><span class="line">    resize(2 * table.length);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>新建一个更大尺寸的hash表，然后把数据从老的Hash表中迁移到新的Hash表中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">void resize(int newCapacity)</span><br><span class="line">&#123;</span><br><span class="line">  Entry[] oldTable = table;</span><br><span class="line">  int oldCapacity = oldTable.length;</span><br><span class="line">  ......</span><br><span class="line">  //创建一个新的Hash Table</span><br><span class="line">  Entry[] newTable = new Entry[newCapacity];</span><br><span class="line">  //将Old Hash Table上的数据迁移到New Hash Table上</span><br><span class="line">  transfer(newTable);</span><br><span class="line">  table = newTable;</span><br><span class="line">  threshold = (int)(newCapacity * loadFactor);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>迁移的源代码，注意高亮处：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">void transfer(Entry[] newTable)</span><br><span class="line">&#123;</span><br><span class="line">  Entry[] src = table;</span><br><span class="line">  int newCapacity = newTable.length;</span><br><span class="line">  //下面这段代码的意思是：</span><br><span class="line">  //  从OldTable里摘一个元素出来，然后放到NewTable中</span><br><span class="line">  for (int j = 0; j &lt; src.length; j++) &#123;</span><br><span class="line">    Entry&lt;K,V&gt; e = src[j];</span><br><span class="line">    if (e != null) &#123;</span><br><span class="line">      src[j] = null;</span><br><span class="line">      do &#123;</span><br><span class="line">          Entry&lt;K,V&gt; next = e.next;</span><br><span class="line">          int i = indexFor(e.hash, newCapacity);</span><br><span class="line">          e.next = newTable[i];</span><br><span class="line">          newTable[i] = e;</span><br><span class="line">          e = next;</span><br><span class="line">      &#125; while (e != null);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>好了，这个代码算是比较正常的。而且没有什么问题。</p>
+<h2 id="正常的ReHash的过程"><a href="#正常的ReHash的过程" class="headerlink" title="正常的ReHash的过程"></a>正常的ReHash的过程</h2><p>画了个图做了个演示。</p>
+<ul>
+<li>我假设了我们的hash算法就是简单的用key mod 一下表的大小（也就是数组的长度）。</li>
+<li>最上面的是old hash 表，其中的Hash表的size=2, 所以key = 3, 7, 5，在mod 2以后都冲突在table[1]这里了。</li>
+<li>接下来的三个步骤是Hash表 resize成4，然后所有的&lt;key,value&gt; 重新rehash的过程</li>
+</ul>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap01.png" alt="HashMap01"></p>
+<h2 id="并发下的Rehash"><a href="#并发下的Rehash" class="headerlink" title="并发下的Rehash"></a>并发下的Rehash</h2><h3 id="1）假设我们有两个线程。我用红色和浅蓝色标注了一下。"><a href="#1）假设我们有两个线程。我用红色和浅蓝色标注了一下。" class="headerlink" title="1）假设我们有两个线程。我用红色和浅蓝色标注了一下。"></a>1）假设我们有两个线程。我用红色和浅蓝色标注了一下。</h3><p>我们再回头看一下我们的 transfer代码中的这个细节：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">do &#123;</span><br><span class="line">    Entry&lt;K,V&gt; next = e.next; // &lt;--假设线程一执行到这里就被调度挂起了</span><br><span class="line">    int i = indexFor(e.hash, newCapacity);</span><br><span class="line">    e.next = newTable[i];</span><br><span class="line">    newTable[i] = e;</span><br><span class="line">    e = next;</span><br><span class="line">&#125; while (e != null);</span><br></pre></td></tr></table></figure>
+<p>而我们的线程二执行完成了。于是我们有下面的这个样子。</p>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap02.png" alt="HashMap02"></p>
+<p>注意，因为Thread1的 e 指向了key(3)，而next指向了key(7)，其在线程二rehash后，指向了线程二重组后的链表。我们可以看到链表的顺序被反转后。</p>
+<h3 id="2）线程一被调度回来执行。"><a href="#2）线程一被调度回来执行。" class="headerlink" title="2）线程一被调度回来执行。"></a>2）线程一被调度回来执行。</h3><p>先是执行 newTalbe[i] = e;</p>
+<p>然后是e = next，导致了e指向了key(7)，</p>
+<p>而下一次循环的next = e.next导致了next指向了key(3)</p>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap03.png" alt="HashMap03"></p>
+<h3 id="3）一切安好。"><a href="#3）一切安好。" class="headerlink" title="3）一切安好。"></a>3）一切安好。</h3><p>线程一接着工作。把key(7)摘下来，放到newTable[i]的第一个，然后把e和next往下移。</p>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap04.png" alt="HashMap04"></p>
+<h3 id="4）环形链接出现。"><a href="#4）环形链接出现。" class="headerlink" title="4）环形链接出现。"></a>4）环形链接出现。</h3><p>e.next = newTable[i] 导致  key(3).next 指向了 key(7)</p>
+<p>注意：此时的key(7).next 已经指向了key(3)， 环形链表就这样出现了。</p>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap05.png" alt="HashMap05"></p>
+<p>于是，当我们的线程一调用到，HashTable.get(11)时，悲剧就出现了——Infinite Loop。</p>
+<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2><p>有人把这个问题报给了Sun，不过Sun不认为这个是一个问题。因为HashMap本来就不支持并发。要并发就用ConcurrentHashmap</p>
+<p><a target="_blank" rel="noopener" href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6423457">http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6423457</a></p>
+<p>我在这里把这个事情记录下来，只是为了让大家了解并体会一下并发环境下的危险。</p>
+<p>参考：<a target="_blank" rel="noopener" href="http://mailinator.blogspot.com/2009/06/beautiful-race-condition.html">http://mailinator.blogspot.com/2009/06/beautiful-race-condition.html</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/06/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-Java%E4%B8%AD%E7%9A%84Copy-On-Write%E5%AE%B9%E5%99%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -672,308 +1043,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-IOC-2-BeanFactory%E4%BD%93%E7%B3%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-IOC-2-BeanFactory%E4%BD%93%E7%B3%BB/" class="post-title-link" itemprop="url">Spring-IOC-2-BeanFactory体系</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-28 16:43:50" itemprop="dateCreated datePublished" datetime="2016-11-28T16:43:50+08:00">2016-11-28</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><img src="/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-IOC-2-BeanFactory%E4%BD%93%E7%B3%BB/Spring3.1%E6%8E%A5%E5%8F%A3%E4%BD%93%E7%B3%BB.png" alt="Spring3.1接口体系"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-IOC-1-%E6%A6%82%E8%BF%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-IOC-1-%E6%A6%82%E8%BF%B0/" class="post-title-link" itemprop="url">Spring-IOC-1-概述</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-28 14:14:29" itemprop="dateCreated datePublished" datetime="2016-11-28T14:14:29+08:00">2016-11-28</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>IOC的基本流程：</p>
-<ol>
-<li>启动项目后，根据配置文件中配置的扫描路径，扫描带有注解的类，将类的基本信息（构造方法、属性、方法）封装到一个类中，存储到一个map里；</li>
-<li>需要获取一个bean的时候，首先去查询该类是否已经实例化，如果没有则去检测是否定义；</li></ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-IOC-1-%E6%A6%82%E8%BF%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-%E6%BA%90%E7%A0%81%E6%9E%B6%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-%E6%BA%90%E7%A0%81%E6%9E%B6%E6%9E%84/" class="post-title-link" itemprop="url">Spring源码架构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-28 11:59:27" itemprop="dateCreated datePublished" datetime="2016-11-28T11:59:27+08:00">2016-11-28</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><img src="/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-%E6%BA%90%E7%A0%81%E6%9E%B6%E6%9E%84/Spring4%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E5%9B%BE.png" alt="Spring系统架构图"></p>
-<p>组成 Spring 框架的每个模块集合或者模块都可以单独存在，也可以一个或多个模块联合实现。每个模块的组成和功能如下：</p>
-<h4 id="1-核心容器：由spring-beans、spring-core、spring-context和spring-expression（Spring-Expression-Language-SpEL）-4个模块组成。"><a href="#1-核心容器：由spring-beans、spring-core、spring-context和spring-expression（Spring-Expression-Language-SpEL）-4个模块组成。" class="headerlink" title="1. 核心容器：由spring-beans、spring-core、spring-context和spring-expression（Spring Expression Language, SpEL） 4个模块组成。"></a>1. 核心容器：由spring-beans、spring-core、spring-context和spring-expression（Spring Expression Language, SpEL） 4个模块组成。</h4><ul>
-<li><p>spring-beans和spring-core模块是Spring框架的核心模块，包含了控制反转（Inversion of Control, IoC）和依赖注入（Dependency Injection, DI）。BeanFactory 接口是Spring框架中的核心接口，它是工厂模式的具体实现。BeanFactory 使用控制反转对应用程序的配置和依赖性规范与实际的应用程序代码进行了分离。但 BeanFactory 容器实例化后并不会自动实例化 Bean，只有当 Bean 被使用时 BeanFactory 容器才会对该 Bean 进行实例化与依赖关系的装配。</p></li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/11/28/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-%E6%BA%90%E7%A0%81%E6%9E%B6%E6%9E%84/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.6-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.6-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">高性能MySQL-4.6-数据库设计总结</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-27 16:52:46" itemprop="dateCreated datePublished" datetime="2016-11-27T16:52:46+08:00">2016-11-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>尽量避免过度设计，例如会导致极其复杂查询的schema设计，或者有很多列的表设计。</li>
-<li>使用小而简单的合适数据类型，除非真实数据模型中有确切的需要，否则应该尽可能地避免使用NULL值。</li>
-<li>尽量使用相同的数据类型存储相似或相关的值，尤其是要在关联条件中使用的列。</li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.6-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%80%BB%E7%BB%93/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/32/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/32/">32</a><span class="page-number current">33</span><a class="page-number" href="/page/34/">34</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/34/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/32/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/32/">32</a><span class="page-number current">33</span><a class="page-number" href="/page/34/">34</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/34/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1041,7 +1114,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1054,7 +1127,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

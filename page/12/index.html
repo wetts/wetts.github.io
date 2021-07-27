@@ -188,6 +188,309 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/" class="post-title-link" itemprop="url">Python-下划线</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-16 14:13:40" itemprop="dateCreated datePublished" datetime="2019-08-16T14:13:40+08:00">2019-08-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/36173202">https://zhuanlan.zhihu.com/p/36173202</a></p>
+<ul>
+<li>单前导下划线：<code>_var</code></li>
+<li>单末尾下划线：<code>var_</code></li>
+<li>双前导下划线：<code>__var</code></li>
+<li>双前导和末尾下划线：<code>__var__</code></li>
+<li>单下划线：<code>_</code></li>
+</ul>
+<h3 id="单前导下划线-var"><a href="#单前导下划线-var" class="headerlink" title="单前导下划线 _var"></a>单前导下划线 <code>_var</code></h3><p>下划线前缀的含义是告知其他程序员：以单个下划线开头的变量或方法仅供内部使用。 该约定在PEP 8中有定义。</p>
+<p>这不是Python强制规定的。 Python不像Java那样在“私有”和“公共”变量之间有很强的区别。</p>
+<p>看看下面的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">class Test:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.foo = 11</span><br><span class="line">       self._bar = 23</span><br></pre></td></tr></table></figure>
+<p>如果你实例化此类，并尝试访问在<code>__init__</code>构造函数中定义的foo和_bar属性，会发生什么情况？ 让我们来看看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t = Test()</span><br><span class="line">&gt;&gt;&gt; t.foo</span><br><span class="line">11</span><br><span class="line">&gt;&gt;&gt; t._bar</span><br><span class="line">23</span><br></pre></td></tr></table></figure>
+<p>你会看到_bar中的单个下划线并没有阻止我们“进入”类并访问该变量的值。</p>
+<p>这是因为Python中的单个下划线前缀仅仅是一个约定 - 至少相对于变量和方法名而言。</p>
+<p>但是，前导下划线的确会影响从模块中导入名称的方式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># This is my_module.py:</span><br><span class="line"></span><br><span class="line">def external_func():</span><br><span class="line">   return 23</span><br><span class="line"></span><br><span class="line">def _internal_func():</span><br><span class="line">   return 42</span><br></pre></td></tr></table></figure>
+<p>现在，如果使用通配符从模块中导入所有名称，则Python不会导入带有前导下划线的名称（除非模块定义了覆盖此行为的<code>__all__</code>列表）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; from my_module import *</span><br><span class="line">&gt;&gt;&gt; external_func()</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; _internal_func()</span><br><span class="line">NameError: &quot;name &#x27;_internal_func&#x27; is not defined&quot;</span><br></pre></td></tr></table></figure>
+<p>顺便说一下，应该避免通配符导入，因为它们使名称空间中存在哪些名称不清楚。 为了清楚起见，坚持常规导入更好。</p>
+<p>与通配符导入不同，常规导入不受前导单个下划线命名约定的影响：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; import my_module</span><br><span class="line">&gt;&gt;&gt; my_module.external_func()</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; my_module._internal_func()</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>我知道这一点可能有点令人困惑。 如果你遵循PEP 8推荐，避免通配符导入，那么你真正需要记住的只有这个：</p>
+<blockquote>
+<p>单个下划线是一个Python命名约定，表示这个名称是供内部使用的。 它通常不由Python解释器强制执行，仅仅作为一种对程序员的提示。</p>
+</blockquote>
+<h3 id="单末尾下划线-var"><a href="#单末尾下划线-var" class="headerlink" title="单末尾下划线 var_"></a>单末尾下划线 <code>var_</code></h3><p>有时候，一个变量的最合适的名称已经被一个关键字所占用。 因此，像class或def这样的名称不能用作Python中的变量名称。 在这种情况下，你可以附加一个下划线来解决命名冲突：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; def make_object(name, class):</span><br><span class="line">SyntaxError: &quot;invalid syntax&quot;</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; def make_object(name, class_):</span><br><span class="line">...    pass</span><br></pre></td></tr></table></figure>
+<p>总之，单个末尾下划线（后缀）是一个约定，用来避免与Python关键字产生命名冲突。 PEP 8解释了这个约定。</p>
+<h3 id="双前导下划线-var"><a href="#双前导下划线-var" class="headerlink" title="双前导下划线 __var"></a>双前导下划线 <code>__var</code></h3><p>双下划线前缀会导致Python解释器重写属性名称，以避免子类中的命名冲突。</p>
+<p>这也叫做名称修饰（name mangling） - 解释器更改变量的名称，以便在类被扩展的时候不容易产生冲突。</p>
+<p>我知道这听起来很抽象。 因此，我组合了一个小小的代码示例来予以说明：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Test:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.foo = 11</span><br><span class="line">       self._bar = 23</span><br><span class="line">       self.__baz = 23</span><br></pre></td></tr></table></figure>
+<p>让我们用内置的dir()函数来看看这个对象的属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t = Test()</span><br><span class="line">&gt;&gt;&gt; dir(t)</span><br><span class="line">[&#x27;_Test__baz&#x27;, &#x27;__class__&#x27;, &#x27;__delattr__&#x27;, &#x27;__dict__&#x27;, &#x27;__dir__&#x27;,</span><br><span class="line">&#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;, &#x27;__getattribute__&#x27;,</span><br><span class="line">&#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__init__&#x27;, &#x27;__le__&#x27;, &#x27;__lt__&#x27;, &#x27;__module__&#x27;,</span><br><span class="line">&#x27;__ne__&#x27;, &#x27;__new__&#x27;, &#x27;__reduce__&#x27;, &#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;,</span><br><span class="line">&#x27;__setattr__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__str__&#x27;, &#x27;__subclasshook__&#x27;,</span><br><span class="line">&#x27;__weakref__&#x27;, &#x27;_bar&#x27;, &#x27;foo&#x27;]</span><br></pre></td></tr></table></figure>
+<p>以上是这个对象属性的列表。 让我们来看看这个列表，并寻找我们的原始变量名称<code>foo</code>，<code>_bar</code>和<code>__baz</code> - 我保证你会注意到一些有趣的变化。</p>
+<ul>
+<li><code>self.foo</code>变量在属性列表中显示为未修改为<code>foo</code>。</li>
+<li><code>self._bar</code>的行为方式相同 - 它以<code>_bar</code>的形式显示在类上。 就像我之前说过的，在这种情况下，前导下划线仅仅是一个约定。 给程序员一个提示而已。</li>
+<li>然而，对于<code>self.__baz</code>而言，情况看起来有点不同。 当你在该列表中搜索<code>__baz</code>时，你会看不到有这个名字的变量。<br><code>__baz</code>出什么情况了？</li>
+</ul>
+<p>如果你仔细观察，你会看到此对象上有一个名为<code>_Test__baz</code>的属性。 这就是Python解释器所做的名称修饰。 它这样做是为了防止变量在子类中被重写。</p>
+<p>让我们创建另一个扩展Test类的类，并尝试重写构造函数中添加的现有属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class ExtendedTest(Test):</span><br><span class="line">   def __init__(self):</span><br><span class="line">       super().__init__()</span><br><span class="line">       self.foo = &#x27;overridden&#x27;</span><br><span class="line">       self._bar = &#x27;overridden&#x27;</span><br><span class="line">       self.__baz = &#x27;overridden&#x27;</span><br></pre></td></tr></table></figure>
+<p>现在，你认为<code>foo</code>，<code>_bar</code>和<code>__baz</code>的值会出现在这个ExtendedTest类的实例上吗？ 我们来看一看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2 = ExtendedTest()</span><br><span class="line">&gt;&gt;&gt; t2.foo</span><br><span class="line">&#x27;overridden&#x27;</span><br><span class="line">&gt;&gt;&gt; t2._bar</span><br><span class="line">&#x27;overridden&#x27;</span><br><span class="line">&gt;&gt;&gt; t2.__baz</span><br><span class="line">AttributeError: &quot;&#x27;ExtendedTest&#x27; object has no attribute &#x27;__baz&#x27;&quot;</span><br></pre></td></tr></table></figure>
+<p>等一下，当我们尝试查看<code>t2.__baz</code>的值时，为什么我们会得到AttributeError？ 名称修饰被再次触发了！ 事实证明，这个对象甚至没有<code>__baz</code>属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; dir(t2)</span><br><span class="line">[&#x27;_ExtendedTest__baz&#x27;, &#x27;_Test__baz&#x27;, &#x27;__class__&#x27;, &#x27;__delattr__&#x27;,</span><br><span class="line">&#x27;__dict__&#x27;, &#x27;__dir__&#x27;, &#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;,</span><br><span class="line">&#x27;__getattribute__&#x27;, &#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__init__&#x27;, &#x27;__le__&#x27;,</span><br><span class="line">&#x27;__lt__&#x27;, &#x27;__module__&#x27;, &#x27;__ne__&#x27;, &#x27;__new__&#x27;, &#x27;__reduce__&#x27;,</span><br><span class="line">&#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;, &#x27;__setattr__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__str__&#x27;,</span><br><span class="line">&#x27;__subclasshook__&#x27;, &#x27;__weakref__&#x27;, &#x27;_bar&#x27;, &#x27;foo&#x27;, &#x27;get_vars&#x27;]</span><br></pre></td></tr></table></figure>
+<p>正如你可以看到<code>__baz</code>变成<code>_ExtendedTest__baz</code>以防止意外修改：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2._ExtendedTest__baz</span><br><span class="line">&#x27;overridden&#x27;</span><br></pre></td></tr></table></figure>
+<p>但原来的<code>_Test__baz</code>还在：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2._Test__baz</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>双下划线名称修饰对程序员是完全透明的。 下面的例子证实了这一点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class ManglingTest:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.__mangled = &#x27;hello&#x27;</span><br><span class="line"></span><br><span class="line">   def get_mangled(self):</span><br><span class="line">       return self.__mangled</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; ManglingTest().get_mangled()</span><br><span class="line">&#x27;hello&#x27;</span><br><span class="line">&gt;&gt;&gt; ManglingTest().__mangled</span><br><span class="line">AttributeError: &quot;&#x27;ManglingTest&#x27; object has no attribute &#x27;__mangled&#x27;&quot;</span><br></pre></td></tr></table></figure>
+<p>名称修饰是否也适用于方法名称？ 是的，也适用。名称修饰会影响在一个类的上下文中，以两个下划线字符（”dunders”）开头的所有名称：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class MangledMethod:</span><br><span class="line">   def __method(self):</span><br><span class="line">       return 42</span><br><span class="line"></span><br><span class="line">   def call_it(self):</span><br><span class="line">       return self.__method()</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; MangledMethod().__method()</span><br><span class="line">AttributeError: &quot;&#x27;MangledMethod&#x27; object has no attribute &#x27;__method&#x27;&quot;</span><br><span class="line">&gt;&gt;&gt; MangledMethod().call_it()</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>这是另一个也许令人惊讶的运用名称修饰的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">_MangledGlobal__mangled = 23</span><br><span class="line"></span><br><span class="line">class MangledGlobal:</span><br><span class="line">   def test(self):</span><br><span class="line">       return __mangled</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; MangledGlobal().test()</span><br><span class="line">23</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，我声明了一个名为<code>_MangledGlobal__mangled</code>的全局变量。然后我在名为MangledGlobal的类的上下文中访问变量。由于名称修饰，我能够在类的test()方法内，以<code>__mangled</code>来引用<code>_MangledGlobal__mangled</code>全局变量。</p>
+<p>Python解释器自动将名称<code>__mangled</code>扩展为<code>_MangledGlobal__mangled</code>，因为它以两个下划线字符开头。这表明名称修饰不是专门与类属性关联的。它适用于在类上下文中使用的两个下划线字符开头的任何名称。</p>
+<h3 id="双前导和双末尾下划线-var"><a href="#双前导和双末尾下划线-var" class="headerlink" title="双前导和双末尾下划线 __var__"></a>双前导和双末尾下划线 <code>__var__</code></h3><p>也许令人惊讶的是，如果一个名字同时以双下划线开始和结束，则不会应用名称修饰。 由双下划线前缀和后缀包围的变量不会被Python解释器修改：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class PrefixPostfixTest:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.__bam__ = 42</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; PrefixPostfixTest().__bam__</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>但是，Python保留了有双前导和双末尾下划线的名称，用于特殊用途。 这样的例子有，<code>__init__</code>对象构造函数，或<code>__call__</code> — 它使得一个对象可以被调用。</p>
+<p>这些dunder方法通常被称为神奇方法。</p>
+<p>最好避免在自己的程序中使用以双下划线（“dunders”）开头和结尾的名称，以避免与将来Python语言的变化产生冲突。</p>
+<h3 id="单下划线"><a href="#单下划线" class="headerlink" title="单下划线 _"></a>单下划线 <code>_</code></h3><p>按照习惯，有时候单个独立下划线是用作一个名字，来表示某个变量是临时的或无关紧要的。</p>
+<p>例如，在下面的循环中，我们不需要访问正在运行的索引，我们可以使用“_”来表示它只是一个临时值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; for _ in range(32):</span><br><span class="line">...    print(&#x27;Hello, World.&#x27;)</span><br></pre></td></tr></table></figure>
+<p>你也可以在拆分(unpacking)表达式中将单个下划线用作“不关心的”变量，以忽略特定的值。 同样，这个含义只是“依照约定”，并不会在Python解释器中触发特殊的行为。 单个下划线仅仅是一个有效的变量名称，会有这个用途而已。</p>
+<p>在下面的代码示例中，我将汽车元组拆分为单独的变量，但我只对颜色和里程值感兴趣。 但是，为了使拆分表达式成功运行，我需要将包含在元组中的所有值分配给变量。 在这种情况下，“_”作为占位符变量可以派上用场：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; car = (&#x27;red&#x27;, &#x27;auto&#x27;, 12, 3812.4)</span><br><span class="line">&gt;&gt;&gt; color, _, _, mileage = car</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; color</span><br><span class="line">&#x27;red&#x27;</span><br><span class="line">&gt;&gt;&gt; mileage</span><br><span class="line">3812.4</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">12</span><br></pre></td></tr></table></figure>
+<p>除了用作临时变量之外，“_”是大多数Python REPL中的一个特殊变量，它表示由解释器评估的最近一个表达式的结果。</p>
+<p>这样就很方便了，比如你可以在一个解释器会话中访问先前计算的结果，或者，你是在动态构建多个对象并与它们交互，无需事先给这些对象分配名字：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; 20 + 3</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; print(_)</span><br><span class="line">23</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; list()</span><br><span class="line">[]</span><br><span class="line">&gt;&gt;&gt; _.append(1)</span><br><span class="line">&gt;&gt;&gt; _.append(2)</span><br><span class="line">&gt;&gt;&gt; _.append(3)</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">[1, 2, 3]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Python下划线命名模式-小结"><a href="#Python下划线命名模式-小结" class="headerlink" title="Python下划线命名模式 - 小结"></a>Python下划线命名模式 - 小结</h3><p><img src="/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/1.png" alt="1"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/" class="post-title-link" itemprop="url">统计学系方法-第2章-感知机</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-15 13:43:22" itemprop="dateCreated datePublished" datetime="2019-08-15T13:43:22+08:00">2019-08-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>感知机（perceptron）是二类分类的线性分类模型，其输入为实例的特征向量，输出为实例的类别，取 +1 和 -1 二值。感知机对应于输入空间（特征空间）中将实例划分为正负两类的分离超平面，属于判别模型。</p>
+<h2 id="感知机模型"><a href="#感知机模型" class="headerlink" title="感知机模型"></a>感知机模型</h2><p>由输入空间到输出空间的如下函数 <img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E6%84%9F%E7%9F%A5%E6%9C%BA%E6%A8%A1%E5%9E%8B.png" alt="感知机模型"> 称为感知机。其中，w 和 b 为感知机模型参数， w 叫作权值（weight）或权值向量（weight vector），b 叫作偏置（bias）。sign 是符号函数，即 <img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AC%A6%E5%8F%B7%E5%87%BD%E6%95%B0.png" alt="符号函数"></p>
+<h2 id="感知机学习策略"><a href="#感知机学习策略" class="headerlink" title="感知机学习策略"></a>感知机学习策略</h2><h3 id="数据集的线性可分性"><a href="#数据集的线性可分性" class="headerlink" title="数据集的线性可分性"></a>数据集的线性可分性</h3><p>如果存在某个超平面 S 能够将数据集的正实例点和负实例点完全正确地划分到超平面的两侧，则称数据集 T 为线性可分数据集（linearly separable data set）；否则，称数据集 T 线性不可分。</p>
+<h3 id="感知机学习策略-1"><a href="#感知机学习策略-1" class="headerlink" title="感知机学习策略"></a>感知机学习策略</h3><p>感知机的损失函数定义为 <img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0.png" alt="损失函数"> 其中 M 为误分类点的集合。这个损失函数就是感知机学习的经验风险函数。</p>
+<p>显然，损失函数 L(w, b) 是非负的。如果没有误分类点，损失函数值是 0.而且，误分类点越少，误分类点离超平面越近，损失函数值越小。</p>
+<p>感知机学习的策略是在假设空间中选取使损失函数式最小的模型参数 w 和 b，即感知机模型。</p>
+<h2 id="感知机学习算法"><a href="#感知机学习算法" class="headerlink" title="感知机学习算法"></a>感知机学习算法</h2><p>感知机学习问题转化为求解损失函数式的最优化问题，最优化的方法是随机梯度下降法。</p>
+<h3 id="感知机学习算法的原始形式"><a href="#感知机学习算法的原始形式" class="headerlink" title="感知机学习算法的原始形式"></a>感知机学习算法的原始形式</h3><p><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AE%97%E6%B3%95%E5%8E%9F%E5%A7%8B%E5%BD%A2%E5%BC%8F.png" alt="算法原始形式"></p>
+<p>这种学习算法直观上有如下解释：当一个实例点被误分类，即位于分离超平面的错误一侧时，则调整 w, b 的值，使分离超平面向该误分类点的一侧移动，以减小该误分离点与超平面间的距离，直至超平面越过该误分类点使其被正确分类。</p>
+<h3 id="算法的收敛性"><a href="#算法的收敛性" class="headerlink" title="算法的收敛性"></a>算法的收敛性</h3><p><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AE%97%E6%B3%95%E7%9A%84%E6%94%B6%E6%95%9B%E6%80%A7.png" alt="算法的收敛性"></p>
+<h3 id="感知机学习算法的对偶形式"><a href="#感知机学习算法的对偶形式" class="headerlink" title="感知机学习算法的对偶形式"></a>感知机学习算法的对偶形式</h3><p><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F%E7%9A%84%E6%80%9D%E8%B7%AF.png" alt="对偶形式的思路"></p>
+<p>实例点更新次数越多，意味着它距离分离超平面越近，也就越难正确分类（越容易分错，超平面一动不多就容易将这些点分错），换句话说，这样的实例对学习结果影响最大（在支持向量机中，这些点代表着支持向量）。</p>
+<p><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AE%97%E6%B3%95%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F1.png" alt="算法对偶形式1"><br><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AE%97%E6%B3%95%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F2.png" alt="算法对偶形式2"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/" class="post-title-link" itemprop="url">向量点乘（内积）和叉乘（外积、向量积）概念及几何意义解读</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-14 15:12:22" itemprop="dateCreated datePublished" datetime="2019-08-14T15:12:22+08:00">2019-08-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/dcrmg/article/details/52416832">https://blog.csdn.net/dcrmg/article/details/52416832</a></p>
+<p>向量是由n个实数组成的一个 n 行 1 列（n<em>1）或一个 1 行 n 列（1</em>n）的有序数组；</p>
+<p>向量的点乘,也叫向量的内积、数量积，对两个向量执行点乘运算，就是对这两个向量对应位一一相乘之后求和的操作，点乘的结果是一个标量。</p>
+<h2 id="点乘"><a href="#点乘" class="headerlink" title="点乘"></a>点乘</h2><h3 id="点乘公式"><a href="#点乘公式" class="headerlink" title="点乘公式"></a>点乘公式</h3><p>对于向量a和向量b：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%90%91%E9%87%8Fa.png" alt="向量a">  <img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%90%91%E9%87%8Fb.png" alt="向量b"></p>
+<p>a和b的点积公式为：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E7%82%B9%E4%B9%98%E5%85%AC%E5%BC%8F.png" alt="点乘公式"></p>
+<p>要求一维向量a和向量b的行列数相同。</p>
+<h3 id="点乘几何意义"><a href="#点乘几何意义" class="headerlink" title="点乘几何意义"></a>点乘几何意义</h3><p>点乘的几何意义是可以用来表征或计算两个向量之间的夹角，以及在b向量在a向量方向上的投影，有公式：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E7%82%B9%E4%B9%98%E5%A4%B9%E8%A7%92.png" alt="点乘夹角"></p>
+<p>推导过程如下，首先看一下向量组成：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E7%82%B9%E4%B9%98%E5%9B%BE.png" alt="点乘图"></p>
+<h2 id="叉乘"><a href="#叉乘" class="headerlink" title="叉乘"></a>叉乘</h2><h3 id="叉乘公式"><a href="#叉乘公式" class="headerlink" title="叉乘公式"></a>叉乘公式</h3><p>两个向量的叉乘，又叫向量积、外积、叉积，叉乘的运算结果是一个向量而不是一个标量。并且两个向量的叉积与这两个向量组成的坐标平面垂直。</p>
+<p>对于向量a和向量b：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%90%91%E9%87%8Fab.png" alt="向量ab"> </p>
+<p>a和b的叉乘公式为：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%8F%89%E4%B9%98%E5%85%AC%E5%BC%8F.png" alt="叉乘公式"> </p>
+<p>其中：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%9F%BA.png" alt="基"> </p>
+<h3 id="叉乘几何意义"><a href="#叉乘几何意义" class="headerlink" title="叉乘几何意义"></a>叉乘几何意义</h3><p>在三维几何中，向量a和向量b的叉乘结果是一个向量，更为熟知的叫法是法向量，该向量垂直于a和b向量构成的平面。</p>
+<p>在3D图像学中，叉乘的概念非常有用，可以通过两个向量的叉乘，生成第三个垂直于a，b的法向量，从而构建X、Y、Z坐标系。如下图所示：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%8F%89%E4%B9%98%E5%9B%BE.png" alt="叉乘图"> </p>
+<p>在二维空间中，叉乘还有另外一个几何意义就是：aXb等于由向量a和向量b构成的平行四边形的面积。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1016,7 +1319,7 @@
 <p>网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。 </p>
 <p>按照OSI七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP/IP协议提出了协议端口（protocol port，简称端口）的概念，用于标识通信的进程。 </p>
 <p>端口是一种抽象的软件结构（包括一些数据结构和I/O缓冲区）。应用程序（即进程）通过系统调用与某端口建立连接（binding）后，传输层传给该端口的数据都被相应进程所接收，相应进程发给传输层的数据都通过该端口输出。在TCP/IP协议的实现中，端口操作类似于一般的I/O操作，进程获取一个端口，相当于获取本地唯一的I/O文件，可以用一般的读写原语访问之。 </p>
-<p>类似于文件描述符，每个端口都拥有一个叫端口号（port   number）的整数型标识符，用于区别不同端口。由于TCP/IP传输层的两个协议TCP和UDP是完全独立的两个软件模块，因此各自的端口号也相互独立，如TCP有一个255号端口，UDP也可以有一个255号端口，二者并不冲突。 </p>
+<p>类似于文件描述符，每个端口都拥有一个叫端口号（port number）的整数型标识符，用于区别不同端口。由于TCP/IP传输层的两个协议TCP和UDP是完全独立的两个软件模块，因此各自的端口号也相互独立，如TCP有一个255号端口，UDP也可以有一个255号端口，二者并不冲突。 </p>
 <p>端口号的分配是一个重要问题。有两种基本分配方式：第一种叫全局分配，这是一种集中控制方式，由一个公认的中央机构根据用户需要进行统一分配，并将结果公布于众。第二种是本地分配，又称动态连接，即进程需要访问传输层服务时，向本地操作系统提出申请，操作系统返回一个本地唯一的端口号，进程再通过合适的系统调用将自己与该端口号联系起来（绑扎）。TCP/IP端口号的分配中综合了上述两种方式。TCP/IP将端口号分为两部分，少量的作为保留端口，以全局方式分配给服务进程。因此，每一个标准服务器都拥有一个全局公认的端口（即周知口，well-known port），即使在不同机器上，其端口号也相同。剩余的为自由端口，以本地方式进行分配。TCP和UDP均规定，小于256的端口号才能作保留端口。</p>
 <p>再讨论一下，一个服务器监控一个端口，比如80端口，它为什么可以建立上成千上万的连接？</p>
 <p>首先， 一个TCP连接需要由四元组来形成，即(src_ip,src_port,dst_ip,dst_port)。当一个连接请求过来的时候，服务端调用accept函数，新生成一个socket，这个socket所占用的本地端口依然是80端口。由四元组就很容易分析到了，同一个(src_ip,src_port)，它所对应的(dst_ip,dst_port)可以无穷变化，这样就可以建立很多个客户端的请求了。</p>
@@ -1035,228 +1338,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/05/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%89%8D%E9%9D%A2%E5%8A%A0%E4%B8%8A'r'%E7%9A%84%E4%BD%9C%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/05/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%89%8D%E9%9D%A2%E5%8A%A0%E4%B8%8A'r'%E7%9A%84%E4%BD%9C%E7%94%A8/" class="post-title-link" itemprop="url">Python字符串前面加上'r'的作用</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-05 11:15:44" itemprop="dateCreated datePublished" datetime="2019-07-05T11:15:44+08:00">2019-07-05</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在 Python 的 string 前面加上 <code>r</code>， 是为了告诉编译器这个 string 是个 raw string，不要转义。</p>
-<p>例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">s=r&#x27;\tt&#x27;</span><br><span class="line">print(s)</span><br><span class="line">Output:</span><br><span class="line">&#x27;\tt&#x27;</span><br><span class="line"> </span><br><span class="line">s=&#x27;\tt&#x27;</span><br><span class="line">print(s)</span><br><span class="line">Output:</span><br><span class="line">&#x27;        t&#x27;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python-dict%E5%92%8Clist%E5%AF%B9%E6%AF%94/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python-dict%E5%92%8Clist%E5%AF%B9%E6%AF%94/" class="post-title-link" itemprop="url">Python-dict和list对比</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-04 16:29:48" itemprop="dateCreated datePublished" datetime="2019-07-04T16:29:48+08:00">2019-07-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>和 list 比较，dict 有以下几个特点：</p>
-<ol>
-<li>查找和插入的速度极快，不会随着key的增加而变慢；</li>
-<li>需要占用大量的内存，内存浪费多。</li>
-</ol>
-<p>而 list 相反：</p>
-<ol>
-<li>查找和插入的时间随着元素的增加而增加；</li>
-<li>占用空间小，浪费内存很少。</li>
-</ol>
-<p>所以，dict 是用空间来换取时间的一种方法。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%A8%A1%E5%9D%97/Python%E4%B8%AD%E7%9A%84types%E6%A8%A1%E5%9D%97%E7%9A%84%E5%87%BD%E6%95%B0%E5%B8%B8%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%A8%A1%E5%9D%97/Python%E4%B8%AD%E7%9A%84types%E6%A8%A1%E5%9D%97%E7%9A%84%E5%87%BD%E6%95%B0%E5%B8%B8%E9%87%8F/" class="post-title-link" itemprop="url">Python中的types模块的函数常量</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-04 11:49:55" itemprop="dateCreated datePublished" datetime="2019-07-04T11:49:55+08:00">2019-07-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>types模块中提供了四个常量</p>
-<ul>
-<li>types.FunctionType：函数</li>
-<li>types.BuiltinFunctionType：内建函数</li>
-<li>types.LambdaType：匿名函数</li>
-<li>types.GeneratorType：生成器类型</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/11/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/13/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/11/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/13/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1324,7 +1409,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1337,7 +1422,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

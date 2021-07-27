@@ -188,6 +188,257 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/10/19/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/10/19/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5/" class="post-title-link" itemprop="url">Redis-原理-内存淘汰策略.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-19 13:29:06" itemprop="dateCreated datePublished" datetime="2020-10-19T13:29:06+08:00">2020-10-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/105587132">https://zhuanlan.zhihu.com/p/105587132</a></p>
+<h2 id="过期策略"><a href="#过期策略" class="headerlink" title="过期策略"></a>过期策略</h2><h3 id="定期删除"><a href="#定期删除" class="headerlink" title="定期删除"></a>定期删除</h3><p>redis 会将每个设置了过期时间的 key 放入到一个独立的字典中，以后会定期遍历这个字典来删除到期的 key。</p>
+<p>Redis 默认会每秒进行十次过期扫描（100ms一次），过期扫描不会遍历过期字典中所有的 key，而是采用了一种简单的贪心策略。</p>
+<ol>
+<li>从过期字典中随机 20 个 key；</li>
+<li>删除这 20 个 key 中已经过期的 key；</li>
+<li>如果过期的 key 比率超过 1/4，那就重复步骤 1；</li>
+</ol>
+<p>redis默认是每隔 100ms就随机抽取一些设置了过期时间的key，检查其是否过期，如果过期就删除。注意这里是随机抽取的。为什么要随机呢？你想一想假如 redis 存了几十万个 key ，每隔100ms就遍历所有的设置过期时间的 key 的话，就会给 CPU 带来很大的负载。</p>
+<h3 id="惰性删除"><a href="#惰性删除" class="headerlink" title="惰性删除"></a>惰性删除</h3><p>所谓惰性策略就是在客户端访问这个key的时候，redis对key的过期时间进行检查，如果过期了就立即删除，不会给你返回任何东西。</p>
+<p>定期删除可能会导致很多过期key到了时间并没有被删除掉。所以就有了惰性删除。假如你的过期 key，靠定期删除没有被删除掉，还停留在内存里，除非你的系统去查一下那个 key，才会被redis给删除掉。这就是所谓的惰性删除，即当你主动去查过期的key时,如果发现key过期了,就立即进行删除,不返回任何东西.</p>
+<p>总结：定期删除是集中处理，惰性删除是零散处理。</p>
+<h2 id="为什么需要淘汰策略"><a href="#为什么需要淘汰策略" class="headerlink" title="为什么需要淘汰策略"></a>为什么需要淘汰策略</h2><p>有了以上过期策略的说明后，就很容易理解为什么需要淘汰策略了，因为不管是定期采样删除还是惰性删除都不是一种完全精准的删除，就还是会存在key没有被删除掉的场景，所以就需要内存淘汰策略进行补充。</p>
+<p>内存淘汰策略</p>
+<ol>
+<li>noeviction：当内存使用超过配置的时候会返回错误，不会驱逐任何键</li>
+<li>allkeys-lru：加入键的时候，如果过限，首先通过LRU算法驱逐最久没有使用的键</li>
+<li>volatile-lru：加入键的时候如果过限，首先从设置了过期时间的键集合中驱逐最久没有使用的键</li>
+<li>allkeys-random：加入键的时候如果过限，从所有key随机删除</li>
+<li>volatile-random：加入键的时候如果过限，从过期键的集合中随机驱逐</li>
+<li>volatile-ttl：从配置了过期时间的键中驱逐马上就要过期的键</li>
+<li>volatile-lfu：从所有配置了过期时间的键中驱逐使用频率最少的键</li>
+<li>allkeys-lfu：从所有键中驱逐使用频率最少的键</li>
+</ol>
+<h2 id="LRU"><a href="#LRU" class="headerlink" title="LRU"></a>LRU</h2><h3 id="标准LRU实现方式"><a href="#标准LRU实现方式" class="headerlink" title="标准LRU实现方式"></a>标准LRU实现方式</h3><p><img src="/2020/10/19/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5/1.jpg" alt="1"></p>
+<ol>
+<li>新增key value的时候首先在链表结尾添加Node节点，如果超过LRU设置的阈值就淘汰队头的节点并删除掉HashMap中对应的节点。</li>
+<li>修改key对应的值的时候先修改对应的Node中的值，然后把Node节点移动队尾。</li>
+<li>访问key对应的值的时候把访问的Node节点移动到队尾即可。</li>
+</ol>
+<h3 id="Redis的LRU实现"><a href="#Redis的LRU实现" class="headerlink" title="Redis的LRU实现"></a>Redis的LRU实现</h3><p>Redis维护了一个24位时钟，可以简单理解为当前系统的时间戳，每隔一定时间会更新这个时钟。每个key对象内部同样维护了一个24位的时钟，当新增key对象的时候会把系统的时钟赋值到这个内部对象时钟。比如我现在要进行LRU，那么首先拿到当前的全局时钟，然后再找到内部时钟与全局时钟距离时间最久的（差最大）进行淘汰，这里值得注意的是全局时钟只有24位，按秒为单位来表示才能存储194天，所以可能会出现key的时钟大于全局时钟的情况，如果这种情况出现那么就两个相加而不是相减来求最久的key。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">struct redisServer &#123;</span><br><span class="line">       pid_t pid; </span><br><span class="line">       char *configfile; </span><br><span class="line">       //全局时钟</span><br><span class="line">       unsigned lruclock:LRU_BITS; </span><br><span class="line">       ...</span><br><span class="line">&#125;;</span><br><span class="line">typedef struct redisObject &#123;</span><br><span class="line">    unsigned type:4;</span><br><span class="line">    unsigned encoding:4;</span><br><span class="line">    /* key对象内部时钟 */</span><br><span class="line">    unsigned lru:LRU_BITS;</span><br><span class="line">    int refcount;</span><br><span class="line">    void *ptr;</span><br><span class="line">&#125; robj;</span><br></pre></td></tr></table></figure>
+
+<p>Redis中的LRU与常规的LRU实现并不相同，常规LRU会准确的淘汰掉队头的元素，但是Redis的LRU并不维护队列，只是根据配置的策略要么从所有的key中随机选择N个（N可以配置）要么从所有的设置了过期时间的key中选出N个键，然后再从这N个键中选出最久没有使用的一个key进行淘汰。</p>
+<p>下图是常规LRU淘汰策略与Redis随机样本取一键淘汰策略的对比，浅灰色表示已经删除的键，深灰色表示没有被删除的键，绿色表示新加入的键，越往上表示键加入的时间越久。从图中可以看出，在redis 3中，设置样本数为10的时候能够很准确的淘汰掉最久没有使用的键，与常规LRU基本持平。</p>
+<p><img src="/2020/10/19/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5/2.jpg" alt="2"></p>
+<h3 id="为什么要使用近似LRU？"><a href="#为什么要使用近似LRU？" class="headerlink" title="为什么要使用近似LRU？"></a>为什么要使用近似LRU？</h3><ol>
+<li>性能问题，由于近似LRU算法只是最多随机采样N个key并对其进行排序，如果精准需要对所有key进行排序，这样近似LRU性能更高</li>
+<li>内存占用问题，redis对内存要求很高，会尽量降低内存使用率，如果是抽样排序可以有效降低内存的占用</li>
+<li>实际效果基本相等，如果请求符合长尾法则，那么真实LRU与Redis LRU之间表现基本无差异</li>
+<li>在近似情况下提供可自配置的取样率来提升精准度，例如通过 <code>CONFIG SET maxmemory-samples &lt;count&gt;</code> 指令可以设置取样数，取样数越高越精准，如果你的CPU和内存有足够，可以提高取样数看命中率来探测最佳的采样比例。</li>
+</ol>
+<h2 id="LFU"><a href="#LFU" class="headerlink" title="LFU"></a>LFU</h2><p>LFU是在Redis4.0后出现的，LRU的最近最少使用实际上并不精确，考虑下面的情况，如果在|处删除，那么A距离的时间最久，但实际上A的使用频率要比B频繁，所以合理的淘汰策略应该是淘汰B。LFU就是为应对这种情况而生的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">A~~A~~A~~A~~A~~A~~A~~A~~A~~A~~~|</span><br><span class="line"></span><br><span class="line">B~~~~~B~~~~~B~~~~~B~~~~~~~~~~~~B|</span><br></pre></td></tr></table></figure>
+<p>LFU把原来的key对象的内部时钟的24位分成两部分，前16位还代表时钟，后8位代表一个计数器。16位的情况下如果还按照秒为单位就会导致不够用，所以一般这里以时钟为单位。而后8位表示当前key对象的访问频率，8位只能代表255，但是redis并没有采用线性上升的方式，而是通过一个复杂的公式，通过配置如下两个参数来调整数据的递增速度。</p>
+<ul>
+<li>lfu-log-factor 可以调整计数器counter的增长速度，lfu-log-factor越大，counter增长的越慢。</li>
+<li>lfu-decay-time 是一个以分钟为单位的数值，可以调整counter的减少速度。</li>
+</ul>
+<p>所以这两个因素就对应到了LFU的Counter减少策略和增长策略，它们实现逻辑分别如下。</p>
+<h3 id="降低LFUDecrAndReturn"><a href="#降低LFUDecrAndReturn" class="headerlink" title="降低LFUDecrAndReturn"></a>降低LFUDecrAndReturn</h3><ol>
+<li>先从高16位获取最近的降低时间ldt以及低8位的计数器counter值</li>
+<li>计算当前时间now与ldt的差值（now-ldt），当ldt大于now时，那说明是过了一个周期，按照65535-ldt+now计算（16位一个周期最大65535）</li>
+<li>使用第2步计算的差值除以lfu_decay_time，即 <code>LFUTimeElapsed(ldt) / server.lfu_decay_time</code>，已过去n个lfu_decay_time，则将counter减少n。</li>
+</ol>
+<h3 id="增长LFULogIncr"><a href="#增长LFULogIncr" class="headerlink" title="增长LFULogIncr"></a>增长LFULogIncr</h3><ol>
+<li>获取0-1的随机数r</li>
+<li>计算0-1之间的控制因子p，它的计算逻辑如下<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//LFU_INIT_VAL默认为5</span><br><span class="line">baseval = counter - LFU_INIT_VAL;</span><br><span class="line">//计算控制因子</span><br><span class="line">p = 1.0/(baseval*lfu_log_factor+1);</span><br></pre></td></tr></table></figure></li>
+<li>如果r小于p，counter增长1</li>
+</ol>
+<p>p取决于当前counter值与lfu_log_factor因子，counter值与lfu_log_factor因子越大，p越小，r小于p的概率也越小，counter增长的概率也就越小。增长情况如下图：<br><img src="/2020/10/19/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5/3.jpg" alt="3"></p>
+<p>从左到右表示key的命中次数，从上到下表示影响因子，在影响因子为100的条件下，经过10M次命中才能把后8位值加满到255.</p>
+<h3 id="新生KEY策略"><a href="#新生KEY策略" class="headerlink" title="新生KEY策略"></a>新生KEY策略</h3><p>另外一个问题是，当创建新对象的时候，对象的counter如果为0，很容易就会被淘汰掉，还需要为新生key设置一个初始counter。counter会被初始化为LFU_INIT_VAL，默认5。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/10/18/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81-%E5%9F%BA%E4%BA%8Eredis%E7%9A%84setnx()%E3%80%81get()%E3%80%81getset()%E6%96%B9%E6%B3%95%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/10/18/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81-%E5%9F%BA%E4%BA%8Eredis%E7%9A%84setnx()%E3%80%81get()%E3%80%81getset()%E6%96%B9%E6%B3%95%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" class="post-title-link" itemprop="url">分布式锁-基于redis的setnx()、get()、getset()方法分布式锁.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-18 17:04:10" itemprop="dateCreated datePublished" datetime="2020-10-18T17:04:10+08:00">2020-10-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/changemax/p/12311520.html">https://www.cnblogs.com/changemax/p/12311520.html</a></p>
+<h2 id="redis-命令讲解："><a href="#redis-命令讲解：" class="headerlink" title="redis 命令讲解："></a>redis 命令讲解：</h2><h3 id="setex-命令："><a href="#setex-命令：" class="headerlink" title="setex()命令："></a>setex()命令：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SETEX key seconds value</span><br><span class="line"></span><br><span class="line">将值 value 关联到 key ，并将 key 的生存时间设为 seconds (以秒为单位)。</span><br><span class="line"></span><br><span class="line">如果 key 已经存在， SETEX 命令将覆写旧值。</span><br></pre></td></tr></table></figure>
+
+<p>这个命令类似于以下两个命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SET key value</span><br><span class="line">EXPIRE key seconds  # 设置生存时间</span><br></pre></td></tr></table></figure>
+
+<p>不同之处是， SETEX 是一个原子性(atomic)操作，关联值和设置生存时间两个动作会在同一时间内完成，该命令在 Redis 用作缓存时，非常实用。</p>
+<ul>
+<li>可用版本：<code>&gt;= 2.0.0</code></li>
+<li>时间复杂度：$O(1)$</li>
+<li>返回值：<ul>
+<li>设置成功时返回 OK 。</li>
+<li>当 seconds 参数不合法时，返回一个错误。</li>
+</ul>
+</li>
+</ul>
+<h3 id="setnx-命令："><a href="#setnx-命令：" class="headerlink" title="setnx()命令："></a>setnx()命令：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SETNX key value</span><br><span class="line"></span><br><span class="line">将 key 的值设为 value ，当且仅当 key 不存在。</span><br><span class="line"></span><br><span class="line">若给定的 key 已经存在，则 SETNX 不做任何动作。</span><br></pre></td></tr></table></figure>
+<p>SETNX 是『SET if Not eXists』(如果不存在，则 SET)的简写。</p>
+<ul>
+<li>可用版本：<code>&gt;= 1.0.0</code></li>
+<li>时间复杂度：$O(1)$</li>
+<li>返回值：<ul>
+<li>设置成功，返回 1 。</li>
+<li>设置失败，返回 0 。</li>
+</ul>
+</li>
+</ul>
+<h3 id="get-命令："><a href="#get-命令：" class="headerlink" title="get()命令："></a>get()命令：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GET key</span><br><span class="line"></span><br><span class="line">返回 key 所关联的字符串值。</span><br><span class="line"></span><br><span class="line">如果 key 不存在那么返回特殊值 nil 。</span><br><span class="line"></span><br><span class="line">假如 key 储存的值不是字符串类型，返回一个错误，因为 GET 只能用于处理字符串值。</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可用版本：<code>&gt;= 1.0.0</code></li>
+<li>时间复杂度：$O(1)$</li>
+<li>返回值：<ul>
+<li>当 key 不存在时，返回 nil ，否则，返回 key 的值。</li>
+<li>如果 key 不是字符串类型，那么返回一个错误。</li>
+</ul>
+</li>
+</ul>
+<h3 id="getset-命令："><a href="#getset-命令：" class="headerlink" title="getset()命令："></a>getset()命令：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">GETSET key value</span><br><span class="line"></span><br><span class="line">将给定 key 的值设为 value ，并返回 key 的旧值(old value)。</span><br><span class="line"></span><br><span class="line">当 key 存在但不是字符串类型时，返回一个错误。</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>可用版本：<code>&gt;= 1.0.0</code></li>
+<li>时间复杂度：$O(1)$</li>
+<li>返回值：<ul>
+<li>返回给定 key 的旧值。</li>
+<li>当 key 没有旧值时，也即是， key 不存在时，返回 nil 。</li>
+</ul>
+</li>
+</ul>
+<h2 id="具体的使用步骤如下："><a href="#具体的使用步骤如下：" class="headerlink" title="具体的使用步骤如下："></a>具体的使用步骤如下：</h2><ol>
+<li>setnx(lockkey, 当前时间+过期超时时间) ，如果返回 1，则获取锁成功；如果返回 0 则没有获取到锁，转向 2。</li>
+<li>get(lockkey) 获取值 oldExpireTime ，并将这个 value 值与当前的系统时间进行比较，如果小于当前系统时间，则认为这个锁已经超时，可以允许别的请求重新获取，转向 3。</li>
+<li>计算 newExpireTime=当前时间+过期超时时间，然后 getset(lockkey, newExpireTime) 会返回当前 lockkey 的值 currentExpireTime。</li>
+<li>判断 currentExpireTime 与 oldExpireTime 是否相等，如果相等，说明当前 getset 设置成功，获取到了锁。如果不相等，说明这个锁又被别的请求获取走了，那么当前请求可以直接返回失败，或者继续重试。</li>
+<li>在获取到锁之后，当前线程可以开始自己的业务处理，当处理完毕后，比较自己的处理时间和对于锁设置的超时时间，如果小于锁设置的超时时间，则直接执行 delete 释放锁；如果大于锁设置的超时时间，则不需要再锁进行处理。 </li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/07/19/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E5%8F%8A%E5%85%B6%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1136,182 +1387,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/" class="post-title-link" itemprop="url">目标检测.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-18 22:36:32" itemprop="dateCreated datePublished" datetime="2020-05-18T22:36:32+08:00">2020-05-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>滑动窗口目标检测<ul>
-<li>缺点：计算成本</li>
-</ul>
-</li>
-</ul>
-<h3 id="评价对象检测算法"><a href="#评价对象检测算法" class="headerlink" title="评价对象检测算法"></a>评价对象检测算法</h3><p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E4%BA%A4%E5%B9%B6%E6%AF%94.png" alt="交并比"></p>
-<p>一般约定，在计算机检测任务中，如果 $IoU \geq 0.5$，就说检测正确，如果预测器和实际边界框完美重叠，$IoU$ 就是 1，因为交集就等于并集。但一般来说只要 $IoU \geq 0.5$，那么结果是可以接受的，看起来还可以。一般约定，0.5 是阈值，用来判断预测的边界框是否正确。</p>
-<h3 id="非极大值抑制（Non-max-suppression）"><a href="#非极大值抑制（Non-max-suppression）" class="headerlink" title="非极大值抑制（Non-max suppression）"></a>非极大值抑制（Non-max suppression）</h3><p>算法可能对同一个对象做出多次检测，所以算法不是对某个对象检测出一次，而是检测出多次。非极大值抑制这个方法可以确保你的算法对每个对象只检测一次。</p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B6.png" alt="非极大抑制"></p>
-<p>这个 $p_c$ 检测概率，首先看概率最大的那个，这个例子（右边车辆）中是 0.9，然后就说这是最可靠的检测，所以我们就用高亮标记，就说我这里找到了一辆车。这么做之后，非极大值抑制就会逐一审视剩下的矩形，所有和这个最大的边框有很高交并比，高度重叠的其他边界框，那么这些输出就会被抑制。所以这两个矩形 $p_c$ 分别是 0.6 和 0.7，这两个矩形和淡蓝色矩形重叠程度很高，所以会被抑制，变暗，表示它们被抑制了。</p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B62.png" alt="非极大抑制2"></p>
-<p>接下来，逐一审视剩下的矩形，找出概率最高，$p_c$ 最高的一个，在这种情况下是 0.8，我们就认为这里检测出一辆车（左边车辆），然后非极大值抑制算法就会去掉其他 $IoU$ 值很高的矩形。所以现在每个矩形都会被高亮显示或者变暗，如果你直接抛弃变暗的矩形，那就剩下高亮显示的那些，这就是最后得到的两个预测结果。</p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B63.png" alt="非极大抑制3"></p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E9%9D%9E%E6%9E%81%E5%A4%A7%E6%8A%91%E5%88%B6%E7%AE%97%E6%B3%95.png" alt="非极大抑制算法"></p>
-<h3 id="Anchor-Boxes"><a href="#Anchor-Boxes" class="headerlink" title="Anchor Boxes"></a>Anchor Boxes</h3><p>对象检测中存在的一个问题是每个格子只能检测出一个对象，如果你想让一个格子检测出多个对象，你可以这么做，就是使用 anchor box 这个概念。</p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes.png" alt="AnchorBoxes"></p>
-<p>对于这个例子，我们继续使用3×3网格，注意行人的中点和汽车的中点几乎在同一个地方，两者都落入到同一个格子中。所以对于那个格子，如果 $y$ 输出这个向量$y= \ \begin{bmatrix} p_{c} \ b_{x} \ b_{y} \ b_{h} \ b_{w} \ c_{1} \ c_{2}\ c_{3} \\end{bmatrix}$，你可以检测这三个类别，行人、汽车和摩托车，它将无法输出检测结果，所以我必须从两个检测结果中选一个。</p>
-<p>而<strong>anchor box</strong>的思路是，这样子，预先定义两个不同形状的<strong>anchor box</strong>，或者<strong>anchor box</strong>形状，你要做的是把预测结果和这两个<strong>anchor box</strong>关联起来。一般来说，你可能会用更多的<strong>anchor box</strong>，可能要5个甚至更多，但对于这个视频，我们就用两个<strong>anchor box</strong>，这样介绍起来简单一些。</p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes2.png" alt="AnchorBoxes2"></p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes3.png" alt="AnchorBoxes3"></p>
-<p>你要做的是定义类别标签，用的向量不再是上面这个$\begin{bmatrix} p_{c} &amp; b_{x} &amp;b_{y} &amp; b_{h} &amp; b_{w} &amp; c_{1} &amp; c_{2} &amp; c_{3} \\end{bmatrix}^{T}$，而是重复两次，$y=  \begin{bmatrix} p_{c} &amp; b_{x} &amp; b_{y} &amp;b_{h} &amp; b_{w} &amp; c_{1} &amp; c_{2} &amp; c_{3} &amp; p_{c} &amp; b_{x} &amp; b_{y} &amp; b_{h} &amp; b_{w} &amp;c_{1} &amp; c_{2} &amp; c_{3} \\end{bmatrix}^{T}$，前面的$p_{c},b_{x},b_{y},b_{h},b_{w},c_{1},c_{2},c_{3}$（绿色方框标记的参数）是和<strong>anchor box 1</strong>关联的8个参数，后面的8个参数（橙色方框标记的元素）是和<strong>anchor box 2</strong>相关联。因为行人的形状更类似于<strong>anchor box 1</strong>的形状，而不是<strong>anchor box 2</strong>的形状，所以你可以用这8个数值（前8个参数），这么编码$p_{c} =1$，是的，代表有个行人，用$b_{x},b_{y},b_{h}$和$b_{w}$来编码包住行人的边界框，然后用$c_{1},c_{2},c_{3}$($c_{1}= 1,c_{2} = 0,c_{3} = 0$)来说明这个对象是个行人。</p>
-<p>然后是车子，因为车子的边界框比起<strong>anchor box 1</strong>更像<strong>anchor box 2</strong>的形状，你就可以这么编码，这里第二个对象是汽车，然后有这样的边界框等等，这里所有参数都和检测汽车相关($p_{c}= 1,b_{x},b_{y},b_{h},b_{w},c_{1} = 0,c_{2} = 1,c_{3} = 0$)。</p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/AnchorBoxes%E7%AE%97%E6%B3%95.png" alt="AnchorBoxes算法"></p>
-<p>总结一下，用<strong>anchor box</strong>之前，你做的是这个，对于训练集图像中的每个对象，都根据那个对象中点位置分配到对应的格子中，所以输出$y$就是3×3×8，因为是3×3网格，对于每个网格位置，我们有输出向量，包含$p_{c}$，然后边界框参数$b_{x},b_{y},b_{h}$和$b_{w}$，然后$c_{1},c_{2},c_{3}$。</p>
-<p>现在用到<strong>anchor box</strong>这个概念，是这么做的。现在每个对象都和之前一样分配到同一个格子中，分配到对象中点所在的格子中，以及分配到和对象形状交并比最高的<strong>anchor box</strong>中。所以这里有两个<strong>anchor box</strong>，你就取这个对象，如果你的对象形状是这样的（编号1，红色框），你就看看这两个<strong>anchor box</strong>，<strong>anchor box 1</strong>形状是这样（编号2，紫色框），<strong>anchor box 2</strong>形状是这样（编号3，紫色框），然后你观察哪一个<strong>anchor box</strong>和实际边界框（编号1，红色框）的交并比更高，不管选的是哪一个，这个对象不只分配到一个格子，而是分配到一对，即（<strong>grid cell，anchor box</strong>）对，这就是对象在目标标签中的编码方式。所以现在输出 $y$ 就是3×3×16，上一张幻灯片中你们看到 $y$ 现在是16维的，或者你也可以看成是3×3×2×8，因为现在这里有2个<strong>anchor box</strong>，而 $y$ 是8维的。$y$ 维度是8，因为我们有3个对象类别，如果你有更多对象，那么$y$ 的维度会更高。</p>
-<h3 id="YOLO-算法（Putting-it-together-YOLO-algorithm）"><a href="#YOLO-算法（Putting-it-together-YOLO-algorithm）" class="headerlink" title="YOLO 算法（Putting it together: YOLO algorithm）"></a>YOLO 算法（Putting it together: YOLO algorithm）</h3><h3 id="候选区域（Region-proposals）"><a href="#候选区域（Region-proposals）" class="headerlink" title="候选区域（Region proposals）"></a>候选区域（Region proposals）</h3><p>滑动窗法，使用训练过的分类器，在这些窗口中全部运行一遍，然后运行一个检测器，看看里面是否有车辆，行人和摩托车。现在也可以运行一下卷积算法，这个算法的其中一个缺点是，它在显然没有任何对象的区域浪费时间。</p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E5%80%99%E9%80%89%E5%8C%BA%E5%9F%9F.png" alt="候选区域"></p>
-<p>所以这里这个矩形区域（编号1）基本是空的，显然没有什么需要分类的东西。也许算法会在这个矩形上（编号2）运行，而你知道上面没有什么有趣的东西。</p>
-<p><strong>R-CNN</strong>的算法，意思是带区域的卷积网络，或者说带区域的<strong>CNN</strong>。这个算法尝试选出一些区域，在这些区域上运行卷积网络分类器是有意义的，所以这里不再针对每个滑动窗运行检测算法，而是只选择一些窗口，在少数窗口上运行卷积网络分类器。</p>
-<p>选出候选区域的方法是运行图像分割算法，分割的结果是下边的图像，为了找出可能存在对象的区域。比如说，分割算法在这里得到一个色块，所以你可能会选择这样的边界框（编号1），然后在这个色块上运行分类器，就像这个绿色的东西（编号2），在这里找到一个色块，接下来我们还会在那个矩形上（编号2）运行一次分类器，看看有没有东西。在这种情况下，如果在蓝色色块上（编号3）运行分类器，希望你能检测出一个行人，如果你在青色色块(编号4)上运行算法，也许你可以发现一辆车，我也不确定。</p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/%E5%80%99%E9%80%89%E5%8C%BA%E5%9F%9F2.png" alt="候选区域2"></p>
-<p><img src="/2020/05/18/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/RCNN.png" alt="RCNN"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/15/%E8%AF%AD%E8%A8%80/Python/%E7%8E%AF%E5%A2%83/Python-%E6%8D%A2pip%E6%BA%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/15/%E8%AF%AD%E8%A8%80/Python/%E7%8E%AF%E5%A2%83/Python-%E6%8D%A2pip%E6%BA%90/" class="post-title-link" itemprop="url">Python-换pip源.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-15 19:00:24" itemprop="dateCreated datePublished" datetime="2020-05-15T19:00:24+08:00">2020-05-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="临时使用"><a href="#临时使用" class="headerlink" title="临时使用"></a>临时使用</h2><p>清华源：<code>-i https://pypi.tuna.tsinghua.edu.cn/simple</code></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">https://pypi.tuna.tsinghua.edu.cn/simple/	# 清华大学</span><br><span class="line">https://mirrors.aliyun.com/pypi/simple/		# 阿里云</span><br><span class="line">https://pypi.douban.com/simple/				# 豆瓣</span><br><span class="line">https://pypi.mirrors.ustc.edu.cn/simple/	# 中国科学技术大学</span><br></pre></td></tr></table></figure>
-
-<h2 id="设为默认"><a href="#设为默认" class="headerlink" title="设为默认"></a>设为默认</h2><p>修改 <code>~/.config/pip/pip.conf</code>（Linux），<code>%APPDATA%\pip\pip.ini</code>（Windows 10）或 <code>$HOME/Library/Application Support/pip/pip.conf</code>（macOS）（没有就创建一个），修改 index-url 至 tuna，例如</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[global]</span><br><span class="line">index-url = https://pypi.tuna.tsinghua.edu.cn/simple</span><br></pre></td></tr></table></figure>
-
-<p>pip 和 pip3 并存时，只需修改 <code>~/.pip/pip.conf</code>。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1379,7 +1458,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1392,7 +1471,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

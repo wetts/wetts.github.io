@@ -188,6 +188,335 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-23.%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-23.%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="post-title-link" itemprop="url">Java-并发性和多线程-23.线程池</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-13 14:35:22" itemprop="dateCreated datePublished" datetime="2016-12-13T14:35:22+08:00">2016-12-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/thread-pools/">http://ifeve.com/thread-pools/</a></p>
+<p>线程池（Thread Pool）对于限制应用程序中同一时刻运行的线程数很有用。因为每启动一个新线程都会有相应的性能开销，每个线程都需要给栈分配一些内存等等。</p>
+<p>我们可以把并发执行的任务传递给一个线程池，来替代为每个并发执行的任务都启动一个新的线程。只要池里有空闲的线程，任务就会分配给一个线程执行。在线程池的内部，任务被插入一个阻塞队列（<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/blocking-queues.html">Blocking Queue</a>），线程池里的线程会去取这个队列里的任务。当一个新任务插入队列时，一个空闲线程就会成功的从队列中取出任务并且执行它。</p>
+<p>线程池经常应用在多线程服务器上。每个通过网络到达服务器的连接都被包装成一个任务并且传递给线程池。线程池的线程会并发的处理连接上的请求。以后会再深入有关 Java 实现多线程服务器的细节。</p>
+<p>Java 5 在 java.util.concurrent 包中自带了内置的线程池，所以你不用非得实现自己的线程池。你可以阅读我写的 <a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-util-concurrent/executorservice.html">java.util.concurrent.ExecutorService</a> 的文章以了解更多有关内置线程池的知识。不过无论如何，知道一点关于线程池实现的知识总是有用的。</p>
+<p>这里有一个简单的线程池实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">public class ThreadPool &#123;</span><br><span class="line"></span><br><span class="line">  private BlockingQueue taskQueue = null;</span><br><span class="line">  private List&lt;PoolThread&gt; threads = new ArrayList&lt;PoolThread&gt;();</span><br><span class="line">  private boolean isStopped = false;</span><br><span class="line"></span><br><span class="line">  public ThreadPool(int noOfThreads, int maxNoOfTasks) &#123;</span><br><span class="line">    taskQueue = new BlockingQueue(maxNoOfTasks);</span><br><span class="line"></span><br><span class="line">    for (int i=0; i&lt;noOfThreads; i++) &#123;</span><br><span class="line">      threads.add(new PoolThread(taskQueue));</span><br><span class="line">    &#125;</span><br><span class="line">    for (PoolThread thread : threads) &#123;</span><br><span class="line">      thread.start();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void synchronized execute(Runnable task) &#123;</span><br><span class="line">    if(this.isStopped) throw</span><br><span class="line">      new IllegalStateException(&quot;ThreadPool is stopped&quot;);</span><br><span class="line"></span><br><span class="line">    this.taskQueue.enqueue(task);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized boolean stop() &#123;</span><br><span class="line">    this.isStopped = true;</span><br><span class="line">    for (PoolThread thread : threads) &#123;</span><br><span class="line">      thread.stop();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>(校注：原文有编译错误，我修改了下)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">public class PoolThread extends Thread &#123;</span><br><span class="line"></span><br><span class="line">  private BlockingQueue&lt;Runnable&gt; taskQueue = null;</span><br><span class="line">  private boolean       isStopped = false;</span><br><span class="line"></span><br><span class="line">  public PoolThread(BlockingQueue&lt;Runnable&gt; queue) &#123;</span><br><span class="line">    taskQueue = queue;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void run() &#123;</span><br><span class="line">    while (!isStopped()) &#123;</span><br><span class="line">      try &#123;</span><br><span class="line">        Runnable runnable =taskQueue.take();</span><br><span class="line">        runnable.run();</span><br><span class="line">      &#125; catch(Exception e) &#123;</span><br><span class="line">        // 写日志或者报告异常,</span><br><span class="line">        // 但保持线程池运行.</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void toStop() &#123;</span><br><span class="line">    isStopped = true;</span><br><span class="line">    this.interrupt(); // 打断池中线程的 dequeue() 调用.</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized boolean isStopped() &#123;</span><br><span class="line">    return isStopped;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>线程池的实现由两部分组成。类 ThreadPool 是线程池的公开接口，而类 PoolThread 用来实现执行任务的子线程。</p>
+<p>为了执行一个任务，方法 ThreadPool.execute(Runnable r) 用 Runnable 的实现作为调用参数。在内部，Runnable 对象被放入 <a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/blocking-queues.html">阻塞队列 (Blocking Queue)</a>，等待着被子线程取出队列。</p>
+<p>一个空闲的 PoolThread 线程会把 Runnable 对象从队列中取出并执行。你可以在 PoolThread.run() 方法里看到这些代码。执行完毕后，PoolThread 进入循环并且尝试从队列中再取出一个任务，直到线程终止。</p>
+<p>调用 ThreadPool.stop() 方法可以停止 ThreadPool。在内部，调用 stop 先会标记 isStopped 成员变量（为 true）。然后，线程池的每一个子线程都调用 PoolThread.stop() 方法停止运行。注意，如果线程池的 execute() 在 stop() 之后调用，execute() 方法会抛出 IllegalStateException 异常。</p>
+<p>子线程会在完成当前执行的任务后停止。注意 PoolThread.stop() 方法中调用了 this.interrupt()。它确保阻塞在 taskQueue.dequeue() 里的 wait() 调用的线程能够跳出 wait() 调用（校对注：因为执行了中断interrupt，它能够打断这个调用），并且抛出一个 InterruptedException 异常离开 dequeue() 方法。这个异常在 PoolThread.run() 方法中被截获、报告，然后再检查 isStopped 变量。由于 isStopped 的值是 true, 因此 PoolThread.run() 方法退出，子线程终止。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-22.%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-22.%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97/" class="post-title-link" itemprop="url">Java-并发性和多线程-22.阻塞队列</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-13 14:27:13" itemprop="dateCreated datePublished" datetime="2016-12-13T14:27:13+08:00">2016-12-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/blocking-queues/">http://ifeve.com/blocking-queues/</a></p>
+<p>阻塞队列与普通队列的区别在于，当队列是空的时，从队列中获取元素的操作将会被阻塞，或者当队列是满时，往队列里添加元素的操作会被阻塞。试图从空的阻塞队列中获取元素的线程将会被阻塞，直到其他的线程往空的队列插入新的元素。同样，试图往已满的阻塞队列中添加新元素的线程同样也会被阻塞，直到其他的线程使队列重新变得空闲起来，如从队列中移除一个或者多个元素，或者完全清空队列，下图展示了如何通过阻塞队列来合作：</p>
+<p><img src="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-22.%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97/blocking-queue.png" alt="blocking-queue.png"></p>
+<p>线程1往阻塞队列中添加元素，而线程2从阻塞队列中移除元素</p>
+<p>从5.0开始，JDK在java.util.concurrent包里提供了阻塞队列的官方实现。尽管JDK中已经包含了阻塞队列的官方实现，但是熟悉其背后的原理还是很有帮助的。</p>
+<p>##阻塞队列的实现<br>阻塞队列的实现类似于带上限的Semaphore的实现。下面是阻塞队列的一个简单实现</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">public class BlockingQueue &#123;</span><br><span class="line"></span><br><span class="line">  private List queue = new LinkedList();</span><br><span class="line">  private int  limit = 10;</span><br><span class="line"></span><br><span class="line">  public BlockingQueue(int limit)&#123;</span><br><span class="line">    this.limit = limit;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void enqueue(Object item) throws InterruptedException  &#123;</span><br><span class="line">    while(this.queue.size() == this.limit) &#123;</span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(this.queue.size() == 0) &#123;</span><br><span class="line">      notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    this.queue.add(item);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized Object dequeue() throws InterruptedException&#123;</span><br><span class="line">    while(this.queue.size() == 0)&#123;</span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(this.queue.size() == this.limit)&#123;</span><br><span class="line">      notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line">    return this.queue.remove(0);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>必须注意到，在enqueue和dequeue方法内部，只有队列的大小等于上限（limit）或者下限（0）时，才调用notifyAll方法。如果队列的大小既不等于上限，也不等于下限，任何线程调用enqueue或者dequeue方法时，都不会阻塞，都能够正常的往队列中添加或者移除元素。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-21.%E4%BF%A1%E5%8F%B7%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-21.%E4%BF%A1%E5%8F%B7%E9%87%8F/" class="post-title-link" itemprop="url">Java-并发性和多线程-21.信号量</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-13 14:07:43" itemprop="dateCreated datePublished" datetime="2016-12-13T14:07:43+08:00">2016-12-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/semaphore/">http://ifeve.com/semaphore/</a></p>
+<p>Semaphore（信号量） 是一个线程同步结构，用于在线程间传递信号，以避免出现信号丢失（译者注：下文会具体介绍），或者像锁一样用于保护一个关键区域。自从5.0开始，jdk在java.util.concurrent包里提供了Semaphore 的官方实现，因此大家不需要自己去实现Semaphore。但是还是很有必要去熟悉如何使用Semaphore及其背后的原理</p>
+<p>本文的涉及的主题如下：</p>
+<ol>
+<li>简单的Semaphore实现</li>
+<li>使用Semaphore来发出信号</li>
+<li>可计数的Semaphore</li>
+<li>有上限的Semaphore</li>
+<li>把Semaphore当锁来使用</li>
+</ol>
+<h2 id="简单的Semaphore实现"><a href="#简单的Semaphore实现" class="headerlink" title="简单的Semaphore实现"></a>简单的Semaphore实现</h2><p>下面是一个信号量的简单实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public class Semaphore &#123;</span><br><span class="line"></span><br><span class="line">  private boolean signal = false;</span><br><span class="line"></span><br><span class="line">  public synchronized void take() &#123;</span><br><span class="line">    this.signal = true;</span><br><span class="line">    this.notify();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void release() throws InterruptedException&#123;</span><br><span class="line">    while(!this.signal) wait();</span><br><span class="line">    this.signal = false;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Take方法发出一个被存放在Semaphore内部的信号，而Release方法则等待一个信号，当其接收到信号后，标记位signal被清空，然后该方法终止。</p>
+<p>使用这个semaphore可以避免错失某些信号通知。用take方法来代替notify，release方法来代替wait。如果某线程在调用release等待之前调用take方法，那么调用release方法的线程仍然知道take方法已经被某个线程调用过了，因为该Semaphore内部保存了take方法发出的信号。而wait和notify方法就没有这样的功能。</p>
+<p>当用semaphore来产生信号时，take和release这两个方法名看起来有点奇怪。这两个名字来源于后面把semaphore当做锁的例子，后面会详细介绍这个例子，在该例子中，take和release这两个名字会变得很合理。</p>
+<h2 id="使用Semaphore来产生信号"><a href="#使用Semaphore来产生信号" class="headerlink" title="使用Semaphore来产生信号"></a>使用Semaphore来产生信号</h2><p>下面的例子中，两个线程通过Semaphore发出的信号来通知对方</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">Semaphore semaphore = new Semaphore();</span><br><span class="line"></span><br><span class="line">SendingThread sender = new SendingThread(semaphore)；</span><br><span class="line">ReceivingThread receiver = new ReceivingThread(semaphore);</span><br><span class="line"></span><br><span class="line">receiver.start();</span><br><span class="line">sender.start();</span><br><span class="line"></span><br><span class="line">public class SendingThread &#123;</span><br><span class="line"></span><br><span class="line">  Semaphore semaphore = null;</span><br><span class="line"></span><br><span class="line">  public SendingThread(Semaphore semaphore)&#123;</span><br><span class="line">    this.semaphore = semaphore;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void run()&#123;</span><br><span class="line">    while(true)&#123;</span><br><span class="line">      //do something, then signal</span><br><span class="line">      this.semaphore.take();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class RecevingThread &#123;</span><br><span class="line"></span><br><span class="line">  Semaphore semaphore = null;</span><br><span class="line"></span><br><span class="line">  public ReceivingThread(Semaphore semaphore)&#123;</span><br><span class="line">    this.semaphore = semaphore;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void run()&#123;</span><br><span class="line">    while(true)&#123;</span><br><span class="line">      this.semaphore.release();</span><br><span class="line">      //receive signal, then do something...</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="可计数的Semaphore"><a href="#可计数的Semaphore" class="headerlink" title="可计数的Semaphore"></a>可计数的Semaphore</h2><p>上面提到的Semaphore的简单实现并没有计算通过调用take方法所产生信号的数量。可以把它改造成具有计数功能的Semaphore。下面是一个可计数的Semaphore的简单实现。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public class CountingSemaphore &#123;</span><br><span class="line"></span><br><span class="line">  private int signals = 0;</span><br><span class="line"></span><br><span class="line">  public synchronized void take() &#123;</span><br><span class="line">    this.signals++;</span><br><span class="line">    this.notify();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void release() throws InterruptedException&#123;</span><br><span class="line">    while(this.signals == 0) wait();</span><br><span class="line">    this.signals--;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="有上限的Semaphore"><a href="#有上限的Semaphore" class="headerlink" title="有上限的Semaphore"></a>有上限的Semaphore</h2><p>上面的CountingSemaphore并没有限制信号的数量。下面的代码将CountingSemaphore改造成一个信号数量有上限的BoundedSemaphore。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public class BoundedSemaphore &#123;</span><br><span class="line"></span><br><span class="line">  private int signals = 0;</span><br><span class="line">  private int bound   = 0;</span><br><span class="line"></span><br><span class="line">  public BoundedSemaphore(int upperBound)&#123;</span><br><span class="line">    this.bound = upperBound;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void take() throws InterruptedException&#123;</span><br><span class="line">    while(this.signals == bound) wait();</span><br><span class="line">    this.signals++;</span><br><span class="line">    this.notify();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void release() throws InterruptedException&#123;</span><br><span class="line">    while(this.signals == 0) wait();</span><br><span class="line">    this.signals--;</span><br><span class="line">    this.notify();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在BoundedSemaphore中，当已经产生的信号数量达到了上限，take方法将阻塞新的信号产生请求，直到某个线程调用release方法后，被阻塞于take方法的线程才能传递自己的信号。</p>
+<h2 id="把Semaphore当锁来使用"><a href="#把Semaphore当锁来使用" class="headerlink" title="把Semaphore当锁来使用"></a>把Semaphore当锁来使用</h2><p>当信号量的数量上限是1时，Semaphore可以被当做锁来使用。通过take和release方法来保护关键区域。请看下面的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">BoundedSemaphore semaphore = new BoundedSemaphore(1);</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">semaphore.take();</span><br><span class="line"></span><br><span class="line">try&#123;</span><br><span class="line">  //critical section</span><br><span class="line"></span><br><span class="line">&#125; finally &#123;</span><br><span class="line">  semaphore.release();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在前面的例子中，Semaphore被用来在多个线程之间传递信号，这种情况下，take和release分别被不同的线程调用。但是在锁这个例子中，take和release方法将被同一线程调用，因为只允许一个线程来获取信号（允许进入关键区域的信号），其它调用take方法获取信号的线程将被阻塞，知道第一个调用take方法的线程调用release方法来释放信号。对release方法的调用永远不会被阻塞，这是因为任何一个线程都是先调用take方法，然后再调用release。</p>
+<p>通过有上限的Semaphore可以限制进入某代码块的线程数量。设想一下，在上面的例子中，如果BoundedSemaphore 上限设为5将会发生什么？意味着允许5个线程同时访问关键区域，但是你必须保证，这个5个线程不会互相冲突。否则你的应用程序将不能正常运行。</p>
+<p>必须注意，release方法应当在finally块中被执行。这样可以保在关键区域的代码抛出异常的情况下，信号也一定会被释放。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-20.%E9%87%8D%E5%85%A5%E9%94%81%E6%AD%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-20.%E9%87%8D%E5%85%A5%E9%94%81%E6%AD%BB/" class="post-title-link" itemprop="url">Java-并发性和多线程-20.重入锁死</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-13 13:53:04" itemprop="dateCreated datePublished" datetime="2016-12-13T13:53:04+08:00">2016-12-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/reentrance-lockout/">http://ifeve.com/reentrance-lockout/</a></p>
+<p>重入锁死与死锁和嵌套管程锁死非常相似。锁和读写锁两篇文章中都有涉及到重入锁死的问题。</p>
+<p>当一个线程重新获取锁，读写锁或其他不可重入的同步器时，就可能发生重入锁死。可重入的意思是线程可以重复获得它已经持有的锁。Java的synchronized块是可重入的。因此下面的代码是没问题的：（<em>译者注：这里提到的锁都是指的不可重入的锁实现，并不是Java类库中的Lock与ReadWriteLock类</em>）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class Reentrant&#123;</span><br><span class="line"></span><br><span class="line">    public synchronized outer()&#123;</span><br><span class="line">        inner();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public synchronized inner()&#123;</span><br><span class="line">        //do something</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意outer()和inner()都声明为synchronized，这在Java中这相当于synchronized(this)块（<em>译者注：这里两个方法是实例方法，synchronized的实例方法相当于在this上加锁，如果是static方法，则不然，更多阅读：哪个对象才是锁？</em>）。如果某个线程调用了outer()，outer()中的inner()调用是没问题的，因为两个方法都是在同一个管程对象(即this)上同步的。如果一个线程持有某个管程对象上的锁，那么它就有权访问所有在该管程对象上同步的块。这就叫可重入。若线程已经持有锁，那么它就可以重复访问所有使用该锁的代码块。</p>
+<p>下面这个锁的实现是不可重入的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class Lock&#123;</span><br><span class="line"></span><br><span class="line">    private boolean isLocked = false;</span><br><span class="line"></span><br><span class="line">    public synchronized void lock() throws InterruptedException&#123;</span><br><span class="line">        while(isLocked)&#123;</span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        isLocked = true;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public synchronized void unlock()&#123;</span><br><span class="line">        isLocked = false;</span><br><span class="line">        notify();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果一个线程在两次调用lock()间没有调用unlock()方法，那么第二次调用lock()就会被阻塞，这就出现了重入锁死。</p>
+<p>避免重入锁死有两个选择：</p>
+<ol>
+<li>编写代码时避免再次获取已经持有的锁</li>
+<li>使用可重入锁</li>
+</ol>
+<p>至于哪个选择最适合你的项目，得视具体情况而定。可重入锁通常没有不可重入锁那么好的表现，而且实现起来复杂，但这些情况在你的项目中也许算不上什么问题。无论你的项目用锁来实现方便还是不用锁方便，可重入特性都需要根据具体问题具体分析。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-19.%E8%AF%BB%E5%86%99%E9%94%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -791,413 +1120,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-12.TheadLocal/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-12.TheadLocal/" class="post-title-link" itemprop="url">Java-并发性和多线程-12.TheadLocal</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-12 17:41:33" itemprop="dateCreated datePublished" datetime="2016-12-12T17:41:33+08:00">2016-12-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-theadlocal/">http://ifeve.com/java-theadlocal/</a></p>
-<p>Java中的ThreadLocal类可以让你创建的变量只被同一个线程进行读和写操作。因此，尽管有两个线程同时执行一段相同的代码，而且这段代码又有一个指向同一个ThreadLocal变量的引用，但是这两个线程依然不能看到彼此的ThreadLocal变量域。</p>
-<ol>
-<li>创建一个ThreadLocal对象</li>
-<li>访问ThreadLocal对象</li>
-<li>ThreadLocal泛型</li>
-<li>初始化ThreadLocal</li>
-<li>Full ThreadLocal Example</li>
-<li>InheritableThreadLocal</li>
-</ol>
-<h2 id="创建一个ThreadLocal对象"><a href="#创建一个ThreadLocal对象" class="headerlink" title="创建一个ThreadLocal对象"></a>创建一个ThreadLocal对象</h2><p>如下所示，创建一个ThreadLocal变量：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private ThreadLocal myThreadLocal = new ThreadLocal();</span><br></pre></td></tr></table></figure>
-<p>你实例化了一个ThreadLocal对象。每个线程仅需要实例化一次即可。虽然不同的线程执行同一段代码时，访问同一个ThreadLocal变量，但是每个线程只能看到私有的ThreadLocal实例。所以不同的线程在给ThreadLocal对象设置不同的值时，他们也不能看到彼此的修改。</p>
-<h2 id="访问ThreadLocal对象"><a href="#访问ThreadLocal对象" class="headerlink" title="访问ThreadLocal对象"></a>访问ThreadLocal对象</h2><p>一旦创建了一个ThreadLocal对象，你就可以通过以下方式来存储此对象的值：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">myThreadLocal.set(&quot;A thread local value&quot;);</span><br></pre></td></tr></table></figure>
-<p>也可以直接读取一个ThreadLocal对象的值：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String threadLocalValue = (String) myThreadLocal.get();</span><br></pre></td></tr></table></figure>
-<p>get()方法会返回一个Object对象，而set()方法则依赖一个Object对象参数。</p>
-<h2 id="ThreadLocal泛型"><a href="#ThreadLocal泛型" class="headerlink" title="ThreadLocal泛型"></a>ThreadLocal泛型</h2><p>为了使get()方法返回值不用做强制类型转换，通常可以创建一个泛型化的ThreadLocal对象。以下就是一个泛型化的ThreadLocal示例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private ThreadLocal myThreadLocal1 = new ThreadLocal&lt;String&gt;();</span><br></pre></td></tr></table></figure>
-<p>现在你可以存储一个字符串到ThreadLocal实例里，此外，当你从此ThreadLocal实例中获取值的时候，就不必要做强制类型转换。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myThreadLocal1.set(&quot;Hello ThreadLocal&quot;);</span><br><span class="line">String threadLocalValues = myThreadLocal.get();</span><br></pre></td></tr></table></figure>
-
-<h2 id="初始化ThreadLocal"><a href="#初始化ThreadLocal" class="headerlink" title="初始化ThreadLocal"></a>初始化ThreadLocal</h2><p>由于ThreadLocal对象的set()方法设置的值只对当前线程可见，那有什么方法可以为ThreadLocal对象设置的值对所有线程都可见。</p>
-<p>为此，我们可以通过ThreadLocal子类的实现，并覆写initialValue()方法，就可以为ThreadLocal对象指定一个初始化值。如下所示:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">private ThreadLocal myThreadLocal = new ThreadLocal&lt;String&gt;() &#123;</span><br><span class="line"></span><br><span class="line">   @Override</span><br><span class="line">   protected String initialValue() &#123;</span><br><span class="line">       return &quot;This is the initial value&quot;;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>此时，在set()方法调用前，当调用get()方法的时候，所有线程都可以看到同一个初始化值。</p>
-<h2 id="Full-ThreadLocal-Example"><a href="#Full-ThreadLocal-Example" class="headerlink" title="Full ThreadLocal Example"></a>Full ThreadLocal Example</h2><p>以下是一个完整的ThreadLocal示例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">public class ThreadLocalExample &#123;</span><br><span class="line"></span><br><span class="line">    public static class MyRunnable implements Runnable &#123;</span><br><span class="line">        private ThreadLocal&lt;Integer&gt; threadLocal = new ThreadLocal&lt;Integer&gt;();</span><br><span class="line"></span><br><span class="line">        @Override</span><br><span class="line">        public void run() &#123;</span><br><span class="line">            threadLocal.set( (int) (Math.random() * 100D) );</span><br><span class="line"></span><br><span class="line">            try &#123;</span><br><span class="line">                Thread.sleep(2000);</span><br><span class="line">            &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            System.out.println(threadLocal.get());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        MyRunnable sharedRunnableInstance = new MyRunnable();</span><br><span class="line"></span><br><span class="line">        Thread thread1 = new Thread(sharedRunnableInstance);</span><br><span class="line">        Thread thread2 = new Thread(sharedRunnableInstance);</span><br><span class="line"></span><br><span class="line">        thread1.start();</span><br><span class="line">        thread2.start();</span><br><span class="line"></span><br><span class="line">        thread1.join(); //wait for thread 1 to terminate</span><br><span class="line">        thread2.join(); //wait for thread 2 to terminate</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面创建了两个线程共享一个MyRunnable实例。每个线程执行run()方法的时候，会给同一个ThreadLocal实例设置不同的值。如果调用set()方法的时候用synchronized关键字同步，而且不是一个ThreadLocal对象实例，那么第二个线程将会覆盖第一个线程所设置的值。</p>
-<p>然而，由于是ThreadLocal对象，所以两个线程无法看到彼此的值。因此，可以设置或者获取不同的值。</p>
-<h2 id="InheritableThreadLocal"><a href="#InheritableThreadLocal" class="headerlink" title="InheritableThreadLocal"></a>InheritableThreadLocal</h2><p>InheritableThreadLocal类是ThreadLocal的子类。为了解决ThreadLocal实例内部每个线程都只能看到自己的私有值，所以InheritableThreadLocal允许一个线程创建的所有子线程访问其父线程的值。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">Java-并发性和多线程-9.Java内存模型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-12 16:51:28" itemprop="dateCreated datePublished" datetime="2016-12-12T16:51:28+08:00">2016-12-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-memory-model-6/">http://ifeve.com/java-memory-model-6/</a></p>
-<p>Java内存模型规范了Java虚拟机与计算机内存是如何协同工作的。Java虚拟机是一个完整的计算机的一个模型，因此这个模型自然也包含一个内存模型——又称为Java内存模型。</p>
-<p>如果你想设计表现良好的并发程序，理解Java内存模型是非常重要的。Java内存模型规定了如何和何时可以看到由其他线程修改过后的共享变量的值，以及在必须时如何同步的访问共享变量。</p>
-<p>原始的Java内存模型存在一些不足，因此Java内存模型在Java1.5时被重新修订。这个版本的Java内存模型在Java8中任在使用。</p>
-<h2 id="Java内存模型内部原理"><a href="#Java内存模型内部原理" class="headerlink" title="Java内存模型内部原理"></a>Java内存模型内部原理</h2><p>Java内存模型把Java虚拟机内部划分为线程栈和堆。这张图演示了Java内存模型的逻辑视图。</p>
-<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/java-memory-model-1.png" alt="Java Memory Model"></p>
-<p>每一个运行在Java虚拟机里的线程都拥有自己的线程栈。这个线程栈包含了这个线程调用的方法当前执行点相关的信息。一个线程仅能访问自己的线程栈。一个线程创建的本地变量对其它线程不可见，仅自己可见。即使两个线程执行同样的代码，这两个线程任然在在自己的线程栈中的代码来创建本地变量。因此，每个线程拥有每个本地变量的独有版本。</p>
-<p>所有原始类型的本地变量都存放在线程栈上，因此对其它线程不可见。一个线程可能向另一个线程传递一个原始类型变量的拷贝，但是它不能共享这个原始类型变量自身。</p>
-<p>堆上包含在Java程序中创建的所有对象，无论是哪一个对象创建的。这包括原始类型的对象版本。如果一个对象被创建然后赋值给一个局部变量，或者用来作为另一个对象的成员变量，这个对象任然是存放在堆上。</p>
-<p>下面这张图演示了调用栈和本地变量存放在线程栈上，对象存放在堆上。</p>
-<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/java-memory-model-2.png" alt="enter image description here"></p>
-<p>一个本地变量可能是原始类型，在这种情况下，它总是“呆在”线程栈上。</p>
-<p>一个本地变量也可能是指向一个对象的一个引用。在这种情况下，引用（这个本地变量）存放在线程栈上，但是对象本身存放在堆上。</p>
-<p>一个对象可能包含方法，这些方法可能包含本地变量。这些本地变量任然存放在线程栈上，即使这些方法所属的对象存放在堆上。</p>
-<p>一个对象的成员变量可能随着这个对象自身存放在堆上。不管这个成员变量是原始类型还是引用类型。</p>
-<p>静态成员变量跟随着类定义一起也存放在堆上。</p>
-<p>存放在堆上的对象可以被所有持有对这个对象引用的线程访问。当一个线程可以访问一个对象时，它也可以访问这个对象的成员变量。如果两个线程同时调用同一个对象上的同一个方法，它们将会都访问这个对象的成员变量，但是每一个线程都拥有这个本地变量的私有拷贝。</p>
-<p>下图演示了上面提到的点：</p>
-<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/java-memory-model-3.png" alt="enter image description here"></p>
-<p>两个线程拥有一些列的本地变量。其中一个本地变量（Local Variable 2）执行堆上的一个共享对象（Object 3）。这两个线程分别拥有同一个对象的不同引用。这些引用都是本地变量，因此存放在各自线程的线程栈上。这两个不同的引用指向堆上同一个对象。</p>
-<p>注意，这个共享对象（Object 3）持有Object2和Object4一个引用作为其成员变量（如图中Object3指向Object2和Object4的箭头）。通过在Object3中这些成员变量引用，这两个线程就可以访问Object2和Object4。</p>
-<p>这张图也展示了指向堆上两个不同对象的一个本地变量。在这种情况下，指向两个不同对象的引用不是同一个对象。理论上，两个线程都可以访问Object1和Object5，如果两个线程都拥有两个对象的引用。但是在上图中，每一个线程仅有一个引用指向两个对象其中之一。</p>
-<p>因此，什么类型的Java代码会导致上面的内存图呢？如下所示：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">public class MyRunnable implements Runnable() &#123;</span><br><span class="line"></span><br><span class="line">    public void run() &#123;</span><br><span class="line">        methodOne();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void methodOne() &#123;</span><br><span class="line">        int localVariable1 = 45;</span><br><span class="line"></span><br><span class="line">        MySharedObject localVariable2 = MySharedObject.sharedInstance;</span><br><span class="line"></span><br><span class="line">        //... do more with local variables.</span><br><span class="line"></span><br><span class="line">        methodTwo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void methodTwo() &#123;</span><br><span class="line">        Integer localVariable1 = new Integer(99);</span><br><span class="line"></span><br><span class="line">        //... do more with local variable.</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">public class MySharedObject &#123;</span><br><span class="line"></span><br><span class="line">    //static variable pointing to instance of MySharedObject</span><br><span class="line"></span><br><span class="line">    public static final MySharedObject sharedInstance = new MySharedObject();</span><br><span class="line"></span><br><span class="line">    //member variables pointing to two objects on the heap</span><br><span class="line"></span><br><span class="line">    public Integer object2 = new Integer(22);</span><br><span class="line">    public Integer object4 = new Integer(44);</span><br><span class="line"></span><br><span class="line">    public long member1 = 12345;</span><br><span class="line">    public long member1 = 67890;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果两个线程同时执行run()方法，就会出现上图所示的情景。run()方法调用methodOne()方法，methodOne()调用methodTwo()方法。</p>
-<p>methodOne()声明了一个原始类型的本地变量和一个引用类型的本地变量。</p>
-<p>每个线程执行methodOne()都会在它们对应的线程栈上创建localVariable1和localVariable2的私有拷贝。localVariable1变量彼此完全独立，仅“生活”在每个线程的线程栈上。一个线程看不到另一个线程对它的localVariable1私有拷贝做出的修改。</p>
-<p>每个线程执行methodOne()时也将会创建它们各自的localVariable2拷贝。然而，两个localVariable2的不同拷贝都指向堆上的同一个对象。代码中通过一个静态变量设置localVariable2指向一个对象引用。仅存在一个静态变量的一份拷贝，这份拷贝存放在堆上。因此，localVariable2的两份拷贝都指向由MySharedObject指向的静态变量的同一个实例。MySharedObject实例也存放在堆上。它对应于上图中的Object3。</p>
-<p>注意，MySharedObject类也包含两个成员变量。这些成员变量随着这个对象存放在堆上。这两个成员变量指向另外两个Integer对象。这些Integer对象对应于上图中的Object2和Object4.</p>
-<p>注意，methodTwo()创建一个名为localVariable的本地变量。这个成员变量是一个指向一个Integer对象的对象引用。这个方法设置localVariable1引用指向一个新的Integer实例。在执行methodTwo方法时，localVariable1引用将会在每个线程中存放一份拷贝。这两个Integer对象实例化将会被存储堆上，但是每次执行这个方法时，这个方法都会创建一个新的Integer对象，两个线程执行这个方法将会创建两个不同的Integer实例。methodTwo方法创建的Integer对象对应于上图中的Object1和Object5。</p>
-<p>还有一点，MySharedObject类中的两个long类型的成员变量是原始类型的。因为，这些变量是成员变量，所以它们任然随着该对象存放在堆上，仅有本地变量存放在线程栈上。</p>
-<h2 id="硬件内存架构"><a href="#硬件内存架构" class="headerlink" title="硬件内存架构"></a>硬件内存架构</h2><p>现代硬件内存模型与Java内存模型有一些不同。理解内存模型架构以及Java内存模型如何与它协同工作也是非常重要的。这部分描述了通用的硬件内存架构，下面的部分将会描述Java内存是如何与它“联手”工作的。</p>
-<p>下面是现代计算机硬件架构的简单图示：</p>
-<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/java-memory-model-4.png" alt="enter image description here"></p>
-<p>一个现代计算机通常由两个或者多个CPU。其中一些CPU还有多核。从这一点可以看出，在一个有两个或者多个CPU的现代计算机上同时运行多个线程是可能的。每个CPU在某一时刻运行一个线程是没有问题的。这意味着，如果你的Java程序是多线程的，在你的Java程序中每个CPU上一个线程可能同时（并发）执行。</p>
-<p>每个CPU都包含一系列的寄存器，它们是CPU内内存的基础。CPU在寄存器上执行操作的速度远大于在主存上执行的速度。这是因为CPU访问寄存器的速度远大于主存。</p>
-<p>每个CPU可能还有一个CPU缓存层。实际上，绝大多数的现代CPU都有一定大小的缓存层。CPU访问缓存层的速度快于访问主存的速度，但通常比访问内部寄存器的速度还要慢一点。一些CPU还有多层缓存，但这些对理解Java内存模型如何和内存交互不是那么重要。只要知道CPU中可以有一个缓存层就可以了。</p>
-<p>一个计算机还包含一个主存。所有的CPU都可以访问主存。主存通常比CPU中的缓存大得多。</p>
-<p>通常情况下，当一个CPU需要读取主存时，它会将主存的部分读到CPU缓存中。它甚至可能将缓存中的部分内容读到它的内部寄存器中，然后在寄存器中执行操作。当CPU需要将结果写回到主存中去时，它会将内部寄存器的值刷新到缓存中，然后在某个时间点将值刷新回主存。</p>
-<p>当CPU需要在缓存层存放一些东西的时候，存放在缓存中的内容通常会被刷新回主存。CPU缓存可以在某一时刻将数据局部写到它的内存中，和在某一时刻局部刷新它的内存。它不会再某一时刻读/写整个缓存。通常，在一个被称作“cache lines”的更小的内存块中缓存被更新。一个或者多个缓存行可能被读到缓存，一个或者多个缓存行可能再被刷新回主存。</p>
-<h2 id="Java内存模型和硬件内存架构之间的桥接"><a href="#Java内存模型和硬件内存架构之间的桥接" class="headerlink" title="Java内存模型和硬件内存架构之间的桥接"></a>Java内存模型和硬件内存架构之间的桥接</h2><p>上面已经提到，Java内存模型与硬件内存架构之间存在差异。硬件内存架构没有区分线程栈和堆。对于硬件，所有的线程栈和堆都分布在主内中。部分线程栈和堆可能有时候会出现在CPU缓存中和CPU内部的寄存器中。如下图所示：</p>
-<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/java-memory-model-5.png" alt="enter image description here"></p>
-<p>当对象和变量被存放在计算机中各种不同的内存区域中时，就可能会出现一些具体的问题。主要包括如下两个方面：</p>
-<ul>
-<li>线程对共享变量修改的可见性</li>
-<li>当读、写和检查共享变量时出现race conditions</li>
-</ul>
-<p>下面我们专门来解释以下这两个问题。</p>
-<h3 id="共享对象可见性"><a href="#共享对象可见性" class="headerlink" title="共享对象可见性"></a>共享对象可见性</h3><p>如果两个或者更多的线程在没有正确的使用volatile声明或者同步的情况下共享一个对象，一个线程更新这个共享对象可能对其它线程来说是不接见的。</p>
-<p>想象一下，共享对象被初始化在主存中。跑在CPU上的一个线程将这个共享对象读到CPU缓存中。然后修改了这个对象。只要CPU缓存没有被刷新会主存，对象修改后的版本对跑在其它CPU上的线程都是不可见的。这种方式可能导致每个线程拥有这个共享对象的私有拷贝，每个拷贝停留在不同的CPU缓存中。</p>
-<p>下图示意了这种情形。跑在左边CPU的线程拷贝这个共享对象到它的CPU缓存中，然后将count变量的值修改为2。这个修改对跑在右边CPU上的其它线程是不可见的，因为修改后的count的值还没有被刷新回主存中去。</p>
-<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/java-memory-model-6.png" alt="enter image description here"></p>
-<p>解决这个问题你可以使用Java中的volatile关键字。volatile关键字可以保证直接从主存中读取一个变量，如果这个变量被修改后，总是会被写回到主存中去。</p>
-<h3 id="Race-Conditions"><a href="#Race-Conditions" class="headerlink" title="Race Conditions"></a>Race Conditions</h3><p>如果两个或者更多的线程共享一个对象，多个线程在这个共享对象上更新变量，就有可能发生<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/race-conditions-and-critical-sections.html">race conditions</a>。</p>
-<p>想象一下，如果线程A读一个共享对象的变量count到它的CPU缓存中。再想象一下，线程B也做了同样的事情，但是往一个不同的CPU缓存中。现在线程A将count加1，线程B也做了同样的事情。现在count已经被增在了两个，每个CPU缓存中一次。</p>
-<p>如果这些增加操作被顺序的执行，变量count应该被增加两次，然后原值+2被写回到主存中去。</p>
-<p>然而，两次增加都是在没有适当的同步下并发执行的。无论是线程A还是线程B将count修改后的版本写回到主存中取，修改后的值仅会被原值大1，尽管增加了两次。</p>
-<p>下图演示了上面描述的情况：</p>
-<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-9.Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/java-memory-model-6.png" alt="enter image description here"></p>
-<p>解决这个问题可以使用<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/synchronized.html">Java同步块</a>。一个同步块可以保证在同一时刻仅有一个线程可以进入代码的临界区。同步块还可以保证代码块中所有被访问的变量将会从主存中读入，当线程退出同步代码块时，所有被更新的变量都会被刷新回主存中去，不管这个变量是否被声明为volatile。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-8.%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%8F%8A%E4%B8%8D%E5%8F%AF%E5%8F%98%E6%80%A7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-8.%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%8F%8A%E4%B8%8D%E5%8F%AF%E5%8F%98%E6%80%A7/" class="post-title-link" itemprop="url">Java-并发性和多线程-8.线程安全及不可变性</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-12 16:36:22" itemprop="dateCreated datePublished" datetime="2016-12-12T16:36:22+08:00">2016-12-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/thread-safety-and-immutability/">http://ifeve.com/thread-safety-and-immutability/</a></p>
-<p>当多个线程同时访问同一个资源，并且其中的一个或者多个线程对这个资源进行了写操作，才会产生竞态条件。多个线程同时读同一个资源不会产生竞态条件。</p>
-<p>我们可以通过创建不可变的共享对象来保证对象在线程间共享时不会被修改，从而实现线程安全。如下示例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class ImmutableValue&#123;</span><br><span class="line"></span><br><span class="line">    private int value = 0;</span><br><span class="line"></span><br><span class="line">    public ImmutableValue(int value)&#123;</span><br><span class="line">        this.value = value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int getValue()&#123;</span><br><span class="line">        return this.value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>请注意ImmutableValue类的成员变量value是通过构造函数赋值的，并且在类中没有set方法。这意味着一旦ImmutableValue实例被创建，value变量就不能再被修改，这就是不可变性。但你可以通过getValue()方法读取这个变量的值。（<em>译者注：注意，“不变”（Immutable）和“只读”（Read Only）是不同的。当一个变量是“只读”时，变量的值不能直接改变，但是可以在其它变量发生改变的时候发生改变。比如，一个人的出生年月日是“不变”属性，而一个人的年龄便是“只读”属性，但是不是“不变”属性。随着时间的变化，一个人的年龄会随之发生变化，而一个人的出生年月日则不会变化。这就是“不变”和“只读”的区别。（摘自《Java与模式》第34章）</em>）</p>
-<p>如果你需要对ImmutableValue类的实例进行操作，可以通过得到value变量后创建一个新的实例来实现，下面是一个对value变量进行加法操作的示例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class ImmutableValue&#123;</span><br><span class="line"></span><br><span class="line">    private int value = 0;</span><br><span class="line"></span><br><span class="line">    public ImmutableValue(int value)&#123;</span><br><span class="line">        this.value = value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int getValue()&#123;</span><br><span class="line">        return this.value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public ImmutableValue add(int valueToAdd)&#123;</span><br><span class="line">        return new ImmutableValue(this.value + valueToAdd);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>请注意add()方法以加法操作的结果作为一个新的ImmutableValue类实例返回，而不是直接对它自己的value变量进行操作。</p>
-<h2 id="引用不是线程安全的！"><a href="#引用不是线程安全的！" class="headerlink" title="引用不是线程安全的！"></a>引用不是线程安全的！</h2><p>重要的是要记住，即使一个对象是线程安全的不可变对象，指向这个对象的引用也可能不是线程安全的。看这个例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class Calculator&#123;</span><br><span class="line"></span><br><span class="line">    private ImmutableValue currentValue = null;</span><br><span class="line"></span><br><span class="line">    public ImmutableValue getValue()&#123;</span><br><span class="line">        return currentValue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void setValue(ImmutableValue newValue)&#123;</span><br><span class="line">        this.currentValue = newValue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void add(int newValue)&#123;</span><br><span class="line">        this.currentValue = this.currentValue.add(newValue);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Calculator类持有一个指向ImmutableValue实例的引用。注意，通过setValue()方法和add()方法可能会改变这个引用。因此，即使Calculator类内部使用了一个不可变对象，但Calculator类本身还是可变的，因此Calculator类不是线程安全的。换句话说：ImmutableValue类是线程安全的，但使用它的类不是。当尝试通过不可变性去获得线程安全时，这点是需要牢记的。</p>
-<p>要使Calculator类实现线程安全，将getValue()、setValue()和add()方法都声明为同步方法即可。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-7.%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E5%85%B1%E4%BA%AB%E8%B5%84%E6%BA%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-7.%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E5%85%B1%E4%BA%AB%E8%B5%84%E6%BA%90/" class="post-title-link" itemprop="url">Java-并发性和多线程-7.线程安全与共享资源</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-12 16:23:54" itemprop="dateCreated datePublished" datetime="2016-12-12T16:23:54+08:00">2016-12-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/thread-safety/">http://ifeve.com/thread-safety/</a></p>
-<p>允许被多个线程同时执行的代码称作线程安全的代码。线程安全的代码不包含竞态条件。当多个线程同时更新共享资源时会引发竞态条件。因此，了解Java线程执行时共享了什么资源很重要。</p>
-<h2 id="局部变量"><a href="#局部变量" class="headerlink" title="局部变量"></a>局部变量</h2><p>局部变量存储在线程自己的栈中。也就是说，局部变量永远也不会被多个线程共享。所以，基础类型的局部变量是线程安全的。下面是基础类型的局部变量的一个例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public void someMethod()&#123;</span><br><span class="line"></span><br><span class="line">  long threadSafeInt = 0;</span><br><span class="line">  threadSafeInt++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="局部的对象引用"><a href="#局部的对象引用" class="headerlink" title="局部的对象引用"></a>局部的对象引用</h2><p>对象的局部引用和基础类型的局部变量不太一样。尽管引用本身没有被共享，但引用所指的对象并没有存储在线程的栈内。所有的对象都存在共享堆中。如果在某个方法中创建的对象不会逃逸出（<em>译者注：即该对象不会被其它方法获得，也不会被非局部变量引用到</em>）该方法，那么它就是线程安全的。实际上，哪怕将这个对象作为参数传给其它方法，只要别的线程获取不到这个对象，那它仍是线程安全的。下面是一个线程安全的局部引用样例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public void someMethod()&#123;</span><br><span class="line">  LocalObject localObject = new LocalObject();</span><br><span class="line">  localObject.callMethod();</span><br><span class="line">  method2(localObject);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public void method2(LocalObject localObject)&#123;</span><br><span class="line">  localObject.setValue(&quot;value&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>样例中LocalObject对象没有被方法返回，也没有被传递给someMethod()方法外的对象。每个执行someMethod()的线程都会创建自己的LocalObject对象，并赋值给localObject引用。因此，这里的LocalObject是线程安全的。事实上，整个someMethod()都是线程安全的。即使将LocalObject作为参数传给同一个类的其它方法或其它类的方法时，它仍然是线程安全的。当然，如果LocalObject通过某些方法被传给了别的线程，那它就不再是线程安全的了。</p>
-<h2 id="对象成员"><a href="#对象成员" class="headerlink" title="对象成员"></a>对象成员</h2><p>对象成员存储在堆上。如果两个线程同时更新同一个对象的同一个成员，那这个代码就不是线程安全的。下面是一个样例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class NotThreadSafe&#123;</span><br><span class="line"></span><br><span class="line">  StringBuilder builder = new StringBuilder();</span><br><span class="line"></span><br><span class="line">  public add(String text)&#123;</span><br><span class="line">      this.builder.append(text);</span><br><span class="line">  &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果两个线程同时调用同一个NotThreadSafe实例上的add()方法，就会有竞态条件问题。例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">NotThreadSafe sharedInstance = new NotThreadSafe();</span><br><span class="line"></span><br><span class="line">new Thread(new MyRunnable(sharedInstance)).start();</span><br><span class="line">new Thread(new MyRunnable(sharedInstance)).start();</span><br><span class="line"></span><br><span class="line">public class MyRunnable implements Runnable&#123;</span><br><span class="line">  NotThreadSafe instance = null;</span><br><span class="line"></span><br><span class="line">  public MyRunnable(NotThreadSafe instance)&#123;</span><br><span class="line">    this.instance = instance;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void run()&#123;</span><br><span class="line">    this.instance.add(&quot;some text&quot;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意两个MyRunnable共享了同一个NotThreadSafe对象。因此，当它们调用add()方法时会造成竞态条件。</p>
-<p>当然，如果这两个线程在不同的NotThreadSafe实例上调用call()方法，就不会导致竞态条件。下面是稍微修改后的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">new Thread(new MyRunnable(new NotThreadSafe())).start();</span><br><span class="line">new Thread(new MyRunnable(new NotThreadSafe())).start();</span><br></pre></td></tr></table></figure>
-<p>现在两个线程都有自己单独的NotThreadSafe对象，调用add()方法时就会互不干扰，再也不会有竞态条件问题了。所以非线程安全的对象仍可以通过某种方式来消除竞态条件。</p>
-<h2 id="线程控制逃逸规则"><a href="#线程控制逃逸规则" class="headerlink" title="线程控制逃逸规则"></a>线程控制逃逸规则</h2><p>线程控制逃逸规则可以帮助你判断代码中对某些资源的访问是否是线程安全的。</p>
-<blockquote>
-<p>如果一个资源的创建，使用，销毁都在同一个线程内完成，<br>且永远不会脱离该线程的控制，则该资源的使用就是线程安全的。</p>
-</blockquote>
-<p>资源可以是对象，数组，文件，数据库连接，套接字等等。Java中你无需主动销毁对象，所以“销毁”指不再有引用指向对象。</p>
-<p>即使对象本身线程安全，但如果该对象中包含其他资源（文件，数据库连接），整个应用也许就不再是线程安全的了。比如2个线程都创建了各自的数据库连接，每个连接自身是线程安全的，但它们所连接到的同一个数据库也许不是线程安全的。比如，2个线程执行如下代码：</p>
-<blockquote>
-<p>检查记录X是否存在，如果不存在，插入X</p>
-</blockquote>
-<p>如果两个线程同时执行，而且碰巧检查的是同一个记录，那么两个线程最终可能都插入了记录：</p>
-<blockquote>
-<p>线程1检查记录X是否存在。检查结果：不存在<br>线程2检查记录X是否存在。检查结果：不存在<br>线程1插入记录X<br>线程2插入记录X</p>
-</blockquote>
-<p>同样的问题也会发生在文件或其他共享资源上。因此，区分某个线程控制的对象是资源本身，还是仅仅到某个资源的引用很重要。</p>
-<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><ol>
-<li>局部变量中的基本数据类型(8种)永远是线程安全的。</li>
-<li>局部变量中的对象类型只要不会被其他线程访问到，也是线程安全的。</li>
-<li>一个对象实例被多个线程同时访问时，他的成员变量就可能是线程不安全的。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/28/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><span class="page-number current">29</span><a class="page-number" href="/page/30/">30</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/30/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/28/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><span class="page-number current">29</span><a class="page-number" href="/page/30/">30</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/30/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1265,7 +1191,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1278,7 +1204,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

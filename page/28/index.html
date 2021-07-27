@@ -188,6 +188,463 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/16/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Why%20is%20Java%20Vector%20class%20considered%20obsolete%20or%20deprecated/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/16/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Why%20is%20Java%20Vector%20class%20considered%20obsolete%20or%20deprecated/" class="post-title-link" itemprop="url">Why is Java Vector class considered obsolete or deprecated</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-16 15:44:29" itemprop="dateCreated datePublished" datetime="2016-12-16T15:44:29+08:00">2016-12-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/1386275/why-is-java-vector-class-considered-obsolete-or-deprecated">http://stackoverflow.com/questions/1386275/why-is-java-vector-class-considered-obsolete-or-deprecated</a></p>
+<p>问题是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Why is Java Vector considered a legacy class, obsolete or deprecated?</span><br><span class="line"></span><br><span class="line">Isn&#x27;t its use valid when working with concurrency?</span><br><span class="line"></span><br><span class="line">And if I don&#x27;t want to manually synchronize objects and just want to use a thread-safe collection without needing to make fresh copies of the underlying array (as CopyOnWriteArrayList does), then is it fine to use Vector?</span><br><span class="line"></span><br><span class="line">What about Stack, which is a subclass of Vector, what should I use instead of it?</span><br></pre></td></tr></table></figure>
+
+<p>解答：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Vector synchronizes on each individual operation. That&#x27;s almost never what you want to do.</span><br><span class="line"></span><br><span class="line">Generally you want to synchronize a whole sequence of operations. Synchronizing individual operations is both less safe (if you iterate over a Vector, for instance, you still need to take out a lock to avoid anyone else changing the collection at the same time, which would cause a ConcurrentModificationException in the iterating thread) but also slower (why take out a lock repeatedly when once will be enough)?</span><br><span class="line"></span><br><span class="line">Of course, it also has the overhead of locking even when you don&#x27;t need to.</span><br><span class="line"></span><br><span class="line">Basically, it&#x27;s a very flawed approach to synchronization in most situations. As Mr Brian Henk pointed out, you can decorate a collection using the calls such as Collections.synchronizedList - the fact that Vector combines both the &quot;resized array&quot; collection implementation with the &quot;synchronize every operation&quot; bit is another example of poor design; the decoration approach gives cleaner separation of concerns.</span><br><span class="line"></span><br><span class="line">As for a Stack equivalent - I&#x27;d look at Deque/ArrayDeque to start with.</span><br></pre></td></tr></table></figure>
+
+<p>从JDK1.0开始，Vector便存在JDK中，Vector是一个线程安全的列表，采用数组实现。其线程安全的实现方式是对所有操作都加上了synchronized关键字，这种方式严重影响效率，因此，不再推荐使用Vector了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/" class="post-title-link" itemprop="url">Intellij-debug-多线程debug</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-15 17:00:13" itemprop="dateCreated datePublished" datetime="2016-12-15T17:00:13+08:00">2016-12-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="右键断点或者断点设置"><a href="#右键断点或者断点设置" class="headerlink" title="右键断点或者断点设置"></a>右键断点或者断点设置</h3><p><img src="/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/1.1.png" alt="1.1"><br>或者<br><img src="/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/1.2.png" alt="1.2"></p>
+<h3 id="debug运行"><a href="#debug运行" class="headerlink" title="debug运行"></a>debug运行</h3><p>在箭头处切换线程</p>
+<p><img src="/2016/12/15/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-debug-%E5%A4%9A%E7%BA%BF%E7%A8%8Bdebug/2.png" alt="2"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%EF%BC%88Eden%20Space%E3%80%81Survivor%20Space%E3%80%81Old%20Gen%E3%80%81Code%20Cache%E5%92%8CPerm%20Gen%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%EF%BC%88Eden%20Space%E3%80%81Survivor%20Space%E3%80%81Old%20Gen%E3%80%81Code%20Cache%E5%92%8CPerm%20Gen%EF%BC%89/" class="post-title-link" itemprop="url">JVM内存区域详解（Eden Space、Survivor Space、Old Gen、Code Cache和Perm Gen）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-14 20:04:11" itemprop="dateCreated datePublished" datetime="2016-12-14T20:04:11+08:00">2016-12-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>JVM区域总体分两类，heap区和非heap区。 </p>
+<p>heap区又分为： </p>
+<ul>
+<li>Eden Space（伊甸园）、 </li>
+<li>Survivor Space(幸存者区)、 </li>
+<li>Old Gen（老年代）。</li>
+</ul>
+<p>非heap区又分： </p>
+<ul>
+<li>Code Cache(代码缓存区)； </li>
+<li>Perm Gen（永久代）； </li>
+<li>Jvm Stack(Java虚拟机栈)； </li>
+<li>Local Method Statck(本地方法栈)；</li>
+</ul>
+<p>下面我们对每一个内存区域做详细介绍。 </p>
+<h3 id="Eden-Space"><a href="#Eden-Space" class="headerlink" title="Eden Space"></a>Eden Space</h3><p>字面意思是伊甸园，对象被创建的时候首先放到这个区域，进行垃圾回收后，不能被回收的对象被放入到空的survivor区域。</p>
+<h3 id="Survivor-Space"><a href="#Survivor-Space" class="headerlink" title="Survivor Space"></a>Survivor Space</h3><p>幸存者区，用于保存在eden space内存区域中经过垃圾回收后没有被回收的对象。Survivor有两个，分别为To Survivor、 From Survivor，这个两个区域的空间大小是一样的。执行垃圾回收的时候Eden区域不能被回收的对象被放入到空的survivor（也就是To Survivor，同时Eden区域的内存会在垃圾回收的过程中全部释放），另一个survivor（即From Survivor）里不能被回收的对象也会被放入这个survivor（即To Survivor），然后To Survivor 和 From Survivor的标记会互换，始终保证一个survivor是空的。</p>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%EF%BC%88Eden%20Space%E3%80%81Survivor%20Space%E3%80%81Old%20Gen%E3%80%81Code%20Cache%E5%92%8CPerm%20Gen%EF%BC%89/1.png" alt="1"></p>
+<p>Eden Space和Survivor Space都属于新生代，新生代中执行的垃圾回收被称之为Minor GC（因为是对新生代进行垃圾回收，所以又被称为Young GC），每一次Young GC后留下来的对象age加1。</p>
+<p>注：GC为Garbage Collection，垃圾回收。</p>
+<h3 id="Old-Gen"><a href="#Old-Gen" class="headerlink" title="Old Gen"></a>Old Gen</h3><p>老年代，用于存放新生代中经过多次垃圾回收仍然存活的对象，也有可能是新生代分配不了内存的大对象会直接进入老年代。经过多次垃圾回收都没有被回收的对象，这些对象的年代已经足够old了，就会放入到老年代。</p>
+<p>当老年代被放满的之后，虚拟机会进行垃圾回收，称之为Major GC。由于Major GC除并发GC外均需对整个堆进行扫描和回收，因此又称为Full GC。</p>
+<p>heap区即堆内存，整个堆大小=年轻代大小 + 老年代大小。堆内存默认为物理内存的1/64(&lt;1GB)；默认空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制，可以通过MinHeapFreeRatio参数进行调整；默认空余堆内存大于70%时，JVM会减少堆直到-Xms的最小限制，可以通过MaxHeapFreeRatio参数进行调整。</p>
+<p>下面我们来认识下非堆内存（非heap区） </p>
+<h3 id="Code-Cache"><a href="#Code-Cache" class="headerlink" title="Code Cache"></a>Code Cache</h3><p>代码缓存区，它主要用于存放JIT所编译的代码。CodeCache代码缓冲区的大小在client模式下默认最大是32m，在server模式下默认是48m，这个值也是可以设置的，它所对应的JVM参数为ReservedCodeCacheSize 和 InitialCodeCacheSize，可以通过如下的方式来为Java程序设置。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:ReservedCodeCacheSize=128m</span><br></pre></td></tr></table></figure>
+<p>CodeCache缓存区是可能被充满的，当CodeCache满时，后台会收到CodeCache is full的警告信息，如下所示：<code>“CompilerThread0” java.lang.OutOfMemoryError: requested 2854248 bytes for Chunk::new. Out of swap space?</code></p>
+<p>注：JIT编译器是在程序运行期间，将Java字节码编译成平台相关的二进制代码。正因为此编译行为发生在程序运行期间，所以该编译器被称为Just-In-Time编译器。</p>
+<h3 id="Perm-Gen"><a href="#Perm-Gen" class="headerlink" title="Perm Gen"></a>Perm Gen</h3><p>全称是Permanent Generation space，是指内存的永久保存区域，因而称之为永久代。这个内存区域用于存放Class和Meta的信息，Class在被 Load的时候被放入这个区域。因为Perm里存储的东西永远不会被JVM垃圾回收的，所以如果你的应用程序LOAD很多CLASS的话，就很可能出现PermGen space错误。默认大小为物理内存的1/64。</p>
+<hr>
+<p>简单来讲，jvm的内存回收过程是这样的：</p>
+<p>对象在Eden Space创建，当Eden Space满了的时候，gc就把所有在Eden Space中的对象扫描一次，把所有有效的对象复制到第一个Survivor Space，同时把无效的对象所占用的空间释放。当Eden Space再次变满了的时候，就启动移动程序把Eden Space中有效的对象复制到第二个Survivor Space，同时，也将第一个Survivor Space中的有效对象复制到第二个Survivor Space。如果填充到第二个Survivor Space中的有效对象被第一个Survivor Space或Eden Space中的对象引用，那么这些对象就是长期存在的，此时这些对象将被复制到Permanent Generation。</p>
+<p>若垃圾收集器依据这种小幅度的调整收集不能腾出足够的空间，就会运行Full GC，此时jvm gc停止所有在堆中运行的线程并执行清除动作。</p>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%EF%BC%88Eden%20Space%E3%80%81Survivor%20Space%E3%80%81Old%20Gen%E3%80%81Code%20Cache%E5%92%8CPerm%20Gen%EF%BC%89/2.png" alt="2"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/" class="post-title-link" itemprop="url">GC算法&垃圾收集器</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-14 17:44:23" itemprop="dateCreated datePublished" datetime="2016-12-14T17:44:23+08:00">2016-12-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>垃圾收集 Garbage Collection 通常被称为“GC”，它诞生于1960年 MIT 的 Lisp 语言，经过半个多世纪，目前已经十分成熟了。</p>
+<p>jvm 中，程序计数器、虚拟机栈、本地方法栈都是随线程而生随线程而灭，栈帧随着方法的进入和退出做入栈和出栈操作，实现了自动的内存清理，因此，我们的内存垃圾回收主要集中于 java 堆和方法区中，在程序运行期间，这部分内存的分配和使用都是动态的.</p>
+<h2 id="对象存活判断"><a href="#对象存活判断" class="headerlink" title="对象存活判断"></a>对象存活判断</h2><p>判断对象是否存活一般有两种方式：</p>
+<ul>
+<li>引用计数：每个对象有一个引用计数属性，新增一个引用时计数加1，引用释放时计数减1，计数为0时可以回收。此方法简单，无法解决对象相互循环引用的问题。（JVM没有采用这种，因为互相引用，会导致回收不了）</li>
+<li>可达性分析（Reachability Analysis）：从GC Roots开始向下搜索，搜索所走过的路径称为引用链。当一个对象到GC Roots没有任何引用链相连时，则证明此对象是不可用的。不可达对象。</li>
+</ul>
+<p>在Java语言中，GC Roots包括：</p>
+<ul>
+<li>虚拟机栈中引用的对象。</li>
+<li>方法区中类静态属性实体引用的对象。</li>
+<li>方法区中常量引用的对象。</li>
+<li>本地方法栈中JNI引用的对象。</li>
+</ul>
+<h2 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h2><h3 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h3><p>“标记-清除”（Mark-Sweep）算法，如它的名字一样，算法分为“标记”和“清除”两个阶段：首先标记出所有需要回收的对象，在标记完成后统一回收掉所有被标记的对象。之所以说它是最基础的收集算法，是因为后续的收集算法都是基于这种思路并对其缺点进行改进而得到的。</p>
+<p>它的主要缺点有两个：一个是效率问题，标记和清除过程的效率都不高；另外一个是空间问题，标记清除之后会产生大量不连续的内存碎片，空间碎片太多可能会导致，当程序在以后的运行过程中需要分配较大对象时无法找到足够的连续内存而不得不提前触发另一次垃圾收集动作。</p>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95.png" alt="标记-清除算法"></p>
+<h3 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h3><p>“复制”（Copying）的收集算法，它将可用内存按容量划分为大小相等的两块，每次只使用其中的一块。当这一块的内存用完了，就将还存活着的对象复制到另外一块上面，然后再把已使用过的内存空间一次清理掉。</p>
+<p>这样使得每次都是对其中的一块进行内存回收，内存分配时也就不用考虑内存碎片等复杂情况，只要移动堆顶指针，按顺序分配内存即可，实现简单，运行高效。只是这种算法的代价是将内存缩小为原来的一半，持续复制长生存期的对象则导致效率降低。</p>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/%E5%A4%8D%E5%88%B6%E7%AE%97%E6%B3%95.png" alt="复制算法"></p>
+<h3 id="标记-压缩算法"><a href="#标记-压缩算法" class="headerlink" title="标记-压缩算法"></a>标记-压缩算法</h3><p>复制收集算法在对象存活率较高时就要执行较多的复制操作，效率将会变低。更关键的是，如果不想浪费50%的空间，就需要有额外的空间进行分配担保，以应对被使用的内存中所有对象都100%存活的极端情况，所以在老年代一般不能直接选用这种算法。</p>
+<p>根据老年代的特点，有人提出了另外一种“标记-整理”（Mark-Compact）算法，标记过程仍然与“标记-清除”算法一样，但后续步骤不是直接对可回收对象进行清理，而是让所有存活的对象都向一端移动，然后直接清理掉端边界以外的内存</p>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/%E6%A0%87%E8%AE%B0-%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95.png" alt="标记-压缩算法"></p>
+<h3 id="分代收集算法"><a href="#分代收集算法" class="headerlink" title="分代收集算法"></a>分代收集算法</h3><p>GC分代的基本假设：绝大部分对象的生命周期都非常短暂，存活时间短。</p>
+<p>“分代收集”（Generational Collection）算法，把Java堆分为新生代和老年代，这样就可以根据各个年代的特点采用最适当的收集算法。在新生代中，每次垃圾收集时都发现有大批对象死去，只有少量存活，那就选用复制算法，只需要付出少量存活对象的复制成本就可以完成收集。而老年代中因为对象存活率高、没有额外空间对它进行分配担保，就必须使用“标记-清理”或“标记-整理”算法来进行回收。</p>
+<h2 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h2><p>如果说收集算法是内存回收的方法论，垃圾收集器就是内存回收的具体实现</p>
+<h3 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h3><p>串行收集器是最古老，最稳定以及效率高的收集器，可能会产生较长的停顿，只使用一个线程去回收。新生代、老年代使用串行回收；新生代复制算法、老年代标记-压缩；垃圾收集的过程中会Stop The World（服务暂停）</p>
+<p>参数控制：</p>
+<ul>
+<li><strong>-XX:+UseSerialGC</strong> 串行收集器</li>
+</ul>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/Serial%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="Serial收集器"></p>
+<h3 id="ParNew收集器"><a href="#ParNew收集器" class="headerlink" title="ParNew收集器"></a>ParNew收集器</h3><p>ParNew收集器其实就是Serial收集器的多线程版本。新生代并行，老年代串行；新生代复制算法、老年代标记-压缩</p>
+<p>参数控制：</p>
+<ul>
+<li><strong>-XX:+UseParNewGC</strong> ParNew收集器</li>
+<li><strong>-XX:ParallelGCThreads</strong> 限制线程数量</li>
+</ul>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/ParNew%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="ParNew收集器"></p>
+<h3 id="Parallel收集器"><a href="#Parallel收集器" class="headerlink" title="Parallel收集器"></a>Parallel收集器</h3><p>Parallel Scavenge收集器类似ParNew收集器，Parallel收集器更关注系统的吞吐量。可以通过参数来打开自适应调节策略，虚拟机会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或最大的吞吐量；也可以通过参数控制GC的时间不大于多少毫秒或者比例；新生代复制算法、老年代标记-压缩</p>
+<p>参数控制：</p>
+<ul>
+<li><strong>-XX:+UseParallelGC</strong> 使用Parallel收集器+ 老年代串行</li>
+</ul>
+<h3 id="Parallel-Old-收集器"><a href="#Parallel-Old-收集器" class="headerlink" title="Parallel Old 收集器"></a>Parallel Old 收集器</h3><p>Parallel Old是Parallel Scavenge收集器的老年代版本，使用多线程和“标记－整理”算法。这个收集器是在JDK 1.6中才开始提供</p>
+<p>参数控制：</p>
+<ul>
+<li><strong>-XX:+UseParallelOldGC</strong> 使用Parallel收集器+ 老年代并行</li>
+</ul>
+<h3 id="CMS收集器"><a href="#CMS收集器" class="headerlink" title="CMS收集器"></a>CMS收集器</h3><p>CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器。目前很大一部分的Java应用都集中在互联网站或B/S系统的服务端上，这类应用尤其重视服务的响应速度，希望系统停顿时间最短，以给用户带来较好的体验。</p>
+<p>从名字（包含“Mark Sweep”）上就可以看出CMS收集器是基于“标记-清除”算法实现的，它的运作过程相对于前面几种收集器来说要更复杂一些，整个过程分为4个步骤，包括： </p>
+<ul>
+<li>初始标记（CMS initial mark）</li>
+<li>并发标记（CMS concurrent mark）</li>
+<li>重新标记（CMS remark）</li>
+<li>并发清除（CMS concurrent sweep）</li>
+</ul>
+<p>其中初始标记、重新标记这两个步骤仍然需要“Stop The World”。初始标记仅仅只是标记一下GC Roots能直接关联到的对象，速度很快，并发标记阶段就是进行GC Roots Tracing的过程，而重新标记阶段则是为了修正并发标记期间，因用户程序继续运作而导致标记产生变动的那一部分对象的标记记录，这个阶段的停顿时间一般会比初始标记阶段稍长一些，但远比并发标记的时间短。 </p>
+<p>由于整个过程中耗时最长的并发标记和并发清除过程中，收集器线程都可以与用户线程一起工作，所以总体上来说，CMS收集器的内存回收过程是与用户线程一起并发地执行。老年代收集器（新生代使用ParNew）</p>
+<p>优点:并发收集、低停顿 </p>
+<p>缺点：产生大量空间碎片、并发阶段会降低吞吐量</p>
+<p>参数控制：</p>
+<ul>
+<li><strong>-XX:+UseConcMarkSweepGC</strong> 使用CMS收集器</li>
+<li><strong>-XX:+ UseCMSCompactAtFullCollection</strong> Full GC后，进行一次碎片整理；整理过程是独占的，会引起停顿时间变长</li>
+<li><strong>-XX:+CMSFullGCsBeforeCompaction</strong> 设置进行几次Full GC后，进行一次碎片整理</li>
+<li><strong>-XX:ParallelCMSThreads</strong> 设定CMS的线程数量（一般情况约等于可用CPU数量）</li>
+</ul>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/CMS%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="CMS收集器"></p>
+<h3 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h3><p>G1是目前技术发展的最前沿成果之一，HotSpot开发团队赋予它的使命是未来可以替换掉JDK1.5中发布的CMS收集器。与CMS收集器相比G1收集器有以下特点：</p>
+<ol>
+<li>空间整合，G1收集器采用标记整理算法，不会产生内存空间碎片。分配大对象时不会因为无法找到连续空间而提前触发下一次GC。</li>
+<li>可预测停顿，这是G1的另一大优势，降低停顿时间是G1和CMS的共同关注点，但G1除了追求低停顿外，还能建立可预测的停顿时间模型，能让使用者明确指定在一个长度为N毫秒的时间片段内，消耗在垃圾收集上的时间不得超过N毫秒，这几乎已经是实时Java（RTSJ）的垃圾收集器的特征了。</li>
+</ol>
+<p>上面提到的垃圾收集器，收集的范围都是整个新生代或者老年代，而G1不再是这样。使用G1收集器时，Java堆的内存布局与其他收集器有很大差别，它将整个Java堆划分为多个大小相等的独立区域（Region），虽然还保留有新生代和老年代的概念，但新生代和老年代不再是物理隔阂了，它们都是一部分（可以不连续）Region的集合。</p>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/G1%E6%94%B6%E9%9B%86%E5%99%A8.png" alt="G1收集器"></p>
+<p>G1的新生代收集跟ParNew类似，当新生代占用达到一定比例的时候，开始出发收集。和CMS类似，G1收集器收集老年代对象会有短暂停顿。</p>
+<p>收集步骤：</p>
+<ol>
+<li><p>标记阶段，首先初始标记(Initial-Mark),这个阶段是停顿的(Stop the World Event)，并且会触发一次普通Mintor GC。对应GC log:GC pause (young) (inital-mark)</p>
+</li>
+<li><p>Root Region Scanning，程序运行过程中会回收survivor区(存活到老年代)，这一过程必须在young GC之前完成。</p>
+</li>
+<li><p>Concurrent Marking，在整个堆中进行并发标记(和应用程序并发执行)，此过程可能被young GC中断。在并发标记阶段，若发现区域对象中的所有对象都是垃圾，那个这个区域会被立即回收(图中打X)。同时，并发标记过程中，会计算每个区域的对象活性(区域中存活对象的比例)。</p>
+<p> ![Concurrent Marking](GC算法&amp;垃圾收集器/Concurrent Marking.png)</p>
+</li>
+<li><p>Remark, 再标记，会有短暂停顿(STW)。再标记阶段是用来收集 并发标记阶段 产生新的垃圾(并发阶段和应用程序一同运行)；G1中采用了比CMS更快的初始快照算法:snapshot-at-the-beginning (SATB)。</p>
+</li>
+<li><p>Copy/Clean up，多线程清除失活对象，会有STW。G1将回收区域的存活对象拷贝到新区域，清除Remember Sets，并发清空回收区域并把它返回到空闲区域链表中。</p>
+</li>
+</ol>
+<p>![Copy&amp;Clean up](GC算法&amp;垃圾收集器/Copy&amp;Clean up.png)</p>
+<ol start="6">
+<li>复制/清除过程后。回收区域的活性对象已经被集中回收到深蓝色和深绿色区域。</li>
+</ol>
+<p><img src="/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/GC%E7%AE%97%E6%B3%95&%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8/%E5%A4%8D%E5%88%B6&%E6%B8%85%E9%99%A4.png" alt="复制&amp;清除"></p>
+<h2 id="常用的收集器组合"><a href="#常用的收集器组合" class="headerlink" title="常用的收集器组合"></a>常用的收集器组合</h2><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">新生代GC策略</th>
+<th align="center">年老代GC策略</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">组合1</td>
+<td align="center">Serial</td>
+<td align="center">Serial Old</td>
+<td align="center">Serial和Serial Old都是单线程进行GC，特点就是GC时暂停所有应用线程。</td>
+</tr>
+<tr>
+<td align="center">组合2</td>
+<td align="center">Serial</td>
+<td align="center">CMS+Serial Old</td>
+<td align="center">CMS（Concurrent Mark Sweep）是并发GC，实现GC线程和应用线程并发工作，不需要暂停所有应用线程。另外，当CMS进行GC失败时，会自动使用Serial Old策略进行GC。</td>
+</tr>
+<tr>
+<td align="center">组合3</td>
+<td align="center">ParNew</td>
+<td align="center">CMS</td>
+<td align="center">使用-XX:+UseParNewGC选项来开启。ParNew是Serial的并行版本，可以指定GC线程数，默认GC线程数为CPU的数量。可以使用-XX:ParallelGCThreads选项指定GC的线程数。 \n如果指定了选项-XX:+UseConcMarkSweepGC选项，则新生代默认使用ParNew GC策略。</td>
+</tr>
+<tr>
+<td align="center">组合4</td>
+<td align="center">ParNew</td>
+<td align="center">Serial Old</td>
+<td align="center">使用-XX:+UseParNewGC选项来开启。新生代使用ParNew GC策略，年老代默认使用Serial Old GC策略。</td>
+</tr>
+<tr>
+<td align="center">组合5</td>
+<td align="center">Parallel Scavenge</td>
+<td align="center">Serial Old</td>
+<td align="center">Parallel Scavenge策略主要是关注一个可控的吞吐量：应用程序运行时间 / (应用程序运行时间 + GC时间)，可见这会使得CPU的利用率尽可能的高，适用于后台持久运行的应用程序，而不适用于交互较多的应用程序。</td>
+</tr>
+<tr>
+<td align="center">组合6</td>
+<td align="center">Parallel Scavenge</td>
+<td align="center">Parallel Old</td>
+<td align="center">Parallel Old是Serial Old的并行版本</td>
+</tr>
+<tr>
+<td align="center">组合7</td>
+<td align="center">G1GC</td>
+<td align="center">G1GC</td>
+<td align="center">-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC #开启 \n -XX:MaxGCPauseMillis =50 #暂停时间目标 \n -XX:GCPauseIntervalMillis =200 #暂停间隔目标 \n -XX:+G1YoungGenSize=512m #年轻代大小 \n -XX:SurvivorRatio=6 #幸存区比例</td>
+</tr>
+</tbody></table>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/14/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/JVM%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1029,339 +1486,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-23.%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-23.%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="post-title-link" itemprop="url">Java-并发性和多线程-23.线程池</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-13 14:35:22" itemprop="dateCreated datePublished" datetime="2016-12-13T14:35:22+08:00">2016-12-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/thread-pools/">http://ifeve.com/thread-pools/</a></p>
-<p>线程池（Thread Pool）对于限制应用程序中同一时刻运行的线程数很有用。因为每启动一个新线程都会有相应的性能开销，每个线程都需要给栈分配一些内存等等。</p>
-<p>我们可以把并发执行的任务传递给一个线程池，来替代为每个并发执行的任务都启动一个新的线程。只要池里有空闲的线程，任务就会分配给一个线程执行。在线程池的内部，任务被插入一个阻塞队列（<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/blocking-queues.html">Blocking Queue</a>），线程池里的线程会去取这个队列里的任务。当一个新任务插入队列时，一个空闲线程就会成功的从队列中取出任务并且执行它。</p>
-<p>线程池经常应用在多线程服务器上。每个通过网络到达服务器的连接都被包装成一个任务并且传递给线程池。线程池的线程会并发的处理连接上的请求。以后会再深入有关 Java 实现多线程服务器的细节。</p>
-<p>Java 5 在 java.util.concurrent 包中自带了内置的线程池，所以你不用非得实现自己的线程池。你可以阅读我写的 <a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-util-concurrent/executorservice.html">java.util.concurrent.ExecutorService</a> 的文章以了解更多有关内置线程池的知识。不过无论如何，知道一点关于线程池实现的知识总是有用的。</p>
-<p>这里有一个简单的线程池实现：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">public class ThreadPool &#123;</span><br><span class="line"></span><br><span class="line">  private BlockingQueue taskQueue = null;</span><br><span class="line">  private List&lt;PoolThread&gt; threads = new ArrayList&lt;PoolThread&gt;();</span><br><span class="line">  private boolean isStopped = false;</span><br><span class="line"></span><br><span class="line">  public ThreadPool(int noOfThreads, int maxNoOfTasks) &#123;</span><br><span class="line">    taskQueue = new BlockingQueue(maxNoOfTasks);</span><br><span class="line"></span><br><span class="line">    for (int i=0; i&lt;noOfThreads; i++) &#123;</span><br><span class="line">      threads.add(new PoolThread(taskQueue));</span><br><span class="line">    &#125;</span><br><span class="line">    for (PoolThread thread : threads) &#123;</span><br><span class="line">      thread.start();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void synchronized execute(Runnable task) &#123;</span><br><span class="line">    if(this.isStopped) throw</span><br><span class="line">      new IllegalStateException(&quot;ThreadPool is stopped&quot;);</span><br><span class="line"></span><br><span class="line">    this.taskQueue.enqueue(task);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized boolean stop() &#123;</span><br><span class="line">    this.isStopped = true;</span><br><span class="line">    for (PoolThread thread : threads) &#123;</span><br><span class="line">      thread.stop();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>(校注：原文有编译错误，我修改了下)</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">public class PoolThread extends Thread &#123;</span><br><span class="line"></span><br><span class="line">  private BlockingQueue&lt;Runnable&gt; taskQueue = null;</span><br><span class="line">  private boolean       isStopped = false;</span><br><span class="line"></span><br><span class="line">  public PoolThread(BlockingQueue&lt;Runnable&gt; queue) &#123;</span><br><span class="line">    taskQueue = queue;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void run() &#123;</span><br><span class="line">    while (!isStopped()) &#123;</span><br><span class="line">      try &#123;</span><br><span class="line">        Runnable runnable =taskQueue.take();</span><br><span class="line">        runnable.run();</span><br><span class="line">      &#125; catch(Exception e) &#123;</span><br><span class="line">        // 写日志或者报告异常,</span><br><span class="line">        // 但保持线程池运行.</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void toStop() &#123;</span><br><span class="line">    isStopped = true;</span><br><span class="line">    this.interrupt(); // 打断池中线程的 dequeue() 调用.</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized boolean isStopped() &#123;</span><br><span class="line">    return isStopped;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>线程池的实现由两部分组成。类 ThreadPool 是线程池的公开接口，而类 PoolThread 用来实现执行任务的子线程。</p>
-<p>为了执行一个任务，方法 ThreadPool.execute(Runnable r) 用 Runnable 的实现作为调用参数。在内部，Runnable 对象被放入 <a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/blocking-queues.html">阻塞队列 (Blocking Queue)</a>，等待着被子线程取出队列。</p>
-<p>一个空闲的 PoolThread 线程会把 Runnable 对象从队列中取出并执行。你可以在 PoolThread.run() 方法里看到这些代码。执行完毕后，PoolThread 进入循环并且尝试从队列中再取出一个任务，直到线程终止。</p>
-<p>调用 ThreadPool.stop() 方法可以停止 ThreadPool。在内部，调用 stop 先会标记 isStopped 成员变量（为 true）。然后，线程池的每一个子线程都调用 PoolThread.stop() 方法停止运行。注意，如果线程池的 execute() 在 stop() 之后调用，execute() 方法会抛出 IllegalStateException 异常。</p>
-<p>子线程会在完成当前执行的任务后停止。注意 PoolThread.stop() 方法中调用了 this.interrupt()。它确保阻塞在 taskQueue.dequeue() 里的 wait() 调用的线程能够跳出 wait() 调用（校对注：因为执行了中断interrupt，它能够打断这个调用），并且抛出一个 InterruptedException 异常离开 dequeue() 方法。这个异常在 PoolThread.run() 方法中被截获、报告，然后再检查 isStopped 变量。由于 isStopped 的值是 true, 因此 PoolThread.run() 方法退出，子线程终止。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-22.%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-22.%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97/" class="post-title-link" itemprop="url">Java-并发性和多线程-22.阻塞队列</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-13 14:27:13" itemprop="dateCreated datePublished" datetime="2016-12-13T14:27:13+08:00">2016-12-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/blocking-queues/">http://ifeve.com/blocking-queues/</a></p>
-<p>阻塞队列与普通队列的区别在于，当队列是空的时，从队列中获取元素的操作将会被阻塞，或者当队列是满时，往队列里添加元素的操作会被阻塞。试图从空的阻塞队列中获取元素的线程将会被阻塞，直到其他的线程往空的队列插入新的元素。同样，试图往已满的阻塞队列中添加新元素的线程同样也会被阻塞，直到其他的线程使队列重新变得空闲起来，如从队列中移除一个或者多个元素，或者完全清空队列，下图展示了如何通过阻塞队列来合作：</p>
-<p><img src="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-22.%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97/blocking-queue.png" alt="blocking-queue.png"></p>
-<p>线程1往阻塞队列中添加元素，而线程2从阻塞队列中移除元素</p>
-<p>从5.0开始，JDK在java.util.concurrent包里提供了阻塞队列的官方实现。尽管JDK中已经包含了阻塞队列的官方实现，但是熟悉其背后的原理还是很有帮助的。</p>
-<p>##阻塞队列的实现<br>阻塞队列的实现类似于带上限的Semaphore的实现。下面是阻塞队列的一个简单实现</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">public class BlockingQueue &#123;</span><br><span class="line"></span><br><span class="line">  private List queue = new LinkedList();</span><br><span class="line">  private int  limit = 10;</span><br><span class="line"></span><br><span class="line">  public BlockingQueue(int limit)&#123;</span><br><span class="line">    this.limit = limit;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void enqueue(Object item) throws InterruptedException  &#123;</span><br><span class="line">    while(this.queue.size() == this.limit) &#123;</span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(this.queue.size() == 0) &#123;</span><br><span class="line">      notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    this.queue.add(item);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized Object dequeue() throws InterruptedException&#123;</span><br><span class="line">    while(this.queue.size() == 0)&#123;</span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if(this.queue.size() == this.limit)&#123;</span><br><span class="line">      notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line">    return this.queue.remove(0);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>必须注意到，在enqueue和dequeue方法内部，只有队列的大小等于上限（limit）或者下限（0）时，才调用notifyAll方法。如果队列的大小既不等于上限，也不等于下限，任何线程调用enqueue或者dequeue方法时，都不会阻塞，都能够正常的往队列中添加或者移除元素。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-21.%E4%BF%A1%E5%8F%B7%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-21.%E4%BF%A1%E5%8F%B7%E9%87%8F/" class="post-title-link" itemprop="url">Java-并发性和多线程-21.信号量</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-13 14:07:43" itemprop="dateCreated datePublished" datetime="2016-12-13T14:07:43+08:00">2016-12-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/semaphore/">http://ifeve.com/semaphore/</a></p>
-<p>Semaphore（信号量） 是一个线程同步结构，用于在线程间传递信号，以避免出现信号丢失（译者注：下文会具体介绍），或者像锁一样用于保护一个关键区域。自从5.0开始，jdk在java.util.concurrent包里提供了Semaphore 的官方实现，因此大家不需要自己去实现Semaphore。但是还是很有必要去熟悉如何使用Semaphore及其背后的原理</p>
-<p>本文的涉及的主题如下：</p>
-<ol>
-<li>简单的Semaphore实现</li>
-<li>使用Semaphore来发出信号</li>
-<li>可计数的Semaphore</li>
-<li>有上限的Semaphore</li>
-<li>把Semaphore当锁来使用</li>
-</ol>
-<h2 id="简单的Semaphore实现"><a href="#简单的Semaphore实现" class="headerlink" title="简单的Semaphore实现"></a>简单的Semaphore实现</h2><p>下面是一个信号量的简单实现：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public class Semaphore &#123;</span><br><span class="line"></span><br><span class="line">  private boolean signal = false;</span><br><span class="line"></span><br><span class="line">  public synchronized void take() &#123;</span><br><span class="line">    this.signal = true;</span><br><span class="line">    this.notify();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void release() throws InterruptedException&#123;</span><br><span class="line">    while(!this.signal) wait();</span><br><span class="line">    this.signal = false;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Take方法发出一个被存放在Semaphore内部的信号，而Release方法则等待一个信号，当其接收到信号后，标记位signal被清空，然后该方法终止。</p>
-<p>使用这个semaphore可以避免错失某些信号通知。用take方法来代替notify，release方法来代替wait。如果某线程在调用release等待之前调用take方法，那么调用release方法的线程仍然知道take方法已经被某个线程调用过了，因为该Semaphore内部保存了take方法发出的信号。而wait和notify方法就没有这样的功能。</p>
-<p>当用semaphore来产生信号时，take和release这两个方法名看起来有点奇怪。这两个名字来源于后面把semaphore当做锁的例子，后面会详细介绍这个例子，在该例子中，take和release这两个名字会变得很合理。</p>
-<h2 id="使用Semaphore来产生信号"><a href="#使用Semaphore来产生信号" class="headerlink" title="使用Semaphore来产生信号"></a>使用Semaphore来产生信号</h2><p>下面的例子中，两个线程通过Semaphore发出的信号来通知对方</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">Semaphore semaphore = new Semaphore();</span><br><span class="line"></span><br><span class="line">SendingThread sender = new SendingThread(semaphore)；</span><br><span class="line">ReceivingThread receiver = new ReceivingThread(semaphore);</span><br><span class="line"></span><br><span class="line">receiver.start();</span><br><span class="line">sender.start();</span><br><span class="line"></span><br><span class="line">public class SendingThread &#123;</span><br><span class="line"></span><br><span class="line">  Semaphore semaphore = null;</span><br><span class="line"></span><br><span class="line">  public SendingThread(Semaphore semaphore)&#123;</span><br><span class="line">    this.semaphore = semaphore;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void run()&#123;</span><br><span class="line">    while(true)&#123;</span><br><span class="line">      //do something, then signal</span><br><span class="line">      this.semaphore.take();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class RecevingThread &#123;</span><br><span class="line"></span><br><span class="line">  Semaphore semaphore = null;</span><br><span class="line"></span><br><span class="line">  public ReceivingThread(Semaphore semaphore)&#123;</span><br><span class="line">    this.semaphore = semaphore;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void run()&#123;</span><br><span class="line">    while(true)&#123;</span><br><span class="line">      this.semaphore.release();</span><br><span class="line">      //receive signal, then do something...</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="可计数的Semaphore"><a href="#可计数的Semaphore" class="headerlink" title="可计数的Semaphore"></a>可计数的Semaphore</h2><p>上面提到的Semaphore的简单实现并没有计算通过调用take方法所产生信号的数量。可以把它改造成具有计数功能的Semaphore。下面是一个可计数的Semaphore的简单实现。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public class CountingSemaphore &#123;</span><br><span class="line"></span><br><span class="line">  private int signals = 0;</span><br><span class="line"></span><br><span class="line">  public synchronized void take() &#123;</span><br><span class="line">    this.signals++;</span><br><span class="line">    this.notify();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void release() throws InterruptedException&#123;</span><br><span class="line">    while(this.signals == 0) wait();</span><br><span class="line">    this.signals--;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="有上限的Semaphore"><a href="#有上限的Semaphore" class="headerlink" title="有上限的Semaphore"></a>有上限的Semaphore</h2><p>上面的CountingSemaphore并没有限制信号的数量。下面的代码将CountingSemaphore改造成一个信号数量有上限的BoundedSemaphore。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public class BoundedSemaphore &#123;</span><br><span class="line"></span><br><span class="line">  private int signals = 0;</span><br><span class="line">  private int bound   = 0;</span><br><span class="line"></span><br><span class="line">  public BoundedSemaphore(int upperBound)&#123;</span><br><span class="line">    this.bound = upperBound;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void take() throws InterruptedException&#123;</span><br><span class="line">    while(this.signals == bound) wait();</span><br><span class="line">    this.signals++;</span><br><span class="line">    this.notify();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public synchronized void release() throws InterruptedException&#123;</span><br><span class="line">    while(this.signals == 0) wait();</span><br><span class="line">    this.signals--;</span><br><span class="line">    this.notify();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在BoundedSemaphore中，当已经产生的信号数量达到了上限，take方法将阻塞新的信号产生请求，直到某个线程调用release方法后，被阻塞于take方法的线程才能传递自己的信号。</p>
-<h2 id="把Semaphore当锁来使用"><a href="#把Semaphore当锁来使用" class="headerlink" title="把Semaphore当锁来使用"></a>把Semaphore当锁来使用</h2><p>当信号量的数量上限是1时，Semaphore可以被当做锁来使用。通过take和release方法来保护关键区域。请看下面的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">BoundedSemaphore semaphore = new BoundedSemaphore(1);</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">semaphore.take();</span><br><span class="line"></span><br><span class="line">try&#123;</span><br><span class="line">  //critical section</span><br><span class="line"></span><br><span class="line">&#125; finally &#123;</span><br><span class="line">  semaphore.release();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在前面的例子中，Semaphore被用来在多个线程之间传递信号，这种情况下，take和release分别被不同的线程调用。但是在锁这个例子中，take和release方法将被同一线程调用，因为只允许一个线程来获取信号（允许进入关键区域的信号），其它调用take方法获取信号的线程将被阻塞，知道第一个调用take方法的线程调用release方法来释放信号。对release方法的调用永远不会被阻塞，这是因为任何一个线程都是先调用take方法，然后再调用release。</p>
-<p>通过有上限的Semaphore可以限制进入某代码块的线程数量。设想一下，在上面的例子中，如果BoundedSemaphore 上限设为5将会发生什么？意味着允许5个线程同时访问关键区域，但是你必须保证，这个5个线程不会互相冲突。否则你的应用程序将不能正常运行。</p>
-<p>必须注意，release方法应当在finally块中被执行。这样可以保在关键区域的代码抛出异常的情况下，信号也一定会被释放。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-20.%E9%87%8D%E5%85%A5%E9%94%81%E6%AD%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-20.%E9%87%8D%E5%85%A5%E9%94%81%E6%AD%BB/" class="post-title-link" itemprop="url">Java-并发性和多线程-20.重入锁死</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-13 13:53:04" itemprop="dateCreated datePublished" datetime="2016-12-13T13:53:04+08:00">2016-12-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/reentrance-lockout/">http://ifeve.com/reentrance-lockout/</a></p>
-<p>重入锁死与死锁和嵌套管程锁死非常相似。锁和读写锁两篇文章中都有涉及到重入锁死的问题。</p>
-<p>当一个线程重新获取锁，读写锁或其他不可重入的同步器时，就可能发生重入锁死。可重入的意思是线程可以重复获得它已经持有的锁。Java的synchronized块是可重入的。因此下面的代码是没问题的：（<em>译者注：这里提到的锁都是指的不可重入的锁实现，并不是Java类库中的Lock与ReadWriteLock类</em>）</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class Reentrant&#123;</span><br><span class="line"></span><br><span class="line">    public synchronized outer()&#123;</span><br><span class="line">        inner();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public synchronized inner()&#123;</span><br><span class="line">        //do something</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意outer()和inner()都声明为synchronized，这在Java中这相当于synchronized(this)块（<em>译者注：这里两个方法是实例方法，synchronized的实例方法相当于在this上加锁，如果是static方法，则不然，更多阅读：哪个对象才是锁？</em>）。如果某个线程调用了outer()，outer()中的inner()调用是没问题的，因为两个方法都是在同一个管程对象(即this)上同步的。如果一个线程持有某个管程对象上的锁，那么它就有权访问所有在该管程对象上同步的块。这就叫可重入。若线程已经持有锁，那么它就可以重复访问所有使用该锁的代码块。</p>
-<p>下面这个锁的实现是不可重入的：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public class Lock&#123;</span><br><span class="line"></span><br><span class="line">    private boolean isLocked = false;</span><br><span class="line"></span><br><span class="line">    public synchronized void lock() throws InterruptedException&#123;</span><br><span class="line">        while(isLocked)&#123;</span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        isLocked = true;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public synchronized void unlock()&#123;</span><br><span class="line">        isLocked = false;</span><br><span class="line">        notify();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果一个线程在两次调用lock()间没有调用unlock()方法，那么第二次调用lock()就会被阻塞，这就出现了重入锁死。</p>
-<p>避免重入锁死有两个选择：</p>
-<ol>
-<li>编写代码时避免再次获取已经持有的锁</li>
-<li>使用可重入锁</li>
-</ol>
-<p>至于哪个选择最适合你的项目，得视具体情况而定。可重入锁通常没有不可重入锁那么好的表现，而且实现起来复杂，但这些情况在你的项目中也许算不上什么问题。无论你的项目用锁来实现方便还是不用锁方便，可重入特性都需要根据具体问题具体分析。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/27/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><span class="page-number current">28</span><a class="page-number" href="/page/29/">29</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/29/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/27/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><span class="page-number current">28</span><a class="page-number" href="/page/29/">29</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/29/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1429,7 +1557,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1442,7 +1570,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

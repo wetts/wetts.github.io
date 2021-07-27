@@ -188,6 +188,369 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E7%8E%AF%E5%A2%83-profile%E5%92%8Crc%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E7%8E%AF%E5%A2%83-profile%E5%92%8Crc%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Linux-环境-profile和rc的区别.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-14 21:40:06" itemprop="dateCreated datePublished" datetime="2020-03-14T21:40:06+08:00">2020-03-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/sch0120/article/details/70256318">https://blog.csdn.net/sch0120/article/details/70256318</a></p>
+<h3 id="bash-的-startup-文件"><a href="#bash-的-startup-文件" class="headerlink" title="bash 的 startup 文件"></a>bash 的 startup 文件</h3><p>Linux shell 是用户与 Linux 系统进行交互的媒介，而 bash 作为目前 Linux 系统中最常用的 shell，它支持的 startup 文件也并不单一，甚至容易让人感到费解。本文以 CentOS7 系统为例，对 bash 的 startup 文件进行一些必要的梳理和总结。</p>
+<p>根据bash手册上的描述：</p>
+<ul>
+<li>/etc/profile: The systemwide initialization file, executed for login shells</li>
+<li>/etc/bash.bash_logout: The systemwide login shell cleanup file, executed when a login shell exits</li>
+<li>~/.bash_profile: The personal initialization file, executed for login shells</li>
+<li>~/.bashrc: The individual per-interactive-shell startup file</li>
+<li>~/.bash_logout: The individual login shell cleanup file, executed when a login shell exits</li>
+</ul>
+<p>此外，bash 还支持 <code>~/.bash_login</code> 和 <code>~/.profile</code> 文件，作为对其他 shell 的兼容，它们与 <code>~/.bash_profile</code> 文件的作用是相同的。</p>
+<p>备注：Debian系统会使用 <code>~/.profile</code> 文件取代 <code>~/.bash_profile</code>文件，因此在相关细节上，会与 CentOS 略有不同。</p>
+<h3 id="“profile”与“rc”系列"><a href="#“profile”与“rc”系列" class="headerlink" title="“profile”与“rc”系列"></a>“profile”与“rc”系列</h3><p>通过名字的不同，我们可以直观地将 startup 文件分为“profile”与“rc”两个系列，其实他们的功能都很类似，但是使用的场景不同，这也是大家最容易忽略的地方。</p>
+<p>所谓的不同场景，其实就是 shell 的运行模式。我们知道运行中的 bash 有“交互”和“登陆”两种属性，而执行“profile”系列还是“rc”系列，就与shell的这两个属性有关。</p>
+<p>原理上讲，“登陆 shell”启动时会加载“profile”系列的 startup 文件，而“交互式非登陆 shell”启动时会加载“rc”系列的 startup 文件。</p>
+<h3 id="“profile”系列的执行场景"><a href="#“profile”系列的执行场景" class="headerlink" title="“profile”系列的执行场景"></a>“profile”系列的执行场景</h3><p>根据 bash 手册上的描述：</p>
+<blockquote>
+When bash is invoked as an interactive login shell, or as a non-interactive shell with the --login option, it first reads and executes commands from the file /etc/profile, if that file exists. After reading that file, it looks for ~/.bash_profile, ~/.bash_login, and ~/.profile, in that order, and reads and executes commands from the first one that exists and is readable. The --noprofile option may be used when the shell is started to inhibit this behavior.
+
+<p>When a login shell exits, bash reads and executes commands from the files ~/.bash_logout and /etc/bash.bash_logout, if the files exists.</p>
+</blockquote>
+
+<p>“profile”系列的代表文件为 <code>~/.bash_profile</code>，它用于“登录 shell”的环境加载，这个“登录 shell”既可以是“交互式”的，也可以是“非交互式”的。</p>
+<p>通过 <code>--noprofile</code> 选项可以阻止系统加载“profile”系列的 startup 文件。</p>
+<h4 id="交互式登陆-shell"><a href="#交互式登陆-shell" class="headerlink" title="交互式登陆 shell"></a>交互式登陆 shell</h4><p>对于交互式的登陆 shell 而言，CentOS 规定了 startup 文件的加载顺序如下：</p>
+<p>登陆过程：</p>
+<ol>
+<li>读取并执行 /etc/profile 文件；</li>
+<li>读取并执行 ~/.bash_profile 文件；<ul>
+<li>若文件不存在，则读取并执行 ~/.bash_login 文件；</li>
+<li>若文件不存在，则读取并执行 ~/.profile 文件；</li>
+</ul>
+</li>
+</ol>
+<p>登出过程：</p>
+<ol>
+<li>读取并执行 ~/.bash_logout 文件；</li>
+<li>读取并执行 /etc/bash.bash_logout 文件；</li>
+</ol>
+<p>为了完成实验，我新建了一些系统默认没有提供的 startup 文件，例如 /etc/bash.bash_logout。然后在每个文件中打印了文件名，并将它们之间的显式调用语句注释掉，例如 ~/.bash_profile 对 ~/.bashrc 的显式调用。</p>
+<p>“交互式登陆shell”的实验结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# su - chen</span><br><span class="line">Last login: Tue Apr 18 17:15:08 CST 2017 from 192.168.161.1 on pts/2</span><br><span class="line">execute /etc/profile</span><br><span class="line">execute ~/.bash_profile</span><br><span class="line">-bash-4.2$ exit</span><br><span class="line">logout</span><br><span class="line">execute ~/.bash_logout</span><br><span class="line">execute /etc/bash.bash_logout</span><br><span class="line">[root@localhost ~]# </span><br></pre></td></tr></table></figure>
+
+<p>我们看到，因为执行了 <code>~/.bash_profile</code> 文件，所以优先级更低的 <code>~/.bash_login</code> 和 <code>~/.profile</code> 文件并没有被执行。</p>
+<p>我们可以删除 <code>~/.bash_profile</code> 和 <code>~/.bash_login</code> 文件，这样系统就会找到并执行 <code>~/.profile</code> 文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# mv /home/chen/.bash_profile /home/chen/.bash_profile.bak</span><br><span class="line">[root@localhost ~]# mv /home/chen/.bash_login /home/chen/.bash_login.bak</span><br><span class="line">[root@localhost ~]# su - chen</span><br><span class="line">Last login: Tue Apr 18 17:27:21 CST 2017 on pts/1</span><br><span class="line">execute /etc/profile</span><br><span class="line">execute ~/.profile</span><br><span class="line">-bash-4.2$ exit</span><br><span class="line">logout</span><br><span class="line">execute ~/.bash_logout</span><br><span class="line">execute /etc/bash.bash_logout</span><br><span class="line">[root@localhost ~]# </span><br></pre></td></tr></table></figure>
+
+<h4 id="非交互式登陆-shell"><a href="#非交互式登陆-shell" class="headerlink" title="非交互式登陆 shell"></a>非交互式登陆 shell</h4><p>对于非交互式的登陆 shell 而言，CentOS 规定了 startup 文件的加载顺序如下：</p>
+<p>登陆过程：</p>
+<ol>
+<li>读取并执行 /etc/profile 文件；</li>
+<li>读取并执行 ~/.bash_profile 文件；<ul>
+<li>若文件不存在，则读取并执行 ~/.bash_login 文件；</li>
+<li>若文件不存在，则读取并执行 ~/.profile 文件；</li>
+</ul>
+</li>
+</ol>
+<p>我们注意到，与“交互式登陆 shell”相比，“非交互式登陆 shell”并没有登出的过程，实验也证实了这一点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-bash-4.2$ bash --login -c &quot;uname -r&quot;</span><br><span class="line">execute /etc/profile</span><br><span class="line">execute ~/.bash_profile</span><br><span class="line">3.10.0-514.el7.x86_64</span><br><span class="line">-bash-4.2$     # 此时非交互式shell已退出</span><br></pre></td></tr></table></figure>
+
+<h3 id="“rc”系列的执行场景"><a href="#“rc”系列的执行场景" class="headerlink" title="“rc”系列的执行场景"></a>“rc”系列的执行场景</h3><p>根据 bash 手册上的描述：</p>
+<blockquote>
+<p>When an interactive shell that is not a login shell is started, bash reads and executes commands from ~/.bashrc, if that file exists. This may be inhibited by using the –norc option. The –rcfile file option will force bash to read and execute commands from file instead of ~/.bashrc.</p>
+</blockquote>
+<p>“rc”系列的代表文件为 <code>~/.bashrc</code>，它用于“交互式非登录 shell”的环境加载。</p>
+<p>通过 <code>--norc</code> 选项可以阻止系统加载“rc”系列的 startup 文件；通过 <code>--rcfile</code> 选项可以使用指定的文件替代系统默认的 <code>~/.bashrc</code> 文件。</p>
+<h4 id="交互式非登陆-shell"><a href="#交互式非登陆-shell" class="headerlink" title="交互式非登陆 shell"></a>交互式非登陆 shell</h4><p>对于交互式的非登陆 shell 而言，CentOS 规定了 startup 文件的加载顺序如下：</p>
+<ol>
+<li>读取并执行 <code>~/.bashrc</code> 或 <code>--rcfile</code> 选项指定的文件</li>
+</ol>
+<p>这里需要说明，其实“rc”系列 startup 文件还包括 /etc/bashrc。但是系统并不直接调用这个文件，而是通过 <code>~/.bashrc</code> 文件显式地调用它。</p>
+<p>为了完成实验，我在每个 startup 文件中打印了文件名，并将它们之间的显式调用语句注释掉，例如 <code>~/.bashrc</code> 对 <code>/etc/bashrc</code> 的显式调用。</p>
+<p>“交互式非登陆 shell”的实验结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# su chen</span><br><span class="line">execute ~/.bashrc</span><br><span class="line">bash-4.2$ exit</span><br><span class="line">exit</span><br><span class="line">[root@localhost ~]# </span><br></pre></td></tr></table></figure>
+
+<h3 id="startup-文件的默认调用关系"><a href="#startup-文件的默认调用关系" class="headerlink" title="startup 文件的默认调用关系"></a>startup 文件的默认调用关系</h3><p>细心的用户会发现，startup 文件的加载并不像上面所述的那样简单。这是因为在 CentOS 中，startup 文件之间还存在着默认的显式调用关系，它们是：</p>
+<ol>
+<li><code>~/.bash_profile</code> 显式调用 <code>~/.bashrc</code> 文件；</li>
+<li><code>~/.bashrc</code> 显式调用 <code>/etc/bashrc</code> 文件；</li>
+</ol>
+<h3 id="再看-startup-文件"><a href="#再看-startup-文件" class="headerlink" title="再看 startup 文件"></a>再看 startup 文件</h3><p>分别打开 <code>/etc/profile</code>和 <code>/etc/bashrc</code> 两个文件，我们可以看到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# head /etc/profile</span><br><span class="line"># /etc/profile</span><br><span class="line"></span><br><span class="line"># System wide environment and startup programs, for login setup</span><br><span class="line"># Functions and aliases go in /etc/bashrc</span><br><span class="line"></span><br><span class="line"># It&#x27;s NOT a good idea to change this file unless you know what you</span><br><span class="line"># are doing. It&#x27;s much better to create a custom.sh shell script in</span><br><span class="line"># /etc/profile.d/ to make custom changes to your environment, as this</span><br><span class="line"># will prevent the need for merging in future updates.</span><br><span class="line"></span><br><span class="line">[root@localhost ~]# head /etc/bashrc</span><br><span class="line"># /etc/bashrc</span><br><span class="line"></span><br><span class="line"># System wide functions and aliases</span><br><span class="line"># Environment stuff goes in /etc/profile</span><br><span class="line"></span><br><span class="line"># It&#x27;s NOT a good idea to change this file unless you know what you</span><br><span class="line"># are doing. It&#x27;s much better to create a custom.sh shell script in</span><br><span class="line"># /etc/profile.d/ to make custom changes to your environment, as this</span><br><span class="line"># will prevent the need for merging in future updates.</span><br></pre></td></tr></table></figure>
+
+<p>由此可见，“profile”系列文件的主要目的在于为“登录 shell”设置环境变量和启动程序；而“rc”系列文件的主要目的在于设置功能和别名。</p>
+<p>顺便提一句，Linux 中“rc”是英文“run command”的缩写，表示文件中存放需要执行的命令。其实这也非常符合逻辑，设置功能就要执行 <code>shopt</code> 命令，而设置别名要执行 <code>alias</code> 命令。与“rc”系列互补，“profile”系列用来设置环境变量，它不会去调用这两个命令，但却经常需要使用 <code>export</code> 语句。不信你可以看一看这两个文件。</p>
+<p>另外值得一提的是，这两个文件同时提到了一个位置：<code>/etc/profile.d</code> 目录。这个目录用于存放个性化配置脚本，你可以把自己需要的全局配置放入以 .sh 结尾的文件中，系统在执行 <code>/etc/profile</code>和 <code>/etc/bashrc</code> 文件时，都会择机调用它们。这样做最大的好处是便于维护，而且相对更加安全。</p>
+<p>这些文件的编写方法，可以参考目录下已有的文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# ls /etc/profile.d/*.sh</span><br><span class="line">/etc/profile.d/256term.sh    /etc/profile.d/colorls.sh  /etc/profile.d/less.sh</span><br><span class="line">/etc/profile.d/colorgrep.sh  /etc/profile.d/lang.sh     /etc/profile.d/which2.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>对于“登录 shell”而言<ul>
+<li>“交互式”执行“登陆”和“登出”相关的“profile”系列 startup 文件</li>
+<li>“非交互式”只执行“登陆”相关的“profile”系列 startup 文件</li>
+</ul>
+</li>
+<li>对于“非登陆 shell”而言<ul>
+<li>“交互式”执行“rc”系列的 startup 文件</li>
+<li>而“非交互式”执行的配置文件由环境变量 BASH_ENV 指定。</li>
+</ul>
+</li>
+</ul>
+<p>Linux 中 startup 文件区分全局和个人：全局 startup 文件放在 /etc 目录下，用于设置所有用户共同的配置，除非你清楚地知道你在做的事情，否则不要轻易改动它们；个人 startup 文件放在 ~ 目录下，用于设置某个用户的个性化配置。</p>
+<p><code>~/.bash_profile</code> 会显式调用 <code>~/.bashrc</code> 文件，而 <code>~/.bashrc</code> 又会显式调用 <code>/etc/bashrc</code> 文件，这是为了让所有交互式界面看起来一样。无论你是从远程登录（登陆 shell），还是从图形界面打开终端（非登陆 shell），你都拥有相同的提示符，因为环境变量 PS1 在 <code>/etc/bashrc</code> 文件中被统一设置过。</p>
+<p>下面我来对startup文件进行一个完整的总结：</p>
+<table>
+<thead>
+<tr>
+<th align="center">startup 文件</th>
+<th align="center">交互登陆</th>
+<th align="center">非交互登陆</th>
+<th align="center">交互非登陆</th>
+<th align="center">非交互非登陆</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">/etc/profile</td>
+<td align="center">直接执行1</td>
+<td align="center">直接执行1</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">~/.bash_profile</td>
+<td align="center">直接执行2</td>
+<td align="center">直接执行2</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">~/.bash_login</td>
+<td align="center">条件执行2</td>
+<td align="center">条件执行2</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">~/.profile</td>
+<td align="center">条件执行2</td>
+<td align="center">条件执行2</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">~/.bash_logout</td>
+<td align="center">直接执行3</td>
+<td align="center">不执行</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">/etc/bash.bash_logout</td>
+<td align="center">直接执行4</td>
+<td align="center">不执行</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">~/.bashrc</td>
+<td align="center">引用执行2.1</td>
+<td align="center">引用执行2.1</td>
+<td align="center">直接执行1</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">/etc/bashrc</td>
+<td align="center">引用执行2.2</td>
+<td align="center">引用执行2.2</td>
+<td align="center">引用执行1.1</td>
+<td align="center">-</td>
+</tr>
+</tbody></table>
+<p>备注：</p>
+<ol>
+<li>“直接执行”表示此文件被系统直接调用，它的执行是无条件的；</li>
+<li>“条件执行”表示此文件被系统调用是有先决条件的（没有优先级更高的文件可用）；</li>
+<li>“引用执行”表示此文件不是被系统直接调用的，而是被其他文件显式调用的；</li>
+<li>后面的数字表示文件被调用的顺序，数字越大调用越靠后；</li>
+<li>“非交互非登陆” shell 的配置文件可以由 BASH_ENV 环境变量指定；</li>
+</ol>
+<p>最后我想说的是，知道 startup 文件何时被执行并不是关键，关键是要理解自己的情况应该去修改哪个 startup 文件。</p>
+<p>如果你想对 bash 的功能进行设置或者是定义一些别名，推荐你修改 ~/.bashrc 文件，这样无论你以何种方式打开 shell，你的配置都会生效。而如果你要更改一些环境变量，推荐你修改 ~/.bash_profile 文件，因为考虑到 shell 的继承特性，这些更改确实只应该被执行一次（而不是多次）。针对所有用户进行全局设置，推荐你在 /etc/profile.d 目录下添加以 .sh 结尾的文件，而不是去修改全局 startup 文件。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E4%BA%A4%E4%BA%92%E5%BC%8F_%E9%9D%9E%E4%BA%A4%E4%BA%92%E5%BC%8F_%E7%99%BB%E5%BD%95%E5%BC%8F_%E9%9D%9E%E7%99%BB%E5%BD%95%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E4%BA%A4%E4%BA%92%E5%BC%8F_%E9%9D%9E%E4%BA%A4%E4%BA%92%E5%BC%8F_%E7%99%BB%E5%BD%95%E5%BC%8F_%E9%9D%9E%E7%99%BB%E5%BD%95%E5%BC%8F/" class="post-title-link" itemprop="url">Linux-命令-交互式_非交互式_登录式_非登录式.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-14 21:19:51" itemprop="dateCreated datePublished" datetime="2020-03-14T21:19:51+08:00">2020-03-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/sch0120/article/details/70226903">https://blog.csdn.net/sch0120/article/details/70226903</a></p>
+<p>Linux shell 是用户与 Linux 系统进行交互的媒介，而 bash 作为目前 Linux 系统中最常用的 shell，它在运行时具有两种属性，即“交互”与“登陆”。</p>
+<ul>
+<li>按照 bash 是否与用户进行交互，可以将其分为“交互式”与“非交互式”；</li>
+<li>而按照 bash 是否被用户登陆，又可将其分为“登陆 shell”与“非登陆 shell”。</li>
+</ul>
+<h3 id="“交互式”与“非交互式”"><a href="#“交互式”与“非交互式”" class="headerlink" title="“交互式”与“非交互式”"></a>“交互式”与“非交互式”</h3><h4 id="含义说明"><a href="#含义说明" class="headerlink" title="含义说明"></a>含义说明</h4><ul>
+<li>交互式，是 shell 的一种运行模式，交互式 shell 等待你输入命令，并且立即执行，然后将结果反馈给你。这是每个 CLI 用户都非常熟悉的流程：登录、执行一些命令、登出。当你登出后，这个 shell 就终止了。</li>
+<li>非交互式，是 shell 的另一种运行模式，它专门被用来执行预先设定的命令。在这种模式下，shell 不与用户进行交互，而是读取存放在脚本文件中的命令并执行它们。当它读到文件的结尾，这个 shell 就终止了。</li>
+</ul>
+<h4 id="启动方法"><a href="#启动方法" class="headerlink" title="启动方法"></a>启动方法</h4><p>根据bash手册上的描述：</p>
+<blockquote>
+<p>An interactive shell is one started without non-option arguments and without the -c option whose standard input and error are both connected to terminals (as determined by isatty(3)), or one started with the -i option.</p>
+</blockquote>
+<p>从上面的描述看，只要执行 bash 命令的时候，不带有“选项以外的参数”或者 -c 选项，就会启动一个交互式 shell。要理解这句话，就要弄懂“选项以外的参数”是什么意思，其实它指的就是 shell 的脚本文件；而 -c 选项将指定字符串作为命令读入 bash，也就相当于执行指定的命令，它和前者有些类似，只是不从脚本文件中读取罢了。请看例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[chen@localhost Temp]$ echo &quot;uname -r; date&quot; &gt; script.sh</span><br><span class="line">[chen@localhost Temp]$ bash ./script.sh </span><br><span class="line">3.10.0-514.el7.x86_64</span><br><span class="line">Tue Apr 18 14:43:50 CST 2017</span><br><span class="line">[chen@localhost Temp]$ </span><br><span class="line">[chen@localhost Temp]$ bash -c &quot;uname -r; date&quot;</span><br><span class="line">3.10.0-514.el7.x86_64</span><br><span class="line">Tue Apr 18 14:44:49 CST 2017</span><br><span class="line">[chen@localhost Temp]$ </span><br></pre></td></tr></table></figure>
+
+<p>通常来说，用于执行脚本的 shell 都是“非交互式”的，但我们也有办法把它启动为“交互式” shell，方法就是在执行 bash 命令时，添加 -i 选项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[chen@localhost Temp]$ bash -c &quot;echo \$-&quot;</span><br><span class="line">hBc</span><br><span class="line">[chen@localhost Temp]$ bash -i -c &quot;echo \$-&quot;</span><br><span class="line">himBHc</span><br></pre></td></tr></table></figure>
+
+<p>我们看到，添加了 -i 选项的 bash -c 命令为我们启动了一个“交互式” shell。</p>
+<h4 id="判别方法"><a href="#判别方法" class="headerlink" title="判别方法"></a>判别方法</h4><p>根据 bash 手册上的描述：</p>
+<blockquote>
+<p>PS1 is set and $- includes i if bash is interactive, allowing a shell script or a startup file to test this state.</p>
+</blockquote>
+<p>用于在 shell 脚本和 startup 文件中判断当前 shell“交互”属性的方法，就是判断变量 PS1 是否有值，或者判断变量 $- 是否包含 i，请看例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[chen@localhost Temp]$ cat ./test1.sh </span><br><span class="line">echo &quot;\$0   : $0&quot;</span><br><span class="line">echo &quot;\$-   : $-&quot;</span><br><span class="line">echo &quot;\$PS1 : $PS1&quot;</span><br><span class="line">[chen@localhost Temp]$ bash ./test1.sh     # 非交互式shell</span><br><span class="line">$0   : ./test1.sh</span><br><span class="line">$-   : hB</span><br><span class="line">$PS1 : </span><br><span class="line">[chen@localhost Temp]$ bash -i ./test1.sh  # 交互式shell</span><br><span class="line">$0   : ./test1.sh</span><br><span class="line">$-   : himB</span><br><span class="line">$PS1 : [\u@\h \W]\$ </span><br><span class="line">[chen@localhost Temp]$ </span><br></pre></td></tr></table></figure>
+
+<h3 id="“登陆-shell”与“非登陆-shell”"><a href="#“登陆-shell”与“非登陆-shell”" class="headerlink" title="“登陆 shell”与“非登陆 shell”"></a>“登陆 shell”与“非登陆 shell”</h3><h4 id="含义说明-1"><a href="#含义说明-1" class="headerlink" title="含义说明"></a>含义说明</h4><p>“登陆 shell”通常指的是：</p>
+<ol>
+<li>用户通过输入用户名/密码（或证书认证）后启动的 shell；</li>
+<li>通过带有 <code>-l|--login</code> 参数的 bash 命令启动的 shell。</li>
+</ol>
+<p>例如，系统启动、远程登录、使用 <code>su -</code> 切换用户、通过 <code>bash --login</code> 命令启动 bash 等。</p>
+<p>而其他情况启动的 shell 基本上就都是“非登陆 shell”了。</p>
+<p>例如，从图形界面启动终端、使用 <code>su</code> 切换用户、通过 <code>bash</code> 命令启动 bash 等。</p>
+<h4 id="判别方法-1"><a href="#判别方法-1" class="headerlink" title="判别方法"></a>判别方法</h4><p>根据 bash 手册上的描述：</p>
+<blockquote>
+<p>A login shell is one whose first character of argument zero is a <code>-</code>, or one started with the <code>--login</code> option.</p>
+</blockquote>
+<p>我们可以通过在 shell 中 <code>echo $0</code> 查看，显示 <code>-bash</code> 的一定是“登陆 shell”，反之显示 bash 的则不好说。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[chen@localhost ~]$ bash --login</span><br><span class="line">[chen@localhost ~]$ echo $0</span><br><span class="line">bash</span><br><span class="line">[chen@localhost ~]$ </span><br></pre></td></tr></table></figure>
+
+<p>可以看出，使用 <code>bash --login</code> 启动的“登陆 shell”，其 <code>$0</code> 也并非以 <code>-</code> 开头，这也就是为什么手册上的描述里使用“or”的原因。</p>
+<p>另外，当我们执行 exit 命令退出 shell 时，也可以观察到它们的不同之处：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[chen@localhost ~]$ bash --login</span><br><span class="line">[chen@localhost ~]$ exit   # 退出登陆shell</span><br><span class="line">logout</span><br><span class="line">[chen@localhost ~]$ bash</span><br><span class="line">[chen@localhost ~]$ exit   # 退出非登陆shell</span><br><span class="line">exit</span><br><span class="line">[chen@localhost ~]$</span><br></pre></td></tr></table></figure>
+
+<p>原则上讲，我们使用 logout 退出“登陆 shell”，使用 exit 退出“非登录 shell”。但其实 exit 命令会判断当前 shell 的“登陆”属性，并分别调用 logout 或 exit 指令，因此使用起来相对方便。</p>
+<h4 id="主要区别"><a href="#主要区别" class="headerlink" title="主要区别"></a>主要区别</h4><p>对于用户而言，“登录 shell”和“非登陆 shell”的主要区别在于启动 shell 时所执行的 startup 文件不同。</p>
+<p>简单来说，“登录 shell”执行的 startup 文件为 <code>~/.bash_profile</code>，而“非登陆 shell”执行的 startup 文件为 <code>~/.bashrc</code>。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E7%8E%AF%E5%A2%83-%E8%B7%AF%E5%BE%84%E7%9A%84%E6%84%8F%E4%B9%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1180,334 +1543,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/" class="post-title-link" itemprop="url">缓存算法.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-23 15:23:18" itemprop="dateCreated datePublished" datetime="2019-12-23T15:23:18+08:00">2019-12-23</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="FIFO算法"><a href="#FIFO算法" class="headerlink" title="FIFO算法"></a>FIFO算法</h2><p>FIFO（First in First out），先进先出。其实在操作系统的设计理念中很多地方都利用到了先进先出的思想，比如作业调度（先来先服务），为什么这个原则在很多地方都会用到呢？因为这个原则简单、且符合人们的惯性思维，具备公平性，并且实现起来简单，直接使用数据结构中的队列即可实现。</p>
-<p>在FIFO Cache设计中，核心原则就是：如果一个数据最先进入缓存中，则应该最早淘汰掉。也就是说，当缓存满的时候，应当把最先进入缓存的数据给淘汰掉。在FIFO Cache中应该支持以下操作;</p>
-<ul>
-<li>get(key)：如果Cache中存在该key，则返回对应的value值，否则，返回-1；</li>
-<li>set(key,value)：如果Cache中存在该key，则重置value值；如果不存在该key，则将该key插入到到Cache中，若Cache已满，则淘汰最早进入Cache的数据。</li>
-</ul>
-<p>举个例子：假如Cache大小为3，访问数据序列为set(1,1),set(2,2),set(3,3),set(4,4),get(2),set(5,5)</p>
-<p>则Cache中的数据变化为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(1,1)                           set(1,1)</span><br><span class="line"></span><br><span class="line">(1,1) (2,2)                     set(2,2)</span><br><span class="line"></span><br><span class="line">(1,1) (2,2) (3,3)               set(3,3)</span><br><span class="line"></span><br><span class="line">(2,2) (3,3) (4,4)               set(4,4)</span><br><span class="line"></span><br><span class="line">(2,2) (3,3) (4,4)               get(2)</span><br><span class="line"></span><br><span class="line">(3,3) (4,4) (5,5)               set(5,5)</span><br></pre></td></tr></table></figure>
-
-<p>那么利用什么数据结构来实现呢？</p>
-<p>下面提供一种实现思路：</p>
-<p>利用一个双向链表保存数据，当来了新的数据之后便添加到链表末尾，如果Cache存满数据，则把链表头部数据删除，然后把新的数据添加到链表末尾。在访问数据的时候，如果在Cache中存在该数据的话，则返回对应的value值；否则返回-1。如果想提高访问效率，可以利用hashmap来保存每个key在链表中对应的位置。</p>
-<h2 id="LFU算法"><a href="#LFU算法" class="headerlink" title="LFU算法"></a>LFU算法</h2><p>LFU（Least Frequently Used）最近最少使用算法。它是基于“如果一个数据在最近一段时间内使用次数很少，那么在将来一段时间内被使用的可能性也很小”的思路。</p>
-<p>注意LFU和LRU算法的不同之处，LRU的淘汰规则是基于访问时间，而LFU是基于访问次数的。举个简单的例子：</p>
-<p>假设缓存大小为3，数据访问序列为set(2,2),set(1,1),get(2),get(1),get(2),set(3,3),set(4,4)，</p>
-<p>则在set(4,4)时对于LFU算法应该淘汰(3,3)，而LRU应该淘汰(1,1)。</p>
-<p>那么LFU Cache应该支持的操作为：</p>
-<ul>
-<li>get(key)：如果Cache中存在该key，则返回对应的value值，否则，返回-1；</li>
-<li>set(key,value)：如果Cache中存在该key，则重置value值；如果不存在该key，则将该key插入到到Cache中，若Cache已满，则淘汰最少访问的数据。</li>
-</ul>
-<p>为了能够淘汰最少使用的数据，因此LFU算法最简单的一种设计思路就是 利用一个数组存储数据项，用hashmap存储每个数据项在数组中对应的位置，然后为每个数据项设计一个访问频次，当数据项被命中时，访问频次自增，在淘汰的时候淘汰访问频次最少的数据。这样一来的话，在插入数据和访问数据的时候都能达到O(1)的时间复杂度，在淘汰数据的时候，通过选择算法得到应该淘汰的数据项在数组中的索引，并将该索引位置的内容替换为新来的数据内容即可，这样的话，淘汰数据的操作时间复杂度为O(n)。</p>
-<p>另外还有一种实现思路就是利用小顶堆+hashmap，小顶堆插入、删除操作都能达到O(logn)时间复杂度，因此效率相比第一种实现方法更加高效。</p>
-<h2 id="LRU"><a href="#LRU" class="headerlink" title="LRU"></a>LRU</h2><p>LRU（Least recently used，最近最少使用）算法根据数据的历史访问记录来进行淘汰数据，其核心思想是“如果数据最近被访问过，那么将来被访问的几率也更高”。</p>
-<p><img src="/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/1.png" alt="1"></p>
-<ol>
-<li>新数据插入到链表头部；</li>
-<li>每当缓存命中（即缓存数据被访问），则将数据移到链表头部；</li>
-<li>当链表满的时候，将链表尾部的数据丢弃。</li>
-</ol>
-<p>过程如下：</p>
-<p><img src="/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/2.png" alt="2"></p>
-<ol>
-<li>最开始时，内存空间是空的，因此依次进入A、B、C是没有问题的</li>
-<li>当加入D时，就出现了问题，内存空间不够了，因此根据LRU算法，内存空间中A待的时间最为久远，选择A,将其淘汰</li>
-<li>当再次引用B时，内存空间中的B又处于活跃状态，而C则变成了内存空间中，近段时间最久未使用的</li>
-<li>当再次向内存空间加入E时，这时内存空间又不足了，选择在内存空间中待的最久的C将其淘汰出内存，这时的内存空间存放的对象就是E-&gt;B-&gt;D</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/" class="post-title-link" itemprop="url">MySQL-MVCC.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-21 12:11:49" itemprop="dateCreated datePublished" datetime="2019-12-21T12:11:49+08:00">2019-12-21</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8845ddca3b23">https://www.jianshu.com/p/8845ddca3b23</a></p>
-<h2 id="前提概要"><a href="#前提概要" class="headerlink" title="前提概要"></a>前提概要</h2><h3 id="什么是MVCC"><a href="#什么是MVCC" class="headerlink" title="什么是MVCC?"></a>什么是MVCC?</h3><blockquote>
-<p>MVCC，全称Multi-Version Concurrency Control，即多版本并发控制。MVCC是一种并发控制的方法，一般在数据库管理系统中，实现对数据库的并发访问，在编程语言中实现事务内存。</p>
-</blockquote>
-<p>MVCC在MySQL InnoDB中的实现主要是为了提高数据库并发性能，用更好的方式去处理读-写冲突，做到即使有读写冲突时，也能做到不加锁，非阻塞并发读</p>
-<h3 id="什么是当前读和快照读？"><a href="#什么是当前读和快照读？" class="headerlink" title="什么是当前读和快照读？"></a>什么是当前读和快照读？</h3><p>在学习MVCC多版本并发控制之前，我们必须先了解一下，什么是MySQL InnoDB下的当前读和快照读?</p>
-<h4 id="当前读"><a href="#当前读" class="headerlink" title="当前读"></a>当前读</h4><p>像select lock in share mode(共享锁), select for update ; update, insert ,delete(排他锁)这些操作都是一种当前读，为什么叫当前读？就是它读取的是记录的最新版本，读取时还要保证其他并发事务不能修改当前记录，会对读取的记录进行加锁。</p>
-<h4 id="快照读"><a href="#快照读" class="headerlink" title="快照读"></a>快照读</h4><p>像不加锁的select操作就是快照读，即不加锁的非阻塞读；快照读的前提是隔离级别不是串行级别，串行级别下的快照读会退化成当前读；之所以出现快照读的情况，是基于提高并发性能的考虑，快照读的实现是基于多版本并发控制，即MVCC,可以认为MVCC是行锁的一个变种，但它在很多情况下，避免了加锁操作，降低了开销；既然是基于多版本，即快照读可能读到的并不一定是数据的最新版本，而有可能是之前的历史版本</p>
-<p>说白了MVCC就是为了实现读-写冲突不加锁，而这个读指的就是快照读, 而非当前读，当前读实际上是一种加锁的操作，是悲观锁的实现</p>
-<h4 id="当前读，快照读和MVCC的关系"><a href="#当前读，快照读和MVCC的关系" class="headerlink" title="当前读，快照读和MVCC的关系"></a>当前读，快照读和MVCC的关系</h4><ul>
-<li>准确的说，MVCC多版本并发控制指的是 “维持一个数据的多个版本，使得读写操作没有冲突” 这么一个概念。仅仅是一个理想概念</li>
-<li>而在MySQL中，实现这么一个MVCC理想概念，我们就需要MySQL提供具体的功能去实现它，而快照读就是MySQL为我们实现MVCC理想模型的其中一个具体非阻塞读功能。而相对而言，当前读就是悲观锁的具体功能实现</li>
-<li>要说的再细致一些，快照读本身也是一个抽象概念，再深入研究。MVCC模型在MySQL中的具体实现则是由 3个隐式字段，undo日志 ，Read View 等去完成的，具体可以看下面的MVCC实现原理</li>
-</ul>
-<h4 id="MVCC能解决什么问题，好处是？"><a href="#MVCC能解决什么问题，好处是？" class="headerlink" title="MVCC能解决什么问题，好处是？"></a>MVCC能解决什么问题，好处是？</h4><h5 id="数据库并发场景有三种，分别为："><a href="#数据库并发场景有三种，分别为：" class="headerlink" title="数据库并发场景有三种，分别为："></a>数据库并发场景有三种，分别为：</h5><ul>
-<li>读-读：不存在任何问题，也不需要并发控制</li>
-<li>读-写：有线程安全问题，可能会造成事务隔离性问题，可能遇到脏读，幻读，不可重复读</li>
-<li>写-写：有线程安全问题，可能会存在更新丢失问题，比如第一类更新丢失，第二类更新丢失</li>
-</ul>
-<h5 id="MVCC带来的好处是？"><a href="#MVCC带来的好处是？" class="headerlink" title="MVCC带来的好处是？"></a>MVCC带来的好处是？</h5><p>多版本并发控制（MVCC）是一种用来解决读-写冲突的无锁并发控制，也就是为事务分配单向增长的时间戳，为每个修改保存一个版本，版本与事务时间戳关联，读操作只读该事务开始前的数据库的快照。 所以MVCC可以为数据库解决以下问题</p>
-<ul>
-<li>在并发读写数据库时，可以做到在读操作时不用阻塞写操作，写操作也不用阻塞读操作，提高了数据库并发读写的性能</li>
-<li>同时还可以解决脏读，幻读，不可重复读等事务隔离问题，但不能解决更新丢失问题</li>
-</ul>
-<h5 id="小结一下咯"><a href="#小结一下咯" class="headerlink" title="小结一下咯"></a>小结一下咯</h5><p>总之，MVCC就是因为大牛们，不满意只让数据库采用悲观锁这样性能不佳的形式去解决读-写冲突问题，而提出的解决方案，所以在数据库中，因为有了MVCC，所以我们可以形成两个组合：</p>
-<ul>
-<li>MVCC + 悲观锁<ul>
-<li>MVCC解决读写冲突，悲观锁解决写写冲突</li>
-</ul>
-</li>
-<li>MVCC + 乐观锁<ul>
-<li>MVCC解决读写冲突，乐观锁解决写写冲突</li>
-</ul>
-</li>
-</ul>
-<p>这种组合的方式就可以最大程度的提高数据库并发性能，并解决读写冲突，和写写冲突导致的问题</p>
-<h2 id="MVCC的实现原理"><a href="#MVCC的实现原理" class="headerlink" title="MVCC的实现原理"></a>MVCC的实现原理</h2><p>MVCC的目的就是多版本并发控制，在数据库中的实现，就是为了解决读写冲突，它的实现原理主要是依赖记录中的 3个隐式字段，undo日志 ，Read View 来实现的。所以我们先来看看这个三个point的概念</p>
-<h3 id="隐式字段"><a href="#隐式字段" class="headerlink" title="隐式字段"></a>隐式字段</h3><p>每行记录除了我们自定义的字段外，还有数据库隐式定义的DB_TRX_ID,DB_ROLL_PTR,DB_ROW_ID等字段</p>
-<ul>
-<li>DB_TRX_ID<ul>
-<li>6byte，最近修改(修改/插入)事务ID：记录创建这条记录/最后一次修改该记录的事务ID</li>
-</ul>
-</li>
-<li>DB_ROLL_PTR<ul>
-<li>7byte，回滚指针，指向这条记录的上一个版本（存储于rollback segment里）</li>
-</ul>
-</li>
-<li>DB_ROW_ID<ul>
-<li>6byte，隐含的自增ID（隐藏主键），如果数据表没有主键，InnoDB会自动以DB_ROW_ID产生一个聚簇索引</li>
-</ul>
-</li>
-<li>实际还有一个删除flag隐藏字段, 既记录被更新或删除并不代表真的删除，而是删除flag变了</li>
-</ul>
-<p><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/1.png" alt="1"></p>
-<p>如上图，DB_ROW_ID是数据库默认为该行记录生成的唯一隐式主键，DB_TRX_ID是当前操作该记录的事务ID,而DB_ROLL_PTR是一个回滚指针，用于配合undo日志，指向上一个旧版本</p>
-<h3 id="undo日志"><a href="#undo日志" class="headerlink" title="undo日志"></a>undo日志</h3><p>undo log主要分为两种：</p>
-<ul>
-<li>insert undo log<ul>
-<li>代表事务在insert新记录时产生的undo log, 只在事务回滚时需要，并且在事务提交后可以被立即丢弃</li>
-</ul>
-</li>
-<li>update undo log<ul>
-<li>事务在进行update或delete时产生的undo log; 不仅在事务回滚时需要，在快照读时也需要；所以不能随便删除，只有在快速读或事务回滚不涉及该日志时，对应的日志才会被purge线程统一清除</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>purge</p>
-<ul>
-<li>从前面的分析可以看出，为了实现InnoDB的MVCC机制，更新或者删除操作都只是设置一下老记录的deleted_bit，并不真正将过时的记录删除。</li>
-<li>为了节省磁盘空间，InnoDB有专门的purge线程来清理deleted_bit为true的记录。为了不影响MVCC的正常工作，purge线程自己也维护了一个read view（这个read view相当于系统中最老活跃事务的read view）;如果某个记录的deleted_bit为true，并且DB_TRX_ID相对于purge线程的read view可见，那么这条记录一定是可以被安全清除的。</li>
-</ul>
-</blockquote>
-<p>对MVCC有帮助的实质是update undo log ，undo log实际上就是存在rollback segment中旧记录链，它的执行流程如下：</p>
-<p>一、 比如一个有个事务插入persion表插入了一条新记录，记录如下，name为Jerry, age为24岁，隐式主键是1，事务ID和回滚指针，我们假设为NULL<br><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/2.png" alt="2"></p>
-<p>二、 现在来了一个事务1对该记录的name做出了修改，改为Tom</p>
-<ul>
-<li>在事务1修改该行(记录)数据时，数据库会先对该行加排他锁</li>
-<li>然后把该行数据拷贝到undo log中，作为旧记录，既在undo log中有当前行的拷贝副本</li>
-<li>拷贝完毕后，修改该行name为Tom，并且修改隐藏字段的事务ID为当前事务1的ID, 我们默认从1开始，之后递增，回滚指针指向拷贝到undo log的副本记录，既表示我的上一个版本就是它</li>
-<li>事务提交后，释放锁</li>
-</ul>
-<p><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/3.png" alt="3"></p>
-<p>三、 又来了个事务2修改person表的同一个记录，将age修改为30岁</p>
-<ul>
-<li>在事务2修改该行数据时，数据库也先为该行加锁</li>
-<li>然后把该行数据拷贝到undo log中，作为旧记录，发现该行记录已经有undo log了，那么最新的旧数据作为链表的表头，插在该行记录的undo log最前面</li>
-<li>修改该行age为30岁，并且修改隐藏字段的事务ID为当前事务2的ID, 那就是2，回滚指针指向刚刚拷贝到undo log的副本记录</li>
-<li>事务提交，释放锁</li>
-</ul>
-<p><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/4.png" alt="4"></p>
-<p>从上面，我们就可以看出，不同事务或者相同事务的对同一记录的修改，会导致该记录的undo log成为一条记录版本线性表，既链表，undo log的链首就是最新的旧记录，链尾就是最早的旧记录（当然就像之前说的该undo log的节点可能是会purge线程清除掉，向图中的第一条insert undo log，其实在事务提交之后可能就被删除丢失了，不过这里为了演示，所以还放在这里）</p>
-<h3 id="Read-View-读视图"><a href="#Read-View-读视图" class="headerlink" title="Read View(读视图)"></a>Read View(读视图)</h3><h4 id="什么是Read-View"><a href="#什么是Read-View" class="headerlink" title="什么是Read View?"></a>什么是Read View?</h4><p>什么是Read View，说白了Read View就是事务进行快照读操作的时候生产的读视图(Read View)，在该事务执行的快照读的那一刻，会生成数据库系统当前的一个快照，记录并维护系统当前活跃事务的ID(当每个事务开启时，都会被分配一个ID, 这个ID是递增的，所以最新的事务，ID值越大)</p>
-<p>所以我们知道 Read View主要是用来做可见性判断的, 即当我们某个事务执行快照读的时候，对该记录创建一个Read View读视图，把它比作条件用来判断当前事务能够看到哪个版本的数据，既可能是当前最新的数据，也有可能是该行记录的undo log里面的某个版本的数据。</p>
-<p>Read View遵循一个可见性算法，主要是将要被修改的数据的最新记录中的DB_TRX_ID（即当前事务ID）取出来，与系统当前其他活跃事务的ID去对比（由Read View维护），如果DB_TRX_ID跟Read View的属性做了某些比较，不符合可见性，那就通过DB_ROLL_PTR回滚指针去取出Undo Log中的DB_TRX_ID再比较，即遍历链表的DB_TRX_ID（从链首到链尾，即从最近的一次修改查起），直到找到满足特定条件的DB_TRX_ID, 那么这个DB_TRX_ID所在的旧记录就是当前事务能看见的最新老版本</p>
-<p>那么这个判断条件是什么呢？</p>
-<p><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/5.png" alt="5"></p>
-<p>如上，它是一段MySQL判断可见性的一段源码，即changes_visible方法（不完全哈，但能看出大致逻辑），该方法展示了我们拿DB_TRX_ID去跟Read View某些属性进行怎么样的比较</p>
-<p>在展示之前，我先简化一下Read View，我们可以把Read View简单的理解成有三个全局属性</p>
-<ul>
-<li>trx_list（名字我随便取的）<ul>
-<li>一个数值列表，用来维护Read View生成时刻系统正活跃的事务ID</li>
-</ul>
-</li>
-<li>up_limit_id<ul>
-<li>记录trx_list列表中事务ID最小的ID</li>
-</ul>
-</li>
-<li>low_limit_id<ul>
-<li>ReadView生成时刻系统尚未分配的下一个事务ID，也就是目前已出现过的事务ID的最大值+1</li>
-</ul>
-</li>
-</ul>
-<ol>
-<li>首先比较DB_TRX_ID &lt; up_limit_id, 如果小于，则当前事务能看到DB_TRX_ID 所在的记录，如果大于等于进入下一个判断</li>
-<li>接下来判断 DB_TRX_ID 大于等于 low_limit_id , 如果大于等于则代表DB_TRX_ID 所在的记录在Read View生成后才出现的，那对当前事务肯定不可见，如果小于则进入下一个判断</li>
-<li>判断DB_TRX_ID 是否在活跃事务之中，trx_list.contains(DB_TRX_ID)，如果在，则代表我Read View生成时刻，你这个事务还在活跃，还没有Commit，你修改的数据，我当前事务也是看不见的；如果不在，则说明，你这个事务在Read View生成之前就已经Commit了，你修改的结果，我当前事务是能看见的</li>
-</ol>
-<h3 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h3><p>我们在了解了隐式字段，undo log， 以及Read View的概念之后，就可以来看看MVCC实现的整体流程是怎么样了</p>
-<p>整体的流程是怎么样的呢？我们可以模拟一下</p>
-<ul>
-<li>当事务2对某行数据执行了快照读，数据库为该行数据生成一个Read View读视图，假设当前事务ID为2，此时还有事务1和事务3在活跃中，事务4在事务2快照读前一刻提交更新了，所以Read View记录了系统当前活跃事务1，3的ID，维护在一个列表上，假设我们称为trx_list</li>
-</ul>
-<p><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/6.png" alt="6"></p>
-<ul>
-<li>Read View不仅仅会通过一个列表trx_list来维护事务2执行快照读那刻系统正活跃的事务ID，还会有两个属性up_limit_id（记录trx_list列表中事务ID最小的ID），low_limit_id(记录trx_list列表中事务ID最大的ID，也有人说快照读那刻系统尚未分配的下一个事务ID也就是目前已出现过的事务ID的最大值+1，我更倾向于后者；所以在这里例子中up_limit_id就是1，low_limit_id就是4 + 1 = 5，trx_list集合的值是1,3，Read View如下图</li>
-</ul>
-<p><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/7.png" alt="7"></p>
-<ul>
-<li>我们的例子中，只有事务4修改过该行记录，并在事务2执行快照读前，就提交了事务，所以当前该行当前数据的undo log如下图所示；我们的事务2在快照读该行记录的时候，就会拿该行记录的DB_TRX_ID去跟up_limit_id,low_limit_id和活跃事务ID列表(trx_list)进行比较，判断当前事务2能看到该记录的版本是哪个。</li>
-</ul>
-<p><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/8.png" alt="8"></p>
-<ul>
-<li>所以先拿该记录DB_TRX_ID字段记录的事务ID 4去跟Read View的的up_limit_id比较，看4是否小于up_limit_id(1)，所以不符合条件，继续判断 4 是否大于等于 low_limit_id(5)，也不符合条件，最后判断4是否处于trx_list中的活跃事务, 最后发现事务ID为4的事务不在当前活跃事务列表中, 符合可见性条件，所以事务4修改后提交的最新结果对事务2快照读时是可见的，所以事务2能读到的最新数据记录是事务4所提交的版本，而事务4提交的版本也是全局角度上最新的版本</li>
-</ul>
-<p><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/9.png" alt="9"></p>
-<p>也正是Read View生成时机的不同，从而造成RC,RR级别下快照读的结果的不同</p>
-<h2 id="MVCC相关问题"><a href="#MVCC相关问题" class="headerlink" title="MVCC相关问题"></a>MVCC相关问题</h2><h3 id="RR是如何在RC级的基础上解决不可重复读的？"><a href="#RR是如何在RC级的基础上解决不可重复读的？" class="headerlink" title="RR是如何在RC级的基础上解决不可重复读的？"></a>RR是如何在RC级的基础上解决不可重复读的？</h3><p>当前读和快照读在RR级别下的区别：</p>
-<p>表1:<br><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/10.png" alt="10"></p>
-<p>表2:<br><img src="/2019/12/21/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-MVCC/11.png" alt="11"></p>
-<p>而在表2这里的顺序中，事务B在事务A提交后的快照读和当前读都是实时的新数据400，这是为什么呢？</p>
-<ul>
-<li>这里与上表的唯一区别仅仅是表1的事务B在事务A修改金额前快照读过一次金额数据，而表2的事务B在事务A修改金额前没有进行过快照读。</li>
-</ul>
-<p>所以我们知道事务中快照读的结果是非常依赖该事务首次出现快照读的地方，即某个事务中首次出现快照读的地方非常关键，它有决定该事务后续快照读结果的能力</p>
-<p>我们这里测试的是更新，同时删除和更新也是一样的，如果事务B的快照读是在事务A操作之后进行的，事务B的快照读也是能读取到最新的数据的</p>
-<h3 id="RC-RR级别下的InnoDB快照读有什么不同？"><a href="#RC-RR级别下的InnoDB快照读有什么不同？" class="headerlink" title="RC,RR级别下的InnoDB快照读有什么不同？"></a>RC,RR级别下的InnoDB快照读有什么不同？</h3><p>正是Read View生成时机的不同，从而造成RC,RR级别下快照读的结果的不同</p>
-<ul>
-<li>在RR级别下的某个事务的对某条记录的第一次快照读会创建一个快照及Read View, 将当前系统活跃的其他事务记录起来，此后在调用快照读的时候，还是使用的是同一个Read View，所以只要当前事务在其他事务提交更新之前使用过快照读，那么之后的快照读使用的都是同一个Read View，所以对之后的修改不可见；</li>
-<li>即RR级别下，快照读生成Read View时，Read View会记录此时所有其他活动事务的快照，这些事务的修改对于当前事务都是不可见的。而早于Read View创建的事务所做的修改均是可见</li>
-<li>而在RC级别下的，事务中，每次快照读都会新生成一个快照和Read View, 这就是我们在RC级别下的事务中可以看到别的事务提交的更新的原因</li>
-</ul>
-<p>总之在RC隔离级别下，是每个快照读都会生成并获取最新的Read View；而在RR隔离级别下，则是同一个事务中的第一个快照读才会创建Read View, 之后的快照读获取的都是同一个Read View。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1575,7 +1614,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-count">691</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1588,7 +1627,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">340</span>
+        <span class="site-state-item-count">342</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
