@@ -188,6 +188,232 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/23/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%AE%89%E8%A3%85%E9%97%AE%E9%A2%98-PHP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/03/23/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%AE%89%E8%A3%85%E9%97%AE%E9%A2%98-PHP/" class="post-title-link" itemprop="url">Linux-安装问题-PHP</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-23 13:38:48" itemprop="dateCreated datePublished" datetime="2016-03-23T13:38:48+08:00">2016-03-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="libtool-link-ext-date-php-date-lo’-is-not-a-valid-libtool-object"><a href="#libtool-link-ext-date-php-date-lo’-is-not-a-valid-libtool-object" class="headerlink" title="libtool: link: `ext/date/php_date.lo’ is not a valid libtool object"></a>libtool: link: `ext/date/php_date.lo’ is not a valid libtool object</h2><p>./configure 后，直接make可能会出现libtool: link: `ext/date/php_date.lo’ is not a valid libtool object 的错误。</p>
+<p>make clean 一下然后再make，即可。</p>
+<h2 id="undefined-reference-to-libiconv’"><a href="#undefined-reference-to-libiconv’" class="headerlink" title="undefined reference to `libiconv’"></a>undefined reference to `libiconv’</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">ext/gd/libgd/.libs/gdkanji.o: In function `do_convert&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/gd/libgd/gdkanji.c:350: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/gd/libgd/gdkanji.c:365: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/gd/libgd/gdkanji.c:381: undefined reference to `libiconv_close&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `_php_iconv_strlen&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:603: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:626: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:660: undefined reference to `libiconv_close&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `php_iconv_string&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:441: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:453: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:467: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:478: undefined reference to `libiconv_close&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `_php_iconv_strpos&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:851: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:879: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:993: undefined reference to `libiconv_close&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `_php_iconv_appendl&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:348: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:385: undefined reference to `libiconv&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `_php_iconv_substr&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:723: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:747: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:802: undefined reference to `libiconv_close&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:806: undefined reference to `libiconv_close&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:755: undefined reference to `libiconv_open&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `_php_iconv_mime_decode&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1354: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1465: undefined reference to `libiconv_close&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1468: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1823: undefined reference to `libiconv_close&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1826: undefined reference to `libiconv_close&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `php_iconv_stream_filter_dtor&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:2465: undefined reference to `libiconv_close&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `_php_iconv_mime_encode&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1043: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1057: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1316: undefined reference to `libiconv_close&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1319: undefined reference to `libiconv_close&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1176: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1128: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1160: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1319: undefined reference to `libiconv_close&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1228: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1259: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:1303: undefined reference to `libiconv&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `php_iconv_stream_filter_append_bucket&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:2615: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:2615: undefined reference to `libiconv&#x27;</span><br><span class="line">ext/iconv/.libs/iconv.o:/root/php-5.2.12/ext/iconv/iconv.c:2537: more undefined references to `libiconv&#x27; follow</span><br><span class="line">ext/iconv/.libs/iconv.o: In function `php_iconv_stream_filter_ctor&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/iconv/iconv.c:2491: undefined reference to `libiconv_open&#x27;</span><br><span class="line">ext/xmlrpc/libxmlrpc/.libs/encodings.o: In function `convert&#x27;:</span><br><span class="line">/root/php-5.2.12/ext/xmlrpc/libxmlrpc/encodings.c:73: undefined reference to `libiconv_open&#x27;</span><br><span class="line">/root/php-5.2.12/ext/xmlrpc/libxmlrpc/encodings.c:81: undefined reference to `libiconv&#x27;</span><br><span class="line">/root/php-5.2.12/ext/xmlrpc/libxmlrpc/encodings.c:101: undefined reference to `libiconv_close&#x27;</span><br><span class="line">collect2: ld returned 1 exit status</span><br><span class="line">make: *** [sapi/cli/php] ?.. 1</span><br></pre></td></tr></table></figure>
+
+<p>处理方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vi Makefile</span><br><span class="line">找到下面这行：</span><br><span class="line"></span><br><span class="line">EXTRA_LIBS = -lcrypt ...</span><br><span class="line"></span><br><span class="line">在最后添加-liconv</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/21/%E8%AF%AD%E8%A8%80/PHP/PHP-%E9%85%8D%E7%BD%AE-Linux%E4%B8%8APHP%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/03/21/%E8%AF%AD%E8%A8%80/PHP/PHP-%E9%85%8D%E7%BD%AE-Linux%E4%B8%8APHP%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">PHP-配置-Linux上PHP环境配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-21 13:38:48" itemprop="dateCreated datePublished" datetime="2016-03-21T13:38:48+08:00">2016-03-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h4 id="1-gt-下载"><a href="#1-gt-下载" class="headerlink" title="1&gt; 下载"></a>1&gt; 下载</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget  http://cn2.php.net/distributions/php-7.0.4.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-gt-解压"><a href="#2-gt-解压" class="headerlink" title="2&gt; 解压"></a>2&gt; 解压</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar zxvf php-7.0.4.tar.gz</span><br><span class="line">cd php-7.0.4</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/03/21/%E8%AF%AD%E8%A8%80/PHP/PHP-%E9%85%8D%E7%BD%AE-Linux%E4%B8%8APHP%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/21/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/03/21/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1/" class="post-title-link" itemprop="url">接口设计</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-03-21 10:55:57" itemprop="dateCreated datePublished" datetime="2016-03-21T10:55:57+08:00">2016-03-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>作者：姚冬<br>链接：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/31363461/answer/51984535">https://www.zhihu.com/question/31363461/answer/51984535</a><br>来源：知乎<br>著作权归作者所有，转载请联系作者获得授权。</p>
+<ol>
+<li><p>拼写要准确<br>接口函数一旦发布就不能改了，要保持兼容性，拼写错误也不能改了，所以要仔细检查拼写，否则会被同行嘲笑很多年。<br>著名悲剧：unix 的 creat</p>
+</li>
+<li><p>不仅是英文单词不要拼错，时态也不要错。<br>比如：<br>返回bool的判断函数，单数要用 is 复数要用are，这样你的命名就和文档中的描述保持了一致性。<br>表示状态的变量或者函数要注意时态，比如 onXxxxChanged 表示xxx已经变化了，isConnecting表示正在连接。<br>正确的时态可以给使用者传递更丰富的信息。</p></li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/03/21/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/03/19/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E6%A0%87%E7%AD%BE-%E3%80%8Amvc%EF%BC%9Aresources%E3%80%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -526,7 +752,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
                 </span>
             </span>
 
@@ -817,284 +1043,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/" class="post-title-link" itemprop="url">App后端如何设计api</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-02-26 13:56:32" itemprop="dateCreated datePublished" datetime="2016-02-26T13:56:32+08:00">2016-02-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/newjueqi/article/details/44037011">http://blog.csdn.net/newjueqi/article/details/44037011</a></p>
-<p>app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。</p>
-<h2 id="什么是api？"><a href="#什么是api？" class="headerlink" title="什么是api？"></a>什么是api？</h2><p> 这个问题在以前发表的文章“7.app和app后端的通讯”中其实已经回答了，这里再重复一次。  </p>
-<p>相信大家都用过银行的柜员机(ATM)的查询余额，转帐，取款等操作。   </p>
-<p>当在柜员机取款的时候，我们输入要取款的金额，隔一会钱就出来了，如果因为有什么问题不能取款（例如超过取款金额的限制），屏幕上也会显示出错误的信息。   </p>
-<p>在整个过程中，我们只要输入金额，获得结果（取款成功或不成功），就行了，至于柜员机内部是怎么处理，我们不需要理会。   　　柜员机这种把内部的处理遮蔽的做法极大方便了我们的使用。   </p>
-<p>同样的，在后端，也只提供了一系列的功能给app使用，这系列的功能以api的形式提供。   </p>
-<p>api的定义：API（Application Programming Interface,应用程序编程接口）是一些预先定义的函数，目的是提供应用程序与开发人员基于某软件或硬件得以访问一组例程的能力，而又无需访问源码，或理解内部工作机制的细节。   </p>
-<p>当app调用api的时候，只需要明确下面３点:   </p>
-<ol>
-<li>这个api是干啥的（柜员机例子中，是取款功能，还是查询余额,还是转账）   </li>
-<li>知道要输入什么（柜员机例子中，取款要输入金钱）   </li>
-<li>知道结果是什么（柜员机例子中，取款是成功还是失败）   </li>
-</ol>
-<p>至于api内部是怎么处理的，app根本无需理会。   </p>
-<p>从这里可看出，api能在最大程度遮蔽了app后端复杂性，极大提高了app前端的开发效率。 </p>
-<h2 id="api设计的8点"><a href="#api设计的8点" class="headerlink" title="api设计的8点"></a>api设计的8点</h2><p>### Restful设计原则  <br>Restful风格：RESTfu设计原则,它被Roy Felding提出（在他的”基于网络的软件架构“论文中第五章）。而REST的核心原则是将你的API拆分为逻辑上的资源。这些资源通过http被操作（GET ,POST,PUT,DELETE）。</p>
-<p>在实际的开发过程中发现，程序员由于在web端养成的习惯，api操作中通常就只有两种方式”POST””GET”。大家可看一下微博的api例子”statuses/destroy”，这个很明显是delete操作的api却是用post方式提交。不是完全遵守Restful风格的风格。</p>
-<p>这个设计原则最简单的应用就是根据object而不是页面来设计api。最开始的时候，app的一个页面需要什么数据，api就返回什么数据。结果随着app的UI不断改版，需要的数据不断变化，不停地修改api，最后当api的改动会影响以前的版本的时候，只能写一个新的api版本，最后弄得api中有很多V2,V3这样的标志，恶梦!</p>
-<p>后来在网站的重构过程中，就根据object来设计api，但根据object来设计，又有一个问题，一个大object可能包含很多小object，是一个api返回全部小object，还是分为多个api返回？根据业务和技术，带宽等仔细考虑吧。</p>
-<h3 id="api的命名"><a href="#api的命名" class="headerlink" title="api的命名"></a>api的命名</h3><p>一看api名字就知道这个api是干啥。在创业团队中，一般就只有一两个人负责后台，当你要负责几十甚至上百个api，你就知道不能“望名知api”是个什么样的痛苦。</p>
-<p>api的命名，我是挺喜欢微博的命名风格，例如删除微博的api “statuses/destroy”，第一个是对象，第二个是对象的操作删除</p>
-<h3 id="api的安全性"><a href="#api的安全性" class="headerlink" title="api的安全性"></a>api的安全性</h3><p>这点会在以后的“怎么保证app通讯的安全性”一文中详细论述。</p>
-<h3 id="api返回数据"><a href="#api返回数据" class="headerlink" title="api返回数据"></a>api返回数据</h3><p>app客户端的语言 java 和object-c都是强类型语言，所以怎么处理空值显得特别重要，不合理的设计很容易造成app的闪退。</p>
-<p>从后台的角度来说，api中返回的数据中，正确值和空值的类型必须一样，举例，用户名的字段是“realname”: “xxx”,如果用户名为空，则应该返回“realname”: “”。如果返回值是一个array，空数据则返回一个空array，绝对禁止null值。</p>
-<p>对于客户端，必须用个全局的函数来处理所有api的返回数据，需要有一个机制：对于某个客户端需要数据，如果api中缺失，客户端自动补上并给予默认值。这个机制在我们的实践中大大减少了app的闪退。</p>
-<p>同时，在数据库设计的时候，一个合理的设计必须是所有字段都有默认值，不应该允许null值。null在大量的语言和数据库中，会带来无穷的问题。对于这个数据库设计原则，我以前不太明白，现在经历了一年的api设计后，终于懂得。</p>
-<p>如果客户端是php，还有一个问题，php中数组和字典都是array，但在java 和object-c中是不一样，这个问题一定要注意。</p>
-<h3 id="图片的处理"><a href="#图片的处理" class="headerlink" title="图片的处理"></a>图片的处理</h3><p>在不同版本的app中，各种不同尺寸的手机中，同一张图片显示的尺寸可能是不一样，如果每次都需要用返回原图，然后在客户端处理，则极大浪费网络资源。而如果是后台处理好图片才返回，则又是一个挑战，怎么有效保存和裁剪多种图片尺寸呢</p>
-<p>例如，一开始头像只需要返回60<em>60的尺寸，后来在新的版本需要返回70</em>70, 又出了一个新版本，需要返回80*80, 每次增加一个新的尺寸，怎么在数据库上记录下来。这个问题在一开始做api的时候没考虑，后来不得不用了一个极端的方法，没增加新的图片尺寸，就在数据库中增加一个新的字段，保存并生成新的图片尺寸，结果最后数据库的头像字段有”avatar”,”avatar_60_60”,”avatar_70_70”,”avatar_80_80”，这种极度恶虐的设计。</p>
-<p>最后，针对图片，我们才用了这样的策略：</p>
-<ol>
-<li>客户端本地缓存图片，只有没有合适的图片，才去服务器取。</li>
-<li>当客户端需要某种尺寸的图片，由客户端告诉服务端图片的尺寸，服务端动态生成并缓存起来。</li>
-</ol>
-<p>例如，客户端需要图片（<a target="_blank" rel="noopener" href="http://www.baidu.com/img/bdlogo.gif%EF%BC%89%E7%9A%8480*80%E7%9A%84%E5%B0%BA%E5%AF%B8%EF%BC%8C%E5%88%99%E5%9C%A8%E5%9B%BE%E7%89%87%E7%9A%84%E8%B7%AF%E5%BE%84%E5%8A%A0%E4%B8%8A%E5%AE%BD%E5%92%8C%E9%AB%98%E7%9A%84%E5%8F%82%E6%95%B0%EF%BC%88%E7%B1%BB%E4%BC%BC%E4%BA%8ECDN%E7%9A%84%E6%9C%BA%E5%88%B6%EF%BC%89">http://www.baidu.com/img/bdlogo.gif）的80*80的尺寸，则在图片的路径加上宽和高的参数（类似于CDN的机制）</a> <a target="_blank" rel="noopener" href="http://www.baidu.com/img/bdlogo.gif%EF%BC%9Fw=80&amp;h=80%EF%BC%8C">http://www.baidu.com/img/bdlogo.gif？w=80&amp;h=80，</a> 则服务器就生成80*80的尺寸并返回。</p>
-<p>采用了这样的图片处理机制，数据库中只要有一个字段保存原图就行了，其它尺寸就由客户端告诉服务端动态生成。以后无论什么尺寸的图片，数据库中都不需要记录，数据库只有原图就行了。</p>
-<p>注意，现在的文件云存储服务（例如七牛，又拍云）等都提供了这个文件的缩放功能，而且能加速文件的上传下载速度，极大提升了app的用户体验，强烈推荐使用。</p>
-<h3 id="返回的提示信息"><a href="#返回的提示信息" class="headerlink" title="返回的提示信息"></a>返回的提示信息</h3><p>最科学的情况，服务端只返回信息代码，具体的文字提示由客户端决定。</p>
-<p>如果文字信息是由服务端返回，则最起码要区分2种信息：提示用户的信息，提示客户端程序员的信息。这两者的区别：</p>
-<ol>
-<li>提示用户的信息是要在让客户知道的，提示客户端程序员的信息不需要让客户知道的。</li>
-<li>提示用户的信息文字很友好，客户不需要专业基础一看就知道是什么，提示客户端程序员的信息则很专业，例如告诉客户端少传了哪个参数？哪个参数有问题等等。</li>
-</ol>
-<h3 id="在线api测试文档"><a href="#在线api测试文档" class="headerlink" title="在线api测试文档"></a>在线api测试文档</h3><p>我们网站的api在线测试文档，是使用既是一份在线api文档，也是一个在线测试工具，极大方便沟通和测试。每次客户端程序员觉得某个api有什么问题，我们就是这个在线工具上讨论沟通的。客户端程序员最喜欢这个玩意了^-^。</p>
-<p>这个api在线测试文档，是使用了Swagger-UI搭建的。Swagger-UI简单而一目了然。它能够纯碎的基于html+javascript实现，只要稍微整合一下便能成为方便的API在线测试工具。项目的设计架构中一直提倡使用TDD（测试驱动）原则来开发，swagger-ui在这方面更是能提供很大帮助。</p>
-<p>下面是用Swagger-UI搭建的api文档中的一个api的例子，可看到，整个api的提交方式，作用，参数都非常清晰明了。</p>
-<p><img src="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%85%A5.png" alt="swagger输入"></p>
-<p>当按了“测试”，就以post方式调用这个api，返回的结果如下：</p>
-<p><img src="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%87%BA.png" alt="swagger输出"></p>
-<p>所有的返回结果，一目了然，cool！！！</p>
-<p>api返回的数据，是以json格式返回的。用json格式，最省流量，而且几乎每种计算机语言都支持json格式。用xml的话，太耗费流量了，而且冗余数据多，不适合移动端。</p>
-<p>在”app后端”的qq群，有个app创始人使用了这个api在线测试文档后赞不决口，称赞虽然前期的搭建需要花一段时间，但极大提高了app前后端工作的效率。以后有小伙伴问相关的问题，他都强烈推荐这个Swagger-UI。</p>
-<h3 id="在app启动时，调用一个初始化api获取必要的信息"><a href="#在app启动时，调用一个初始化api获取必要的信息" class="headerlink" title="在app启动时，调用一个初始化api获取必要的信息"></a>在app启动时，调用一个初始化api获取必要的信息</h3><p>通过这个初始化api，获取一下必要的信息，例如，最新的app版本。当发现本地app的版本已经低于最新的app版本，可提示用户更新。当然了，这个提示版本更新的功能很多第三方sdk都提供。</p>
-<h2 id="如何处理api的版本升级"><a href="#如何处理api的版本升级" class="headerlink" title="如何处理api的版本升级"></a>如何处理api的版本升级</h2><p>当app做了大改版后，可能会出现一个问题，发现现在的api已经不适了，就考虑到api的升级，同时为了兼容已经发布的app，原来的api必须要保留。为了避免同一个app中调用不同版本的api，一般就会全部升级api的版本，例如:原来的是“test.com/v1/statuses/destroy”，升级为“test.com/v2/statuses/destroy”。</p>
-<p>在api的版本升级时，需要注意以下2点：</p>
-<ol>
-<li>v2版本的api的controller必须要继承v1版的controller，v2版本的api只重写需要改动的api。</li>
-<li>在线api测试文档中详细标明返回内容，已作对比，方便客户端人员的调试。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-@Autowired%E5%92%8C@Resource%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/02/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-@Autowired%E5%92%8C@Resource%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Spring-注解-@Autowired和@Resource的区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-02-26 11:26:41" itemprop="dateCreated datePublished" datetime="2016-02-26T11:26:41+08:00">2016-02-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ol>
-<li><p><code>@Autowired</code>与<code>@Resource</code>都可以用来装配bean。都可以写在字段上，或写在setter方法上。</p>
-</li>
-<li><p><code>@Autowired</code>默认按 <strong>类型</strong> 装配（这个注解是属业spring的），默认情况下必须要求依赖对象必须存在，如果要允许null值，可以设置它的required属性为false，如：<code>@Autowired(required=false)</code> ，如果我们想使用名称装配可以结合<code>@Qualifier</code>注解进行使用，如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@Autowired() @Qualifier(&quot;baseDao&quot;)    </span><br><span class="line">private BaseDao baseDao;</span><br></pre></td></tr></table></figure></li>
-<li><p><code>@Resource</code>是JDK1.6支持的注解，默认按照 <strong>名称</strong> 进行装配，名称可以通过name属性进行指定，如果没有指定name属性，当注解写在字段上时，默认取字段名，按照名称查找，如果注解写在setter方法上默认取属性名进行装配。当找不到与名称匹配的bean时才按照类型进行装配。但是需要注意的是，如果name属性一旦指定，就只会按照名称进行装配。</p>
-</li>
-<li><p><code>@Autowired</code>属于Spring的；<code>@Resource</code>为JSR-250标准的注释，属于J2EE的。</p>
-</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/19/%E8%AF%AD%E8%A8%80/web/CSS-%E5%AD%97%E4%BD%93%E5%A4%A7%E5%B0%8Frem,px,em/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/02/19/%E8%AF%AD%E8%A8%80/web/CSS-%E5%AD%97%E4%BD%93%E5%A4%A7%E5%B0%8Frem,px,em/" class="post-title-link" itemprop="url">CSS-字体大小rem,px,em</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-02-19 13:21:37" itemprop="dateCreated datePublished" datetime="2016-02-19T13:21:37+08:00">2016-02-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/CSS/" itemprop="url" rel="index"><span itemprop="name">CSS</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="PX为单位"><a href="#PX为单位" class="headerlink" title="PX为单位"></a>PX为单位</h2><p>在Web页面初期制作中，我们都是使用“px”来设置我们的文本，因为他比较稳定和精确。但是这种方法存在一个问题，当用户在浏览器中浏览我们制作的Web页面时，他改变了浏览器的字体大小，这时会使用我们的Web页面布局被打破。这样对于那些关心自己网站可用性的用户来说，就是一个大问题了。因此，这时就提出了使用“em”来定义Web页面的字体</p>
-<h2 id="Em为单位"><a href="#Em为单位" class="headerlink" title="Em为单位"></a>Em为单位</h2><p>这种技术需要一个参考点，一般都是以<body>的“font-size”为基准。比如说我们使用“1em”等于“10px”来改变默认值“1em=16px”，这样一来，我们设置字体大小相当于“14px”时，只需要将其值设置为“1.4em”。</body></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">body&#123; font-size:62.5%;&#125;  /*10/16*100%*/  </span><br><span class="line">.font1&#123; font-size:1.2em;&#125;  </span><br><span class="line">.font2&#123; font-size:12px;&#125;  </span><br></pre></td></tr></table></figure>
-
-<h2 id="Rem为单位"><a href="#Rem为单位" class="headerlink" title="Rem为单位"></a>Rem为单位</h2><p>CSS3的出现，他同时引进了一些新的单位，包括我们今天所说的rem。</p>
-<p>前面说了“em”是相对于其父元素来设置字体大小的，这样就会存在一个问题，进行任何元素设置，都有可能需要知道他父元素的大小，在我们多次使用时，就会带来无法预知的错误风险。而rem是相对于根元素<code>&lt;html&gt;</code></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">html&#123;font-size:62.5% ;&#125;  </span><br><span class="line">.fon1&#123; font-size:1.2rem;&#125;  </span><br><span class="line">.fon2&#123; font-size:12px;&#125;  </span><br></pre></td></tr></table></figure>
-<p>参考下图：</p>
-<p><img src="/2016/02/19/%E8%AF%AD%E8%A8%80/web/CSS-%E5%AD%97%E4%BD%93%E5%A4%A7%E5%B0%8Frem,px,em/Rem%E5%AF%B9%E7%85%A7%E8%A1%A8.png" alt="Rem对照表"></p>
-<p>但也想兼容IE下的效果，可你可考虑“px”和“rem”一起使用，用”px”来实现IE6-8下的效果，然后使用“Rem”来实现代浏览器的效果</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1166,7 +1114,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1179,7 +1127,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

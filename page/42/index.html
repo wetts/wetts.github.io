@@ -188,6 +188,280 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/23/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-setting.xml%E4%B8%8Epom.xml/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/07/23/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-setting.xml%E4%B8%8Epom.xml/" class="post-title-link" itemprop="url">Maven-setting.xml与pom.xml</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-23 09:17:48" itemprop="dateCreated datePublished" datetime="2016-07-23T09:17:48+08:00">2016-07-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Maven/" itemprop="url" rel="index"><span itemprop="name">Maven</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>pom.xml位于创建的项目文件夹内，setting.xml位于maven包解压后conf文件夹内。</p>
+<h2 id="settings-xml"><a href="#settings-xml" class="headerlink" title="settings.xml"></a>settings.xml</h2><p>先来说说settings.xml，settings.xml对于maven来说相当于全局性的配置，用于所有的项目。在maven2中存在两个 settings.xml，一个位于maven2的解压目录conf下面，作为全局性配置。对于团队设置，保持一致的定义是关键，所以 maven2/conf下面的settings.xml就作为团队共同的配置文件，保证所有的团队成员都拥有相同的配置。当然对于每个成员，都需要特殊的自定义设置，如用户信息，所以另外一个settings.xml就作为本地配置。</p>
+<p>settings.xml基本结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&lt;settings xmlns=”http://maven.apache.org/POM/4.0.0″</span><br><span class="line"></span><br><span class="line">      xmlns:xsi=”http://www.w3.org/2001/XMLSchema-instance”</span><br><span class="line"></span><br><span class="line">      xsi:schemaLocation=”http://maven.apache.org/POM/4.0.0</span><br><span class="line"></span><br><span class="line">      http://maven.apache.org/xsd/settings-1.0.0.xsd”&gt;</span><br><span class="line"></span><br><span class="line">  &lt;localRepository/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;interactiveMode/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;usePluginRegistry/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;offline/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;pluginGroups/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;servers/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;mirrors/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;proxies/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;profiles/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;activeProfiles/&gt;</span><br><span class="line"></span><br><span class="line">&lt;/settings&gt;</span><br></pre></td></tr></table></figure>
+
+<p>几个主要的、常用的配置因素：</p>
+<ol>
+<li><p>localRepository：表示本地库的保存位置，也就是maven2主要的jar保存位置，默认在${user.dir}/.m2/repository，如需要另外设置，就换成其他的路径，如：:\repo。</p>
+</li>
+<li><p>offline：如果不想每次编译，都去查找远程中心库，那就设置为true。当然前提是你已经下载了必须的依赖包。</p>
+</li>
+<li><p>Servers： 在POM中的 distributionManagement元素定义了开发库。然而，特定的username和pwd不能使用于pom.xml，所以通过此配置来保存server信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;servers&gt;</span><br><span class="line">  &lt;server&gt;</span><br><span class="line">    &lt;id&gt;server001&lt;/id&gt;</span><br><span class="line">    &lt;username&gt;guangyuan&lt;/username&gt;</span><br><span class="line">    &lt;password&gt;my_password&lt;/password&gt;</span><br><span class="line">    &lt;privateKey&gt;$&#123;usr.home&#125;/.ssh/id_dsa&lt;/privateKey&gt;</span><br><span class="line">    &lt;passphrase&gt;some_passphrase&lt;/passphrase&gt;</span><br><span class="line">    &lt;filePermissions&gt;664&lt;/filePermissions&gt;</span><br><span class="line">    &lt;directoryPermissions&gt;775&lt;/directoryPermissions&gt;</span><br><span class="line">    &lt;configuration&gt;&lt;/configuration&gt;</span><br><span class="line">  &lt;/server&gt;</span><br><span class="line">&lt;/servers&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>id:server 的id,用于匹配distributionManagement库id，比较重要。</li>
+<li>username, password:用于登陆此服务器的用户名和密码</li>
+<li>privateKey, passphrase：设置private key，以及passphrase</li>
+<li>filePermissions, directoryPermissions：当库文件或者目录创建后，需要使用权限进行访问。参照unix文件许可，如664和775</li>
+</ul>
+<ol start="4">
+<li>Mirrors 表示镜像库，指定库的镜像，用于增加其他库：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;mirrors&gt;</span><br><span class="line">  &lt;mirror&gt;</span><br><span class="line">    &lt;id&gt;tb_mirror&lt;/id&gt;</span><br><span class="line">    &lt;name&gt;taobao mirror&lt;/name&gt;</span><br><span class="line">    &lt;url&gt;http://downloads.planetmirror.com/pub/maven2&lt;/url&gt;</span><br><span class="line">    &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;</span><br><span class="line">  &lt;/mirror&gt;</span><br><span class="line">&lt;/mirrors&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>id,name:唯一的标志，用于区别镜像</li>
+<li>url:镜像的url</li>
+<li>mirrorOf：此镜像指向的服务id</li>
+</ul>
+<ol start="5">
+<li>Proxies 此代理设置，主要用于无法直接访问中心的库用户配置。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;proxies&gt;</span><br><span class="line">  &lt;proxy&gt;</span><br><span class="line">    &lt;id&gt;myproxy&lt;/id&gt;</span><br><span class="line">    &lt;active&gt;true&lt;/active&gt;</span><br><span class="line">    &lt;protocol&gt;http&lt;/protocol&gt;</span><br><span class="line">    &lt;host&gt;proxy.somewhere.com&lt;/host&gt;</span><br><span class="line">    &lt;port&gt;8080&lt;/port&gt;</span><br><span class="line">    &lt;username&gt;proxyuser&lt;/username&gt;</span><br><span class="line">    &lt;password&gt;somepassword&lt;/password&gt;</span><br><span class="line">    &lt;nonProxyHosts&gt;*.google.com|ibiblio.org&lt;/nonProxyHosts&gt;</span><br><span class="line">  &lt;/proxy&gt;</span><br><span class="line">&lt;/proxies&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>id:代理的标志</li>
+<li>active：是否激活代理</li>
+<li>protocol, host, port:protocol://host:port 代理</li>
+<li>username, password：用户名和密码</li>
+<li>nonProxyHosts: 不需要代理的host</li>
+</ul>
+<ol start="6">
+<li>repositories 和pluginRepositories  定义其他开发库和插件开发库。对于团队来说，肯定有自己的开发库。可以通过此配置来定义。 如下的配置，定义了本地开发库，用于release 发布。pluginRepositories 的定义与repositories类似。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;repositories&gt;</span><br><span class="line">  &lt;repository&gt;</span><br><span class="line">    &lt;id&gt;repo-local&lt;/id&gt;</span><br><span class="line">    &lt;name&gt;Internal 开发库&lt;/name&gt;</span><br><span class="line">    &lt;url&gt;http://192.168.0.2:8082/repo-local&lt;/url&gt;</span><br><span class="line">    &lt;releases&gt;</span><br><span class="line">      &lt;enabled&gt;true&lt;/enabled&gt;</span><br><span class="line">      &lt;updatePolicy&gt;never&lt;/updatePolicy&gt;</span><br><span class="line">      &lt;checksumPolicy&gt;warn&lt;/checksumPolicy&gt;</span><br><span class="line">    &lt;/releases&gt;</span><br><span class="line">    &lt;snapshots&gt;</span><br><span class="line">      &lt;enabled&gt;false&lt;/enabled&gt;</span><br><span class="line">    &lt;/snapshots&gt;</span><br><span class="line">    &lt;layout&gt;default&lt;/layout&gt;</span><br><span class="line">  &lt;/repository&gt;</span><br><span class="line">&lt;/repositories&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>releases, snapshots:每个产品的版本的Release或者snapshot(注：release和snapshot的区别，release一般是比较稳定的版本，而snapshot基本上不稳定，只是作为快照）。</li>
+</ul>
+<p>关于setting.xml里的常用配置主要就是上面的这些了。事实上，在实际项目应用中，我们只需要重点理解这些配置的意思就足够了。但如果想自己开发一个项目，那么下面的这些配置说明就显得尤为重要了。</p>
+<h2 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h2><p>通过在 pom.xml 中定义 jar 包版本和依赖，能够方便的管理 jar 文件。pom作为项目对象模型。通过xml表示maven项目，使用pom.xml来实现。主要描述了项目：包括配置文件；开发者需要遵循的规则，缺陷管理系统，组织和licenses，项目的url，项目的依赖性，以及其他所有的项目相关因素。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-What's%20faster,%20SELECT%20DISTINCT%20or%20GROUP%20BY/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-What's%20faster,%20SELECT%20DISTINCT%20or%20GROUP%20BY/" class="post-title-link" itemprop="url">MySQL-What's faster, SELECT DISTINCT or GROUP BY</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-15 17:06:17" itemprop="dateCreated datePublished" datetime="2016-07-15T17:06:17+08:00">2016-07-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/581521/whats-faster-select-distinct-or-group-by-in-mysql">http://stackoverflow.com/questions/581521/whats-faster-select-distinct-or-group-by-in-mysql</a></p>
+<p>They are essentially equivalent to each other (in fact this is how some databases implement DISTINCT under the hood).</p>
+<p>If one of them is faster, it’s going to be DISTINCT. This is because, although the two are the same, a query optimizer would have to catch the fact that your GROUP BY is not taking advantage of any group members, just their keys. DISTINCT makes this explicit, so you can get away with a slightly dumber optimizer.</p>
+<p>When in doubt, test!</p>
+<hr>
+<p>If you have an index on profession, these two are synonyms.</p>
+<p>If you don’t, then use DISTINCT.</p>
+<p>GROUP BY in MySQL sorts results. You can even do:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT u.profession FROM users u GROUP BY u.profession DESC</span><br></pre></td></tr></table></figure>
+<p>and get your professions sorted in DESC order.</p>
+<p>DISTINCT creates a temporary table and uses it for storing duplicates. GROUP BY does the same, but sortes the distinct results afterwards.</p>
+<p>So</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT DISTINCT u.profession FROM users u</span><br></pre></td></tr></table></figure>
+<p>is faster, if you don’t have an index on profession.</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/" class="post-title-link" itemprop="url">MySQL-语句执行顺序</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-15 15:59:53" itemprop="dateCreated datePublished" datetime="2016-07-15T15:59:53+08:00">2016-07-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>MySQL的语句一共分为11步，如下图所标注的那样，最先执行的总是FROM操作，最后执行的是LIMIT操作。其中每一个操作都会产生一张虚拟的表，这个虚拟的表作为一个处理的输入，只是这些虚拟的表对用户来说是透明的，但是只有最后一个虚拟的表才会被作为结果返回。如果没有在语句中指定某一个子句，那么将会跳过相应的步骤。</p>
+<p><img src="/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F.png" alt="语句执行顺序"></p>
+<p>下面我们来具体分析一下查询处理的每一个阶段</p>
+<ol>
+<li>FROM: 对FROM的左边的表和右边的表计算笛卡尔积。产生虚表VT1</li>
+<li>ON: 对虚表VT1进行ON筛选，只有那些符合<code>&lt;join-condition&gt;</code>的行才会被记录在虚表VT2中。</li>
+<li>JOIN： 如果指定了OUTER JOIN（比如left join、 right join），那么保留表中未匹配的行就会作为外部行添加到虚拟表VT2中，产生虚拟表VT3, rug from子句中包含两个以上的表的话，那么就会对上一个join连接产生的结果VT3和下一个表重复执行步骤1~3这三个步骤，一直到处理完所有的表为止。</li>
+<li>WHERE： 对虚拟表VT3进行WHERE条件过滤。只有符合<code>&lt;where-condition&gt;</code>的记录才会被插入到虚拟表VT4中。</li>
+<li>GROUP BY: 根据group by子句中的列，对VT4中的记录进行分组操作，产生VT5.</li>
+<li>CUBE | ROLLUP: 对表VT5进行cube或者rollup操作，产生表VT6.使用聚集函数进行计算。</li>
+<li>HAVING： 对虚拟表VT6应用having过滤，只有符合<code>&lt;having-condition&gt;</code>的记录才会被 插入到虚拟表VT7中。</li>
+<li>SELECT： 执行select操作，选择指定的列，插入到虚拟表VT8中。</li>
+<li>DISTINCT： 对VT8中的记录进行去重。产生虚拟表VT9.</li>
+<li>ORDER BY: 将虚拟表VT9中的记录按照<code>&lt;order_by_list&gt;</code>进行排序操作，产生虚拟表VT10.</li>
+<li>LIMIT：取出指定行的记录，产生虚拟表VT11, 并将结果返回。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/14/%E6%95%B0%E6%8D%AE%E5%BA%93/SQL%20Server/SQL%20Server-SELECT%20INTO%20%E5%92%8C%20INSERT%20INTO%20SELECT%20%E4%B8%A4%E7%A7%8D%E8%A1%A8%E5%A4%8D%E5%88%B6%E8%AF%AD%E5%8F%A5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -294,7 +568,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
                 </span>
             </span>
 
@@ -781,306 +1055,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/" class="post-title-link" itemprop="url">Redis-主从切换-sentinel（哨兵机制）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-26 19:01:27" itemprop="dateCreated datePublished" datetime="2016-06-26T19:01:27+08:00">2016-06-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/zhoujinyi/p/5569462.html">http://www.cnblogs.com/zhoujinyi/p/5569462.html</a></p>
-<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Redis-Sentinel是Redis官方推荐的高可用性(HA)解决方案，当用Redis做Master-slave的高可用方案时，假如master宕机了，Redis本身(包括它的很多客户端)都没有实现自动进行主备切换，而Redis-sentinel本身也是一个独立运行的进程，它能监控多个master-slave集群，发现master宕机后能进行自动切换。</p>
-<p>它的主要功能有以下几点</p>
-<ul>
-<li>不时地监控redis是否按照预期良好地运行;</li>
-<li>如果发现某个redis节点运行出现状况，能够通知另外一个进程(例如它的客户端);</li>
-<li>能够进行自动切换。当一个master节点不可用时，能够选举出master的多个slave(如果有超过一个slave的话)中的一个来作为新的master,其它的slave节点会将它所追随的master的地址改为被提升为master的slave的新地址。</li>
-</ul>
-<h2 id="Sentinel支持集群"><a href="#Sentinel支持集群" class="headerlink" title="Sentinel支持集群"></a>Sentinel支持集群</h2><p>很显然，只使用单个sentinel进程来监控redis集群是不可靠的，当sentinel进程宕掉后(sentinel本身也有单点问题，single-point-of-failure)整个集群系统将无法按照预期的方式运行。所以有必要将sentinel集群，这样有几个好处：</p>
-<ul>
-<li>即使有一些sentinel进程宕掉了，依然可以进行redis集群的主备切换；</li>
-<li>如果只有一个sentinel进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现redis集群的主备切换（单点问题）;</li>
-<li>如果有多个sentinel，redis的客户端可以随意地连接任意一个sentinel来获得关于redis集群中的信息。</li>
-</ul>
-<h2 id="运行Sentinel"><a href="#运行Sentinel" class="headerlink" title="运行Sentinel"></a>运行Sentinel</h2><p>运行sentinel有两种方式：</p>
-<h3 id="第一种"><a href="#第一种" class="headerlink" title="第一种"></a>第一种</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-sentinel /path/to/sentinel.conf</span><br></pre></td></tr></table></figure>
-<h3 id="第二种"><a href="#第二种" class="headerlink" title="第二种"></a>第二种</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server /path/to/sentinel.conf --sentinel</span><br></pre></td></tr></table></figure>
-<p>以上两种方式，都必须指定一个sentinel的配置文件sentinel.conf，如果不指定，将无法启动sentinel。sentinel默认监听26379端口，所以运行前必须确定该端口没有被别的进程占用。</p>
-<h2 id="Sentinel的配置"><a href="#Sentinel的配置" class="headerlink" title="Sentinel的配置"></a>Sentinel的配置</h2><p>Redis源码包中包含了一个sentinel.conf文件作为sentinel的配置文件，配置文件自带了关于各个配置项的解释。典型的配置项如下所示：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 60000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br><span class="line">sentinel parallel-syncs mymaster 1</span><br><span class="line"></span><br><span class="line">sentinel monitor resque 192.168.1.3 6380 4</span><br><span class="line">sentinel down-after-milliseconds resque 10000</span><br><span class="line">sentinel failover-timeout resque 180000</span><br><span class="line">sentinel parallel-syncs resque 5</span><br></pre></td></tr></table></figure>
-<p>上面的配置项配置了两个名字分别为mymaster和resque的master，配置文件只需要配置master的信息就好啦，不用配置slave的信息，因为slave能够被自动检测到(master节点会有关于slave的消息)。需要注意的是，配置文件在sentinel运行期间是会被动态修改的，例如当发生主备切换时候，配置文件中的master会被修改为另外一个slave。这样，之后sentinel如果重启时，就可以根据这个配置来恢复其之前所监控的redis集群的状态。</p>
-<p>接下来我们将一行一行地解释上面的配置项：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br></pre></td></tr></table></figure>
-<p>这一行代表sentinel监控的master的名字叫做mymaster,地址为127.0.0.1:6379，行尾最后的一个2代表什么意思呢？我们知道，网络是不可靠的，有时候一个sentinel会因为网络堵塞而误以为一个master redis已经死掉了，当sentinel集群式，解决这个问题的方法就变得很简单，只需要多个sentinel互相沟通来确认某个master是否真的死了，这个2代表，当集群中有2个sentinel认为master死了时，才能真正认为该master已经不可用了。（sentinel集群中各个sentinel也有互相通信，通过gossip协议）。</p>
-<p>除了第一行配置，我们发现剩下的配置都有一个统一的格式:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel &lt;option_name&gt; &lt;master_name&gt; &lt;option_value&gt;</span><br></pre></td></tr></table></figure>
-<p>接下来我们根据上面格式中的option_name一个一个来解释这些配置项：</p>
-<ul>
-<li><p>down-after-milliseconds</p>
-<p>sentinel会向master发送心跳PING来确认master是否存活，如果master在“一定时间范围”内不回应PONG 或者是回复了一个错误消息，那么这个sentinel会主观地(单方面地)认为这个master已经不可用了(subjectively down, 也简称为SDOWN)。而这个down-after-milliseconds就是用来指定这个“一定时间范围”的，单位是毫秒。</p>
-<p>  不过需要注意的是，这个时候sentinel并不会马上进行failover主备切换，这个sentinel还需要参考sentinel集群中其他sentinel的意见，如果超过某个数量的sentinel也主观地认为该master死了，那么这个master就会被客观地(注意哦，这次不是主观，是客观，与刚才的subjectively down相对，这次是objectively down，简称为ODOWN)认为已经死了。需要一起做出决定的sentinel数量在上一条配置中进行配置。</p>
-</li>
-<li><p>parallel-syncs</p>
-<p>在发生failover主备切换时，这个选项指定了最多可以有多少个slave同时对新的master进行同步，这个数字越小，完成failover所需的时间就越长，但是如果这个数字越大，就意味着越多的slave因为replication而不可用。可以通过将这个值设为 1 来保证每次只有一个slave处于不能处理命令请求的状态。</p>
-</li>
-</ul>
-<p>其他配置项在sentinel.conf中都有很详细的解释。</p>
-<p>所有的配置都可以在运行时用命令SENTINEL SET command动态修改。</p>
-<hr>
-<p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yswKnight/article/details/78158540">https://blog.csdn.net/yswKnight/article/details/78158540</a></p>
-<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="什么是哨兵机制"><a href="#什么是哨兵机制" class="headerlink" title="什么是哨兵机制?"></a>什么是哨兵机制?</h2><p>Redis的哨兵(sentinel) 系统用于管理多个 Redis 服务器,该系统执行以下三个任务:</p>
-<ol>
-<li>监控(Monitoring): 哨兵(sentinel) 会不断地检查你的Master和Slave是否运作正常。</li>
-<li>提醒(Notification):当被监控的某个 Redis出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。</li>
-<li>自动故障迁移(Automatic failover):当一个Master不能正常工作时，哨兵(sentinel) 会开始一次自动故障迁移操作,它会将失效Master的其中一个Slave升级为新的Master, 并让失效Master的其他Slave改为复制新的Master; 当客户端试图连接失效的Master时,集群也会向客户端返回新Master的地址,使得集群可以使用Master代替失效Master。</li>
-</ol>
-<p>哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程,这些进程使用流言协议(gossipprotocols)来接收关于Master是否下线的信息,并使用投票协议(agreement protocols)来决定是否执行自动故障迁移,以及选择哪个Slave作为新的Master。</p>
-<p>每个哨兵(sentinel) 会向其它哨兵(sentinel)、master、slave定时发送消息,以确认对方是否”活”着,如果发现对方在指定时间(可配置)内未回应,则暂时认为对方已挂(所谓的”主观认为宕机” Subjective Down,简称sdown).</p>
-<p>若“哨兵群”中的多数sentinel,都报告某一master没响应,系统才认为该master”彻底死亡”(即:客观上的真正down机,Objective Down,简称odown),通过一定的vote算法,从剩下的slave节点中,选一台提升为master,然后自动修改相关配置。</p>
-<p>虽然哨兵(sentinel) 释出为一个单独的可执行文件 redis-sentinel ,但实际上它只是一个运行在特殊模式下的 Redis 服务器，你可以在启动一个普通 Redis 服务器时通过给定 –sentinel 选项来启动哨兵(sentinel)。</p>
-<p>哨兵(sentinel) 的一些设计思路和zookeeper非常类似<br><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/1.png" alt="1"></p>
-<h2 id="哨兵模式的配置修改"><a href="#哨兵模式的配置修改" class="headerlink" title="哨兵模式的配置修改"></a>哨兵模式的配置修改</h2><p>实现步骤:</p>
-<ol>
-<li>拷贝到etc目录<ul>
-<li><code>cp sentinel.conf  /usr/local/redis/etc</code></li>
-</ul>
-</li>
-<li>修改sentinel.conf配置文件<ul>
-<li>sentinel monitor mymast  192.168.110.133 6379 1  #主节点 名称 IP 端口号 选举次数</li>
-<li><code>#配置主服务器的密码(如没设置密码，可以省略)</code></li>
-<li><code>sentinel auth-pass mymaster 123456</code></li>
-</ul>
-</li>
-<li>修改心跳检测 5000毫秒<ul>
-<li><code>sentinel down-after-milliseconds mymaster 5000</code></li>
-</ul>
-</li>
-<li>做多多少合格节点<ul>
-<li><code>sentinel parallel-syncs mymaster 2</code></li>
-</ul>
-</li>
-<li>启动哨兵模式<ul>
-<li><code>./redis-server /usr/local/redis/etc/sentinel.conf --sentinel &amp;</code></li>
-</ul>
-</li>
-<li>停止哨兵模式</li>
-</ol>
-<p>注意：</p>
-<ol>
-<li>当启动哨兵模式之后，如果你的master服务器宕机之后，哨兵自动会在从redis服务器里面 投票选举一个master主服务器出来；这个主服务器也可以进行读写操作！</li>
-<li>如果之前宕机的主服务器已经修好，可以正式运行了。那么这个服务器只能进行读的操作，会自动跟随由哨兵选举出来的新服务器！</li>
-<li>大家可以进入./redis-cli，输入info，查看你的状态信息；</li>
-</ol>
-<p><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/2.png" alt="2"></p>
-<h2 id="哨兵-Sentinel-总结"><a href="#哨兵-Sentinel-总结" class="headerlink" title="哨兵(Sentinel)总结"></a>哨兵(Sentinel)总结</h2><h3 id="Sentinel的作用："><a href="#Sentinel的作用：" class="headerlink" title="Sentinel的作用："></a>Sentinel的作用：</h3><ol>
-<li>Master 状态监测</li>
-<li>如果Master 异常，则会进行Master-slave 转换，将其中一个Slave作为Master，将之前的Master作为Slave </li>
-<li>Master-Slave切换后，master_redis.conf、slave_redis.conf和sentinel.conf的内容都会发生改变，即master_redis.conf中会多一行slaveof的配置，sentinel.conf的监控目标会随之调换 </li>
-</ol>
-<h3 id="Sentinel的工作方式"><a href="#Sentinel的工作方式" class="headerlink" title="Sentinel的工作方式:"></a>Sentinel的工作方式:</h3><ol>
-<li>每个Sentinel以每秒钟一次的频率向它所知的Master，Slave以及其他 Sentinel 实例发送一个 PING 命令。</li>
-<li>如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel 标记为主观下线。 </li>
-<li>如果一个Master被标记为主观下线，则正在监视这个Master的所有 Sentinel 要以每秒一次的频率确认Master的确进入了主观下线状态。 </li>
-<li>当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认Master的确进入了主观下线状态， 则Master会被标记为客观下线 。</li>
-<li>在一般情况下， 每个 Sentinel 会以每 10 秒一次的频率向它已知的所有Master，Slave发送 INFO 命令 。</li>
-<li>当Master被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次 。</li>
-<li>若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 </li>
-<li>若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Redis-主从配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-26 15:09:37" itemprop="dateCreated datePublished" datetime="2016-06-26T15:09:37+08:00">2016-06-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在从库的redis.conf中加入：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slaveof &lt;主机IP&gt; &lt;主库端口&gt;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%9C%BA%E6%99%AF-%E8%BF%90%E8%A1%8C%E4%B8%80%E6%AE%B5%E6%97%B6%E9%97%B4%E4%B9%8B%E5%90%8E%E5%BC%80%E5%90%AFaof/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%9C%BA%E6%99%AF-%E8%BF%90%E8%A1%8C%E4%B8%80%E6%AE%B5%E6%97%B6%E9%97%B4%E4%B9%8B%E5%90%8E%E5%BC%80%E5%90%AFaof/" class="post-title-link" itemprop="url">Redis-主从配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-26 15:09:37" itemprop="dateCreated datePublished" datetime="2016-06-26T15:09:37+08:00">2016-06-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>运行了一段时间之后才开始aof这个设置项的，先执行一次bgrewriteaof，把当前的key，value保存起来，之后的操作再累加。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1152,7 +1126,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1165,7 +1139,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

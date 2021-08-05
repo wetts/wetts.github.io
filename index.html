@@ -301,6 +301,180 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/" class="post-title-link" itemprop="url">Java-JVM-三色标记法与读写屏障.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-07-11 21:58:53" itemprop="dateCreated datePublished" datetime="2021-07-11T21:58:53+08:00">2021-07-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/12544c0ad5c1">https://www.jianshu.com/p/12544c0ad5c1</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文主要介绍了三色标记法的基本思路、多标导致的浮动垃圾、漏标的处理方案（读写屏障）等。</p>
+<h2 id="垃圾回收的简单回顾"><a href="#垃圾回收的简单回顾" class="headerlink" title="垃圾回收的简单回顾"></a>垃圾回收的简单回顾</h2><p>关于垃圾回收算法，基本就是那么几种：标记-清除、标记-复制、标记-整理。在此基础上可以增加分代（新生代/老年代），每代采取不同的回收算法，以提高整体的分配和回收效率。</p>
+<p>无论使用哪种算法，标记总是必要的一步。这是理算当然的，你不先找到垃圾，怎么进行回收？</p>
+<p>垃圾回收器的工作流程大体如下：</p>
+<ol>
+<li>标记出哪些对象是存活的，哪些是垃圾（可回收）；</li>
+<li>进行回收（清除/复制/整理），如果有移动过对象（复制/整理），还需要更新引用。</li>
+</ol>
+<p>本文着重来看下标记的部分。</p>
+<h2 id="三色标记法"><a href="#三色标记法" class="headerlink" title="三色标记法"></a>三色标记法</h2><h3 id="基本算法"><a href="#基本算法" class="headerlink" title="基本算法"></a>基本算法</h3><p>要找出存活对象，根据可达性分析，从GC Roots开始进行遍历访问，可达的则为存活对象：</p>
+<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/1.png" alt="1"><br>最终结果：A/D/E/F/G 可达</p>
+<p>我们把遍历对象图过程中遇到的对象，按“是否访问过”这个条件标记成以下三种颜色：</p>
+<ul>
+<li>白色：尚未访问过。</li>
+<li>黑色：本对象已访问过，而且本对象 引用到 的其他对象 也全部访问过了。</li>
+<li>灰色：本对象已访问过，但是本对象 引用到 的其他对象 尚未全部访问完。全部访问后，会转换为黑色。</li>
+</ul>
+<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/2.webp" alt="2"><br>三色标记遍历过程</p>
+<p>假设现在有白、灰、黑三个集合（表示当前对象的颜色），其遍历访问过程为：</p>
+<ol>
+<li>初始时，所有对象都在 【白色集合】中；</li>
+<li>将GC Roots 直接引用到的对象 挪到 【灰色集合】中；</li>
+<li>从灰色集合中获取对象：<ol>
+<li>将本对象 引用到的 其他对象 全部挪到 【灰色集合】中；</li>
+<li>将本对象 挪到 【黑色集合】里面。</li>
+</ol>
+</li>
+<li>重复步骤3，直至【灰色集合】为空时结束。</li>
+<li>结束后，仍在【白色集合】的对象即为GC Roots 不可达，可以进行回收。</li>
+</ol>
+<blockquote>
+<p>注：如果标记结束后对象仍为白色，意味着已经“找不到”该对象在哪了，不可能会再被重新引用。</p>
+</blockquote>
+<p>当Stop The World （以下简称 STW）时，对象间的引用 是不会发生变化的，可以轻松完成标记。</p>
+<p>而当需要支持并发标记时，即标记期间应用线程还在继续跑，<strong>对象间的引用可能发生变化，多标和漏标的情况就有可能发生</strong>。</p>
+<h3 id="多标-浮动垃圾"><a href="#多标-浮动垃圾" class="headerlink" title="多标-浮动垃圾"></a>多标-浮动垃圾</h3><p>假设已经遍历到E（变为灰色了），此时应用执行了 <code>objD.fieldE = null</code>：</p>
+<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/3.webp" alt="3"><br>D &gt; E 的引用断开</p>
+<p>此刻之后，对象E/F/G是“应该”被回收的。然而因为<strong>E已经变为灰色</strong>了，其仍会被<strong>当作存活对象</strong>继续遍历下去。最终的结果是：这部分对象仍会被标记为存活，即<strong>本轮GC不会回收这部分内存</strong>。</p>
+<p>这部分本应该回收 但是 没有回收到的内存，被称之为“<strong>浮动垃圾</strong>”。浮动垃圾并不会影响应用程序的正确性，只是需要等到下一轮垃圾回收中才被清除。</p>
+<p>另外，针对并发标记开始后的<strong>新对象</strong>，通常的做法是直接全部<strong>当成黑色</strong>，本轮不会进行清除。这部分对象期间可能会变为垃圾，这也算是浮动垃圾的一部分。</p>
+<h3 id="漏标-读写屏障"><a href="#漏标-读写屏障" class="headerlink" title="漏标-读写屏障"></a>漏标-读写屏障</h3><p>假设GC线程已经遍历到E（变为灰色了），此时应用线程先执行了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var G = objE.fieldG; </span><br><span class="line">objE.fieldG = null;  // 灰色E 断开引用 白色G </span><br><span class="line">objD.fieldG = G;  // 黑色D 引用 白色G</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/4.webp" alt="4"><br>E &gt; G 断开，D引用 G</p>
+<p>此时切回GC线程继续跑，因为<strong>E已经没有对G的引用了，所以不会将G放到灰色集合</strong>；尽管因为D重新引用了G，但因为<strong>D已经是黑色</strong>了，不会再重新做遍历处理。</p>
+<p>最终导致的结果是：G会一直停留在白色集合中，<strong>最后被当作垃圾进行清除</strong>。这直接<strong>影响到了应用程序的正确性</strong>，是不可接受的。</p>
+<p>不难分析，漏标只有<strong>同时满足</strong>以下两个条件时才会发生：</p>
+<ol>
+<li>条件一：灰色对象 断开了 白色对象的引用（直接或间接的引用）；即灰色对象 原来成员变量的引用 发生了变化。</li>
+<li>条件二：黑色对象 重新引用了 该白色对象；即黑色对象 成员变量增加了 新的引用。</li>
+</ol>
+<p>从代码的角度看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var G = objE.fieldG; // 1.读</span><br><span class="line">objE.fieldG = null;  // 2.写</span><br><span class="line">objD.fieldG = G;     // 3.写</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>读取 对象E的成员变量fieldG的引用值，即对象G；</li>
+<li>对象E 往其成员变量fieldG，写入 null值。</li>
+<li>对象D 往其成员变量fieldG，写入 对象G ；</li>
+</ol>
+<p>我们只要在上面这三步中的任意一步中做一些“手脚”，<strong>将对象G记录起来，然后作为灰色对象再进行遍历</strong>即可。比如放到一个特定的集合，等初始的GC Roots遍历完（并发标记），该集合的对象 遍历即可（重新标记）。</p>
+<blockquote>
+<p><strong>重新标记通常是需要STW的</strong>，因为应用程序一直在跑的话，该集合可能会一直增加新的对象，导致永远都跑不完。当然，并发标记期间也可以将该集合中的大部分先跑了，从而缩短重新标记STW的时间，这个是优化问题了。</p>
+</blockquote>
+<p>写屏障用于拦截第二和第三步；而读屏障则是拦截第一步。</p>
+<p>它们的拦截的目的很简单：就是在读写前后，将对象G给记录下来。</p>
+<h4 id="写屏障（Store-Barrier）"><a href="#写屏障（Store-Barrier）" class="headerlink" title="写屏障（Store Barrier）"></a>写屏障（Store Barrier）</h4><p>给某个对象的成员变量赋值时，其底层代码大概长这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">* @param field 某对象的成员变量，如 D.fieldG</span><br><span class="line">* @param new_value 新值，如 null</span><br><span class="line">*/</span><br><span class="line">void oop_field_store(oop* field, oop new_value) &#123; </span><br><span class="line">    *field = new_value; // 赋值操作</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>所谓的写屏障，其实就是指在赋值操作前后，加入一些处理（可以参考AOP的概念）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void oop_field_store(oop* field, oop new_value) &#123;  </span><br><span class="line">    pre_write_barrier(field); // 写屏障-写前操作</span><br><span class="line">    *field = new_value; </span><br><span class="line">    post_write_barrier(field, value);  // 写屏障-写后操作</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="写屏障-SATB"><a href="#写屏障-SATB" class="headerlink" title="写屏障 + SATB"></a>写屏障 + SATB</h5><p>当对象E的成员变量的引用发生变化时（<code>objE.fieldG = null;</code>），我们可以利用写屏障，将E原来成员变量的引用对象G记录下来：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void pre_write_barrier(oop* field) &#123;</span><br><span class="line">    oop old_value = *field; // 获取旧值</span><br><span class="line">    remark_set.add(old_value); // 记录 原来的引用对象</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>【当原来成员变量的引用发生变化之前，记录下原来的引用对象】</strong></p>
+<p>这种做法的思路是：<strong>尝试保留开始时的对象图，即原始快照（Snapshot At The Beginning，SATB）</strong>，当某个时刻 的GC Roots确定后，当时的对象图就已经确定了。</p>
+<p>比如 当时 D是引用着G的，那后续的标记也应该是按照这个时刻的对象图走（D引用着G）。如果期间发生变化，则可以记录起来，保证标记依然按照原本的视图来。</p>
+<p>值得一提的是，扫描所有GC Roots 这个操作（即初始标记）通常是需要STW的，否则有可能永远都扫不完，因为并发期间可能增加新的GC Roots。</p>
+<blockquote>
+<p>SATB破坏了条件一：【灰色对象 断开了 白色对象的引用】，从而保证了不会漏标。</p>
+</blockquote>
+<p>一点小优化：如果不是处于垃圾回收的并发标记阶段，或者已经被标记过了，其实是没必要再记录了，所以可以加个简单的判断：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void pre_write_barrier(oop* field) &#123;</span><br><span class="line">  // 处于GC并发标记阶段 且 该对象没有被标记（访问）过</span><br><span class="line">  if($gc_phase == GC_CONCURRENT_MARK &amp;&amp; !isMarkd(field)) &#123; </span><br><span class="line">      oop old_value = *field; // 获取旧值</span><br><span class="line">      remark_set.add(old_value); // 记录  原来的引用对象</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="写屏障-增量更新"><a href="#写屏障-增量更新" class="headerlink" title="写屏障 + 增量更新"></a>写屏障 + 增量更新</h5><p>当对象D的成员变量的引用发生变化时（objD.fieldG = G;），我们可以利用写屏障，将D新的成员变量引用对象G记录下来：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">void post_write_barrier(oop* field, oop new_value) &#123;  </span><br><span class="line">  if($gc_phase == GC_CONCURRENT_MARK &amp;&amp; !isMarkd(field)) &#123;</span><br><span class="line">      remark_set.add(new_value); // 记录新引用的对象</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>【当有新引用插入进来时，记录下新的引用对象】</strong></p>
+<p>这种做法的思路是：不要求保留原始快照，而是<strong>针对新增的引用</strong>，将其记录下来等待遍历，即增量更新（Incremental Update）。</p>
+<blockquote>
+<p>增量更新破坏了条件二：【黑色对象 重新引用了 该白色对象】，从而保证了不会漏标。</p>
+</blockquote>
+<h4 id="读屏障（Load-Barrier）"><a href="#读屏障（Load-Barrier）" class="headerlink" title="读屏障（Load Barrier）"></a>读屏障（Load Barrier）</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">oop oop_field_load(oop* field) &#123;</span><br><span class="line">    pre_load_barrier(field); // 读屏障-读取前操作</span><br><span class="line">    return *field;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>读屏障是直接针对第一步：<code>var G = objE.fieldG;</code>，当读取成员变量时，一律记录下来：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void pre_load_barrier(oop* field, oop old_value) &#123;  </span><br><span class="line">  if($gc_phase == GC_CONCURRENT_MARK &amp;&amp; !isMarkd(field)) &#123;</span><br><span class="line">      oop old_value = *field;</span><br><span class="line">      remark_set.add(old_value); // 记录读取到的对象</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种做法是保守的，但也是安全的。因为条件二中【黑色对象 重新引用了 该白色对象】，重新引用的前提是：得获取到该白色对象，此时已经读屏障就发挥作用了。</p>
+<h3 id="三色标记法与现代垃圾回收器"><a href="#三色标记法与现代垃圾回收器" class="headerlink" title="三色标记法与现代垃圾回收器"></a>三色标记法与现代垃圾回收器</h3><p>现代追踪式（可达性分析）的垃圾回收器几乎都借鉴了三色标记的算法思想，尽管实现的方式不尽相同：比如白色/黑色集合一般都不会出现（但是有其他体现颜色的地方）、灰色集合可以通过栈/队列/缓存日志等方式进行实现、遍历方式可以是广度/深度遍历等等。</p>
+<p>对于读写屏障，以Java HotSpot VM为例，其并发标记时对漏标的处理方案如下：</p>
+<ul>
+<li>CMS：写屏障 + 增量更新</li>
+<li>G1：写屏障 + SATB</li>
+<li>ZGC：读屏障</li>
+</ul>
+<p>工程实现中，读写屏障还有其他功能，比如写屏障可以用于记录跨代/区引用的变化，读屏障可以用于支持移动对象的并发执行等。功能之外，还有性能的考虑，所以对于选择哪种，每款垃圾回收器都有自己的想法。</p>
+<p>值得注意的是，CMS中使用的增量更新，在重新标记阶段，除了需要遍历 写屏障的记录，还需要重新扫描遍历GC Roots（当然标记过的无需再遍历了），这是由于CMS对于astore_x等指令不添加写屏障的原因，具体可参考<a target="_blank" rel="noopener" href="https://hllvm-group.iteye.com/group/topic/44529">这里</a>。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/11/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81-Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1622,109 +1796,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%EF%BC%88%E5%8F%8D%E5%B0%84%E3%80%81%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%EF%BC%88%E5%8F%8D%E5%B0%84%E3%80%81%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%89/" class="post-title-link" itemprop="url">Java-设计模式-单例模式问题（反射、序列化）.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-05-13 21:12:07" itemprop="dateCreated datePublished" datetime="2021-05-13T21:12:07+08:00">2021-05-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/call-me-pengye/p/11169051.html%E3%80%81https://zhuanlan.zhihu.com/p/144092983">https://www.cnblogs.com/call-me-pengye/p/11169051.html、https://zhuanlan.zhihu.com/p/144092983</a></p>
-<p>使用枚举(《Effective Java》作者的Josh Bloch提倡的方式)</p>
-<h3 id="破环单例模式的方式"><a href="#破环单例模式的方式" class="headerlink" title="破环单例模式的方式"></a>破环单例模式的方式</h3><p>破环单例模式的三种方式：反射，序列化，克隆</p>
-<p>以双重检测方式为例测试反射，序列化，克隆是否能破环单例模式：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton  implements Serializable,Cloneable&#123;</span><br><span class="line">    private static final long serialVersionUID = 6125990676610180062L;</span><br><span class="line">    private static Singleton singleton;</span><br><span class="line">    </span><br><span class="line">    private Singleton()&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    public void doAction()&#123;</span><br><span class="line">        //TODO 实现你需要做的事</span><br><span class="line">    &#125;</span><br><span class="line">    public  static Singleton getInstance()&#123;</span><br><span class="line">        if (singleton == null) &#123;</span><br><span class="line">            synchronized (Singleton.class) &#123;</span><br><span class="line">                if (singleton == null) &#123;</span><br><span class="line">                    singleton = new Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    @Override</span><br><span class="line">    protected Object clone() throws CloneNotSupportedException &#123;</span><br><span class="line">        return super.clone();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>测试用例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public class DestroySingleton &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //通过getInstance()获取</span><br><span class="line">        Singleton singleton = Singleton.getInstance();</span><br><span class="line">        System.out.println(&quot;singleton的hashCode:&quot;+singleton.hashCode());</span><br><span class="line">        //通过反射获取</span><br><span class="line">        Constructor&lt;Singleton&gt; constructor = Singleton.class.getDeclaredConstructor();</span><br><span class="line">        constructor.setAccessible(true);</span><br><span class="line">        Singleton reflex = constructor.newInstance();</span><br><span class="line">        System.out.println(&quot;reflex的hashCode:&quot;+reflex.hashCode());</span><br><span class="line">        //通过克隆获取</span><br><span class="line">        Singleton clob = (Singleton) Singleton.getInstance().clone();</span><br><span class="line">        System.out.println(&quot;clob的hashCode:&quot;+clob.hashCode());</span><br><span class="line">        //通过序列化，反序列化获取</span><br><span class="line">        ByteArrayOutputStream bos = new ByteArrayOutputStream();</span><br><span class="line">        ObjectOutputStream oos = new ObjectOutputStream(bos);</span><br><span class="line">        oos.writeObject(Singleton.getInstance());</span><br><span class="line">        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());</span><br><span class="line">        ObjectInputStream ois = new ObjectInputStream(bis);</span><br><span class="line">        Singleton serialize = (Singleton) ois.readObject();</span><br><span class="line">        if (ois != null)    ois.close();</span><br><span class="line">        if (bis != null) bis.close();</span><br><span class="line">        if (oos != null) oos.close();</span><br><span class="line">        if (bos != null) bos.close();</span><br><span class="line">        System.out.println(&quot;serialize的hashCode:&quot;+serialize.hashCode());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>运行结果：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">singleton的hashCode:366712642</span><br><span class="line">reflex的hashCode:1829164700</span><br><span class="line">clob的hashCode:2018699554</span><br><span class="line">serialize的hashCode:990368553</span><br></pre></td></tr></table></figure>
-
-<p>运行结果表明通过 getInstance()、反射、克隆、序列化这四种方式得到的 Singleton 对象的 hashCode 是不一样的，此时单例模式已然被破环</p>
-<h3 id="如何防止反射、克隆、序列化对单例模式的破环"><a href="#如何防止反射、克隆、序列化对单例模式的破环" class="headerlink" title="如何防止反射、克隆、序列化对单例模式的破环"></a>如何防止反射、克隆、序列化对单例模式的破环</h3><ul>
-<li>防止反射破环（虽然构造方法已私有化，但通过反射机制使用 newInstance() 方法构造方法也是可以被调用）:<ul>
-<li>首先定义一个全局变量开关 isFristCreate 默认为开启状态</li>
-<li>当第一次加载时将其状态更改为关闭状态</li>
-</ul>
-</li>
-<li>防止克隆破环<ul>
-<li>重写 clone()，直接返回单例对象</li>
-</ul>
-</li>
-<li>防止序列化破环<ul>
-<li>添加 readResolve()，返回 Object 对象</li>
-</ul>
-</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton  implements Serializable,Cloneable&#123;</span><br><span class="line">    private static final long serialVersionUID = 6125990676610180062L;</span><br><span class="line">    private static Singleton singleton;</span><br><span class="line">    private static boolean isFristCreate = true;//默认是第一次创建</span><br><span class="line">    </span><br><span class="line">    private Singleton()&#123;</span><br><span class="line">            if (isFristCreate) &#123;</span><br><span class="line">                synchronized (Singleton.class) &#123;　　　　　　　　　　　　if (isFristCreate) &#123;　　　　　　　　　　　　　　isFristCreate = false;　　　　　　　　　　　　&#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                throw new RuntimeException(&quot;已然被实例化一次，不能在实例化&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void doAction()&#123;</span><br><span class="line">        //TODO 实现你需要做的事</span><br><span class="line">    &#125;</span><br><span class="line">    public  static Singleton getInstance()&#123;</span><br><span class="line">        if (singleton == null) &#123;</span><br><span class="line">            synchronized (Singleton.class) &#123;</span><br><span class="line">                if (singleton == null) &#123;</span><br><span class="line">                    singleton = new Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    @Override</span><br><span class="line">    protected Singleton clone() throws CloneNotSupportedException &#123;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    private Object readResolve() &#123;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>测试用例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public class DestroySingleton &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //通过getInstance()获取</span><br><span class="line">        Singleton singleton = Singleton.getInstance();</span><br><span class="line">        System.out.println(&quot;singleton的hashCode:&quot;+singleton.hashCode());</span><br><span class="line">        //通过克隆获取</span><br><span class="line">        Singleton clob = (Singleton) Singleton.getInstance().clone();</span><br><span class="line">        System.out.println(&quot;clob的hashCode:&quot;+clob.hashCode());</span><br><span class="line">        //通过序列化，反序列化获取</span><br><span class="line">        ByteArrayOutputStream bos = new ByteArrayOutputStream();</span><br><span class="line">        ObjectOutputStream oos = new ObjectOutputStream(bos);</span><br><span class="line">        oos.writeObject(Singleton.getInstance());</span><br><span class="line">        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());</span><br><span class="line">        ObjectInputStream ois = new ObjectInputStream(bis);</span><br><span class="line">        Singleton serialize = (Singleton) ois.readObject();</span><br><span class="line">        if (ois != null)    ois.close();</span><br><span class="line">        if (bis != null) bis.close();</span><br><span class="line">        if (oos != null) oos.close();</span><br><span class="line">        if (bos != null) bos.close();</span><br><span class="line">        System.out.println(&quot;serialize的hashCode:&quot;+serialize.hashCode());</span><br><span class="line">        //通过反射获取</span><br><span class="line">        Constructor&lt;Singleton&gt; constructor = Singleton.class.getDeclaredConstructor();</span><br><span class="line">        constructor.setAccessible(true);</span><br><span class="line">        Singleton reflex = constructor.newInstance();</span><br><span class="line">        System.out.println(&quot;reflex的hashCode:&quot;+reflex.hashCode());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>运行结果：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">singleton的hashCode:366712642</span><br><span class="line">clob的hashCode:366712642</span><br><span class="line">serialize的hashCode:366712642</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.reflect.InvocationTargetException</span><br><span class="line">    at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</span><br><span class="line">    at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)</span><br><span class="line">    at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)</span><br><span class="line">    at java.lang.reflect.Constructor.newInstance(Constructor.java:423)</span><br><span class="line">    at designPatterns.singleton.doublecheck.DestroySingleton.main(DestroySingleton.java:33)</span><br><span class="line">Caused by: java.lang.RuntimeException: 已然被实例化一次，不能在实例化</span><br><span class="line">    at designPatterns.singleton.doublecheck.Singleton.&lt;init&gt;(Singleton.java:16)</span><br><span class="line">    ... 5 more</span><br></pre></td></tr></table></figure>
-
-<p>从运行结果上看重写 clone()，添加 readResolve() 后通过克隆和序列化得到的对象的 hashCode 与从 getInstance() 得到的对象得而 hashCode 值相同，而通过反射运行得到的结果符合预想的报错；因为以上三种手段对防止单例被破坏起作用了</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1796,7 +1867,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1809,7 +1880,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

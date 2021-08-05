@@ -188,6 +188,304 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">Java-并发性和多线程-4.并发编程模型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 15:41:37" itemprop="dateCreated datePublished" datetime="2016-12-12T15:41:37+08:00">2016-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/">http://ifeve.com/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/</a></p>
+<p>并发系统可以采用多种并发编程模型来实现。并发模型指定了系统中的线程如何通过协作来完成分配给它们的作业。不同的并发模型采用不同的方式拆分作业，同时线程间的协作和交互方式也不相同。这篇并发模型教程将会较深入地介绍目前（2015年，本文撰写时间）比较流行的几种并发模型。</p>
+<h2 id="并发模型与分布式系统之间的相似性"><a href="#并发模型与分布式系统之间的相似性" class="headerlink" title="并发模型与分布式系统之间的相似性"></a>并发模型与分布式系统之间的相似性</h2><p>本文所描述的并发模型类似于分布式系统中使用的很多体系结构。在并发系统中线程之间可以相互通信。在分布式系统中进程之间也可以相互通信（进程有可能在不同的机器中）。线程和进程之间具有很多相似的特性。这也就是为什么很多并发模型通常类似于各种分布式系统架构。</p>
+<p>当然，分布式系统在处理网络失效、远程主机或进程宕掉等方面也面临着额外的挑战。但是运行在巨型服务器上的并发系统也可能遇到类似的问题，比如一块CPU失效、一块网卡失效或一个磁盘损坏等情况。虽然出现失效的概率可能很低，但是在理论上仍然有可能发生。</p>
+<p>由于并发模型类似于分布式系统架构，因此它们通常可以互相借鉴思想。例如，为工作者们（线程）分配作业的模型一般与分布式系统中的<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/software-architecture/load-balancing.html">负载均衡系统</a>比较相似。同样，它们在日志记录、失效转移、幂等性等错误处理技术上也具有相似性。<strong>【注：幂等性，一个幂等操作的特点是其任意多次执行所产生的影响均与一次执行的影响相同】</strong></p>
+<h1 id="并行工作者"><a href="#并行工作者" class="headerlink" title="并行工作者"></a>并行工作者</h1><p>第一种并发模型就是我所说的并行工作者模型。传入的作业会被分配到不同的工作者上。下图展示了并行工作者模型：</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-1.png" alt="并行工作者模型"></p>
+<p>在并行工作者模型中，委派者（Delegator）将传入的作业分配给不同的工作者。每个工作者完成整个任务。工作者们并行运作在不同的线程上，甚至可能在不同的CPU上。</p>
+<p>如果在某个汽车厂里实现了并行工作者模型，每台车都会由一个工人来生产。工人们将拿到汽车的生产规格，并且从头到尾负责所有工作。</p>
+<p>在Java应用系统中，并行工作者模型是最常见的并发模型（即使正在转变）。<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-util-concurrent/index.html">java.util.concurrent包</a>中的许多并发实用工具都是设计用于这个模型的。你也可以在Java企业级（J2EE）应用服务器的设计中看到这个模型的踪迹。</p>
+<h2 id="并行工作者模型的优点"><a href="#并行工作者模型的优点" class="headerlink" title="并行工作者模型的优点"></a>并行工作者模型的优点</h2><p>并行工作者模式的优点是，它很容易理解。你只需添加更多的工作者来提高系统的并行度。</p>
+<p>例如，如果你正在做一个网络爬虫，可以试试使用不同数量的工作者抓取到一定数量的页面，然后看看多少数量的工作者消耗的时间最短（意味着性能最高）。由于网络爬虫是一个IO密集型工作，最终结果很有可能是你电脑中的每个CPU或核心分配了几个线程。每个CPU若只分配一个线程可能有点少，因为在等待数据下载的过程中CPU将会空闲大量时间。</p>
+<h2 id="并行工作者模型的缺点"><a href="#并行工作者模型的缺点" class="headerlink" title="并行工作者模型的缺点"></a>并行工作者模型的缺点</h2><p>并行工作者模型虽然看起来简单，却隐藏着一些缺点。接下来的章节中我会分析一些最明显的弱点。</p>
+<h3 id="共享状态可能会很复杂"><a href="#共享状态可能会很复杂" class="headerlink" title="共享状态可能会很复杂"></a>共享状态可能会很复杂</h3><p>在实际应用中，并行工作者模型可能比前面所描述的情况要复杂得多。共享的工作者经常需要访问一些共享数据，无论是内存中的或者共享的数据库中的。下图展示了并行工作者模型是如何变得复杂的：</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-2.png" alt="并行工作者模型的复杂情况"></p>
+<p>有些共享状态是在像作业队列这样的通信机制下。但也有一些共享状态是业务数据，数据缓存，数据库连接池等。</p>
+<p>一旦共享状态潜入到并行工作者模型中，将会使情况变得复杂起来。线程需要以某种方式存取共享数据，以确保某个线程的修改能够对其他线程可见（数据修改需要同步到主存中，不仅仅将数据保存在执行这个线程的CPU的缓存中）。线程需要避免<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/race-conditions-and-critical-sections.html">竟态</a>，<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/deadlock.html">死锁</a>以及很多其他共享状态的并发性问题。</p>
+<p>此外，在等待访问共享数据结构时，线程之间的互相等待将会丢失部分并行性。许多并发数据结构是阻塞的，意味着在任何一个时间只有一个或者很少的线程能够访问。这样会导致在这些共享数据结构上出现竞争状态。在执行需要访问共享数据结构部分的代码时，高竞争基本上会导致执行时出现一定程度的串行化。</p>
+<p>现在的<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-concurrency/non-blocking-algorithms.html">非阻塞并发算法</a>也许可以降低竞争并提升性能，但是非阻塞算法的实现比较困难。</p>
+<p>可持久化的数据结构是另一种选择。在修改的时候，可持久化的数据结构总是保护它的前一个版本不受影响。因此，如果多个线程指向同一个可持久化的数据结构，并且其中一个线程进行了修改，进行修改的线程会获得一个指向新结构的引用。所有其他线程保持对旧结构的引用，旧结构没有被修改并且因此保证一致性。Scala编程包含几个持久化数据结构。<strong>【注：这里的可持久化数据结构不是指持久化存储，而是一种数据结构，比如Java中的String类，以及CopyOnWriteArrayList类，具体可<a target="_blank" rel="noopener" href="http://www.cnblogs.com/tedzhao/archive/2008/11/12/1332112.html">参考</a>】</strong></p>
+<p>虽然可持久化的数据结构在解决共享数据结构的并发修改时显得很优雅，但是可持久化的数据结构的表现往往不尽人意。</p>
+<p>比如说，一个可持久化的链表需要在头部插入一个新的节点，并且返回指向这个新加入的节点的一个引用（这个节点指向了链表的剩余部分）。所有其他现场仍然保留了这个链表之前的第一个节点，对于这些线程来说链表仍然是为改变的。它们无法看到新加入的元素。</p>
+<p>这种可持久化的列表采用链表来实现。不幸的是链表在现代硬件上表现的不太好。链表中得每个元素都是一个独立的对象，这些对象可以遍布在整个计算机内存中。现代CPU能够更快的进行顺序访问，所以你可以在现代的硬件上用数组实现的列表，以获得更高的性能。数组可以顺序的保存数据。CPU缓存能够一次加载数组的一大块进行缓存，一旦加载完成CPU就可以直接访问缓存中的数据。这对于元素散落在RAM中的链表来说，不太可能做得到。</p>
+<h3 id="无状态的工作者"><a href="#无状态的工作者" class="headerlink" title="无状态的工作者"></a>无状态的工作者</h3><p>共享状态能够被系统中得其他线程修改。所以工作者在每次需要的时候必须重读状态，以确保每次都能访问到最新的副本，不管共享状态是保存在内存中的还是在外部数据库中。工作者无法在内部保存这个状态（但是每次需要的时候可以重读）称为无状态的。</p>
+<p>每次都重读需要的数据，将会导致速度变慢，特别是状态保存在外部数据库中的时候。</p>
+<h3 id="任务顺序是不确定的"><a href="#任务顺序是不确定的" class="headerlink" title="任务顺序是不确定的"></a>任务顺序是不确定的</h3><p>并行工作者模式的另一个缺点是，作业执行顺序是不确定的。无法保证哪个作业最先或者最后被执行。作业A可能在作业B之前就被分配工作者了，但是作业B反而有可能在作业A之前执行。</p>
+<p>并行工作者模式的这种非确定性的特性，使得很难在任何特定的时间点推断系统的状态。这也使得它也更难（如果不是不可能的话）保证一个作业在其他作业之前被执行。</p>
+<h1 id="流水线模式"><a href="#流水线模式" class="headerlink" title="流水线模式"></a>流水线模式</h1><p>第二种并发模型我们称之为流水线并发模型。我之所以选用这个名字，只是为了配合“并行工作者”的隐喻。其他开发者可能会根据平台或社区选择其他称呼（比如说反应器系统，或事件驱动系统）。下图表示一个流水线并发模型：</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-3.png" alt="流水线并发模型"></p>
+<p>类似于工厂中生产线上的工人们那样组织工作者。每个工作者只负责作业中的部分工作。当完成了自己的这部分工作时工作者会将作业转发给下一个工作者。每个工作者在自己的线程中运行，并且不会和其他工作者共享状态。有时也被成为无共享并行模型。</p>
+<p>通常使用非阻塞的IO来设计使用流水线并发模型的系统。非阻塞IO意味着，一旦某个工作者开始一个IO操作的时候（比如读取文件或从网络连接中读取数据），这个工作者不会一直等待IO操作的结束。IO操作速度很慢，所以等待IO操作结束很浪费CPU时间。此时CPU可以做一些其他事情。当IO操作完成的时候，IO操作的结果（比如读出的数据或者数据写完的状态）被传递给下一个工作者。</p>
+<p>有了非阻塞IO，就可以使用IO操作确定工作者之间的边界。工作者会尽可能多运行直到遇到并启动一个IO操作。然后交出作业的控制权。当IO操作完成的时候，在流水线上的下一个工作者继续进行操作，直到它也遇到并启动一个IO操作。</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-4.png" alt="No-blocking-IO"></p>
+<p>在实际应用中，作业有可能不会沿着单一流水线进行。由于大多数系统可以执行多个作业，作业从一个工作者流向另一个工作者取决于作业需要做的工作。在实际中可能会有多个不同的虚拟流水线同时运行。这是现实当中作业在流水线系统中可能的移动情况：</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-5.png" alt="multi-assembly-line"></p>
+<p>作业甚至也有可能被转发到超过一个工作者上并发处理。比如说，作业有可能被同时转发到作业执行器和作业日志器。下图说明了三条流水线是如何通过将作业转发给同一个工作者（中间流水线的最后一个工作者）来完成作业:</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-6.png" alt="complex-condition"></p>
+<p>流水线有时候比这个情况更加复杂。</p>
+<h3 id="反应器，事件驱动系统"><a href="#反应器，事件驱动系统" class="headerlink" title="反应器，事件驱动系统"></a>反应器，事件驱动系统</h3><p>采用流水线并发模型的系统有时候也称为反应器系统或事件驱动系统。系统内的工作者对系统内出现的事件做出反应，这些事件也有可能来自于外部世界或者发自其他工作者。事件可以是传入的HTTP请求，也可以是某个文件成功加载到内存中等。在写这篇文章的时候，已经有很多有趣的反应器/事件驱动平台可以使用了，并且不久的将来会有更多。比较流行的似乎是这几个：</p>
+<ul>
+<li>Vert.x</li>
+<li>AKKa</li>
+<li>Node.JS(JavaScript)</li>
+</ul>
+<p>我个人觉得Vert.x是相当有趣的（特别是对于我这样使用Java/JVM的人来说）</p>
+<h3 id="Actors-和-Channels"><a href="#Actors-和-Channels" class="headerlink" title="Actors 和 Channels"></a>Actors 和 Channels</h3><p>Actors 和 channels 是两种比较类似的流水线（或反应器/事件驱动）模型。</p>
+<p>在Actor模型中每个工作者被称为actor。Actor之间可以直接异步地发送和处理消息。Actor可以被用来实现一个或多个像前文描述的那样的作业处理流水线。下图给出了Actor模型：</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-7.png" alt="actor-model"></p>
+<p>而在Channel模型中，工作者之间不直接进行通信。相反，它们在不同的通道中发布自己的消息（事件）。其他工作者们可以在这些通道上监听消息，发送者无需知道谁在监听。下图给出了Channel模型：</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-8.png" alt="channel-model"></p>
+<p>在写这篇文章的时候，channel模型对于我来说似乎更加灵活。一个工作者无需知道谁在后面的流水线上处理作业。只需知道作业（或消息等）需要转发给哪个通道。通道上的监听者可以随意订阅或者取消订阅，并不会影响向这个通道发送消息的工作者。这使得工作者之间具有松散的耦合。</p>
+<h2 id="流水线模型的优点"><a href="#流水线模型的优点" class="headerlink" title="流水线模型的优点"></a>流水线模型的优点</h2><p>相比并行工作者模型，流水线并发模型具有几个优点，在接下来的章节中我会介绍几个最大的优点。</p>
+<h3 id="无需共享的状态"><a href="#无需共享的状态" class="headerlink" title="无需共享的状态"></a>无需共享的状态</h3><p>工作者之间无需共享状态，意味着实现的时候无需考虑所有因并发访问共享对象而产生的并发性问题。这使得在实现工作者的时候变得非常容易。在实现工作者的时候就好像是单个线程在处理工作-基本上是一个单线程的实现。</p>
+<h3 id="有状态的工作者"><a href="#有状态的工作者" class="headerlink" title="有状态的工作者"></a>有状态的工作者</h3><p>当工作者知道了没有其他线程可以修改它们的数据，工作者可以变成有状态的。对于有状态，我是指，它们可以在内存中保存它们需要操作的数据，只需在最后将更改写回到外部存储系统。因此，有状态的工作者通常比无状态的工作者具有更高的性能。</p>
+<h3 id="较好的硬件整合（Hardware-Conformity）"><a href="#较好的硬件整合（Hardware-Conformity）" class="headerlink" title="较好的硬件整合（Hardware Conformity）"></a>较好的硬件整合（Hardware Conformity）</h3><p>单线程代码在整合底层硬件的时候往往具有更好的优势。首先，当能确定代码只在单线程模式下执行的时候，通常能够创建更优化的数据结构和算法。</p>
+<p>其次，像前文描述的那样，单线程有状态的工作者能够在内存中缓存数据。在内存中缓存数据的同时，也意味着数据很有可能也缓存在执行这个线程的CPU的缓存中。这使得访问缓存的数据变得更快。</p>
+<p>我说的硬件整合是指，以某种方式编写的代码，使得能够自然地受益于底层硬件的工作原理。有些开发者称之为mechanical sympathy。我更倾向于硬件整合这个术语，因为计算机只有很少的机械部件，并且能够隐喻“更好的匹配（match better）”，相比“同情（sympathy）”这个词在上下文中的意思，我觉得“conform”这个词表达的非常好。当然了，这里有点吹毛求疵了，用自己喜欢的术语就行。</p>
+<h3 id="合理的作业顺序"><a href="#合理的作业顺序" class="headerlink" title="合理的作业顺序"></a>合理的作业顺序</h3><p>基于流水线并发模型实现的并发系统，在某种程度上是有可能保证作业的顺序的。作业的有序性使得它更容易地推出系统在某个特定时间点的状态。更进一步，你可以将所有到达的作业写入到日志中去。一旦这个系统的某一部分挂掉了，该日志就可以用来重头开始重建系统当时的状态。按照特定的顺序将作业写入日志，并按这个顺序作为有保障的作业顺序。下图展示了一种可能的设计：</p>
+<p><img src="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-4.%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B/concurrency-models-8.png" alt="job-ordering"></p>
+<p>实现一个有保障的作业顺序是不容易的，但往往是可行的。如果可以，它将大大简化一些任务，例如备份、数据恢复、数据复制等，这些都可以通过日志文件来完成。</p>
+<h2 id="流水线模型的缺点"><a href="#流水线模型的缺点" class="headerlink" title="流水线模型的缺点"></a>流水线模型的缺点</h2><p>流水线并发模型最大的缺点是作业的执行往往分布到多个工作者上，并因此分布到项目中的多个类上。这样导致在追踪某个作业到底被什么代码执行时变得困难。</p>
+<p>同样，这也加大了代码编写的难度。有时会将工作者的代码写成回调处理的形式。若在代码中嵌入过多的回调处理，往往会出现所谓的回调地狱（callback hell）现象。所谓回调地狱，就是意味着在追踪代码在回调过程中到底做了什么，以及确保每个回调只访问它需要的数据的时候，变得非常困难</p>
+<p>使用并行工作者模型可以简化这个问题。你可以打开工作者的代码，从头到尾优美的阅读被执行的代码。当然并行工作者模式的代码也可能同样分布在不同的类中，但往往也能够很容易的从代码中分析执行的顺序。</p>
+<h1 id="函数式并行（Functional-Parallelism）"><a href="#函数式并行（Functional-Parallelism）" class="headerlink" title="函数式并行（Functional Parallelism）"></a>函数式并行（Functional Parallelism）</h1><p>第三种并发模型是函数式并行模型，这是也最近（2015）讨论的比较多的一种模型。函数式并行的基本思想是采用函数调用实现程序。函数可以看作是”代理人（agents）“或者”actor“，函数之间可以像流水线模型（AKA 反应器或者事件驱动系统）那样互相发送消息。某个函数调用另一个函数，这个过程类似于消息发送。</p>
+<p>函数都是通过拷贝来传递参数的，所以除了接收函数外没有实体可以操作数据。这对于避免共享数据的竞态来说是很有必要的。同样也使得函数的执行类似于原子操作。每个函数调用的执行独立于任何其他函数的调用。</p>
+<p>一旦每个函数调用都可以独立的执行，它们就可以分散在不同的CPU上执行了。这也就意味着能够在多处理器上并行的执行使用函数式实现的算法。</p>
+<p>Java7中的java.util.concurrent包里包含的<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-util-concurrent/java-fork-and-join-forkjoinpool.html">ForkAndJoinPool</a>能够帮助我们实现类似于函数式并行的一些东西。而Java8中并行<a target="_blank" rel="noopener" href="http://tutorials.jenkov.com/java-collections/streams.html">streams</a>能够用来帮助我们并行的迭代大型集合。记住有些开发者对ForkAndJoinPool进行了批判（你可以在我的ForkAndJoinPool教程里面看到批评的链接）。</p>
+<p>函数式并行里面最难的是确定需要并行的那个函数调用。跨CPU协调函数调用需要一定的开销。某个函数完成的工作单元需要达到某个大小以弥补这个开销。如果函数调用作用非常小，将它并行化可能比单线程、单CPU执行还慢。</p>
+<p>我个人认为（可能不太正确），你可以使用反应器或者事件驱动模型实现一个算法，像函数式并行那样的方法实现工作的分解。使用事件驱动模型可以更精确的控制如何实现并行化（我的观点）。</p>
+<p>此外，将任务拆分给多个CPU时协调造成的开销，仅仅在该任务是程序当前执行的唯一任务时才有意义。但是，如果当前系统正在执行多个其他的任务时（比如web服务器，数据库服务器或者很多其他类似的系统），将单个任务进行并行化是没有意义的。不管怎样计算机中的其他CPU们都在忙于处理其他任务，没有理由用一个慢的、函数式并行的任务去扰乱它们。使用流水线（反应器）并发模型可能会更好一点，因为它开销更小（在单线程模式下顺序执行）同时能更好的与底层硬件整合。</p>
+<h1 id="使用那种并发模型最好？"><a href="#使用那种并发模型最好？" class="headerlink" title="使用那种并发模型最好？"></a>使用那种并发模型最好？</h1><p>所以，用哪种并发模型更好呢?</p>
+<p>通常情况下，这个答案取决于你的系统打算做什么。如果你的作业本身就是并行的、独立的并且没有必要共享状态，你可能会使用并行工作者模型去实现你的系统。虽然许多作业都不是自然并行和独立的。对于这种类型的系统，我相信使用流水线并发模型能够更好的发挥它的优势，而且比并行工作者模型更有优势。</p>
+<p>你甚至不用亲自编写所有流水线模型的基础结构。像Vert.x这种现代化的平台已经为你实现了很多。我也会去为探索如何设计我的下一个项目，使它运行在像Vert.x这样的优秀平台上。我感觉Java EE已经没有任何优势了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-3.%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BB%A3%E4%BB%B7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-3.%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BB%A3%E4%BB%B7/" class="post-title-link" itemprop="url">Java-并发性和多线程-3.多线程的代价</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 15:38:13" itemprop="dateCreated datePublished" datetime="2016-12-12T15:38:13+08:00">2016-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/costs-of-multithreading/">http://ifeve.com/costs-of-multithreading/</a></p>
+<p>从一个单线程的应用到一个多线程的应用并不仅仅带来好处，它也会有一些代价。不要仅仅为了使用多线程而使用多线程。而应该明确在使用多线程时能多来的好处比所付出的代价大的时候，才使用多线程。如果存在疑问，应该尝试测量一下应用程序的性能和响应能力，而不只是猜测。</p>
+<h2 id="设计更复杂"><a href="#设计更复杂" class="headerlink" title="设计更复杂"></a>设计更复杂</h2><p>虽然有一些多线程应用程序比单线程的应用程序要简单，但其他的一般都更复杂。在多线程访问共享数据的时候，这部分代码需要特别的注意。线程之间的交互往往非常复杂。不正确的线程同步产生的错误非常难以被发现，并且重现以修复。</p>
+<h2 id="上下文切换的开销"><a href="#上下文切换的开销" class="headerlink" title="上下文切换的开销"></a>上下文切换的开销</h2><p>当CPU从执行一个线程切换到执行另外一个线程的时候，它需要先存储当前线程的本地的数据，程序指针等，然后载入另一个线程的本地数据，程序指针等，最后才开始执行。这种切换称为“上下文切换”(“context switch”)。CPU会在一个上下文中执行一个线程，然后切换到另外一个上下文中执行另外一个线程。</p>
+<p>上下文切换并不廉价。如果没有必要，应该减少上下文切换的发生。</p>
+<p>你可以通过维基百科阅读更多的关于上下文切换相关的内容：<a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Context_switch">http://en.wikipedia.org/wiki/Context_switch</a></p>
+<h2 id="增加资源消耗"><a href="#增加资源消耗" class="headerlink" title="增加资源消耗"></a>增加资源消耗</h2><p>线程在运行的时候需要从计算机里面得到一些资源。除了CPU，线程还需要一些内存来维持它本地的堆栈。它也需要占用操作系统中一些资源来管理线程。我们可以尝试编写一个程序，让它创建100个线程，这些线程什么事情都不做，只是在等待，然后看看这个程序在运行的时候占用了多少内存。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-2.%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BC%98%E7%82%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-2.%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BC%98%E7%82%B9/" class="post-title-link" itemprop="url">Java-并发性和多线程-2.多线程的优点</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 15:36:59" itemprop="dateCreated datePublished" datetime="2016-12-12T15:36:59+08:00">2016-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/benefits/">http://ifeve.com/benefits/</a></p>
+<p>尽管面临很多挑战，多线程有一些优点使得它一直被使用。这些优点是：</p>
+<ul>
+<li>资源利用率更好</li>
+<li>程序设计在某些情况下更简单</li>
+<li>程序响应更快</li>
+</ul>
+<h2 id="资源利用率更好"><a href="#资源利用率更好" class="headerlink" title="资源利用率更好"></a>资源利用率更好</h2><p>想象一下，一个应用程序需要从本地文件系统中读取和处理文件的情景。比方说，从磁盘读取一个文件需要5秒，处理一个文件需要2秒。处理两个文件则需要：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">5秒读取文件A</span><br><span class="line">2秒处理文件A</span><br><span class="line">5秒读取文件B</span><br><span class="line">2秒处理文件B</span><br><span class="line">---------------------</span><br><span class="line">总共需要14秒</span><br></pre></td></tr></table></figure>
+<p>从磁盘中读取文件的时候，大部分的CPU时间用于等待磁盘去读取数据。在这段时间里，CPU非常的空闲。它可以做一些别的事情。通过改变操作的顺序，就能够更好的使用CPU资源。看下面的顺序：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">5秒读取文件A</span><br><span class="line">5秒读取文件B + 2秒处理文件A</span><br><span class="line">2秒处理文件B</span><br><span class="line">---------------------</span><br><span class="line">总共需要12秒</span><br></pre></td></tr></table></figure>
+<p>CPU等待第一个文件被读取完。然后开始读取第二个文件。当第二文件在被读取的时候，CPU会去处理第一个文件。记住，在等待磁盘读取文件的时候，CPU大部分时间是空闲的。</p>
+<p>总的说来，CPU能够在等待IO的时候做一些其他的事情。这个不一定就是磁盘IO。它也可以是网络的IO，或者用户输入。通常情况下，网络和磁盘的IO比CPU和内存的IO慢的多。</p>
+<h2 id="程序设计更简单"><a href="#程序设计更简单" class="headerlink" title="程序设计更简单"></a>程序设计更简单</h2><p>在单线程应用程序中，如果你想编写程序手动处理上面所提到的读取和处理的顺序，你必须记录每个文件读取和处理的状态。相反，你可以启动两个线程，每个线程处理一个文件的读取和操作。线程会在等待磁盘读取文件的过程中被阻塞。在等待的时候，其他的线程能够使用CPU去处理已经读取完的文件。其结果就是，磁盘总是在繁忙地读取不同的文件到内存中。这会带来磁盘和CPU利用率的提升。而且每个线程只需要记录一个文件，因此这种方式也很容易编程实现。</p>
+<h2 id="程序响应更快"><a href="#程序响应更快" class="headerlink" title="程序响应更快"></a>程序响应更快</h2><p>将一个单线程应用程序变成多线程应用程序的另一个常见的目的是实现一个响应更快的应用程序。设想一个服务器应用，它在某一个端口监听进来的请求。当一个请求到来时，它去处理这个请求，然后再返回去监听。<br>服务器的流程如下所述：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">while(server is active)&#123;</span><br><span class="line">    listen for request</span><br><span class="line">    process request</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果一个请求需要占用大量的时间来处理，在这段时间内新的客户端就无法发送请求给服务端。只有服务器在监听的时候，请求才能被接收。另一种设计是，监听线程把请求传递给工作者线程(worker thread)，然后立刻返回去监听。而工作者线程则能够处理这个请求并发送一个回复给客户端。这种设计如下所述：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">while(server is active)&#123;</span><br><span class="line">    listen for request</span><br><span class="line">    hand request to worker thread</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种方式，服务端线程迅速地返回去监听。因此，更多的客户端能够发送请求给服务端。这个服务也变得响应更快。</p>
+<p>桌面应用也是同样如此。如果你点击一个按钮开始运行一个耗时的任务，这个线程既要执行任务又要更新窗口和按钮，那么在任务执行的过程中，这个应用程序看起来好像没有反应一样。相反，任务可以传递给工作者线程（word thread)。当工作者线程在繁忙地处理任务的时候，窗口线程可以自由地响应其他用户的请求。当工作者线程完成任务的时候，它发送信号给窗口线程。窗口线程便可以更新应用程序窗口，并显示任务的结果。对用户而言，这种具有工作者线程设计的程序显得响应速度更快。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-1.%E4%BB%8B%E7%BB%8D/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -795,255 +1093,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC2%E7%AB%A0-REST%20API%E8%AE%BE%E8%AE%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC2%E7%AB%A0-REST%20API%E8%AE%BE%E8%AE%A1/" class="post-title-link" itemprop="url">第2章-REST API设计</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-10 15:21:09" itemprop="dateCreated datePublished" datetime="2016-12-10T15:21:09+08:00">2016-12-10</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>REST服务和RPC服务的接口定义上的区别是：REST使用HTTP协议的通用方法作为统一接口的标准词汇，REST服务所提供的方法信息都在HTTP方法里，而RPC服务所提供的方法信息在SOAP/HTTP信封里（其封装的格式通常是HTTP或SOAP），每一个RPC式的Web服务都会发布一套符合自己商业逻辑的方法词汇。</p>
-<p>每一种HTTP请求方法都可以从安全性和幂等性两方面考虑，这对正确理解HTTP请求方法和设计统一接口具有决定性的意义。</p>
-<p>安全性是指外系统对该接口的访问，不会使服务器端资源的状态发生改变；幂等性（idempotence）是指外系统对同一REST接口的多次访问，得到的资源状态是相同的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC1%E7%AB%A0-JAX-RS2%E5%85%A5%E9%97%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/10/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%20RESTful%20Web%20Service%E5%AE%9E%E6%88%98%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC1%E7%AB%A0-JAX-RS2%E5%85%A5%E9%97%A8/" class="post-title-link" itemprop="url">第1章-JAX-RS2入门</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-10 14:17:21" itemprop="dateCreated datePublished" datetime="2016-12-10T14:17:21+08:00">2016-12-10</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>REST（Representational State Transfer）翻译为表述性状态转移。</p>
-<p>Roy Thomas Fielding博士在2000年就读加州大学欧文分校期间发表的一篇学术论文《Architectural Styles and the Design of Network-based Software Architectures》，该文中提出了REST的6个特点，分别是：客户端<br>-服务端的、无状态的、可缓存的、统一接口、分层系统和按需编码。</p>
-<p>REST是一种架构风格。在这种架构风格中，对象被视为一种资源（resource），通常使用概念清晰的名词命名。</p>
-<p>REST的资源是可寻址的，通过HTTP1.1协议（RFC 2616）定义的通用动词方法（比如GET、PUT、DELETE、POST），使用URI协议（RFC 3305）来唯一表示某个资源公布出来的接口。</p>
-<h4 id="解读JAX-RS标准"><a href="#解读JAX-RS标准" class="headerlink" title="解读JAX-RS标准"></a>解读JAX-RS标准</h4><p>JAX-RS是Java领域的REST式的Web服务的标准规范，是使用Java完成REST服务的基本约定。</p>
-<p>Java领域中的Web Service是指实现SOAP协议的JAX-WS。直到Java EE 6（发布于2008年9月）通过JCP（Java Community Process）组织定义的JSR311，才将REST在Java领域标准化。</p>
-<p>JSR311名为The Java API for RESTful Web Service，即JAX-RS。此后，JSR311进行了一次升级（2009年9月），即JAX-RS1.1。JAX-RS诞生后，时隔5年（2013年5月）发布的Java EE 7包含了JSR339，将JAX-RS升级到JAX-RS2。JAX-RS2在前面版本的基础上增加了很多实用性的功能。比如对REST客户端API的定义，异步REST等，对REST的支持更加完善和强大。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-12.%E5%8A%A8%E6%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E4%B8%8E%E9%87%8D%E8%BD%BD/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/09/%E8%AF%AD%E8%A8%80/Java/API/reflection/Java-Reflection-12.%E5%8A%A8%E6%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E4%B8%8E%E9%87%8D%E8%BD%BD/" class="post-title-link" itemprop="url">Java-Reflection-12.动态类加载与重载</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-09 17:59:30" itemprop="dateCreated datePublished" datetime="2016-12-09T17:59:30+08:00">2016-12-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/dynamic-class-loading-reloading/">http://ifeve.com/dynamic-class-loading-reloading/</a></p>
-<p>Java允许你在运行期动态加载和重载类，但是这个功能并没有像人们希望的那么简单直接。这篇文章将阐述在Java中如何加载以及重载类。</p>
-<p>你可能会质疑为什么Java动态类加载特性是Java反射机制的一部分而不是Java核心平台的一部分。不管怎样，这篇文章被放到了Java反射系列里面而且也没有更好的系列来包含它了。</p>
-<h2 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a>类加载器</h2><p>所有Java应用中的类都是被java.lang.ClassLoader类的一系列子类加载的。因此要想动态加载类的话也必须使用java.lang.ClassLoader的子类。</p>
-<p>一个类一旦被加载时，这个类引用的所有类也同时会被加载。类加载过程是一个递归的模式，所有相关的类都会被加载。但并不一定是一个应用里面所有类都会被加载，与这个被加载类的引用链无关的类是不会被加载的，直到有引用关系的时候它们才会被加载。</p>
-<h2 id="类加载体系"><a href="#类加载体系" class="headerlink" title="类加载体系"></a>类加载体系</h2><p>在Java中类加载是一个有序的体系。当你新创建一个标准的Java类加载器时你必须提供它的父加载器。当一个类加载器被调用来加载一个类的时候，首先会调用这个加载器的父加载器来加载。如果父加载器无法找到这个类，这时候这个加载器才会尝试去加载这个类。</p>
-<h2 id="类加载"><a href="#类加载" class="headerlink" title="类加载"></a>类加载</h2><p>类加载器加载类的顺序如下：</p>
-<ol>
-<li>检查这个类是否已经被加载。</li>
-<li>如果没有被加载，则首先调用父加载器加载。</li>
-<li>如果父加载器不能加载这个类，则尝试加载这个类。</li>
-</ol>
-<p>当你实现一个有重载类功能的类加载器，它的顺序与上述会有些不同。类重载不会请求的他的父加载器来进行加载。在后面的段落会进行讲解。</p>
-<h2 id="动态类加载"><a href="#动态类加载" class="headerlink" title="动态类加载"></a>动态类加载</h2><p>动态加载一个类十分简单。你要做的就是获取一个类加载器然后调用它的loadClass()方法。下面是个例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public class MainClass &#123;</span><br><span class="line"></span><br><span class="line">  public static void main(String[] args)&#123;</span><br><span class="line">    ClassLoader classLoader = MainClass.class.getClassLoader();</span><br><span class="line"></span><br><span class="line">    try &#123;</span><br><span class="line">        Class aClass = classLoader.loadClass(&quot;com.jenkov.MyClass&quot;);</span><br><span class="line">        System.out.println(&quot;aClass.getName() = &quot; + aClass.getName());</span><br><span class="line">    &#125; catch (ClassNotFoundException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="动态类重载"><a href="#动态类重载" class="headerlink" title="动态类重载"></a>动态类重载</h2><p>动态类重载有一点复杂。Java内置的类加载器在加载一个类之前会检查它是否已经被加载。因此重载一个类是无法使用Java内置的类加载器的，如果想要重载一个类你需要手动继承ClassLoader。</p>
-<p>在你定制ClassLoader的子类之后，你还有一些事需要做。所有被加载的类都需要被链接。这个过程是通过ClassLoader.resolve()方法来完成的。由于这是一个final方法，因此这个方法在ClassLoader的子类中是无法被重写的。resolve()方法是不会允许给定的ClassLoader实例链接一个类两次。所以每当你想要重载一个类的时候你都需要使用一个新的ClassLoader的子类。你在设计类重载功能的时候这是必要的条件。</p>
-<h2 id="自定义类重载"><a href="#自定义类重载" class="headerlink" title="自定义类重载"></a>自定义类重载</h2><p>在前面已经说过你不能使用已经加载过类的类加载器来重载一个类。因此你需要其他的ClassLoader实例来重载这个类。但是这又带来了一些新的挑战。</p>
-<p>所有被加载到Java应用中的类都以类的全名（包名 + 类名）作为一个唯一标识来让ClassLoader实例来加载。这意味着，类MyObject被类加载器A加载，如果类加载器B又加载了MyObject类，那么两个加载器加载出来的类是不同的。看看下面的代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MyObject object = (MyObject)myClassReloadingFactory.newInstance(&quot;com.jenkov.MyObject&quot;);</span><br></pre></td></tr></table></figure>
-<p>MyObject类在上面那段代码中被引用，它的变量名是object。这就导致了MyObject这个类会被这段代码所在类的类加载器所加载。</p>
-<p>如果myClassReloadingFactory工厂对象使用不同的类加载器重载MyObject类，你不能把重载的MyObject类的实例转换（cast）到类型为MyObject的对象变量。一旦MyObject类分别被两个类加载器加载，那么它就会被认为是两个不同的类，尽管它们的类的全名是完全一样的。你如果尝试把这两个类的实例进行转换就会报ClassCastException。</p>
-<p>你可以解决这个限制，不过你需要从以下两个方面修改你的代码：</p>
-<ol>
-<li>标记这个变量类型为一个接口，然后只重载这个接口的实现类。</li>
-<li>标记这个变量类型为一个超类，然后只重载这个超类的子类。</li>
-</ol>
-<p>请看下面这两个例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MyObjectInterface object = (MyObjectInterface)myClassReloadingFactory.newInstance(&quot;com.jenkov.MyObject&quot;);</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MyObjectSuperclass object = (MyObjectSuperclass)myClassReloadingFactory.newInstance(&quot;com.jenkov.MyObject&quot;);</span><br></pre></td></tr></table></figure>
-<p>只要保证变量的类型是超类或者接口，这两个方法就可以正常运行，当它们的子类或是实现类被重载的时候超类跟接口是不会被重载的。</p>
-<p>为了保证这种方式可以运行你需要手动实现类加载器然后使得这些接口或超类可以被它的父加载器加载。当你的类加载器加载MyObject类时，超类MyObjectSuperclass或者接口MyObjectSuperclass也会被加载，因为它们是MyObject的依赖。你的类加载器必须要代理这些类的加载到同一个类加载器，这个类加载器加载这个包括接口或者超类的类。</p>
-<h2 id="类加载-重载示例"><a href="#类加载-重载示例" class="headerlink" title="类加载/重载示例"></a>类加载/重载示例</h2><p>光说不练假把式。让我们看看一个简单的例子。下面这个例子是一个类加载器的子类。注意在这个类不想被重载的情况下它是如何把对一个类的加载代理到它的父加载器上的。如果一个类被它的父加载器加载，这个类以后将不能被重载。记住，一个类只能被同一个ClassLoader实例加载一次。</p>
-<p>就像我之前说的那样，这仅仅是一个简单的例子，通过这个例子会向你展示类加载器的基本行为。这并不是一个可以让你直接用于设计你项目中类加载器的模板。你自己设计的类加载器应该不仅仅只有一个，如果你想用来重载类的话你可能会设计很多加载器。并且你也不会像下面这样将需要加载的类的路径硬编码（hardcore）到你的代码中。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">public class MyClassLoader extends ClassLoader&#123;</span><br><span class="line"></span><br><span class="line">    public MyClassLoader(ClassLoader parent) &#123;</span><br><span class="line">        super(parent);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Class loadClass(String name) throws ClassNotFoundException &#123;</span><br><span class="line">        if(!&quot;reflection.MyObject&quot;.equals(name))</span><br><span class="line">                return super.loadClass(name);</span><br><span class="line"></span><br><span class="line">        try &#123;</span><br><span class="line">            String url = &quot;file:C:/data/projects/tutorials/web/WEB-INF/&quot; +</span><br><span class="line">                            &quot;classes/reflection/MyObject.class&quot;;</span><br><span class="line"></span><br><span class="line">            URL myUrl = new URL(url);</span><br><span class="line">            URLConnection connection = myUrl.openConnection();</span><br><span class="line">            InputStream input = connection.getInputStream();</span><br><span class="line">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span><br><span class="line">            int data = input.read();</span><br><span class="line"></span><br><span class="line">            while(data != -1)&#123;</span><br><span class="line">                buffer.write(data);</span><br><span class="line">                data = input.read();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            input.close();</span><br><span class="line"></span><br><span class="line">            byte[] classData = buffer.toByteArray();</span><br><span class="line"></span><br><span class="line">            return defineClass(&quot;reflection.MyObject&quot;,</span><br><span class="line">                    classData, 0, classData.length);</span><br><span class="line">        &#125; catch (MalformedURLException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>下面是使用MyClassLoader的例子：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException &#123;</span><br><span class="line"></span><br><span class="line">    ClassLoader parentClassLoader = MyClassLoader.class.getClassLoader();</span><br><span class="line">    MyClassLoader classLoader = new MyClassLoader(parentClassLoader);</span><br><span class="line">    Class myObjectClass = classLoader.loadClass(&quot;reflection.MyObject&quot;);</span><br><span class="line"></span><br><span class="line">    AnInterface2 object1 = (AnInterface2) myObjectClass.newInstance();</span><br><span class="line"></span><br><span class="line">    MyObjectSuperClass object2 =(MyObjectSuperClass) myObjectClass.newInstance();</span><br><span class="line"></span><br><span class="line">    //create new class loader so classes can be reloaded.</span><br><span class="line">    classLoader = new MyClassLoader(parentClassLoader);</span><br><span class="line">    myObjectClass = classLoader.loadClass(&quot;reflection.MyObject&quot;);</span><br><span class="line"></span><br><span class="line">    object1 = (AnInterface2) myObjectClass.newInstance();</span><br><span class="line">    object2 = (MyObjectSuperClass) myObjectClass.newInstance();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>下面这个就是被加载的reflection.MyObject类。注意它既继承了一个超类并且也实现了一个接口。这样做仅仅是为了通过例子演示这个特性。在你自定义的情况下你可能仅会实现一个类或者继承一两个接口。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public class MyObject extends MyObjectSuperClass implements AnInterface2&#123;</span><br><span class="line">    //... body of class ... override superclass methods</span><br><span class="line">    //    or implement interface methods</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1115,7 +1164,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1128,7 +1177,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

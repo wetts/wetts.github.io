@@ -188,6 +188,335 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">CAS实现SSO单点登录原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-12-13 14:29:55" itemprop="dateCreated datePublished" datetime="2014-12-13T14:29:55+08:00">2014-12-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%99%BB%E9%99%86/" itemprop="url" rel="index"><span itemprop="name">登陆</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="CAS-简介"><a href="#CAS-简介" class="headerlink" title="CAS 简介"></a>CAS 简介</h2><h3 id="What-is-CAS-？"><a href="#What-is-CAS-？" class="headerlink" title="What is CAS ？"></a>What is CAS ？</h3><p>CAS （ Central Authentication Service ） 是 Yale 大学发起的一个企业级的、开源的项目，旨在为 Web 应用系统提供一种可靠的单点登录解决方法（属于 Web SSO ）。</p>
+<p>CAS 开始于 2001 年， 并在 2004 年 12 月正式成为 JA-SIG 的一个项目。</p>
+<h3 id="主要特性"><a href="#主要特性" class="headerlink" title="主要特性"></a>主要特性</h3><ol>
+<li>开源的、多协议的 SSO 解决方案； Protocols ： Custom Protocol 、 CAS 、 OAuth 、 OpenID、 RESTful API 、 SAML1.1 、 SAML2.0 等。</li>
+<li>支持多种认证机制： Active Directory 、 JAAS 、 JDBC 、 LDAP 、 X.509 Certificates 等；</li>
+<li>安全策略：使用票据（ Ticket ）来实现支持的认证协议；</li>
+<li>支持授权：可以决定哪些服务可以请求和验证服务票据（ Service Ticket ）；</li>
+<li>提供高可用性：通过把认证过的状态数据存储在 TicketRegistry 组件中，这些组件有很多支持分布式环境的实现，如： BerkleyDB 、 Default 、 EhcacheTicketRegistry 、 JDBCTicketRegistry 、JBOSS TreeCache 、 JpaTicketRegistry 、 MemcacheTicketRegistry 等；</li>
+<li>支持多种客户端： Java 、 .Net 、 PHP 、 Perl 、 Apache, uPortal 等。</li>
+</ol>
+<p> </p>
+<h2 id="SSO-单点登录原理"><a href="#SSO-单点登录原理" class="headerlink" title="SSO 单点登录原理"></a>SSO 单点登录原理</h2><p>本文内容主要针对 Web SSO 。</p>
+<h3 id="什么是SSO"><a href="#什么是SSO" class="headerlink" title="什么是SSO"></a>什么是SSO</h3><p>单点登录（ Single Sign-On , 简称 SSO ）是目前比较流行的服务于企业业务整合的解决方案之一， SSO 使得在多个应用系统中，用户只需要 登录一次 就可以访问所有相互信任的应用系统。</p>
+<h3 id="SSO-原理"><a href="#SSO-原理" class="headerlink" title="SSO 原理"></a>SSO 原理</h3><h4 id="SSO-体系中的角色"><a href="#SSO-体系中的角色" class="headerlink" title="SSO 体系中的角色"></a>SSO 体系中的角色</h4><p>一般 SSO 体系主要角色有三种：</p>
+<ol>
+<li>User （多个）</li>
+<li>Web 应用（多个）</li>
+<li>SSO 认证中心（ 1 个 ）</li>
+</ol>
+<h4 id="SSO-实现模式的原则"><a href="#SSO-实现模式的原则" class="headerlink" title="SSO 实现模式的原则"></a>SSO 实现模式的原则</h4><p>SSO 实现模式一般包括以下三个原则：</p>
+<ol>
+<li>所有的认证登录都在 SSO 认证中心进行；</li>
+<li>SSO 认证中心通过一些方法来告诉 Web 应用当前访问用户究竟是不是已通过认证的用户；</li>
+<li>SSO 认证中心和所有的 Web 应用建立一种信任关系，也就是说 web 应用必须信任认证中心。（单点信任）</li>
+</ol>
+<h4 id="SSO-主要实现方式"><a href="#SSO-主要实现方式" class="headerlink" title="SSO 主要实现方式"></a>SSO 主要实现方式</h4><p>SSO 的主要实现方式有：</p>
+<ol>
+<li>共享 cookies</li>
+</ol>
+<p>  基于共享同域的 cookie 是 Web 刚开始阶段时使用的一种方式，它利用浏览同域名之间自动传递 cookies 机制，实现两个域名之间系统令牌传递问题；另外，关于跨域问题，虽然 cookies本身不跨域，但可以利用它实现跨域的 SSO 。如：代理、暴露 SSO 令牌值等。</p>
+<p>  缺点：不灵活而且有不少安全隐患，已经被抛弃。</p>
+<ol start="2">
+<li>Broker-based( 基于经纪人 )</li>
+</ol>
+<p>  这种技术的特点就是，有一个集中的认证和用户帐号管理的服务器。经纪人给被用于进一步请求的电子身份存取。中央数据库的使用减少了管理的代价，并为认证提供一个公共和独立的 “第三方 “ 。例如 Kerberos 、 Sesame 、 IBM KryptoKnight （凭证库思想 ) 等。 Kerberos 是由麻省理工大学发明的安全认证服务，已经被 UNIX 和 Windows 作为默认的安全认证服务集成进操作系统。</p>
+<ol start="3">
+<li>Agent-based （基于代理人）</li>
+</ol>
+<p>  在这种解决方案中，有一个自动地为不同的应用程序认证用户身份的代理程序。这个代理程序需要设计有不同的功能。比如，它可以使用口令表或加密密钥来自动地将认证的负担从用户移开。代理人被放在服务器上面，在服务器的认证系统和客户端认证方法之间充当一个 “ 翻译 “ 。例如 SSH 等。</p>
+<ol start="4">
+<li>Token-based</li>
+</ol>
+<p>  例如 SecureID,WebID ，现在被广泛使用的口令认证，比如 FTP 、邮件服务器的登录认证，这是一种简单易用的方式，实现一个口令在多种应用当中使用。</p>
+<ol start="5">
+<li><p>基于网关</p>
+</li>
+<li><p>基于 SAML</p>
+</li>
+</ol>
+<p>  SAML(Security Assertion Markup Language ，安全断言标记语言）的出现大大简化了 SSO ，并被OASIS 批准为 SSO 的执行标准 。开源组织 OpenSAML 实现了 SAML 规范。
+ </p>
+<h2 id="CAS-的基本原理"><a href="#CAS-的基本原理" class="headerlink" title="CAS 的基本原理"></a>CAS 的基本原理</h2><h3 id="结构体系"><a href="#结构体系" class="headerlink" title="结构体系"></a>结构体系</h3><p>从结构体系看， CAS 包括两部分： CAS Server 和 CAS Client 。</p>
+<h4 id="CAS-Server"><a href="#CAS-Server" class="headerlink" title="CAS Server"></a>CAS Server</h4><p>CAS Server 负责完成对用户的认证工作 , 需要独立部署 , CAS Server 会处理用户名 / 密码等凭证 (Credentials) 。</p>
+<h4 id="CAS-Client"><a href="#CAS-Client" class="headerlink" title="CAS Client"></a>CAS Client</h4><p>负责处理对客户端受保护资源的访问请求，需要对请求方进行身份认证时，重定向到 CAS Server 进行认证。（原则上，客户端应用不再接受任何的用户名密码等 Credentials ）。</p>
+<p>CAS Client 与受保护的客户端应用部署在一起，以 Filter 方式保护受保护的资源。</p>
+<h3 id="CAS-原理和协议"><a href="#CAS-原理和协议" class="headerlink" title="CAS 原理和协议"></a>CAS 原理和协议</h3><h4 id="基础模式"><a href="#基础模式" class="headerlink" title="基础模式"></a>基础模式</h4><p>基础模式 SSO 访问流程主要有以下步骤：</p>
+<ol>
+<li>访问服务： SSO 客户端发送请求访问应用系统提供的服务资源。</li>
+<li>定向认证： SSO 客户端会重定向用户请求到 SSO 服务器。</li>
+<li>用户认证：用户身份认证。</li>
+<li>发放票据： SSO 服务器会产生一个随机的 Service Ticket 。</li>
+<li>验证票据： SSO 服务器验证票据 Service Ticket 的合法性，验证通过后，允许客户端访问服务。</li>
+<li>传输用户信息： SSO 服务器验证票据通过后，传输用户认证结果信息给客户端。</li>
+</ol>
+<p>下面是 CAS 最基本的协议过程：</p>
+<p><img src="/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/%E5%9F%BA%E7%A1%80%E5%8D%8F%E8%AE%AE%E5%9B%BE.png" alt="基础协议图"></p>
+<p>如上图： CAS Client 与受保护的客户端应用部署在一起，以 Filter 方式保护 Web 应用的受保护资源，过滤从客户端过来的每一个 Web 请求，同时， CAS Client 会分析 HTTP 请求中是否包含请求 Service Ticket( ST 上图中的 Ticket) ，如果没有，则说明该用户是没有经过认证的；于是 CAS Client 会重定向用户请求到 CAS Server （ Step 2 ），并传递 Service （要访问的目的资源地址）。 Step 3 是用户认证过程，如果用户提供了正确的 Credentials ， CAS Server 随机产生一个相当长度、唯一、不可伪造的 Service Ticket ，并缓存以待将来验证，并且重定向用户到 Service 所在地址（附带刚才产生的 Service Ticket ） , 并为客户端浏览器设置一个 Ticket Granted Cookie （ TGC ） ； CAS Client 在拿到 Service 和新产生的 Ticket 过后，在 Step 5 和 Step6 中与 CAS Server 进行身份核实，以确保 Service Ticket 的合法性。</p>
+<p>在该协议中，所有与 CAS Server 的交互均采用 SSL 协议，以确保 ST 和 TGC 的安全性。协议工作过程中会有 2 次重定向 的过程。但是 CAS Client 与 CAS Server 之间进行 Ticket 验证的过程对于用户是透明的（使用 HttpsURLConnection ）。</p>
+<p>CAS 请求认证时序图如下</p>
+<p><img src="/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/CAS%E8%AF%B7%E6%B1%82%E8%AE%A4%E8%AF%81%E6%97%B6%E5%BA%8F%E5%9B%BE.png" alt="CAS请求认证时序图"></p>
+<h4 id="CAS-如何实现-SSO"><a href="#CAS-如何实现-SSO" class="headerlink" title="CAS 如何实现 SSO"></a>CAS 如何实现 SSO</h4><p>当用户访问另一个应用的服务再次被重定向到 CAS Server 的时候， CAS Server 会主动获到这个 TGC cookie ，然后做下面的事情：</p>
+<ol>
+<li>如果 User 持有 TGC 且其还没失效，那么就走基础协议图的 Step4 ，达到了 SSO 的效果；</li>
+<li>如果 TGC 失效，那么用户还是要重新认证 ( 走基础协议图的 Step3) 。</li>
+</ol>
+<p> </p>
+<h4 id="CAS-代理模式"><a href="#CAS-代理模式" class="headerlink" title="CAS 代理模式"></a>CAS 代理模式</h4><p>该模式形式为用户访问 App1 ， App1 又依赖于 App2 来获取一些信息，如： User –&gt;App1 –&gt;App2。</p>
+<p>这种情况下，假设 App2 也是需要对 User 进行身份验证才能访问，那么，为了不影响用户体验（过多的重定向导致 User 的 IE 窗口不停地闪动 ) ， CAS 引入了一种 Proxy 认证机制，即 CAS Client 可以代理用户去访问其它 Web 应用。</p>
+<p>代理的前提是需要 CAS Client 拥有用户的身份信息 ( 类似凭据 ) 。之前我们提到的 TGC 是用户持有对自己身份信息的一种凭据，这里的 PGT 就是 CAS Client 端持有的对用户身份信息的一种凭据。凭借 TGC ， User 可以免去输入密码以获取访问其它服务的 Service Ticket ，所以，这里凭借 PGT ， Web 应用可以代理用户去实现后端的认证，而 无需前端用户的参与 。</p>
+<p>下面为代理应用（ helloService ）获取 PGT 的过程： （注： PGTURL 用于表示一个 Proxy 服务，是一个回调链接； PGT 相当于代理证； PGTIOU 为取代理证的钥匙，用来与 PGT 做关联关系；）</p>
+<p>如上面的 CAS Proxy 图所示， CAS Client 在基础协议之上，在验证 ST 时提供了一个额外的PGT URL( 而且是 SSL 的入口 ) 给 CAS Server ，使得 CAS Server 可以通过 PGT URL 提供一个 PGT 给 CAS Client 。</p>
+<p>CAS Client 拿到了 PGT(PGTIOU-85 … ..ti2td) ，就可以通过 PGT 向后端 Web 应用进行认证。</p>
+<p>下面是代理认证和提供服务的过程：</p>
+<p><img src="/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/%E8%AE%A4%E8%AF%81%E5%9B%BE.png" alt="认证图"></p>
+<p>如上图所示， Proxy 认证与普通的认证其实差别不大， Step1 ， 2 与基础模式的 Step1,2 几乎一样，唯一不同的是， Proxy 模式用的是 PGT 而不是 TGC ，是 Proxy Ticket （ PT ）而不是 Service Ticket 。
+ </p>
+<h4 id="辅助说明"><a href="#辅助说明" class="headerlink" title="辅助说明"></a>辅助说明</h4><p>CAS 的 SSO 实现方式可简化理解为： 1 个 Cookie 和 N 个 Session 。 CAS Server 创建 cookie ，在所有应用认证时使用，各应用通过创建各自的 Session 来标识用户是否已登录。</p>
+<p>用户在一个应用验证通过后，以后用户在同一浏览器里访问此应用时，客户端应用中的过滤器会在 session 里读取到用户信息，所以就不会去 CAS Server 认证。如果在此浏览器里访问别的 web 应用时，客户端应用中的过滤器在 session 里读取不到用户信息，就会去 CAS Server 的 login 接口认证，但这时 CAS Server 会读取到浏览器传来的 cookie （ TGC ），所以 CAS Server 不会要求用户去登录页面登录，只是会根据 service 参数生成一个 Ticket ，然后再和 web 应用做一个验证 ticket 的交互而已。</p>
+<h3 id="术语解释"><a href="#术语解释" class="headerlink" title="术语解释"></a>术语解释</h3><p>CAS 系统中设计了 5 中票据： TGC 、 ST 、 PGT 、 PGTIOU 、 PT 。</p>
+<ul>
+<li>Ticket-granting cookie(TGC) ：存放用户身份认证凭证的 cookie ，在浏览器和 CAS Server 间通讯时使用，并且只能基于安全通道传输（ Https ），是 CAS Server 用来明确用户身份的凭证；</li>
+<li>Service ticket(ST) ：服务票据，服务的惟一标识码 , 由 CAS Server 发出（ Http 传送），通过客户端浏览器到达业务服务器端；一个特定的服务只能有一个惟一的 ST ；</li>
+<li>Proxy-Granting ticket （ PGT ）：由 CAS Server 颁发给拥有 ST 凭证的服务， PGT 绑定一个用户的特定服务，使其拥有向 CAS Server 申请，获得 PT 的能力；</li>
+<li>Proxy-Granting Ticket I Owe You （ PGTIOU ） : 作用是将通过凭证校验时的应答信息由 CAS Server 返回给 CAS Client ，同时，与该 PGTIOU 对应的 PGT 将通过回调链接传给 Web 应用。 Web 应用负责维护 PGTIOU 与 PGT 之间映射关系的内容表；</li>
+<li>Proxy Ticket (PT) ：是应用程序代理用户身份对目标程序进行访问的凭证；</li>
+</ul>
+<p> <br>其它说明如下：</p>
+<ul>
+<li>Ticket Granting ticket(TGT) ：票据授权票据，由 KDC 的 AS 发放。即获取这样一张票据后，以后申请各种其他服务票据 (ST) 便不必再向 KDC 提交身份认证信息 (Credentials) ；</li>
+<li>Authentication service(AS) ——— 认证用服务，索取 Credentials ，发放 TGT ；</li>
+<li>Ticket-granting service (TGS) ——— 票据授权服务，索取 TGT ，发放 ST ；</li>
+<li>KDC( Key Distribution Center ) ———- 密钥发放中心；</li>
+</ul>
+<p> </p>
+<h2 id="CAS-安全性"><a href="#CAS-安全性" class="headerlink" title="CAS 安全性"></a>CAS 安全性</h2><p>CAS 的安全性仅仅依赖于 SSL 。使用的是 secure cookie 。</p>
+<h3 id="TGC-PGT-安全性"><a href="#TGC-PGT-安全性" class="headerlink" title="TGC/PGT 安全性"></a>TGC/PGT 安全性</h3><p>对于一个 CAS 用户来说，最重要是要保护它的 TGC ，如果 TGC 不慎被 CAS Server 以外的实体获得， Hacker 能够找到该 TGC ，然后冒充 CAS 用户访问 所有 授权资源。 PGT 的角色跟 TGC 是一样的。</p>
+<p>从基础模式可以看出， TGC 是 CAS Server 通过 SSL 方式发送给终端用户，因此，要截取 TGC 难度非常大，从而确保 CAS 的安全性。<br>TGT 的存活周期默认为 120 分钟。</p>
+<h3 id="ST-PT-安全性"><a href="#ST-PT-安全性" class="headerlink" title="ST/PT 安全性"></a>ST/PT 安全性</h3><p>ST （ Service Ticket ）是通过 Http 传送的，因此网络中的其他人可以 Sniffer 到其他人的 Ticket 。CAS 通过以下几方面来使 ST 变得更加安全（事实上都是可以配置的）：</p>
+<ol>
+<li>ST 只能使用一次</li>
+</ol>
+<p>  CAS 协议规定，无论 Service Ticket 验证是否成功， CAS Server 都会清除服务端缓存中的该 Ticket ，从而可以确保一个 Service Ticket 不被使用两次。</p>
+<ol start="2">
+<li>ST 在一段时间内失效</li>
+</ol>
+<p>  CAS 规定 ST 只能存活一定的时间，然后 CAS Server 会让它失效。默认有效时间为 5 分钟。</p>
+<ol start="3">
+<li>ST 是基于随机数生成的</li>
+</ol>
+<p>  ST 必须足够随机，如果 ST 生成规则被猜出， Hacker 就等于绕过 CAS 认证，直接访问 对应的服务。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/30/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-notify()%E5%92%8CnotifyAll()%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/11/30/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-notify()%E5%92%8CnotifyAll()%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Java-API-Java中的Copy-On-Write容器</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-11-30 12:30:01" itemprop="dateCreated datePublished" datetime="2014-11-30T12:30:01+08:00">2014-11-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/armyao/archive/2010/12/27/1917989.html">http://www.cnblogs.com/armyao/archive/2010/12/27/1917989.html</a></p>
+<ul>
+<li><p>notifyAll使所有原来在该对象上等待被notify的线程统统退出wait的状态，变成等待该对象上的锁，一旦该对象被解锁，他们就会去竞争。</p>
+</li>
+<li><p>notify则文明得多他只是选择一个wait状态线程进行通知，并使它获得该对象上的锁，但不惊动其他同样在等待被该对象notify的线程们，当第一个线程运行完毕以后释放对象上的锁此时如果该对象没有再次使用notify语句，则即便该对象已经空闲，其他wait状态等待的线程由于没有得到该对象的通知，继续处在wait状态，直到这个对象发出一个notify或notifyAll，它们等待的是被notify或notifyAll，而不是锁。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E7%94%A8%E6%B3%95-#{}%E5%92%8C${}%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/11/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E7%94%A8%E6%B3%95-#%7B%7D%E5%92%8C$%7B%7D%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Mybatis-用法-#{}和${}的区别</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-11-27 13:47:24" itemprop="dateCreated datePublished" datetime="2014-11-27T13:47:24+08:00">2014-11-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>#{}相当于jdbc中的preparedstatement，预编译</li>
+<li>${}是输出变量的值，sql拼接</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/25/%E8%AF%AD%E8%A8%80/web/Web-Cookie%E5%92%8CSession/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -729,254 +1058,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/27/%E8%AF%AD%E8%A8%80/web/HTML-input%E6%A0%87%E7%AD%BE%E7%9A%84disable%E5%92%8Creadonly/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/10/27/%E8%AF%AD%E8%A8%80/web/HTML-input%E6%A0%87%E7%AD%BE%E7%9A%84disable%E5%92%8Creadonly/" class="post-title-link" itemprop="url">HTML-input标签的disable和readonly</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-10-27 15:13:58" itemprop="dateCreated datePublished" datetime="2014-10-27T15:13:58+08:00">2014-10-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/HTML/" itemprop="url" rel="index"><span itemprop="name">HTML</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><code>&lt;input name=&quot;country&quot; id=&quot;country&quot; size=12 value=&quot;disabled提交时得不到该值 &quot; disabled=&quot;disabled&quot; &gt;</code></p>
-<p>放在form表单中提交后得不到该值。将<code>disabled=&quot;disabled&quot;</code> 改为 <code>readonly = &quot;readonly&quot;</code> 即可。</p>
-<p>按照W3C的规范：<a target="_blank" rel="noopener" href="http://www.w3.org/TR/REC-html40/interact/forms.html#h-17.12">http://www.w3.org/TR/REC-html40/interact/forms.html#h-17.12</a></p>
-<p>设置为disabled的input将会有下面的限制：</p>
-<ul>
-<li>不能接收焦点</li>
-<li>使用tab键时将被跳过</li>
-<li>可能不是successful的</li>
-</ul>
-<p>设置为readonly的input将会有下面的限制：</p>
-<ul>
-<li>可以接收焦点但不能被修改</li>
-<li>可以使用tab键进行导航</li>
-<li>可能是successful的</li>
-</ul>
-<p>只有successful的表单元素才是有效数据，也即是可以进行提交。disabled和readonly的文本输入框只能通过脚本进行修改value属性。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E5%8E%9F%E7%90%86-SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/10/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E5%8E%9F%E7%90%86-SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">SpringMVC-原理-SpringMVC工作原理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-10-27 13:09:41" itemprop="dateCreated datePublished" datetime="2014-10-27T13:09:41+08:00">2014-10-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><img src="/2014/10/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E5%8E%9F%E7%90%86-SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.png" alt="SpringMVC工作原理"></p>
-<p>上面的是springMVC的工作原理图：</p>
-<ol>
-<li>客户端发出一个http请求给web服务器，web服务器对http请求进行解析，如果匹配DispatcherServlet的请求映射路径（在web.xml中指定），web容器将请求转交给DispatcherServlet.</li>
-<li>DipatcherServlet接收到这个请求之后将根据请求的信息（包括URL、Http方法、请求报文头和请求参数Cookie等）以及HandlerMapping的配置找到处理请求的处理器（Handler）。</li></ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2014/10/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E5%8E%9F%E7%90%86-SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/23/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E4%B8%8EWebservice%E5%8C%BA%E5%88%AB%E4%B8%8E%E8%81%94%E7%B3%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/10/23/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E4%B8%8EWebservice%E5%8C%BA%E5%88%AB%E4%B8%8E%E8%81%94%E7%B3%BB/" class="post-title-link" itemprop="url">Servlet与WebService区别与联系</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-10-23 13:27:41" itemprop="dateCreated datePublished" datetime="2014-10-23T13:27:41+08:00">2014-10-23</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.360doc.com/content/13/0415/10/11253639_278358312.shtml">http://www.360doc.com/content/13/0415/10/11253639_278358312.shtml</a></p>
-<h2 id="Servelt与WebService的异同："><a href="#Servelt与WebService的异同：" class="headerlink" title="Servelt与WebService的异同："></a>Servelt与WebService的异同：</h2><h3 id="请求："><a href="#请求：" class="headerlink" title="请求："></a>请求：</h3><p>客户端访问一个服务器的url，只需要发送简单的httprequest即可。   </p>
-<ul>
-<li>但servlet只能接受一个简单的http请求；   </li>
-<li>而WebService是可以发送一个xml作为其请求内容。   </li>
-</ul>
-<h3 id="传输："><a href="#传输：" class="headerlink" title="传输："></a>传输：</h3><ul>
-<li>servlet使用http协议传输数据。   </li>
-<li>ws使用固定的XML格式封装成soap消息，可以使用http作为底层数据传输，但并不局限于http协议。   </li>
-</ul>
-<h3 id="返回结果："><a href="#返回结果：" class="headerlink" title="返回结果："></a>返回结果：</h3><ul>
-<li>servlet返回的是html页面；   </li>
-<li>ws返回的可以是复杂对象甚至使用附件或者mutidata的2进制文件。   </li>
-</ul>
-<h3 id="部署："><a href="#部署：" class="headerlink" title="部署："></a>部署：</h3><ul>
-<li>servlet需要遵守j2ee的Web   Application规范部署的应用服务器上，如tomcat,weblogic，websphere；   </li>
-<li>WebService则需要有WSDL文件来部署服务，或者使用UDDI注册。   </li>
-</ul>
-<h3 id="优势："><a href="#优势：" class="headerlink" title="优势："></a>优势：</h3><ul>
-<li>WebService的跨平台特性是servlet不能比的；   </li>
-<li>而servlet相对来说速度上的优势也是不可忽视的</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1048,7 +1129,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1061,7 +1142,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

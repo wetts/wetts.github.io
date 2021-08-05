@@ -188,6 +188,93 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" class="post-title-link" itemprop="url">卷积神经网络.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-05 21:25:50" itemprop="dateCreated datePublished" datetime="2020-05-05T21:25:50+08:00">2020-05-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="卷积网络与全连接网络比较"><a href="#卷积网络与全连接网络比较" class="headerlink" title="卷积网络与全连接网络比较"></a>卷积网络与全连接网络比较</h2><p>和只用全连接层相比，卷积层的两个主要优势在于参数共享和稀疏连接。</p>
+<ul>
+<li>参数共享。观察发现，特征检测如垂直边缘检测如果适用于图片的某个区域，那么它也可能适用于图片的其他区域。也就是说，如果你用一个3×3的过滤器检测垂直边缘，那么图片的左上角区域，以及旁边的各个区域（左边矩阵中蓝色方框标记的部分）都可以使用这个3×3的过滤器。每个特征检测器以及输出都可以在输入图片的不同区域中使用同样的参数，以便提取垂直边缘或其它特征。它不仅适用于边缘特征这样的低阶特征，同样适用于高阶特征，例如提取脸上的眼睛，猫或者其他特征对象。即使减少参数个数，这9个参数同样能计算出16个输出。直观感觉是，一个特征检测器，如垂直边缘检测器用于检测图片左上角区域的特征，这个特征很可能也适用于图片的右下角区域。因此在计算图片左上角和右下角区域时，你不需要添加其它特征检测器。假如有一个这样的数据集，其左上角和右下角可能有不同分布，也有可能稍有不同，但很相似，整张图片共享特征检测器，提取效果也很好。</li>
+<li>使用稀疏连接。0是通过3×3的卷积计算得到的，它只依赖于这个3×3的输入的单元格，右边这个输出单元（元素0）仅与36个输入特征中9个相连接。而且其它像素值都不会对输出产生任影响，这就是稀疏连接的概念。</li>
+</ul>
+<p>神经网络可以通过这两种机制减少参数，以便我们用更小的训练集来训练它，从而预防过度拟合。</p>
+<h2 id="经典网络"><a href="#经典网络" class="headerlink" title="经典网络"></a>经典网络</h2><h3 id="LeNet-5"><a href="#LeNet-5" class="headerlink" title="LeNet-5"></a>LeNet-5</h3><p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/LeNet5.png" alt="LeNet5"></p>
+<h3 id="AlexNet"><a href="#AlexNet" class="headerlink" title="AlexNet"></a>AlexNet</h3><p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/AlexNet.png" alt="AlexNet"></p>
+<h3 id="VGG16"><a href="#VGG16" class="headerlink" title="VGG16"></a>VGG16</h3><p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/VGG16.png" alt="VGG16"></p>
+<h3 id="残差网络（ResNets）（Residual-Networks）"><a href="#残差网络（ResNets）（Residual-Networks）" class="headerlink" title="残差网络（ResNets）（Residual Networks）"></a>残差网络（ResNets）（Residual Networks）</h3><p>非常非常深的神经网络是很难训练的，因为存在梯度消失和梯度爆炸问题。跳跃连接（Skip connection），它可以从某一层网络层获取激活，然后迅速反馈给另外一层，甚至是神经网络的更深层。我们可以利用跳跃连接构建能够训练深度网络的 ResNets。</p>
+<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/ResNets.png" alt="ResNets"></p>
+<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/ResNets-2.png" alt="ResNets-2"></p>
+<h3 id="谷歌-Inception-网络"><a href="#谷歌-Inception-网络" class="headerlink" title="谷歌 Inception 网络"></a>谷歌 Inception 网络</h3><p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/Inception.png" alt="Inception"></p>
+<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/Inception-2.png" alt="Inception-2"></p>
+<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/Inception-3.png" alt="Inception-3"></p>
+<p>瓶颈层也是网络中最小的部分，我们先缩小网络表示，然后再扩大它。</p>
+<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/Inception-4.png" alt="Inception-4"></p>
+<p>说明：__池化层__。为了能在最后将这些输出都连接起来，我们会使用same类型的padding来池化，使得输出的高和宽依然是28×28，这样才能将它与其他输出连接起来。但注意，如果你进行了最大池化，即便用了same padding，3×3的过滤器，stride为1，其输出将会是28×28×192，其通道数或者说深度与这里的输入（通道数）相同。所以看起来它会有很多通道，我们实际要做的就是再加上一个1×1的卷积层，去进行我们在1×1卷积层的视频里所介绍的操作，将通道的数量缩小，缩小到28×28×32。也就是使用32个维度为1×1×192的过滤器，所以输出的维度其通道数缩小为32。这样就避免了最后输出时，池化层占据所有的通道。</p>
+<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/Inception-5.png" alt="Inception-5"></p>
+<p>在网络的最后几层，通常称为全连接层，在它之后是一个softmax层（编号1）来做出预测，这些分支（编号2）所做的就是通过隐藏层（编号3）来做出预测，所以这其实是一个softmax输出（编号2），这（编号1）也是。这是另一条分支（编号4），它也包含了一个隐藏层，通过一些全连接层，然后有一个softmax来预测，输出结果的标签。</p>
+<p>你应该把它看做Inception网络的一个细节，它确保了即便是隐藏单元和中间层（编号5）也参与了特征计算，它们也能预测图片的分类。它在Inception网络中，起到一种调整的效果，并且能防止网络发生过拟合。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/04/26/%E5%B7%A5%E5%85%B7/VSCode/VSCode%E4%B8%ADpython%E4%BB%A3%E7%A0%81%E6%8F%90%E7%A4%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1231,121 +1318,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%9F%BA%E7%A1%80/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%9F%BA%E7%A1%80/" class="post-title-link" itemprop="url">nlp-基础.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-26 20:13:00" itemprop="dateCreated datePublished" datetime="2020-03-26T20:13:00+08:00">2020-03-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><p>语言学</p>
-</li>
-<li><p>语音学</p>
-</li>
-<li><p>计算语言学：更侧重于计算方法和语言学理论等方面的研究</p>
-</li>
-<li><p>自然语言理解：更偏向于对语言认知和理解过程等方面问题的研究</p>
-</li>
-<li><p>自然语言处理：包含的语言工程和应用系统实现方面的含义似乎更多一些</p>
-</li>
-</ul>
-<p>自然语言处理大致研究方向：</p>
-<ul>
-<li>机器翻译(machine translation, MT)</li>
-<li>自动文摘(automatic summarizing 或 automatic abstracting)</li>
-<li>信息检索(information retrieval)：从海量文档中找到符合用户需要的相关文档</li>
-<li>文档分类(document categorization/classification)</li>
-<li>问答系统(question-answering system)</li>
-<li>信息过滤(information filtering)：自动识别和过滤那些满足特定条件的文档信息</li>
-<li>信息抽取(information extraction)</li>
-<li>文本挖掘(text mining)</li>
-<li>舆情分析(public opinion analysis)</li>
-<li>隐喻计算(metaphorical computation)：研究自然语言语句或篇章中隐喻修辞的理解方法</li>
-<li>文字编辑和自动校对(automatic proofreading)</li>
-<li>作文自动评分</li>
-<li>光读字符识别(optical character recognition, OCR)</li>
-<li>语音识别(speech recognition)</li>
-<li>文语转换(text-to-speech conversion)</li>
-<li>说话人识别/认证/验证(speaker recognition/identification/verification)</li>
-</ul>
-<p>自然语言处理涉及的几个层次</p>
-<ul>
-<li>语音学</li>
-<li>形态学(morphology)：形态学（又称“词汇形态学”或“词法”）是语言学的一个分支，研究词的内部结构，包括屈折变化和构词法两个部分。由于词具有语音特征、句法特征和语义特征，形态学处于音位学、句法学和语义学的结合部位，所以形态学是每个语言学家都要关注的一门学科。</li>
-<li>语法学(syntax)：研究句子结构成分之间的相互关系和组成句子序列的规则。其关注的中心是：为什么一句话可以这么说，也可以那么说？</li>
-<li>语义学(semantics)：是一门研究意义，特别是语言意义的学科。语义学的研究对象是语言的各级单位（词素、词、词组、句子、句子群、整段整篇的话语和文章，乃至整个著作）的意义，以及语义与语音、语法、修辞、文字、语境、哲学思想、社会环 境、个人修养的关系，等等。其重点在探明符号与符号所指的对象之间的关系，从而指导人们的言语活动。它所关注的重点是：这个语言单位到底说了什么？</li>
-<li>语用学(pragmatics)：是现代语言学用来指从使用者的角度研究语言，特别是使用者所作的选择、他们在社会互动中所受的制约、他们的语言使用对信递活动中其他参与者的影响。目前还缺乏一种连贯的语用学理论，主要是因为它必须说明的问题是多方面的，包括直指、会话隐含、预设、言语行为、话语结构等。部分原因是由于这一学科的范围太宽泛，因此出现多种不一致的定义。从狭隘的语言学观点看，语用学处理的是语言结构中有形式体现的那些语境。相反，__语用学最宽泛的定义是研究语义学未能涵盖的那些意义__。因此，语用学可以是集中在句子层次上的语用研究，也可以是超出句子，对语言的实际使用情况的调查研究，甚至与会话分析、语篇分析相结合，研究在不同上下文中的语句应用，以及上下文对语句理解所产生的影响。其关注的重点在于：为什么在特定的上下文中要说这句话？</li>
-</ul>
-<p>自然语言处理面临的困难</p>
-<ul>
-<li>歧义消解(disambiguation)</li>
-<li>未知语言现象的处理问题</li>
-</ul>
-<p>自然语言处理的基本方法</p>
-<ul>
-<li>理性主义(rationalist)方法【规则】</li>
-<li>经验主义(empiricist)方法【统计】</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1417,7 +1389,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1430,7 +1402,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

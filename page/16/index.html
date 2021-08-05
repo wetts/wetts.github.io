@@ -188,6 +188,361 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/27/%E8%AF%AD%E8%A8%80/web/CSS-%E5%86%85%E8%81%94%E5%85%83%E7%B4%A0%E7%9A%84%E5%AE%BD%E9%AB%98%E5%BA%A6%E8%AE%BE%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/27/%E8%AF%AD%E8%A8%80/web/CSS-%E5%86%85%E8%81%94%E5%85%83%E7%B4%A0%E7%9A%84%E5%AE%BD%E9%AB%98%E5%BA%A6%E8%AE%BE%E7%BD%AE/" class="post-title-link" itemprop="url">CSS-内联元素的宽高度设置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-27 16:04:46" itemprop="dateCreated datePublished" datetime="2017-07-27T16:04:46+08:00">2017-07-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HTML/" itemprop="url" rel="index"><span itemprop="name">HTML</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://blog.doyoe.com/2015/03/15/css/%E7%BD%AE%E6%8D%A2%E5%92%8C%E9%9D%9E%E7%BD%AE%E6%8D%A2%E5%85%83%E7%B4%A0/">http://blog.doyoe.com/2015/03/15/css/%E7%BD%AE%E6%8D%A2%E5%92%8C%E9%9D%9E%E7%BD%AE%E6%8D%A2%E5%85%83%E7%B4%A0/</a></p>
+<h3 id="内联的置换和非置换元素的宽度定义"><a href="#内联的置换和非置换元素的宽度定义" class="headerlink" title="内联的置换和非置换元素的宽度定义"></a>内联的置换和非置换元素的宽度定义</h3><p>对于内联的非置换元素，宽度设置是不适用的。</p>
+<p>对于内联的置换元素来说，其宽度的设置需遵循以下几点：</p>
+<ul>
+<li><p>若宽高的计算值都为 auto 且元素有固有宽度，则 width 的使用值为该固有宽度；</p>
+<blockquote>
+<p>典型的例子是：拥有默认宽高的 input 当宽度的计算值为auto时，则宽度使用值为其默认的固有宽度</p>
+</blockquote>
+</li>
+<li><p>若宽度的计算值为 auto 且元素有固有宽度，则 width 的使用值为该固有宽度；</p>
+<blockquote>
+<p>例子同上</p>
+</blockquote>
+</li>
+<li><p>若宽度的计算值为 auto 且高度有 非auto 的计算值，并且元素有固有宽高比，则 width 的使用值为 高度使用值 * 固有宽高比；</p>
+<blockquote>
+<p>典型的例子：img 当只定义了其高度值时，其宽度将会根据固有宽高比进行等比设置</p>
+</blockquote>
+</li>
+<li><p>除此之外，当 width 的计算值为 auto 时，则宽度的使用值为 300px</p>
+<blockquote>
+<p>典型的例子：比如iframe, canvas</p>
+</blockquote>
+</li>
+</ul>
+<p>其它类型的置换元素，其宽度的定义都参照行内置换元素的定义。</p>
+<h3 id="内联的置换和非置换元素的高度定义"><a href="#内联的置换和非置换元素的高度定义" class="headerlink" title="内联的置换和非置换元素的高度定义"></a>内联的置换和非置换元素的高度定义</h3><p>对于行内级非置换元素，高度设置是不适用的。</p>
+<p>对于行内级置换元素来说，其高度的设置需遵循以下几点：</p>
+<ul>
+<li>若宽高的计算值都为 auto 且元素有固有高度，则 height 的使用值为该固有高度；</li>
+<li>若高度的计算值为 auto 且元素有固有高度，则 height 的使用值为该固有高度；</li>
+<li>若高度的计算值为 auto 且宽度有 非auto 的计算值，并且元素有固有宽高比，则 height 的使用值为：宽度使用值 / 固有宽高比；</li>
+<li>若高度的计算值为 auto 且上述条件完全不符，则 height 的使用值 不能大于150px，且宽度不能大于长方形高度的2倍。</li>
+</ul>
+<p>其它类型的置换元素，其高度的定义都参照行内置换元素的定义。</p>
+<h3 id="内联的非置换元素如何修改宽高"><a href="#内联的非置换元素如何修改宽高" class="headerlink" title="内联的非置换元素如何修改宽高"></a>内联的非置换元素如何修改宽高</h3><p>将内联元素变为块级元素。</p>
+<p>设置css的display属性。</p>
+<table>
+<thead>
+<tr>
+<th align="center">值</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">none</td>
+<td align="center">此元素不会被显示。</td>
+</tr>
+<tr>
+<td align="center">block</td>
+<td align="center">此元素将显示为块级元素，此元素前后会带有换行符。</td>
+</tr>
+<tr>
+<td align="center">inline</td>
+<td align="center">默认。此元素会被显示为内联元素，元素前后没有换行符。</td>
+</tr>
+<tr>
+<td align="center">inline-block</td>
+<td align="center">行内块元素。（CSS2.1 新增的值）</td>
+</tr>
+<tr>
+<td align="center">list-item</td>
+<td align="center">此元素会作为列表显示。</td>
+</tr>
+<tr>
+<td align="center">run-in</td>
+<td align="center">此元素会根据上下文作为块级元素或内联元素显示。</td>
+</tr>
+<tr>
+<td align="center">compact</td>
+<td align="center">CSS 中有值 compact，不过由于缺乏广泛支持，已经从 CSS2.1 中删除。</td>
+</tr>
+<tr>
+<td align="center">marker</td>
+<td align="center">CSS 中有值 marker，不过由于缺乏广泛支持，已经从 CSS2.1 中删除。</td>
+</tr>
+<tr>
+<td align="center">table</td>
+<td align="center">此元素会作为块级表格来显示（类似 <table>），表格前后带有换行符。</table></td>
+</tr>
+<tr>
+<td align="center">inline-table</td>
+<td align="center">此元素会作为内联表格来显示（类似 <table>），表格前后没有换行符。</table></td>
+</tr>
+<tr>
+<td align="center">table-row-group</td>
+<td align="center">此元素会作为一个或多个行的分组来显示（类似 <tbody>）。</tbody></td>
+</tr>
+<tr>
+<td align="center">table-header-group</td>
+<td align="center">此元素会作为一个或多个行的分组来显示（类似 <thead>）。</thead></td>
+</tr>
+<tr>
+<td align="center">table-footer-group</td>
+<td align="center">此元素会作为一个或多个行的分组来显示（类似 <tfoot>）。</tfoot></td>
+</tr>
+<tr>
+<td align="center">table-row</td>
+<td align="center">此元素会作为一个表格行显示（类似 </td></tr><tr>）。
+</tr>
+<tr>
+<td align="center">table-column-group</td>
+<td align="center">此元素会作为一个或多个列的分组来显示（类似 <colgroup>）。</colgroup></td>
+</tr>
+<tr>
+<td align="center">table-column</td>
+<td align="center">此元素会作为一个单元格列显示（类似 <col>）</td>
+</tr>
+<tr>
+<td align="center">table-cell</td>
+<td align="center">此元素会作为一个表格单元格显示（类似 </td><td> 和 <th>）</th></td>
+</tr>
+<tr>
+<td align="center">table-caption</td>
+<td align="center">此元素会作为一个表格标题显示（类似 <caption>）</caption></td>
+</tr>
+<tr>
+<td align="center">inherit</td>
+<td align="center">规定应该从父元素继承 display 属性的值。</td>
+</tr>
+</tbody></table>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/27/%E8%AF%AD%E8%A8%80/web/HTML-%E9%9D%9E%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0%E5%92%8C%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/27/%E8%AF%AD%E8%A8%80/web/HTML-%E9%9D%9E%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0%E5%92%8C%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0/" class="post-title-link" itemprop="url">HTML-非替换元素和替换元素</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-27 15:56:48" itemprop="dateCreated datePublished" datetime="2017-07-27T15:56:48+08:00">2017-07-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HTML/" itemprop="url" rel="index"><span itemprop="name">HTML</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/sakurallj/article/details/48277463">http://blog.csdn.net/sakurallj/article/details/48277463</a></p>
+<h3 id="替换元素-置换元素"><a href="#替换元素-置换元素" class="headerlink" title="替换元素/置换元素"></a>替换元素/置换元素</h3><ol>
+<li>一个内容不受CSS视觉格式化模型控制，CSS渲染模型并不考虑对此内容的渲染，且元素本身一般拥有固有尺寸（宽度，高度，宽高比）的元素，被称之为替换元素。</li>
+<li>替换元素就是浏览器根据元素的标签和属性，来决定元素的具体显示内容。</li>
+<li>例如浏览器会根据img标签的src属性的值来读取图片信息并显示出来，而如果查看(X)HTML代码，则看不到图片的实际内容；又例如根据input标签的type属性来决定是显示输入框，还是单选按钮等。</li>
+<li>HTML中的img、input、textarea、select、object都是替换元素。这些元素往往没有实际的内容，即是一个空元素。</li>
+</ol>
+<h3 id="非替换元素-不可替换元素"><a href="#非替换元素-不可替换元素" class="headerlink" title="非替换元素/不可替换元素"></a>非替换元素/不可替换元素</h3><ol>
+<li>HTML 的大多数元素是不可替换元素，即其内容直接表现给用户端（例如浏览器），如：</li>
+</ol>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- span是非置换元素 因此 hello word 被展示出来 而不是被替换成其他内容 --&gt;</span><br><span class="line">&lt;span&gt;hello word&lt;/span&gt;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/" class="post-title-link" itemprop="url">C-内存-内存分配</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 18:23:13" itemprop="dateCreated datePublished" datetime="2017-07-26T18:23:13+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/fengyv/p/3789252.html">http://www.cnblogs.com/fengyv/p/3789252.html</a></p>
+<p>一个程序本质上都是由 BSS 段、data段、text段三个组成的。这样的概念在当前的计算机程序设计中是很重要的一个基本概念，而且在嵌入式系统的设计中也非常重要，牵涉到嵌入式系统运行时的内存大小分配，存储单元占用空间大小的问题。</p>
+<ul>
+<li>BSS段：在采用段式内存管理的架构中，BSS段（bss segment）通常是指用来存放程序中未初始化的全局变量的一块内存区域。BSS是英文Block Started by Symbol的简称。BSS段属于静态内存分配。</li>
+<li>数据段：在采用段式内存管理的架构中，数据段（data segment）通常是指用来存放程序中已初始化的全局变量的一块内存区域。数据段属于静态内存分配。</li>
+<li>代码段：在采用段式内存管理的架构中，代码段（text segment）通常是指用来存放程序执行代码的一块内存区域。这部分区域的大小在程序运行前就已经确定，并且内存区域属于只读。在代码段中，也有可能包含一些只读的常数变量，例如字符串常量等。</li>
+</ul>
+<p>程序编译后生成的目标文件至少含有这三个段，这三个段的大致结构图如下所示：<br><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/1.png" alt="1"></p>
+<p>其中.text即为代码段，为只读。.bss段包含程序中未初始化的全局变量和static变量。data段包含三个部分：heap(堆)、stack(栈)和静态数据区。</p>
+<ul>
+<li><p>堆（heap）：堆是用于存放进程运行中被动态分配的内存段，它的大小并不固定，可动态扩张或缩减。当进程调用malloc等函数分配内存时，新分配的内存就被动态添加到堆上（堆被扩张）；当利用free等函数释放内存时，被释放的内存从堆中被剔除（堆被缩减）。</p>
+</li>
+<li><p>栈 (stack)：栈又称堆栈，是用户存放程序临时创建的局部变量，也就是说我们函数括弧“{}”中定义的变量（但不包括static声明的变量，static意味着在数据段中存放变量）。除此以外，在函数被调用时，其参数也会被压入发起调用的进程栈中，并且待到调用结束后，函数的返回值也会被存放回栈中。由于栈的先进先出特点，所以栈特别方便用来保存/恢复调用现场。从这个意义上讲，我们可以把堆栈看成一个寄存、交换临时数据的内存区。</p>
+</li>
+</ul>
+<p>当程序在执行时动态分配空间（C中的malloc函数），所分配的空间就属于heap。其概念与数据结构中“堆”的概念不同。</p>
+<p>stack段存放函数内部的变量、参数和返回地址，其在函数被调用时自动分配，访问方式就是标准栈中的LIFO方式。（因为函数的局部变量存放在此，因此其访问方式应该是栈指针加偏移的方式，否则若通过push、pop操作来访问相当麻烦）</p>
+<p>data段中的静态数据区存放的是程序中已初始化的全局变量、静态变量和常量。</p>
+<p>在采用段式内存管理的架构中（比如intel的80x86系统），BSS 段（Block Started by Symbol segment）通常是指用来存放程序中未初始化的全局变量的一块内存区域，一般在初始化时 BSS 段部分将会清零。BSS 段属于静态内存分配，即程序一开始就将其清零了。</p>
+<p>比如，在C语言之类的程序编译完成之后，已初始化的全局变量保存在.data 段中，未初始化的全局变量保存在.bss 段中。</p>
+<p>text和data段都在可执行文件中（在嵌入式系统里一般是固化在镜像文件中），由系统从可执行文件中加载；而BSS段不在可执行文件中，由系统初始化。</p>
+<p><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/2.png" alt="2"></p>
+<p>BSS段只保存没有值的变量，所以事实上它并不需要保存这些变量的映像。运行时所需要的BSS段大小记录在目标文件中，但BSS段并不占据目标文件的任何空间。</p>
+<p><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/3.png" alt="3"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">//main.c  </span><br><span class="line">int a = 0; //全局初始化区  </span><br><span class="line">char *p1; //全局未初始化区  </span><br><span class="line"></span><br><span class="line">main()  </span><br><span class="line">&#123;  </span><br><span class="line">  static int c =0； //全局（静态）初始化区  </span><br><span class="line">  int b; //栈  </span><br><span class="line">  char s[] = &quot;abc&quot;; //栈  </span><br><span class="line">  char *p2; //栈  </span><br><span class="line">  char *p3 = &quot;123456&quot;; //&quot;123456\0&quot;在常量区，p3在栈上。  </span><br><span class="line">  p1 = (char *)malloc(10);  </span><br><span class="line">  p2 = (char *)malloc(20); //分配得来得10和20字节的区域就在堆区。  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -915,224 +1270,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E8%BE%93%E5%85%A5%E5%92%8C%E8%BE%93%E5%87%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E8%BE%93%E5%85%A5%E5%92%8C%E8%BE%93%E5%87%BA/" class="post-title-link" itemprop="url">C-API-输入和输出</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-26 16:00:21" itemprop="dateCreated datePublished" datetime="2017-07-26T16:00:21+08:00">2017-07-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="标准文件"><a href="#标准文件" class="headerlink" title="标准文件"></a>标准文件</h3><p>C 语言把所有的设备都当作文件。所以设备（比如显示器）被处理的方式与文件相同。</p>
-<h3 id="getchar-amp-putchar-函数"><a href="#getchar-amp-putchar-函数" class="headerlink" title="getchar() &amp; putchar() 函数"></a>getchar() &amp; putchar() 函数</h3><p><code>int getchar(void)</code> 函数从屏幕读取下一个可用的字符，并把它返回为一个整数。这个函数在同一个时间内只会读取一个单一的字符。您可以在循环内使用这个方法，以便从屏幕上读取多个字符。</p>
-<p><code>int putchar(int c)</code> 函数把字符输出到屏幕上，并返回相同的字符。这个函数在同一个时间内只会输出一个单一的字符。您可以在循环内使用这个方法，以便在屏幕上输出多个字符。</p>
-<h3 id="gets-amp-puts-函数"><a href="#gets-amp-puts-函数" class="headerlink" title="gets() &amp; puts() 函数"></a>gets() &amp; puts() 函数</h3><p><code>char *gets(char *s)</code> 函数从 stdin 读取一行到 s 所指向的缓冲区，直到一个终止符或 EOF。</p>
-<p><code>int puts(const char *s)</code> 函数把字符串 s 和一个尾随的换行符写入到 stdout。</p>
-<h3 id="scanf-和-printf-函数"><a href="#scanf-和-printf-函数" class="headerlink" title="scanf() 和 printf() 函数"></a>scanf() 和 printf() 函数</h3><p><code>int scanf(const char *format, ...)</code> 函数从标准输入流 stdin 读取输入，并根据提供的 format 来浏览输入。</p>
-<p><code>int printf(const char *format, ...)</code> 函数把输出写入到标准输出流 stdout ，并根据提供的格式产生输出。</p>
-<p>format 可以是一个简单的常量字符串，但是您可以分别指定 %s、%d、%c、%f 等来输出或读取字符串、整数、字符或浮点数。还有许多其他可用的格式选项，可以根据需要使用。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%8C%BA%E5%88%AB-typedef%E5%92%8C#define/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%8C%BA%E5%88%AB-typedef%E5%92%8C#define/" class="post-title-link" itemprop="url">C-区别-typedef和#define</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-26 15:49:13" itemprop="dateCreated datePublished" datetime="2017-07-26T15:49:13+08:00">2017-07-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><code>#define</code> 是 C 指令，用于为各种数据类型定义别名，与 typedef 类似，但是它们有以下几点不同：</p>
-<ul>
-<li>typedef 仅限于为类型定义符号名称，#define 不仅可以为类型定义别名，也能为数值定义别名，比如您可以定义 1 为 ONE。</li>
-<li>typedef 是由编译器执行解释的，#define 语句是由预编译器进行处理的。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-typedef/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-typedef/" class="post-title-link" itemprop="url">C-关键字-typedef</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-26 15:43:15" itemprop="dateCreated datePublished" datetime="2017-07-26T15:43:15+08:00">2017-07-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>C 语言提供了 typedef 关键字，您可以使用它来为类型取一个新的名字。</p>
-<p>下面的实例为单字节数字定义了一个术语 BYTE：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef unsigned char BYTE;</span><br></pre></td></tr></table></figure>
-
-<p>按照惯例，定义时会大写字母，以便提醒用户类型名称是一个象征性的缩写，但您也可以使用小写字母。</p>
-<p>也可以使用 typedef 来为用户自定义的数据类型取一个新的名字。例如，您可以对结构体使用 typedef 来定义一个新的数据类型名字，然后使用这个新的数据类型来直接定义结构变量。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line"></span><br><span class="line">typedef struct Books</span><br><span class="line">&#123;</span><br><span class="line">  char  title[50];</span><br><span class="line">  char  author[50];</span><br><span class="line">  char  subject[100];</span><br><span class="line">  int   book_id;</span><br><span class="line">&#125; Book;</span><br><span class="line"></span><br><span class="line">int main( )</span><br><span class="line">&#123;</span><br><span class="line">  Book book;</span><br><span class="line"></span><br><span class="line">  strcpy( book.title, &quot;C 教程&quot;);</span><br><span class="line">  strcpy( book.author, &quot;Runoob&quot;);</span><br><span class="line">  strcpy( book.subject, &quot;编程语言&quot;);</span><br><span class="line">  book.book_id = 12345;</span><br><span class="line"></span><br><span class="line">  printf( &quot;书标题 : %s\n&quot;, book.title);</span><br><span class="line">  printf( &quot;书作者 : %s\n&quot;, book.author);</span><br><span class="line">  printf( &quot;书类目 : %s\n&quot;, book.subject);</span><br><span class="line">  printf( &quot;书 ID : %d\n&quot;, book.book_id);</span><br><span class="line"></span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1204,7 +1341,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1217,7 +1354,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

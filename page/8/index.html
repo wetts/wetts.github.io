@@ -188,6 +188,180 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/01/07/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/07/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5/" class="post-title-link" itemprop="url">数据库-索引优化策略.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-07 19:50:22" itemprop="dateCreated datePublished" datetime="2020-01-07T19:50:22+08:00">2020-01-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/103665903">https://blog.csdn.net/zzti_erlie/article/details/103665903</a></p>
+<h2 id="索引的种类"><a href="#索引的种类" class="headerlink" title="索引的种类"></a>索引的种类</h2><p>众所周知，索引类似于字典的目录，可以提高查询的效率。</p>
+<p>索引从物理上可以分为：聚集索引，非聚集索引</p>
+<p>从逻辑上可以分为：普通索引，唯一索引，主键索引，联合索引，全文索引</p>
+<h2 id="索引优化策略"><a href="#索引优化策略" class="headerlink" title="索引优化策略"></a>索引优化策略</h2><h3 id="不要在索引列上进行运算或使用函数"><a href="#不要在索引列上进行运算或使用函数" class="headerlink" title="不要在索引列上进行运算或使用函数"></a>不要在索引列上进行运算或使用函数</h3><p>在列上进行运算或使用函数会使索引失效，从而进行全表扫描。如下面例子在 publish_time，id 列上分别加上索引，publish_time 为 datetime 类型，id 为 int 类型</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where year(publish_time) &lt; 2019</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where publish_time &lt; &#x27;2019-01-01&#x27;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where id  + 1 = 5</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where id = 4</span><br></pre></td></tr></table></figure>
+
+<h3 id="小心隐式类型转换"><a href="#小心隐式类型转换" class="headerlink" title="小心隐式类型转换"></a>小心隐式类型转换</h3><p>假设 id 为 varchar 类型</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where id = 100</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where id = &#x27;100&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>为什么呢？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id = 100</span><br><span class="line">-- 等价于</span><br><span class="line">select * from article where CAST(id AS signed int) = 100</span><br></pre></td></tr></table></figure>
+
+<p>上一条规则说过，不要在索引列上使用函数，隐式类型转换在索引字段上做了函数操作，因此会全表扫描</p>
+<p>那么如果 id 是 int，执行下面这个语句是否会导致全表扫描呢？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id = &#x27;100&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>答案是会用到索引，我们来分析一下为什么会用到索引</p>
+<p>我们先来做一个实验，看一下数据库中字符串和数字做比较的时候，是怎么转换的？</p>
+<p>这里有个简单的方法执行select “10” &gt; 9即可</p>
+<ul>
+<li>如果结果是1，则是把字符串转成数字，然后进行比较</li>
+<li>如果结果是0，则是把数字转成字符串（因为字符串比较是从高位到低位按照asciss码来逐位比较，“1”比“9”小，所以为0），然后进行比较<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select &quot;10&quot; &gt; 9;</span><br><span class="line">+----------+</span><br><span class="line">| &quot;10&quot; &gt; 9 |</span><br><span class="line">+----------+</span><br><span class="line">|        1 |</span><br><span class="line">+----------+</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>结果为 1 表明当字符串和数字进行比较的时候，是把字符串转成数字</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select &quot;a&quot; = 0;</span><br><span class="line">+---------+</span><br><span class="line">| &quot;a&quot; = 0 |</span><br><span class="line">+---------+</span><br><span class="line">|       1 |</span><br><span class="line">+---------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select &quot;123abc&quot; = 123;</span><br><span class="line">+----------------+</span><br><span class="line">| &quot;123abc&quot; = 123 |</span><br><span class="line">+----------------+</span><br><span class="line">|              1 |</span><br><span class="line">+----------------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select &quot;  123abc456&quot; = 123;</span><br><span class="line">+---------------------+</span><br><span class="line">| &quot;  123abc456&quot; = 123 |</span><br><span class="line">+---------------------+</span><br><span class="line">|                   1 |</span><br><span class="line">+---------------------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p><strong>从实验结果中可以看到，当字符串不含有数字时，会转成 0，否则转成字符串中第一段连续的数字</strong></p>
+<p>我们接着来分析上面的例子，为什么一会会用到索引，一会不会用到</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">-- id列上有索引，id为varchar，不会走索引</span><br><span class="line">-- id是字符串时，数据库中的id都要转成数字，转成的值不确定（例如id=&#x27;12ab&#x27;会被转成12，不可能从索引上找到12这个值的）</span><br><span class="line">-- 所以得全表扫描</span><br><span class="line">select * from article where id = 100</span><br><span class="line"></span><br><span class="line">-- id列上有索引，id为int，会走索引</span><br><span class="line">-- id是int时，&#x27;100&#x27;会被转成数字100，所以能走索引</span><br><span class="line">select * from article where id = &#x27;100&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="前导模糊查询不会使用索引"><a href="#前导模糊查询不会使用索引" class="headerlink" title="前导模糊查询不会使用索引"></a>前导模糊查询不会使用索引</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where author like &#x27;%李&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>%李,%李%都会导致全表扫描，非前导模糊查询可以使用索引</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where author like &#x27;李%&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="联合索引最左前缀原则"><a href="#联合索引最左前缀原则" class="headerlink" title="联合索引最左前缀原则"></a>联合索引最左前缀原则</h3><p>mysql 会一直向右匹配直到遇到范围查询（&gt;、&lt;、between、like）就停止匹配，比如 <code>a = 1 and b = 2 and c &gt; 3 and d = 4</code> 如果建立（a,b,c,d）顺序的索引，d 是用不到索引的，如果建立（a,b,d,c）的索引则都可以用到，a,b,d 的顺序可以任意调整</p>
+<ol>
+<li>将区分度最高的字段放在最左边</li>
+</ol>
+<p>当不需要考虑排序和分组时，将区分度最高的列放在前面通常是很好的。这时候索引的作用只是用于优化 WHERE 条件的查找</p>
+<p>如果在 a b 列上建立联合索引，该如何建立，才能使查询效率最高</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select count(distinct a) / count(*), count(distinct b) / count(*), count(*) from table</span><br></pre></td></tr></table></figure>
+
+<p>执行如下语句，假设 3 个输出依次为 0.0001,0.373,16049，可以看到 b 列的选择性最高，因此将其作为联合索引的第一列，即建立（b, a）的联合索引</p>
+<ol start="2">
+<li><p>查询时=可以乱序<br>如果建立了联合索引（a, b）。例如下面的2个写法是等价的，因为MySQL会将查询的顺序优化成和联合索引的顺序一致</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where a = &#x27;1&#x27; and b = &#x27;1&#x27;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where b = &#x27;1&#x27; and a = &#x27;1&#x27;</span><br></pre></td></tr></table></figure></li>
+<li><p>优化查询，避免出现 filesort</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where a = ? and b = ? order by c</span><br></pre></td></tr></table></figure>
+<p>最左前缀原则不仅用在查询中，还能用在排序中。MySQL 中，有两种方式生成有序结果集：</p>
+</li>
+<li><p>通过有序索引顺序扫描直接返回有序数据</p>
+</li>
+<li><p>Filesort排序，对返回的数据进行排序</p>
+</li>
+</ol>
+<p>因为索引的结构是 B+树，索引中的数据是按照一定顺序进行排列的，所以在排序查询中如果能利用索引，就能避免额外的排序操作。EXPLAIN 分析查询时，Extra 显示为 Using index。</p>
+<p>所有不是通过索引直接返回排序结果的操作都是 Filesort 排序，也就是说进行了额外的排序操作。EXPLAIN 分析查询时，Extra 显示为 Using filesort，当出现 Using filesort 时对性能损耗较大，所以要尽量避免 Using filesort</p>
+<p>对于如下sql</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where a = ? and b = ? order by c</span><br></pre></td></tr></table></figure>
+<p>可以建立联合索引（a, b, c）</p>
+<p>如果索引中有范围查找，那么索引有序性无法利用，如</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where a &gt; 10 order by b</span><br></pre></td></tr></table></figure>
+<p>索引（a，b）无法排序。</p>
+<p>放几个例子</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">-- 使用了a列</span><br><span class="line">where a = 3</span><br><span class="line"></span><br><span class="line">-- 使用了a b列</span><br><span class="line">where a = 3 and b = 5</span><br><span class="line"></span><br><span class="line">-- 使用了a b c列</span><br><span class="line">where a = 3 and c = 4 and b = 5</span><br><span class="line"> </span><br><span class="line">-- 没有使用索引</span><br><span class="line">where b = 3</span><br><span class="line"></span><br><span class="line">-- 使用了a列 </span><br><span class="line">where a = 3 and c = 4</span><br><span class="line"></span><br><span class="line">-- 使用了a b列 </span><br><span class="line">where a = 3 and b &gt; 10 and c = 7</span><br><span class="line"> </span><br><span class="line">-- 使用了a b 列</span><br><span class="line">where a = 3 and b like &#x27;xx%&#x27; and c = 7</span><br></pre></td></tr></table></figure>
+
+<h3 id="union，or，in-都能命中索引，建议使用in"><a href="#union，or，in-都能命中索引，建议使用in" class="headerlink" title="union，or，in 都能命中索引，建议使用in"></a>union，or，in 都能命中索引，建议使用in</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id = 1</span><br><span class="line">union all</span><br><span class="line">select * from article where id = 2</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id in (1 , 2)</span><br></pre></td></tr></table></figure>
+<p>新版MySQL的or可以命中索引</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id = 1 or id = 2</span><br></pre></td></tr></table></figure>
+<p>效率从高到低为union，in，or。in 和 union 的效率差别可以忽略不计，建议使用 in</p>
+<h3 id="负向条件索引不会使用索引，建议用-in"><a href="#负向条件索引不会使用索引，建议用-in" class="headerlink" title="负向条件索引不会使用索引，建议用 in"></a>负向条件索引不会使用索引，建议用 in</h3><p>负向条件有：!=、&lt;&gt;、not in、not exists、not like 等</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where id != 1 and id != 2</span><br></pre></td></tr></table></figure>
+<p>知道 id 的所有取值范围，可以改为类似如下形式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where id in (0, 3, 4)</span><br></pre></td></tr></table></figure>
+
+<h3 id="建立覆盖索引"><a href="#建立覆盖索引" class="headerlink" title="建立覆盖索引"></a>建立覆盖索引</h3><p>众所周知，表数据是放在一个聚集索引上的，而建立的索引为非聚集索引，非聚集索引的叶子节点存放索引键值，以及该索引键指向的主键。一般查找的过程是从非聚集索引上找到数据的主键，然后根据该主键到聚集索引上查找记录，这个过程称为回表，不清楚的看推荐阅读。</p>
+<p>如有下面这个sql</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select uid, login_time from user where username = ? and passwd = ?</span><br></pre></td></tr></table></figure>
+<p>可以建立（username, passwd, login_time）的联合索引，由于 login_time 的值可以直接从索引中拿到，不用再回表查询，提高了查询效率</p>
+<h3 id="经常更改，区分度不高的列上不宜加索引"><a href="#经常更改，区分度不高的列上不宜加索引" class="headerlink" title="经常更改，区分度不高的列上不宜加索引"></a>经常更改，区分度不高的列上不宜加索引</h3><p>更新会变更 B+ 树，更新频繁的字段建立索引会大大降低数据库性能。</p>
+<p>“性别”这种区分度不大的属性，建立索引是没有什么意义的，不能有效过滤数据，性能与全表扫描类似。</p>
+<p>一般区分度在80%以上的时候就可以建立索引，区分度可以使用 <code>count(distinct(列名))/count(*)</code> 来计算</p>
+<h3 id="明确知道只会返回一条记录，可以加limit-1"><a href="#明确知道只会返回一条记录，可以加limit-1" class="headerlink" title="明确知道只会返回一条记录，可以加limit 1"></a>明确知道只会返回一条记录，可以加limit 1</h3><p>当查询确定只有一条记录时，可以加 liimit 1，让 MySQL 停止游标移动，提高查询效率</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select uid from user where username = ? and passwd = ?</span><br></pre></td></tr></table></figure>
+<p>可改为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select uid from user where username = ? and passwd = ? limit 1</span><br></pre></td></tr></table></figure>
+
+<h3 id="对文本建立前缀索引"><a href="#对文本建立前缀索引" class="headerlink" title="对文本建立前缀索引"></a>对文本建立前缀索引</h3><p>用邮箱登录是一个常见的问题，如果对email整个字段建立索引，会让索引变得大且慢</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select username from user where email=&#x27;xxx&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>这时我们可以索引开始的部分字符，这样可以大大节约索引空间，从而提高索引效率，但这样也会降低索引的区分度。索引的区分度是指，不重复的索引值和数据表的记录总数的比值。索引的区分度越高则查询效率越高，因为区分度高的索引可以让MySQL在查找时过滤掉更多的行。</p>
+<p>因此我们选择足够长的前缀保证较高的区分度，同时又不能太长（以便节约空间）</p>
+<p>可以进行如下实验</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">select count(distinct left(email, 5)) / count(*) as col5,</span><br><span class="line">count(distinct left(email, 6)) / count(*) as col6,</span><br><span class="line">count(distinct left(email, 7)) / count(*) as col7</span><br><span class="line">from user</span><br></pre></td></tr></table></figure>
+
+<p>假设输出依次为0.0305，0.0309，0.0310<br>查询显示当前缀长度达到7的时候，再增加前缀长度，区分度提升的幅度已经很小了，因此创建email(7)的前缀索引即可</p>
+<p><strong>需要注意的一点是，前缀索引不能使用覆盖索引</strong></p>
+<h3 id="建立索引的列不为NULL"><a href="#建立索引的列不为NULL" class="headerlink" title="建立索引的列不为NULL"></a>建立索引的列不为NULL</h3><p>只要列中包含有 NULL 值都将不会被包含在索引中，复合索引中只要有一列含有 NULL值，那么这一列对于此复合索引就是无效的。</p>
+<p>因此，在数据库设计时，除非有一个很特别的原因使用 NULL 值，不然尽量不要让字段的默认值为 NULL。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/12/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%BC%93%E5%AD%98%E7%AE%97%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1137,144 +1311,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/10/27/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/10/27/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81/" class="post-title-link" itemprop="url">Java-锁.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-10-27 14:28:54" itemprop="dateCreated datePublished" datetime="2019-10-27T14:28:54+08:00">2019-10-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/71156910">https://zhuanlan.zhihu.com/p/71156910</a></p>
-<h2 id="synchronized与Lock"><a href="#synchronized与Lock" class="headerlink" title="synchronized与Lock"></a>synchronized与Lock</h2><p>Java中有两种加锁的方式：一种是用<strong>synchronized关键字</strong>，另一种是用<strong>Lock接口</strong>的实现类。</p>
-<p>形象地说，synchronized关键字是自动档，可以满足一切日常驾驶需求。但是如果你想要玩漂移或者各种骚操作，就需要手动档了——各种Lock的实现类。</p>
-<p>所以如果你只是想要简单的加个锁，对性能也没什么特别的要求，用synchronized关键字就足够了。自Java 5之后，才在java.util.concurrent.locks包下有了另外一种方式来实现锁，那就是Lock。也就是说，<strong>synchronized是Java语言内置的关键字，而Lock是一个接口</strong>，这个接口的实现类在代码层面实现了锁的功能，具体细节不在本文展开，有兴趣可以研究下AbstractQueuedSynchronizer类，写得可以说是牛逼爆了。</p>
-<p><img src="/2019/10/27/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81/1.png" alt="1"></p>
-<p>其实只需要关注三个类就可以了：ReentrantLock类、ReadLock类、WriteLock类。</p>
-<p>ReentrantLock、ReadLock、WriteLock 是Lock接口最重要的三个实现类。对应了“可重入锁”、“读锁”和“写锁”，后面会讲它们的用途。</p>
-<p>ReadWriteLock其实是一个工厂接口，而ReentrantReadWriteLock是ReadWriteLock的实现类，它包含两个静态内部类ReadLock和WriteLock。这两个静态内部类又分别实现了Lock接口。</p>
-<p>我们停止深究源码，仅从使用的角度看，Lock与synchronized的区别是什么？在接下来的几个小节中，我将梳理各种锁分类的概念，以及synchronized关键字、各种Lock实现类之间的区别与联系。</p>
-<h2 id="悲观锁与乐观锁"><a href="#悲观锁与乐观锁" class="headerlink" title="悲观锁与乐观锁"></a>悲观锁与乐观锁</h2><p>锁的一种宏观分类方式是<strong>悲观锁</strong>和<strong>乐观锁</strong>。悲观锁与乐观锁<strong>并不是特指某个锁</strong>（Java中没有哪个Lock实现类就叫PessimisticLock或OptimisticLock），而是在并发情况下的两种不同策略。</p>
-<p>悲观锁（Pessimistic Lock）, 就是很悲观，每次去拿数据的时候都认为别人会修改。所以每次在拿数据的时候都会上锁。这样别人想拿数据就被挡住，直到悲观锁被释放。</p>
-<p>乐观锁（Optimistic Lock）, 就是很乐观，每次去拿数据的时候都认为别人不会修改。所以<strong>不会上锁</strong>，不会上锁！但是如果想要更新数据，则会在<strong>更新前检查在读取至更新这段时间别人有没有修改过这个数据</strong>。如果修改过，则重新读取，再次尝试更新，循环上述步骤直到更新成功（当然也允许更新失败的线程放弃操作）。</p>
-<p><strong>悲观锁阻塞事务，乐观锁回滚重试</strong>，它们各有优缺点，不要认为一种一定好于另一种。像乐观锁适用于写比较少的情况下，即冲突真的很少发生的时候，这样可以省去锁的开销，加大了系统的整个吞吐量。但如果经常产生冲突，上层应用会不断的进行重试，这样反倒是降低了性能，所以这种情况下用悲观锁就比较合适。</p>
-<h2 id="乐观锁的基础——CAS"><a href="#乐观锁的基础——CAS" class="headerlink" title="乐观锁的基础——CAS"></a>乐观锁的基础——CAS</h2><p>说到乐观锁，就必须提到一个概念：CAS</p>
-<p>什么是CAS呢？Compare-and-Swap，即比较并替换，也有叫做Compare-and-Set的，比较并设置。</p>
-<ol>
-<li>比较：读取到了一个值A，在将其更新为B之前，检查原值是否仍为A（未被其他线程改动）。</li>
-<li>设置：如果是，将A更新为B，结束。【这里存在一个问题，就是一个值从A变为B，又从B变回了A。这种情况下，CAS可能会认为值没有发生过变化，但实际上是有变化的。对此，并发包下有AtomicStampedReference提供根据版本号判断的实现。】如果不是，则什么都不做。</li>
-</ol>
-<p>上面的两步操作是原子性的，可以简单地理解为瞬间完成，在CPU看来就是一步操作。</p>
-<p>有了CAS，就可以实现一个乐观锁：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">data = 123; // 共享数据</span><br><span class="line"></span><br><span class="line">/* 更新数据的线程会进行如下操作 */</span><br><span class="line">flag = true;</span><br><span class="line">while (flag) &#123;</span><br><span class="line">    oldValue = data; // 保存原始数据</span><br><span class="line">    newValue = doSomething(oldValue); </span><br><span class="line"></span><br><span class="line">    // 下面的部分为CAS操作，尝试更新data的值</span><br><span class="line">    if (data == oldValue) &#123; // 比较</span><br><span class="line">        data = newValue; // 设置</span><br><span class="line">        flag = false; // 结束</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">	// 啥也不干，循环重试</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">/* </span><br><span class="line">   很明显，这样的代码根本不是原子性的，</span><br><span class="line">   因为真正的CAS利用了CPU指令，</span><br><span class="line">   这里只是为了展示执行流程，本意是一样的。</span><br><span class="line">*/</span><br></pre></td></tr></table></figure>
-
-<p>这是一个简单直观的乐观锁实现，它允许多个线程同时读取（因为根本没有加锁操作），但是只有一个线程可以成功更新数据，并导致其他要更新数据的线程回滚重试。 CAS利用CPU指令，从硬件层面保证了操作的原子性，以达到类似于锁的效果。<br><img src="/2019/10/27/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81/2.jpg" alt="2"></p>
-<p>Java中真正的CAS操作调用的native方法</p>
-<p>因为整个过程中并没有“加锁”和“解锁”操作，因此乐观锁策略也被称为无锁编程。换句话说，乐观锁其实不是“锁”，它仅仅是一个循环重试CAS的算法而已！</p>
-<h2 id="自旋锁"><a href="#自旋锁" class="headerlink" title="自旋锁"></a>自旋锁</h2><p>有一种锁叫自旋锁。所谓自旋，说白了就是一个 while(true) 无限循环。</p>
-<p>刚刚的乐观锁就有类似的无限循环操作，那么它是自旋锁吗？</p>
-<p>不是。尽管自旋与 while(true) 的操作是一样的，但还是应该将这两个术语分开。“自旋”这两个字，特指自旋锁的自旋。</p>
-<p>然而在JDK中并没有自旋锁（SpinLock）这个类，那什么才是自旋锁呢？读完下个小节就知道了。</p>
-<h2 id="synchronized锁升级：偏向锁-→-轻量级锁-→-重量级锁"><a href="#synchronized锁升级：偏向锁-→-轻量级锁-→-重量级锁" class="headerlink" title="synchronized锁升级：偏向锁 → 轻量级锁 → 重量级锁"></a>synchronized锁升级：偏向锁 → 轻量级锁 → 重量级锁</h2><p>前面提到，synchronized关键字就像是汽车的<strong>自动档</strong>，现在详细讲这个过程。一脚油门踩下去，synchronized会从<strong>无锁</strong>升级为<strong>偏向锁</strong>，再升级为<strong>轻量级锁</strong>，最后升级为<strong>重量级锁</strong>，就像自动换挡一样。那么自旋锁在哪里呢？这里的轻量级锁就是一种<strong>自旋锁</strong>。</p>
-<p>初次执行到synchronized代码块的时候，锁对象变成<strong>偏向锁</strong>（通过CAS修改对象头里的锁标志位），字面意思是“偏向于第一个获得它的线程”的锁。执行完同步代码块后，线程<strong>并不会主动释放偏向锁</strong>。当第二次到达同步代码块时，线程会判断此时持有锁的线程是否就是自己（持有锁的线程ID也在对象头里），如果是则正常往下执行。<strong>由于之前没有释放锁，这里也就不需要重新加锁</strong>。如果自始至终使用锁的线程只有一个，很明显偏向锁几乎没有额外开销，性能极高。</p>
-<p>一旦有第二个线程加入<strong>锁竞争</strong>，偏向锁就升级为<strong>轻量级锁（自旋锁）</strong>。这里要明确一下什么是锁竞争：如果多个线程轮流获取一个锁，但是每次获取锁的时候都很顺利，没有发生阻塞，那么就不存在锁竞争。只有当某线程尝试获取锁的时候，发现该锁已经被占用，只能等待其释放，这才发生了锁竞争。</p>
-<p>在轻量级锁状态下继续锁竞争，没有抢到锁的线程将<strong>自旋</strong>，即不停地循环判断锁是否能够被成功获取。获取锁的操作，其实就是通过CAS修改对象头里的锁标志位。先比较当前锁标志位是否为“释放”，如果是则将其设置为“锁定”，比较并设置是原子性发生的。这就算抢到锁了，然后线程将当前锁的持有者信息修改为自己。</p>
-<p>长时间的自旋操作是非常消耗资源的，一个线程持有锁，其他线程就只能在原地空耗CPU，执行不了任何有效的任务，这种现象叫做<strong>忙等（busy-waiting）</strong>。如果多个线程用一个锁，但是没有发生锁竞争，或者发生了很轻微的锁竞争，那么synchronized就用轻量级锁，允许短时间的忙等现象。这是一种折衷的想法，<strong>短时间的忙等，换取线程在用户态和内核态之间切换的开销</strong>。</p>
-<p>显然，此忙等是有限度的（有个计数器记录自旋次数，默认允许循环10次，可以通过虚拟机参数更改）。如果锁竞争情况严重，某个达到最大自旋次数的线程，会将轻量级锁升级为<strong>重量级锁</strong>（依然是CAS修改锁标志位，但不修改持有锁的线程ID）。当后续线程尝试获取锁时，发现被占用的锁是重量级锁，则直接将自己挂起（而不是忙等），等待将来被唤醒。在JDK1.6之前，synchronized直接加重量级锁，很明显现在得到了很好的优化。</p>
-<p>一个锁只能按照 偏向锁、轻量级锁、重量级锁的顺序逐渐升级（也有叫<strong>锁膨胀</strong>的），不允许降级。</p>
-<blockquote>
-<p>感谢评论区酷帅俊靓美的问题：</p>
-<p>偏向锁的一个特性是，持有锁的线程在执行完同步代码块时不会释放锁。那么当第二个线程执行到这个synchronized代码块时是否一定会发生锁竞争然后升级为轻量级锁呢？</p>
-<p>线程A第一次执行完同步代码块后，当线程B尝试获取锁的时候，发现是偏向锁，会判断线程A是否仍然存活。<strong>如果线程A仍然存活</strong>，将线程A暂停，此时偏向锁升级为轻量级锁，之后线程A继续执行，线程B自旋。但是<strong>如果判断结果是线程A不存在了</strong>，则线程B持有此偏向锁，锁不升级。</p>
-<p>还有人对此有疑惑，我之前确实没有描述清楚，但如果要展开讲，涉及到太多新概念，可以新开一篇了。更何况有些太底层的东西，我没读过源码，没有自信说自己一定是对的。其实在升级为轻量级锁之前，虚拟机会让线程A尽快在安全点挂起，然后在它的栈中“伪造”一些信息，让线程A在被唤醒之后，认为自己一直持有的是轻量级锁。如果线程A之前正在同步代码块中，那么线程B自旋等待即可。如果线程A之前不在同步代码块中，它会在被唤醒后检查到这一情况并立即释放锁，让线程B可以拿到。这部分内容我之前也没有深入研究过，如果有说的不对的，请多多指教啊！</p>
-</blockquote>
-<h2 id="可重入锁（递归锁）"><a href="#可重入锁（递归锁）" class="headerlink" title="可重入锁（递归锁）"></a>可重入锁（递归锁）</h2><p>可重入锁的字面意思是“可以重新进入的锁”，即<strong>允许同一个线程多次获取同一把锁</strong>。比如一个递归函数里有加锁操作，递归过程中这个锁会阻塞自己吗？如果不会，那么这个锁就是<strong>可重入锁</strong>（因为这个原因可重入锁也叫做<strong>递归锁</strong>）。</p>
-<p>Java里只要以Reentrant开头命名的锁都是可重入锁，而且<strong>JDK提供的所有现成的Lock实现类，包括synchronized关键字锁都是可重入的</strong>。如果你需要不可重入锁，只能自己去实现了。网上不可重入锁的实现真的很多，就不在这里贴代码了。99%的业务场景用可重入锁就可以了，剩下的1%是什么呢？我也不知道，谁可以在评论里告诉我？<br><img src="/2019/10/27/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81/3.png" alt="3"></p>
-<p>JDK提供的Lock的实现类都是可重入的</p>
-<h2 id="公平锁、非公平锁"><a href="#公平锁、非公平锁" class="headerlink" title="公平锁、非公平锁"></a>公平锁、非公平锁</h2><p>如果多个线程申请一把公平锁，那么当锁释放的时候，先申请的先得到，非常公平。显然如果是非公平锁，后申请的线程可能先获取到锁，是随机或者按照其他优先级排序的。</p>
-<p>对ReentrantLock类而言，通过构造函数传参<strong>可以指定该锁是否是公平锁，默认是非公平锁</strong>。一般情况下，非公平锁的吞吐量比公平锁大，如果没有特殊要求，优先使用非公平锁。<br><img src="/2019/10/27/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81/4.png" alt="4"></p>
-<p>ReentrantLock构造器可以指定为公平或非公平</p>
-<p>对于synchronized而言，它也是一种非公平锁，但是并没有任何办法使其变成公平锁。</p>
-<h2 id="可中断锁"><a href="#可中断锁" class="headerlink" title="可中断锁"></a>可中断锁</h2><p>可中断锁，字面意思是“可以响应中断的锁”。</p>
-<p>这里的关键是理解什么是<strong>中断</strong>。Java并没有提供任何直接中断某线程的方法，只提供了<strong>中断机制</strong>。何谓“中断机制”？线程A向线程B发出“请你停止运行”的请求（线程B也可以自己给自己发送此请求），但线程B并不会立刻停止运行，而是自行选择合适的时机以自己的方式响应中断，也可以直接忽略此中断。也就是说，Java的中断不能直接终止线程，而是需要被中断的线程自己决定怎么处理。这好比是父母叮嘱在外的子女要注意身体，但子女是否注意身体，怎么注意身体则完全取决于自己。[2]</p>
-<p>回到锁的话题上来，如果线程A持有锁，线程B等待获取该锁。由于线程A持有锁的时间过长，线程B不想继续等待了，我们可以让线程B中断自己或者在别的线程里中断它，这种就是可中断锁。</p>
-<p>在Java中，<strong>synchronized就是不可中断锁，而Lock的实现类都是可中断锁</strong>，可以简单看下Lock接口。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">/* Lock接口 */</span><br><span class="line">public interface Lock &#123;</span><br><span class="line"></span><br><span class="line">    void lock(); // 拿不到锁就一直等，拿到马上返回。</span><br><span class="line"></span><br><span class="line">    void lockInterruptibly() throws InterruptedException; // 拿不到锁就一直等，如果等待时收到中断请求，则需要处理InterruptedException。</span><br><span class="line"></span><br><span class="line">    boolean tryLock(); // 无论拿不拿得到锁，都马上返回。拿到返回true，拿不到返回false。</span><br><span class="line"></span><br><span class="line">    boolean tryLock(long time, TimeUnit unit) throws InterruptedException; // 同上，可以自定义等待的时间。</span><br><span class="line"></span><br><span class="line">    void unlock();</span><br><span class="line"></span><br><span class="line">    Condition newCondition();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="读写锁、共享锁、互斥锁"><a href="#读写锁、共享锁、互斥锁" class="headerlink" title="读写锁、共享锁、互斥锁"></a>读写锁、共享锁、互斥锁</h2><p>读写锁其实是一对锁，一个读锁（共享锁）和一个写锁（互斥锁、排他锁）。</p>
-<p>看下Java里的ReadWriteLock接口，它只规定了两个方法，一个返回读锁，一个返回写锁。<br><img src="/2019/10/27/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81/5.png" alt="5"></p>
-<p>记得之前的乐观锁策略吗？所有线程随时都可以读，仅在写之前判断值有没有被更改。</p>
-<p>读写锁其实做的事情是一样的，但是策略稍有不同。很多情况下，线程知道自己读取数据后，是否是为了更新它。那么何不在加锁的时候直接明确这一点呢？如果我读取值是为了更新它（SQL的for update就是这个意思），那么加锁的时候就直接加写锁，我持有写锁的时候别的线程无论读还是写都需要等待；如果我读取数据仅为了前端展示，那么加锁时就明确地加一个读锁，其他线程如果也要加读锁，不需要等待，可以直接获取（读锁计数器+1）。</p>
-<p>虽然读写锁感觉与乐观锁有点像，但是读写锁是悲观锁策略。因为读写锁并没有在更新前判断值有没有被修改过，而是在加锁前决定应该用读锁还是写锁。乐观锁特指无锁编程，如果仍有疑惑可以再回到第一、二小节，看一下什么是“乐观锁”。</p>
-<p>JDK提供的唯一一个ReadWriteLock接口实现类是ReentrantReadWriteLock。看名字就知道，它不仅提供了读写锁，而是都是可重入锁。 除了两个接口方法以外，ReentrantReadWriteLock还提供了一些便于外界监控其内部工作状态的方法，这里就不一一展开。</p>
-<h2 id="回到悲观锁和乐观锁"><a href="#回到悲观锁和乐观锁" class="headerlink" title="回到悲观锁和乐观锁"></a>回到悲观锁和乐观锁</h2><blockquote>
-<p>这篇文章经历过一次修改，我之前认为偏向锁和轻量级锁是乐观锁，重量级锁和Lock实现类为悲观锁，网上很多资料对这些概念的表述也很模糊，各执一词。</p>
-</blockquote>
-<p>先抛出我的结论：</p>
-<p>我们在Java里使用的各种锁，<strong>几乎全都是悲观锁</strong>。synchronized从偏向锁、轻量级锁到重量级锁，全是悲观锁。JDK提供的Lock实现类全是悲观锁。其实只要有“锁对象”出现，那么就一定是悲观锁。因为<strong>乐观锁不是锁，而是一个在循环里尝试CAS的算法</strong>。</p>
-<p>那JDK并发包里到底有没有乐观锁呢？</p>
-<p>有。java.util.concurrent.atomic包里面的原子类都是利用乐观锁实现的。<br><img src="/2019/10/27/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81/6.png" alt="6"></p>
-<p>原子类AtomicInteger的自增方法为乐观锁策略</p>
-<p>为什么网上有些资料认为偏向锁、轻量级锁是乐观锁？理由是它们底层用到了CAS？或者是把“乐观/悲观”与“轻量/重量”搞混了？其实，线程在抢占这些锁的时候，确实是循环+CAS的操作，感觉好像是乐观锁。但问题的关键是，我们说一个锁是悲观锁还是乐观锁，总是应该站在应用层，看它们是如何锁住应用数据的，而不是站在底层看抢占锁的过程。如果一个线程尝试获取锁时，发现已经被占用，它是否继续读取数据，等后续要更新时再决定要不要重试？对于偏向锁、轻量级锁来说，显然答案是否定的。无论是挂起还是忙等，对应用数据的读取操作都被“挡住”了。从这个角度看，它们确实是悲观锁。</p>
-<p>退一步讲，也没有必要在这些术语上狠钻牛角尖，最重要的是理解它们的运行机制。想写得尽量简单一些，却发现洋洋洒洒近万字，只讲了个皮毛。深知自己水平有限，不敢保证完全正确，只能说路漫漫其修远兮，望指正。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1346,7 +1382,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1359,7 +1395,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

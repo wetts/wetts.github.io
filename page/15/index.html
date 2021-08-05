@@ -188,6 +188,290 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/12/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-Pipeline%E4%B8%8E%E4%BA%8B%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/12/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-Pipeline%E4%B8%8E%E4%BA%8B%E5%8A%A1/" class="post-title-link" itemprop="url">Redis-原理-Pipeline与事务.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-12-17 02:27:20" itemprop="dateCreated datePublished" datetime="2017-12-17T02:27:20+08:00">2017-12-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000011440752">https://segmentfault.com/a/1190000011440752</a></p>
+<blockquote>
+<p>Redis提供了5种数据结构,但除此之外,Redis还提供了注入慢查询分析,Redis Shell、Pipeline、事务、与Lua脚本、Bitmaps、HyperLogLog、PubSub、GEO等附加功能,这些功能可以在某些场景发挥很重要的作用.</p>
+</blockquote>
+<h2 id="Pipeline"><a href="#Pipeline" class="headerlink" title="Pipeline"></a>Pipeline</h2><h3 id="Pipeline概念"><a href="#Pipeline概念" class="headerlink" title="Pipeline概念"></a>Pipeline概念</h3><p>Redis客户端执行一条命令分为以下四个步骤:</p>
+<ol>
+<li>发送命令</li>
+<li>命令排队</li>
+<li>命令执行</li>
+<li>返回结果</li>
+</ol>
+<p>其中,第一步+第四步称为Round Trip Time(RTT,往返时间).</p>
+<p><img src="/2017/12/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-Pipeline%E4%B8%8E%E4%BA%8B%E5%8A%A1/1.png" alt="没有Pipeline执行n次命令"></p>
+<p>Redis提供了批量操作命令(例如mget,mset等),有效的节约RTT.但大部分命令是不支持批量操作的,例如要执行n次hgetall命令,并没有mhgetall存在,需要消耗n次RTT.Redis的客户端和服务端可能不是在不同的机器上.例如客户端在北京,Redis服务端在上海,两地直线距离为1300公里,那么1次 $RTT时间=1300×2/(300000×2/3)=13毫秒$ (光在真空中传输速度为每秒30万公里,这里假设光纤的速度为光速的2/3),那么客户端在1秒内大约只能执行80次左右的命令,这个和Redis的高并发高吞吐背道而驰.</p>
+<p>Pipeline(流水线)机制能改善上面这类问题,它能将一组Redis命令进行组装,通过一次RTT传输给Redis,再将这组Redis命令按照顺序执行并装填结果返回给客户端.图1.1中未使用Pipeline执行了n次命令,整个过程需要n个RTT.</p>
+<p>Pipeline并不是什么新的技术和机制,很多技术上都使用过.而且RTT在不同网络环境下会有不同,例如同机房和同机器会比较快,跨机房跨地区会比较慢.Redis命令真正执行的时间通常在微秒级别,所以才会有Redis性能瓶颈是网络这样的说法.</p>
+<h3 id="原生批量命令与Pipeline对比"><a href="#原生批量命令与Pipeline对比" class="headerlink" title="原生批量命令与Pipeline对比"></a>原生批量命令与Pipeline对比</h3><p>可以使用Pipeline模拟出批量操作的效果,但是在使用时需要质疑它与原生批量命令的区别,具体包含几点:</p>
+<ul>
+<li>原生批量命令是原子性,Pipeline是非原子性的.</li>
+<li>原生批量命令是一个命令对应多个key,Pipeline支持多个命令.</li>
+<li>原生批量命令是Redis服务端支持实现的,而Pipeline需要服务端与客户端的共同实现.</li>
+</ul>
+<h3 id="Pipeline总结"><a href="#Pipeline总结" class="headerlink" title="Pipeline总结"></a>Pipeline总结</h3><p>Pipeline虽然好用,但是每次Pipeline组装的命令个数不能没有节制,否则一次组装Pipeline数据量过大,一方面会增加客户端的等待时机,另一方面会造成一定的网络阻塞,可以将一次包含大量命令的Pipeline拆分成多次较小的Pipeline来完成.</p>
+<p>Pipeline只能操作一个Redis实例,但即使在分布式Redis场景中,也可以作为批量操作的重要优化方法.</p>
+<h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>为了保证多条命令组合的原子性,Redis提供了简单的事务以及集成Lua脚本来解决这个问题.</p>
+<p>熟悉关系型数据库的开发者应该对事务比较了解,简单地说,事务表示一组动作,要么全部成功,要不全部不成功.例如在在电商网站中用户购买商品A那么需要将商品A的库存-1,并创建一个订单.这两个操作要么远不执行成功,要么全部执行不成功,否则会出现数据不一致的情况.</p>
+<p>Redis提供了简单的功能,将一组需要一起执行的命令放到multi和exec两个命令之间.multi命令代表事务的开始,exec命令代表事务结束,他们之间的命令是原子顺序执行的.<br>例如上述的用户购买商品问题:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; multi</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; hincrby commodity:a:detail stock -1</span><br><span class="line">QUEUE</span><br><span class="line">127.0.0.1:6379&gt; rpush user:1:orders &#123;&quot;commodity&quot;:&#x27;a&#x27;,..&#125;</span><br><span class="line">QUEUE</span><br></pre></td></tr></table></figure>
+
+<p>可以看到数据操作命令返回的结果是QUEUE,代表命令并没有真正执行,而是暂时保存在Redis中.如果此时另一个客户端执行llen user:1:orders返回结果为0.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; llen user:1:orders</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+<p>只有当exec执行后,用户购买商品的行为才算完成,如下两个结果对应hincrby和rpush命令.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; exec</span><br><span class="line">1) (integer) 4  # 商品原库存为5</span><br><span class="line">2) (integer) 1</span><br><span class="line">127.0.0.1:6379&gt; llen user:1:orders</span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+
+<p>如果要停止事务的执行,可以使用discard命令替代exec命令即可.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; discard</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; llen user:1:orders</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+<p>如果事务中的命令出现错误,Redis的处理机制也不尽相同.</p>
+<h3 id="命令错误"><a href="#命令错误" class="headerlink" title="命令错误"></a>命令错误</h3><p>例如下面操作错将set写成了sett,属于语法错误,会造成整个事务无法执行,key和counter的值未发生变化:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; mget key counter</span><br><span class="line">1) &quot;hello&quot;</span><br><span class="line">2) &quot;100&quot;</span><br><span class="line">127.0.0.1:6379&gt; multi</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; sett key world</span><br><span class="line">(error) ERR unknown command &#x27;sett&#x27;</span><br><span class="line">127.0.0.1:6379&gt; incr counter</span><br><span class="line">QUEUE</span><br><span class="line">127.0.0.1:6379&gt; exec</span><br><span class="line">(error) EXECABORT Transaction discarded because of previous errors.</span><br><span class="line">127.0.0.1:6379&gt; mget key counter</span><br><span class="line">1) &quot;hello&quot;</span><br><span class="line">2) &quot;100&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="运行时错误"><a href="#运行时错误" class="headerlink" title="运行时错误"></a>运行时错误</h3><p>例如用户购买商品,误把rpush写成了zadd</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; multi</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; hincrby commodity:a:detail stock -1</span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379&gt; zadd user:1:orders &#123;&quot;commodity&quot;:&#x27;a&#x27;,..&#125;</span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379&gt; exec</span><br><span class="line">1) (integer) 1</span><br><span class="line">2) (error) WRONGTYPE Operation against a key holding the wrong kind of value.</span><br><span class="line">127.0.0.1:6379&gt; hget commodity:a:detail stack</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+
+<p>可以看到Redis并不支持回滚功能,hincrby commodity:a:detail stock -1命令已经执行成功,开发者需要自己修改这类问题.</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/11/11/%E5%B7%A5%E7%A8%8B/%E9%AB%98%E5%B9%B6%E5%8F%91/%E9%AB%98%E5%B9%B6%E5%8F%91-Redis%E5%8E%9F%E5%AD%90%E8%AE%A1%E6%95%B0%E5%99%A8incr%EF%BC%8C%E9%98%B2%E6%AD%A2%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/11/11/%E5%B7%A5%E7%A8%8B/%E9%AB%98%E5%B9%B6%E5%8F%91/%E9%AB%98%E5%B9%B6%E5%8F%91-Redis%E5%8E%9F%E5%AD%90%E8%AE%A1%E6%95%B0%E5%99%A8incr%EF%BC%8C%E9%98%B2%E6%AD%A2%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">高并发-Redis原子计数器incr，防止并发请求.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-11-11 08:53:19" itemprop="dateCreated datePublished" datetime="2017-11-11T08:53:19+08:00">2017-11-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%AB%98%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">高并发</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Roy_70/article/details/78260826">https://blog.csdn.net/Roy_70/article/details/78260826</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在一些对高并发请求有限制的系统或者功能里，比如说秒杀活动，或者一些网站返回的当前用户过多，请稍后尝试。这些都是通过对同一时刻请求数量进行了限制，一般用作对后台系统的保护，防止系统因为过大的流量冲击而崩溃。对于系统崩溃带来的后果，显然还是拒绝一部分请求更能被维护者所接受。</p>
+<p>而在各种限流中，除了系统自身设计的带锁机制的计数器外，利用 Redis 实现显然是一种既高效安全又便捷方便的方式。</p>
+<h2 id="incr命令"><a href="#incr命令" class="headerlink" title="incr命令"></a>incr命令</h2><p>Redis Incr 命令将 key 中储存的数字值增一。</p>
+<p>如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCR 操作。</p>
+<p>如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。</p>
+<p>本操作的值限制在 64 位(bit)有符号数字表示之内。<br>示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set num 10</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; incr num</span><br><span class="line">(integer) 11</span><br><span class="line">127.0.0.1:6379&gt; get num    # 数字值在 Redis 中以字符串的形式保存</span><br><span class="line">&quot;11&quot;</span><br></pre></td></tr></table></figure>
+
+<p>注意: 由于 redis 并没有一个明确的类型来表示整型数据，所以这个操作是一个字符串操作。</p>
+<p>执行这个操作的时候，key 对应存储的字符串被解析为 10 进制的 64 位有符号整型数据。</p>
+<p>事实上，Redis 内部采用整数形式（Integer representation）来存储对应的整数值，所以对该类字符串值实际上是用整数保存，也就不存在存储整数的字符串表示（String representation）所带来的额外消耗。</p>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><h3 id="计数器"><a href="#计数器" class="headerlink" title="计数器"></a>计数器</h3><p>使用思路是：每次有相关操作的时候，就向 Redis 服务器发送一个 incr 命令。</p>
+<p>例如这样一个场景：我们有一个 web 应用，我们想记录每个用户每天访问这个网站的次数。</p>
+<p>web 应用只需要通过拼接用户 id 和代表当前时间的字符串作为key，每次用户访问这个页面的时候对这个 key 执行一下 incr 命令。</p>
+<p>这个场景可以有很多种扩展方法：</p>
+<ul>
+<li>通过结合使用 INCR 和 EXPIRE 命令，可以实现一个只记录用户在指定间隔时间内的访问次数的计数器</li>
+<li>客户端可以通过 GETSET 命令获取当前计数器的值并且重置为 0</li>
+<li>通过类似于 DECR 或者 INCRBY 等原子递增/递减的命令，可以根据用户的操作来增加或者减少某些值 比如在线游戏，需要对用户的游戏分数进行实时控制，分数可能增加也可能减少。</li>
+</ul>
+<h3 id="限速器"><a href="#限速器" class="headerlink" title="限速器"></a>限速器</h3><p>限速器是一种可以限制某些操作执行速率的特殊场景。</p>
+<p>传统的例子就是限制某个公共 api 的请求数目。</p>
+<p>假设我们要解决如下问题：限制某个 api 每秒每个 ip 的请求次数不超过 10 次。</p>
+<p>我们可以通过 incr 命令来实现两种方法解决这个问题。</p>
+<h2 id="流量控制之-java-实现"><a href="#流量控制之-java-实现" class="headerlink" title="流量控制之 java 实现"></a>流量控制之 java 实现</h2><p>这里我们将在 java 中使用 redis-incr 的特性来构建一个 1 分钟内只允许请求 100 次的控制代码，key 代表在 redis 内存放的被控制的键值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public static boolean flowControl(String key)&#123;</span><br><span class="line">    //最大允许100</span><br><span class="line">    int max = 100;</span><br><span class="line">    long total = 1L;</span><br><span class="line">    try &#123;</span><br><span class="line">        if (jedisInstance.get(key) == null) &#123;</span><br><span class="line">            //jedisInstance是Jedis连接实例，可以使单链接也可以使用链接池获取，实现方式请参考之前的blog内容</span><br><span class="line">            //如果redis目前没有这个key，创建并赋予0，有效时间为60s</span><br><span class="line">            jedisInstance.setex(key, 60, &quot;0&quot;);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            //获取加1后的值</span><br><span class="line">            total = jedisInstance.incr(redisKey).longValue();</span><br><span class="line">            //Redis TTL命令以秒为单位返回key的剩余过期时间。当key不存在时，返回-2。当key存在但没有设置剩余生存时间时，返回-1。否则，以秒为单位，返回key的剩余生存时间。</span><br><span class="line">            if (jedisInstance.ttl(redisKey).longValue() == -1L)</span><br><span class="line">            &#123;</span><br><span class="line">                //为给定key设置生存时间，当key过期时(生存时间为0)，它会被自动删除。</span><br><span class="line">                jedisInstance.expire(redisKey, 60);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; catch (Exception e) &#123;</span><br><span class="line">        logger.error(&quot;流量控制组件:执行计数操作失败,无法执行计数&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    long keytotaltransations = max;</span><br><span class="line">    //判断是否已超过最大值，超过则返回false</span><br><span class="line">    if (total &gt; keytotaltransations) &#123;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/11/03/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6&%E9%87%8D%E5%AE%9A%E5%90%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/11/03/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6&%E9%87%8D%E5%AE%9A%E5%90%91/" class="post-title-link" itemprop="url">Linux-文件描述符&重定向</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-11-03 08:53:40" itemprop="dateCreated datePublished" datetime="2017-11-03T08:53:40+08:00">2017-11-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h2><p>Linux 系统预留可三个文件描述符：0、1 和 2，他们的意义如下所示：</p>
+<ol>
+<li>0——标准输入（stdin）</li>
+<li>1——标准输出（stdout）</li>
+<li>2——标准错误（stderr）</li>
+</ol>
+<h3 id="标准输出——stdout"><a href="#标准输出——stdout" class="headerlink" title="标准输出——stdout"></a>标准输出——stdout</h3><p>假设：在当前目录下，有且只有一个文件名称为 123.txt 的文件，这时我们运行这个命令 <code>ls 123.txt</code>，就会获得一个标准输出 stdout 的输出结果：<code>123.txt</code></p>
+<h3 id="错误输出——stderr"><a href="#错误输出——stderr" class="headerlink" title="错误输出——stderr"></a>错误输出——stderr</h3><p>按照上面的假设，我们运行另一条命令 <code>ls abc.txt</code>，这样我们就会获得一个标准错误 stderr 的输出结果 <code>ls：无法访问abc.txt：没有那个文件或目录</code>。</p>
+<hr>
+<h2 id="重定向"><a href="#重定向" class="headerlink" title="重定向"></a>重定向</h2><p>重定向的符号有两个：&gt; 或 &gt;&gt;，两者的区别是：前者会先清空文件，然后再写入内容，后者会将重定向的内容追加到现有文件的尾部。</p>
+<hr>
+<h2 id="Linux-特殊文件"><a href="#Linux-特殊文件" class="headerlink" title="Linux 特殊文件"></a>Linux 特殊文件</h2><p><code>/dev/null</code> 是一个特殊的设备文件，这个文件接收到任何数据都会被丢弃。因此，null 这个设备通常也被称为位桶（bit bucket）或黑洞。</p>
+<hr>
+<p><code>find 路径 -name 文件名 2&gt;/dev/null</code>: 过滤掉没有查看权限的文件</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1008,361 +1292,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/27/%E8%AF%AD%E8%A8%80/web/CSS-%E5%86%85%E8%81%94%E5%85%83%E7%B4%A0%E7%9A%84%E5%AE%BD%E9%AB%98%E5%BA%A6%E8%AE%BE%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/27/%E8%AF%AD%E8%A8%80/web/CSS-%E5%86%85%E8%81%94%E5%85%83%E7%B4%A0%E7%9A%84%E5%AE%BD%E9%AB%98%E5%BA%A6%E8%AE%BE%E7%BD%AE/" class="post-title-link" itemprop="url">CSS-内联元素的宽高度设置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-27 16:04:46" itemprop="dateCreated datePublished" datetime="2017-07-27T16:04:46+08:00">2017-07-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/HTML/" itemprop="url" rel="index"><span itemprop="name">HTML</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://blog.doyoe.com/2015/03/15/css/%E7%BD%AE%E6%8D%A2%E5%92%8C%E9%9D%9E%E7%BD%AE%E6%8D%A2%E5%85%83%E7%B4%A0/">http://blog.doyoe.com/2015/03/15/css/%E7%BD%AE%E6%8D%A2%E5%92%8C%E9%9D%9E%E7%BD%AE%E6%8D%A2%E5%85%83%E7%B4%A0/</a></p>
-<h3 id="内联的置换和非置换元素的宽度定义"><a href="#内联的置换和非置换元素的宽度定义" class="headerlink" title="内联的置换和非置换元素的宽度定义"></a>内联的置换和非置换元素的宽度定义</h3><p>对于内联的非置换元素，宽度设置是不适用的。</p>
-<p>对于内联的置换元素来说，其宽度的设置需遵循以下几点：</p>
-<ul>
-<li><p>若宽高的计算值都为 auto 且元素有固有宽度，则 width 的使用值为该固有宽度；</p>
-<blockquote>
-<p>典型的例子是：拥有默认宽高的 input 当宽度的计算值为auto时，则宽度使用值为其默认的固有宽度</p>
-</blockquote>
-</li>
-<li><p>若宽度的计算值为 auto 且元素有固有宽度，则 width 的使用值为该固有宽度；</p>
-<blockquote>
-<p>例子同上</p>
-</blockquote>
-</li>
-<li><p>若宽度的计算值为 auto 且高度有 非auto 的计算值，并且元素有固有宽高比，则 width 的使用值为 高度使用值 * 固有宽高比；</p>
-<blockquote>
-<p>典型的例子：img 当只定义了其高度值时，其宽度将会根据固有宽高比进行等比设置</p>
-</blockquote>
-</li>
-<li><p>除此之外，当 width 的计算值为 auto 时，则宽度的使用值为 300px</p>
-<blockquote>
-<p>典型的例子：比如iframe, canvas</p>
-</blockquote>
-</li>
-</ul>
-<p>其它类型的置换元素，其宽度的定义都参照行内置换元素的定义。</p>
-<h3 id="内联的置换和非置换元素的高度定义"><a href="#内联的置换和非置换元素的高度定义" class="headerlink" title="内联的置换和非置换元素的高度定义"></a>内联的置换和非置换元素的高度定义</h3><p>对于行内级非置换元素，高度设置是不适用的。</p>
-<p>对于行内级置换元素来说，其高度的设置需遵循以下几点：</p>
-<ul>
-<li>若宽高的计算值都为 auto 且元素有固有高度，则 height 的使用值为该固有高度；</li>
-<li>若高度的计算值为 auto 且元素有固有高度，则 height 的使用值为该固有高度；</li>
-<li>若高度的计算值为 auto 且宽度有 非auto 的计算值，并且元素有固有宽高比，则 height 的使用值为：宽度使用值 / 固有宽高比；</li>
-<li>若高度的计算值为 auto 且上述条件完全不符，则 height 的使用值 不能大于150px，且宽度不能大于长方形高度的2倍。</li>
-</ul>
-<p>其它类型的置换元素，其高度的定义都参照行内置换元素的定义。</p>
-<h3 id="内联的非置换元素如何修改宽高"><a href="#内联的非置换元素如何修改宽高" class="headerlink" title="内联的非置换元素如何修改宽高"></a>内联的非置换元素如何修改宽高</h3><p>将内联元素变为块级元素。</p>
-<p>设置css的display属性。</p>
-<table>
-<thead>
-<tr>
-<th align="center">值</th>
-<th align="center">描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">none</td>
-<td align="center">此元素不会被显示。</td>
-</tr>
-<tr>
-<td align="center">block</td>
-<td align="center">此元素将显示为块级元素，此元素前后会带有换行符。</td>
-</tr>
-<tr>
-<td align="center">inline</td>
-<td align="center">默认。此元素会被显示为内联元素，元素前后没有换行符。</td>
-</tr>
-<tr>
-<td align="center">inline-block</td>
-<td align="center">行内块元素。（CSS2.1 新增的值）</td>
-</tr>
-<tr>
-<td align="center">list-item</td>
-<td align="center">此元素会作为列表显示。</td>
-</tr>
-<tr>
-<td align="center">run-in</td>
-<td align="center">此元素会根据上下文作为块级元素或内联元素显示。</td>
-</tr>
-<tr>
-<td align="center">compact</td>
-<td align="center">CSS 中有值 compact，不过由于缺乏广泛支持，已经从 CSS2.1 中删除。</td>
-</tr>
-<tr>
-<td align="center">marker</td>
-<td align="center">CSS 中有值 marker，不过由于缺乏广泛支持，已经从 CSS2.1 中删除。</td>
-</tr>
-<tr>
-<td align="center">table</td>
-<td align="center">此元素会作为块级表格来显示（类似 <table>），表格前后带有换行符。</table></td>
-</tr>
-<tr>
-<td align="center">inline-table</td>
-<td align="center">此元素会作为内联表格来显示（类似 <table>），表格前后没有换行符。</table></td>
-</tr>
-<tr>
-<td align="center">table-row-group</td>
-<td align="center">此元素会作为一个或多个行的分组来显示（类似 <tbody>）。</tbody></td>
-</tr>
-<tr>
-<td align="center">table-header-group</td>
-<td align="center">此元素会作为一个或多个行的分组来显示（类似 <thead>）。</thead></td>
-</tr>
-<tr>
-<td align="center">table-footer-group</td>
-<td align="center">此元素会作为一个或多个行的分组来显示（类似 <tfoot>）。</tfoot></td>
-</tr>
-<tr>
-<td align="center">table-row</td>
-<td align="center">此元素会作为一个表格行显示（类似 </td></tr><tr>）。
-</tr>
-<tr>
-<td align="center">table-column-group</td>
-<td align="center">此元素会作为一个或多个列的分组来显示（类似 <colgroup>）。</colgroup></td>
-</tr>
-<tr>
-<td align="center">table-column</td>
-<td align="center">此元素会作为一个单元格列显示（类似 <col>）</td>
-</tr>
-<tr>
-<td align="center">table-cell</td>
-<td align="center">此元素会作为一个表格单元格显示（类似 </td><td> 和 <th>）</th></td>
-</tr>
-<tr>
-<td align="center">table-caption</td>
-<td align="center">此元素会作为一个表格标题显示（类似 <caption>）</caption></td>
-</tr>
-<tr>
-<td align="center">inherit</td>
-<td align="center">规定应该从父元素继承 display 属性的值。</td>
-</tr>
-</tbody></table>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/27/%E8%AF%AD%E8%A8%80/web/HTML-%E9%9D%9E%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0%E5%92%8C%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/27/%E8%AF%AD%E8%A8%80/web/HTML-%E9%9D%9E%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0%E5%92%8C%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0/" class="post-title-link" itemprop="url">HTML-非替换元素和替换元素</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-27 15:56:48" itemprop="dateCreated datePublished" datetime="2017-07-27T15:56:48+08:00">2017-07-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/HTML/" itemprop="url" rel="index"><span itemprop="name">HTML</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/sakurallj/article/details/48277463">http://blog.csdn.net/sakurallj/article/details/48277463</a></p>
-<h3 id="替换元素-置换元素"><a href="#替换元素-置换元素" class="headerlink" title="替换元素/置换元素"></a>替换元素/置换元素</h3><ol>
-<li>一个内容不受CSS视觉格式化模型控制，CSS渲染模型并不考虑对此内容的渲染，且元素本身一般拥有固有尺寸（宽度，高度，宽高比）的元素，被称之为替换元素。</li>
-<li>替换元素就是浏览器根据元素的标签和属性，来决定元素的具体显示内容。</li>
-<li>例如浏览器会根据img标签的src属性的值来读取图片信息并显示出来，而如果查看(X)HTML代码，则看不到图片的实际内容；又例如根据input标签的type属性来决定是显示输入框，还是单选按钮等。</li>
-<li>HTML中的img、input、textarea、select、object都是替换元素。这些元素往往没有实际的内容，即是一个空元素。</li>
-</ol>
-<h3 id="非替换元素-不可替换元素"><a href="#非替换元素-不可替换元素" class="headerlink" title="非替换元素/不可替换元素"></a>非替换元素/不可替换元素</h3><ol>
-<li>HTML 的大多数元素是不可替换元素，即其内容直接表现给用户端（例如浏览器），如：</li>
-</ol>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- span是非置换元素 因此 hello word 被展示出来 而不是被替换成其他内容 --&gt;</span><br><span class="line">&lt;span&gt;hello word&lt;/span&gt;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/" class="post-title-link" itemprop="url">C-内存-内存分配</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-26 18:23:13" itemprop="dateCreated datePublished" datetime="2017-07-26T18:23:13+08:00">2017-07-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/fengyv/p/3789252.html">http://www.cnblogs.com/fengyv/p/3789252.html</a></p>
-<p>一个程序本质上都是由 BSS 段、data段、text段三个组成的。这样的概念在当前的计算机程序设计中是很重要的一个基本概念，而且在嵌入式系统的设计中也非常重要，牵涉到嵌入式系统运行时的内存大小分配，存储单元占用空间大小的问题。</p>
-<ul>
-<li>BSS段：在采用段式内存管理的架构中，BSS段（bss segment）通常是指用来存放程序中未初始化的全局变量的一块内存区域。BSS是英文Block Started by Symbol的简称。BSS段属于静态内存分配。</li>
-<li>数据段：在采用段式内存管理的架构中，数据段（data segment）通常是指用来存放程序中已初始化的全局变量的一块内存区域。数据段属于静态内存分配。</li>
-<li>代码段：在采用段式内存管理的架构中，代码段（text segment）通常是指用来存放程序执行代码的一块内存区域。这部分区域的大小在程序运行前就已经确定，并且内存区域属于只读。在代码段中，也有可能包含一些只读的常数变量，例如字符串常量等。</li>
-</ul>
-<p>程序编译后生成的目标文件至少含有这三个段，这三个段的大致结构图如下所示：<br><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/1.png" alt="1"></p>
-<p>其中.text即为代码段，为只读。.bss段包含程序中未初始化的全局变量和static变量。data段包含三个部分：heap(堆)、stack(栈)和静态数据区。</p>
-<ul>
-<li><p>堆（heap）：堆是用于存放进程运行中被动态分配的内存段，它的大小并不固定，可动态扩张或缩减。当进程调用malloc等函数分配内存时，新分配的内存就被动态添加到堆上（堆被扩张）；当利用free等函数释放内存时，被释放的内存从堆中被剔除（堆被缩减）。</p>
-</li>
-<li><p>栈 (stack)：栈又称堆栈，是用户存放程序临时创建的局部变量，也就是说我们函数括弧“{}”中定义的变量（但不包括static声明的变量，static意味着在数据段中存放变量）。除此以外，在函数被调用时，其参数也会被压入发起调用的进程栈中，并且待到调用结束后，函数的返回值也会被存放回栈中。由于栈的先进先出特点，所以栈特别方便用来保存/恢复调用现场。从这个意义上讲，我们可以把堆栈看成一个寄存、交换临时数据的内存区。</p>
-</li>
-</ul>
-<p>当程序在执行时动态分配空间（C中的malloc函数），所分配的空间就属于heap。其概念与数据结构中“堆”的概念不同。</p>
-<p>stack段存放函数内部的变量、参数和返回地址，其在函数被调用时自动分配，访问方式就是标准栈中的LIFO方式。（因为函数的局部变量存放在此，因此其访问方式应该是栈指针加偏移的方式，否则若通过push、pop操作来访问相当麻烦）</p>
-<p>data段中的静态数据区存放的是程序中已初始化的全局变量、静态变量和常量。</p>
-<p>在采用段式内存管理的架构中（比如intel的80x86系统），BSS 段（Block Started by Symbol segment）通常是指用来存放程序中未初始化的全局变量的一块内存区域，一般在初始化时 BSS 段部分将会清零。BSS 段属于静态内存分配，即程序一开始就将其清零了。</p>
-<p>比如，在C语言之类的程序编译完成之后，已初始化的全局变量保存在.data 段中，未初始化的全局变量保存在.bss 段中。</p>
-<p>text和data段都在可执行文件中（在嵌入式系统里一般是固化在镜像文件中），由系统从可执行文件中加载；而BSS段不在可执行文件中，由系统初始化。</p>
-<p><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/2.png" alt="2"></p>
-<p>BSS段只保存没有值的变量，所以事实上它并不需要保存这些变量的映像。运行时所需要的BSS段大小记录在目标文件中，但BSS段并不占据目标文件的任何空间。</p>
-<p><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/3.png" alt="3"></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">//main.c  </span><br><span class="line">int a = 0; //全局初始化区  </span><br><span class="line">char *p1; //全局未初始化区  </span><br><span class="line"></span><br><span class="line">main()  </span><br><span class="line">&#123;  </span><br><span class="line">  static int c =0； //全局（静态）初始化区  </span><br><span class="line">  int b; //栈  </span><br><span class="line">  char s[] = &quot;abc&quot;; //栈  </span><br><span class="line">  char *p2; //栈  </span><br><span class="line">  char *p3 = &quot;123456&quot;; //&quot;123456\0&quot;在常量区，p3在栈上。  </span><br><span class="line">  p1 = (char *)malloc(10);  </span><br><span class="line">  p2 = (char *)malloc(20); //分配得来得10和20字节的区域就在堆区。  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1434,7 +1363,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1447,7 +1376,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

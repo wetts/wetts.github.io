@@ -188,6 +188,81 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/TCP%E3%80%81UDP%E7%BB%91%E5%AE%9A%E5%90%8C%E4%B8%80%E7%AB%AF%E5%8F%A3%E9%80%9A%E4%BF%A1%E7%9A%84%E8%A7%A3%E9%87%8A/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/07/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/TCP%E3%80%81UDP%E7%BB%91%E5%AE%9A%E5%90%8C%E4%B8%80%E7%AB%AF%E5%8F%A3%E9%80%9A%E4%BF%A1%E7%9A%84%E8%A7%A3%E9%87%8A/" class="post-title-link" itemprop="url">TCP、UDP绑定同一端口通信的解释</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-05 16:24:22" itemprop="dateCreated datePublished" datetime="2019-07-05T16:24:22+08:00">2019-07-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/" itemprop="url" rel="index"><span itemprop="name">网络与通信</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/MY0213/p/8798926.html">https://www.cnblogs.com/MY0213/p/8798926.html</a></p>
+<p>TCP、UDP可以绑定同一端口来进行通信：</p>
+<p>网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。 </p>
+<p>按照OSI七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP/IP协议提出了协议端口（protocol port，简称端口）的概念，用于标识通信的进程。 </p>
+<p>端口是一种抽象的软件结构（包括一些数据结构和I/O缓冲区）。应用程序（即进程）通过系统调用与某端口建立连接（binding）后，传输层传给该端口的数据都被相应进程所接收，相应进程发给传输层的数据都通过该端口输出。在TCP/IP协议的实现中，端口操作类似于一般的I/O操作，进程获取一个端口，相当于获取本地唯一的I/O文件，可以用一般的读写原语访问之。 </p>
+<p>类似于文件描述符，每个端口都拥有一个叫端口号（port number）的整数型标识符，用于区别不同端口。由于TCP/IP传输层的两个协议TCP和UDP是完全独立的两个软件模块，因此各自的端口号也相互独立，如TCP有一个255号端口，UDP也可以有一个255号端口，二者并不冲突。 </p>
+<p>端口号的分配是一个重要问题。有两种基本分配方式：第一种叫全局分配，这是一种集中控制方式，由一个公认的中央机构根据用户需要进行统一分配，并将结果公布于众。第二种是本地分配，又称动态连接，即进程需要访问传输层服务时，向本地操作系统提出申请，操作系统返回一个本地唯一的端口号，进程再通过合适的系统调用将自己与该端口号联系起来（绑扎）。TCP/IP端口号的分配中综合了上述两种方式。TCP/IP将端口号分为两部分，少量的作为保留端口，以全局方式分配给服务进程。因此，每一个标准服务器都拥有一个全局公认的端口（即周知口，well-known port），即使在不同机器上，其端口号也相同。剩余的为自由端口，以本地方式进行分配。TCP和UDP均规定，小于256的端口号才能作保留端口。</p>
+<p>再讨论一下，一个服务器监控一个端口，比如80端口，它为什么可以建立上成千上万的连接？</p>
+<p>首先， 一个TCP连接需要由四元组来形成，即(src_ip,src_port,dst_ip,dst_port)。当一个连接请求过来的时候，服务端调用accept函数，新生成一个socket，这个socket所占用的本地端口依然是80端口。由四元组就很容易分析到了，同一个(src_ip,src_port)，它所对应的(dst_ip,dst_port)可以无穷变化，这样就可以建立很多个客户端的请求了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/05/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%89%8D%E9%9D%A2%E5%8A%A0%E4%B8%8A'r'%E7%9A%84%E4%BD%9C%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -876,98 +951,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">方差、协方差、标准差、均方差、均方根值、均方误差、均方根误差对比分析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-06-04 11:54:12" itemprop="dateCreated datePublished" datetime="2019-06-04T11:54:12+08:00">2019-06-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="方差（Variance"><a href="#方差（Variance" class="headerlink" title="方差（Variance)"></a>方差（Variance)</h3><p>方差用于衡量随机变量或一组数据的离散程度，方差在在统计描述和概率分布中有不同的定义和计算公式。</p>
-<ol>
-<li>概率论中方差用来度量随机变量和其数学期望（即均值）之间的偏离程度；</li>
-<li>统计中的方差（样本方差）是每个样本值与全体样本均值之差的平方值的平均数，代表每个变量与总体均值间的离散程度。</li>
-</ol>
-<h4 id="概率论中计算公式"><a href="#概率论中计算公式" class="headerlink" title="概率论中计算公式"></a>概率论中计算公式</h4><p>离散型随机变量的数学期望：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E7%A6%BB%E6%95%A3%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E7%9A%84%E6%95%B0%E5%AD%A6%E6%9C%9F%E6%9C%9B.png" alt="离散型随机变量的数学期望"> </p>
-<p>连续型随机变量的数学期望：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E8%BF%9E%E7%BB%AD%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E7%9A%84%E6%95%B0%E5%AD%A6%E6%9C%9F%E6%9C%9B.png" alt="连续型随机变量的数学期望"> </p>
-<p><em>其中，pi是变量，xi发生的概率，f(x)是概率密度。</em></p>
-<p>方差：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%A6%82%E7%8E%87%E8%AE%BA%E6%96%B9%E5%B7%AE.png" alt="概率论方差"> </p>
-<h4 id="统计学中计算公式"><a href="#统计学中计算公式" class="headerlink" title="统计学中计算公式"></a>统计学中计算公式</h4><h5 id="总体方差"><a href="#总体方差" class="headerlink" title="总体方差"></a>总体方差</h5><p>总体方差，也叫做有偏估计，其实就是我们从初高中就学到的那个标准定义的方差：</p>
-<p>总体均值：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%80%BB%E4%BD%93%E5%9D%87%E5%80%BC.png" alt="总体均值"> </p>
-<p><em>其中，n表示这组数据个数，x1、x2、x3……xn表示这组数据具体数值。</em></p>
-<p>总体方差：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%80%BB%E4%BD%93%E6%96%B9%E5%B7%AE.png" alt="总体方差"> </p>
-<h5 id="样本方差"><a href="#样本方差" class="headerlink" title="样本方差"></a>样本方差</h5><p>样本方差，无偏方差，在实际情况中，总体均值是很难得到的，往往通过抽样来计算，于是有样本方差，计算公式如下：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%A0%B7%E6%9C%AC%E6%96%B9%E5%B7%AE.png" alt="样本方差"> </p>
-<h3 id="协方差（Covariance）"><a href="#协方差（Covariance）" class="headerlink" title="协方差（Covariance）"></a>协方差（Covariance）</h3><p>协方差在概率论和统计学中用于衡量两个变量的总体误差。而方差是协方差的一种特殊情况，即当两个变量是相同的情况。协方差表示的是两个变量的总体的误差，这与只表示一个变量误差的方差不同。 如果两个变量的变化趋势一致，也就是说如果其中一个大于自身的期望值，另外一个也大于自身的期望值，那么两个变量之间的协方差就是正值。 如果两个变量的变化趋势相反，即其中一个大于自身的期望值，另外一个却小于自身的期望值，那么两个变量之间的协方差就是负值。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%8D%8F%E6%96%B9%E5%B7%AE.png" alt="协方差"><br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%8D%8F%E6%96%B9%E5%B7%AE2.png" alt="协方差2"><br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%8D%8F%E6%96%B9%E5%B7%AE3.png" alt="协方差3"> </p>
-<p><em>其中，E[X]与E[Y]分别为两个实数随机变量X与Y的数学期望，Cov(X,Y)为X，Y的协方差。</em></p>
-<h3 id="标准差（Standard-Deviation）"><a href="#标准差（Standard-Deviation）" class="headerlink" title="标准差（Standard Deviation）"></a>标准差（Standard Deviation）</h3><p>标准差也被称为标准偏差,在中文环境中又常称均方差，是数据偏离均值的平方和平均后的方根，用σ表示。标准差是方差的算术平方根。标准差能反映一个数据集的离散程度，只是由于方差出现了平方项造成量纲的倍数变化，无法直观反映出偏离程度，于是出现了标准差，标准偏差越小，这些值偏离平均值就越少，反之亦然。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%A0%B7%E6%9C%AC%E6%A0%87%E5%87%86%E5%B7%AE.png" alt="样本标准差"> </p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%80%BB%E4%BD%93%E6%A0%87%E5%87%86%E5%B7%AE.png" alt="总体标准差"> </p>
-<h3 id="均方误差（mean-square-error-MSE）"><a href="#均方误差（mean-square-error-MSE）" class="headerlink" title="均方误差（mean-square error, MSE）"></a>均方误差（mean-square error, MSE）</h3><p>均方误差是反映估计量与被估计量之间差异程度的一种度量，换句话说，参数估计值与参数真值之差的平方的期望值。MSE可以评价数据的变化程度，MSE的值越小，说明预测模型描述实验数据具有更好的精确度。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE.png" alt="均方误差"> </p>
-<h3 id="均方根误差（root-mean-squared-error，RMSE）"><a href="#均方根误差（root-mean-squared-error，RMSE）" class="headerlink" title="均方根误差（root mean squared error，RMSE）"></a>均方根误差（root mean squared error，RMSE）</h3><p>均方根误差亦称标准误差，是均方误差的算术平方根。换句话说，是观测值与真值(或模拟值)偏差(而不是观测值与其平均值之间的偏差)的平方与观测次数n比值的平方根，在实际测量中，观测次数n总是有限的，真值只能用最可信赖（最佳）值来代替。标准误差对一组测量中的特大或特小误差反映非常敏感，所以，标准误差能够很好地反映出测量的精密度。这正是标准误差在工程测量中广泛被采用的原因。因此，标准差是用来衡量一组数自身的离散程度，而均方根误差是用来衡量观测值同真值之间的偏差。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE.png" alt="均方根误差"> </p>
-<h3 id="均方根值（root-mean-square，RMES）"><a href="#均方根值（root-mean-square，RMES）" class="headerlink" title="均方根值（root-mean-square，RMES）"></a>均方根值（root-mean-square，RMES）</h3><p>均方根值也称作为方均根值或有效值，在数据统计分析中，将所有值平方求和，求其均值，再开平方，就得到均方根值。在物理学中，我们常用均方根值来分析噪声。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC.png" alt="均方根值"> </p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1039,7 +1022,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1052,7 +1035,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

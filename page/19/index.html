@@ -188,6 +188,253 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/24/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%BA%E5%88%AB-new()%E5%92%8Cmake()/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/05/24/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%BA%E5%88%AB-new()%E5%92%8Cmake()/" class="post-title-link" itemprop="url">Golang-区别-new()和make()</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-05-24 12:33:18" itemprop="dateCreated datePublished" datetime="2017-05-24T12:33:18+08:00">2017-05-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://studygolang.com/articles/3496">http://studygolang.com/articles/3496</a></p>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Go 语言中的 <code>new</code> 和 <code>make</code> 一直是新手比较容易混淆的东西，咋一看很相似。不过解释两者之间的不同也非常容易。 他们所做的事情，和应用的类型也不相同。<br>二者都是用来分配空间。</p>
+<h2 id="new-函数"><a href="#new-函数" class="headerlink" title="new 函数"></a>new 函数</h2><ul>
+<li>new 是内建函数，函数原型为<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func new(Type) *Type</span><br></pre></td></tr></table></figure>
+官方文档描述为：<blockquote>
+<p>The new build-in function allocates memory（仅仅分配空间）. The first argument is a type, not a value, and the value returned is a pointer to a newly allocated zero value of that type.</p>
+</blockquote>
+</li>
+</ul>
+<p>翻译如下：</p>
+<blockquote>
+<p>内置函数 new 分配空间。传递给new 函数的是一个类型，不是一个值。返回值是 指向这个新分配的零值的指针。<br>根据这段描述，我们也可以自己实现一个类似 new 的功能</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func newInt *int &#123;</span><br><span class="line">    var i int</span><br><span class="line">    return &amp;i   //为何可以返回局部变量呢？</span><br><span class="line">&#125;</span><br><span class="line">someInt := newInt()</span><br></pre></td></tr></table></figure>
+
+<p>这里要注意的第一点是，返回值是一个指针。<br>然后，为何一个golang 中的函数可以返回局部变量呢？</p>
+<h2 id="make-函数"><a href="#make-函数" class="headerlink" title="make 函数"></a>make 函数</h2><p>make 也是内建函数，你可以从 <a target="_blank" rel="noopener" href="http://golang.org/pkg/builtin/#make">http://golang.org/pkg/builtin/#make</a> 看到它， 它的函数原型 比 new 多了一个（长度）参数，返回值也不同。</p>
+<p>函数原型是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func make(Type, size IntegerType) Type</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第一个参数是一个类型，第二个参数是长度</li>
+<li>返回值是一个类型</li>
+</ul>
+<p>官方描述为：</p>
+<blockquote>
+<p>The make built-in function allocates and initializes an object（分配空间 + 初始化） of type slice, map or chan**(only)**. Like new , the first arguement is a type, not a value. Unlike new, make’s return type is the same as the type of its argument, not a pointer to it. The specification of the result depends on the type.</p>
+</blockquote>
+<p>翻译为：</p>
+<blockquote>
+<p>内建函数 make 分配并且初始化 一个 slice, 或者 map 或者 chan 对象。 并且只能是这三种对象。 和 new 一样，第一个参数是 类型，不是一个值。 但是make 的返回值就是这个类型（即使一个引用类型），而不是指针。 具体的返回值，依赖具体传入的类型。</p>
+</blockquote>
+<p>Slice : 第二个参数 size 指定了它的长度，此时它的容量和长度相同。</p>
+<p>你可以传入第三个参数 来指定不同的容量值，但是必须不能比长度值小。</p>
+<p>比如: make([]int, 0, 10)</p>
+<p>Map: 根据size 大小来初始化分配内存，不过分配后的 map 长度为0。 如果 size 被忽略了，那么会在初始化分配内存的时候 分配一个小尺寸的内存。</p>
+<p>Channel: 管道缓冲区依据缓冲区容量被初始化。如果容量为 0 或者被 忽略，管道是没有缓冲区的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var p *[]int = new([]int)</span><br><span class="line">var v []int = make([]int, 10)</span><br></pre></td></tr></table></figure>
+<p>上述第一条语句 使用 new() 函数为 切片结构分配内存，<code>*p == nil</code> （这意味着什么？ 意味着没有对Slice结构进行初始化）， 但是在实际中这种用法很少使用。</p>
+<p>第二条语句使用 make() 函数创建了一个有10个元素的 Slice对象。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>new 的作用是 初始化 一个指向类型的指针 <code>(*T)</code>， make 的作用是为 slice, map 或者 channel 初始化，并且返回引用 T</p>
+<p>make(T, args)函数的目的与new(T)不同。它仅仅用于创建 Slice, Map 和 Channel，并且返回类型是 T（不是T*）的一个初始化的（不是零值）的实例。 这中差别的出现是由于这三种类型实质上是对在使用前必须进行初始化的数据结构的引用。 例如, Slice是一个 具有三项内容的描述符，包括 指向数据（在一个数组内部）的指针，长度以及容量。在这三项内容被初始化之前，Slice的值为nil。对于Slice，Map和Channel， make（）函数初始化了其内部的数据结构，并且准备了将要使用的值。</p>
+<h2 id="问题：栈中分配的变量，出栈的时候不会被释放吗？"><a href="#问题：栈中分配的变量，出栈的时候不会被释放吗？" class="headerlink" title="问题：栈中分配的变量，出栈的时候不会被释放吗？"></a>问题：栈中分配的变量，出栈的时候不会被释放吗？</h2><p>我们注意到有如下函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func newInt *int &#123;</span><br><span class="line">    var i int</span><br><span class="line">    return &amp;i   //为何可以返回局部变量呢？</span><br><span class="line">&#125;</span><br><span class="line">someInt := newInt()</span><br></pre></td></tr></table></figure>
+
+<p>有个回答回答的很好： golang 和 c 语言不一样，栈区分配的存储空间不会随着函数的返回而释放，本地变量地址所占据的存储空间会生存下来。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/22/%E8%AF%AD%E8%A8%80/Golang/Golang-%E9%83%A8%E7%BD%B2-web%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/05/22/%E8%AF%AD%E8%A8%80/Golang/Golang-%E9%83%A8%E7%BD%B2-web%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">Golang-部署-web项目部署</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-05-22 16:51:32" itemprop="dateCreated datePublished" datetime="2017-05-22T16:51:32+08:00">2017-05-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>用 supervisord ，这样如果服务出错挂掉后，会自动重启</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/21/%E8%AF%AD%E8%A8%80/Golang/Golang-%E8%AF%AD%E6%B3%95-%E4%B8%89%E4%B8%AA%E7%82%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/05/21/%E8%AF%AD%E8%A8%80/Golang/Golang-%E8%AF%AD%E6%B3%95-%E4%B8%89%E4%B8%AA%E7%82%B9/" class="post-title-link" itemprop="url">Golang-语法-三个点</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-05-21 17:21:31" itemprop="dateCreated datePublished" datetime="2017-05-21T17:21:31+08:00">2017-05-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="用途之一：为函数定义多个参数"><a href="#用途之一：为函数定义多个参数" class="headerlink" title="用途之一：为函数定义多个参数"></a>用途之一：为函数定义多个参数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 函数x接受任意数量的int参数</span><br><span class="line">func x(args ...int)&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="用途之二：将切片拆散"><a href="#用途之二：将切片拆散" class="headerlink" title="用途之二：将切片拆散"></a>用途之二：将切片拆散</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 将切片m（含有3个int型元素）拆散成单个int型作为参数调用函数x</span><br><span class="line">m := make([]int, 3)</span><br><span class="line">x(m...)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-Glide/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -734,298 +981,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/04/27/%E8%AF%AD%E8%A8%80/Golang/Golang-API-fmt%E5%8C%85Printf%E6%96%B9%E6%B3%95%E8%AF%A6%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/04/27/%E8%AF%AD%E8%A8%80/Golang/Golang-API-fmt%E5%8C%85Printf%E6%96%B9%E6%B3%95%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">Golang-API-fmt包Printf方法详解</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-04-27 14:11:37" itemprop="dateCreated datePublished" datetime="2017-04-27T14:11:37+08:00">2017-04-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="General"><a href="#General" class="headerlink" title="General"></a>General</h3><ul>
-<li>%v 以默认的方式打印变量的值</li>
-<li>%T 打印变量的类型</li>
-</ul>
-<h3 id="Integer"><a href="#Integer" class="headerlink" title="Integer"></a>Integer</h3><ul>
-<li>%+d 带符号的整型，fmt.Printf(“%+d”, 255)输出+255</li>
-<li>%q 打印单引号</li>
-<li>%o 不带零的八进制</li>
-<li>%#o 带零的八进制</li>
-<li>%x 小写的十六进制</li>
-<li>%X 大写的十六进制</li>
-<li>%#x 带0x的十六进制</li>
-<li>%U 打印Unicode字符</li>
-<li>%#U 打印带字符的Unicode</li>
-<li>%b 打印整型的二进制</li>
-</ul>
-<h3 id="Integer-width"><a href="#Integer-width" class="headerlink" title="Integer width"></a>Integer width</h3><p>%5d 表示该整型最大长度是5，下面这段代码</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fmt.Printf(&quot;|%5d|&quot;, 1)</span><br><span class="line">fmt.Printf(&quot;|%5d|&quot;, 1234567)</span><br></pre></td></tr></table></figure>
-<p>输出结果如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">|    1|</span><br><span class="line">|1234567|</span><br></pre></td></tr></table></figure>
-
-<p>%-5d则相反，打印结果会自动左对齐</p>
-<p>%05d会在数字前面补零。</p>
-<h3 id="Float"><a href="#Float" class="headerlink" title="Float"></a>Float</h3><ul>
-<li>%f (=%.6f) 6位小数点</li>
-<li>%e (=%.6e) 6位小数点（科学计数法）</li>
-<li>%g 用最少的数字来表示</li>
-<li>%.3g 最多3位数字来表示</li>
-<li>%.3f 最多3位小数来表示</li>
-</ul>
-<h3 id="String"><a href="#String" class="headerlink" title="String"></a>String</h3><ul>
-<li>%s 正常输出字符串</li>
-<li>%q 字符串带双引号，字符串中的引号带转义符</li>
-<li>%#q 字符串带反引号，如果字符串内有反引号，就用双引号代替</li>
-<li>%x 将字符串转换为小写的16进制格式</li>
-<li>%X 将字符串转换为大写的16进制格式</li>
-<li>% x 带空格的16进制格式</li>
-</ul>
-<h3 id="String-Width-以5做例子）"><a href="#String-Width-以5做例子）" class="headerlink" title="String Width (以5做例子）"></a>String Width (以5做例子）</h3><ul>
-<li>%5s 最小宽度为5</li>
-<li>%-5s 最小宽度为5（左对齐）</li>
-<li>%.5s 最大宽度为5</li>
-<li>%5.7s 最小宽度为5，最大宽度为7</li>
-<li>%-5.7s 最小宽度为5，最大宽度为7（左对齐）</li>
-<li>%5.3s 如果宽度大于3，则截断</li>
-<li>%05s 如果宽度小于5，就会在字符串前面补零</li>
-</ul>
-<h3 id="Struct"><a href="#Struct" class="headerlink" title="Struct"></a>Struct</h3><ul>
-<li>%v 正常打印。比如：{sam {12345 67890}}</li>
-<li>%+v 带字段名称。比如：{name:sam phone:{mobile:12345 office:67890}</li>
-<li>%#v 用Go的语法打印。</li>
-</ul>
-<p>比如main.People{name:”sam”, phone:main.Phone{mobile:”12345”, office:”67890”}}</p>
-<h3 id="Boolean"><a href="#Boolean" class="headerlink" title="Boolean"></a>Boolean</h3><ul>
-<li>%t 打印true或false</li>
-</ul>
-<h3 id="Pointer"><a href="#Pointer" class="headerlink" title="Pointer"></a>Pointer</h3><ul>
-<li>%p 带0x的指针</li>
-<li>%#p 不带0x的指针</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/04/24/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/04/24/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF/" class="post-title-link" itemprop="url">Jenkins-常见错误</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-04-24 13:17:29" itemprop="dateCreated datePublished" datetime="2017-04-24T13:17:29+08:00">2017-04-24</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Jenkins/" itemprop="url" rel="index"><span itemprop="name">Jenkins</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="java-lang-NoSuchFieldError-DEFAULT-USER-SETTINGS-FILE"><a href="#java-lang-NoSuchFieldError-DEFAULT-USER-SETTINGS-FILE" class="headerlink" title="java.lang.NoSuchFieldError: DEFAULT_USER_SETTINGS_FILE"></a>java.lang.NoSuchFieldError: DEFAULT_USER_SETTINGS_FILE</h2><p>这是jar冲突，版本太高引起的，maven3.5.0版本有这个问题，使用3.3.9低版本就可以了</p>
-<h2 id="The-username-you-provided-is-not-allowed-to-use-the-text-based-Tomcat-Manager-error-403"><a href="#The-username-you-provided-is-not-allowed-to-use-the-text-based-Tomcat-Manager-error-403" class="headerlink" title="The username you provided is not allowed to use the text-based Tomcat Manager (error 403)"></a>The username you provided is not allowed to use the text-based Tomcat Manager (error 403)</h2><p><img src="/2017/04/24/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF/1.png" alt="1"></p>
-<p>用于tomcat7自动部署的管理用户必须具有manager-script角色,manager-gui角色是不够的，不然会有错误出现：The username you provided is not allowed to use the text-based Tomcat Manager (error 403)</p>
-<p>在/etc/tomcat7/tomcat-users.xml文件中为管理用户添加manager-script角色即可。</p>
-<p><img src="/2017/04/24/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF/2.png" alt="2"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/04/24/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E5%BF%98%E8%AE%B0%E7%AE%A1%E7%90%86%E5%91%98%E5%AF%86%E7%A0%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/04/24/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E5%BF%98%E8%AE%B0%E7%AE%A1%E7%90%86%E5%91%98%E5%AF%86%E7%A0%81/" class="post-title-link" itemprop="url">Jenkins-忘记管理员密码</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-04-24 11:22:29" itemprop="dateCreated datePublished" datetime="2017-04-24T11:22:29+08:00">2017-04-24</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Jenkins/" itemprop="url" rel="index"><span itemprop="name">Jenkins</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="admin密码未更改情况"><a href="#admin密码未更改情况" class="headerlink" title="admin密码未更改情况"></a>admin密码未更改情况</h2><ol>
-<li><p>进入<code>\Jenkins\secrets</code>目录，打开initialAdminPassword文件，复制密码；</p>
-</li>
-<li><p>访问Jenkins页面，输入管理员admin，及刚才的密码；</p>
-</li>
-<li><p>进入后可更改其他管理员密码；</p>
-</li>
-</ol>
-<h2 id="admin密码更改忘记情况"><a href="#admin密码更改忘记情况" class="headerlink" title="admin密码更改忘记情况"></a>admin密码更改忘记情况</h2><ol>
-<li>删除Jenkins目录下config.xml文件中下面代码，并保存文件。</li>
-</ol>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;useSecurity&gt;true&lt;/useSecurity&gt;  </span><br><span class="line">&lt;authorizationStrategy class=&quot;hudson.security.FullControlOnceLoggedInAuthorizationStrategy&quot;&gt;  </span><br><span class="line">  &lt;denyAnonymousReadAccess&gt;true&lt;/denyAnonymousReadAccess&gt;  </span><br><span class="line">&lt;/authorizationStrategy&gt;  </span><br><span class="line">&lt;securityRealm class=&quot;hudson.security.HudsonPrivateSecurityRealm&quot;&gt;  </span><br><span class="line">  &lt;disableSignup&gt;true&lt;/disableSignup&gt;  </span><br><span class="line">  &lt;enableCaptcha&gt;false&lt;/enableCaptcha&gt;  </span><br><span class="line">&lt;/securityRealm&gt;  </span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li><p>重启Jenkins服务；</p>
-</li>
-<li><p>进入首页&gt;“系统管理”&gt;“Configure Global Security”；</p>
-</li>
-<li><p>勾选“启用安全”；</p>
-</li>
-<li><p>点选“Jenkins专有用户数据库”，并点击“保存”；</p>
-</li>
-<li><p>重新点击首页&gt;“系统管理”,发现此时出现“管理用户”；</p>
-</li>
-<li><p>点击进入展示“用户列表”；</p>
-</li>
-<li><p>点击右侧进入修改密码页面，修改后即可重新登录。</p>
-</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1097,7 +1052,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1110,7 +1065,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

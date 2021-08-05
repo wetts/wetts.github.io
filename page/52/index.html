@@ -188,6 +188,254 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/06/30/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E7%99%BD%E8%AF%9D%E4%BB%A5%E5%A4%AA%E7%BD%917%E5%B1%82%E5%8D%8F%E8%AE%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/06/30/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E7%99%BD%E8%AF%9D%E4%BB%A5%E5%A4%AA%E7%BD%917%E5%B1%82%E5%8D%8F%E8%AE%AE/" class="post-title-link" itemprop="url">白话以太网7层协议</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-06-30 11:21:07" itemprop="dateCreated datePublished" datetime="2015-06-30T11:21:07+08:00">2015-06-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><img src="/2015/06/30/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E7%99%BD%E8%AF%9D%E4%BB%A5%E5%A4%AA%E7%BD%917%E5%B1%82%E5%8D%8F%E8%AE%AE/%E4%BB%A5%E5%A4%AA%E7%BD%91%E5%8D%8F%E8%AE%AE.png" alt="以太网协议"></p>
+<p>今天我将用大家都能理解的比喻形式把以太网的协议层的概念讲解清楚。大家在上大学期间应该会接触网络基础这门课程，在那里边会提到以太网的7层协议，工控的技术人员很少会对此深究，只是作为基础掌握一些知道有哪几层就可以了，至于是干什么起什么作用，就不是很清楚了。工控的今天已经从单元控制晋升到网络控制，而这其中工业以太网正是网络控制的中坚力量。以太网的协议层是建立在OSI模型的基础上的，在这里我就要讲一下OSI模型。OSI模型，即开放式通信系统互联参考模型(Open System Interconnection)，是国际标准化组织(ISO)提出的一个试图使各种计算机在世界范围内互连为网络的标准框架，简称OSI。​</p>
+<p>OSI的层次划分：OSI将计算机网络体系结构(architecture)划分为以下七层：</p>
+<ol>
+<li>物理层  Physical Layer</li>
+<li>数据链路层  Data Link Layer</li>
+<li>网络层  Network Layer</li>
+<li>传输层  Transport Layer</li>
+<li>会话层  Session Layer</li>
+<li>表示层  Presentation Layer</li>
+<li>应用层 Application Layer</li>
+</ol>
+<p>它和我们常用的TCP/IP的协议层有些相似，TCP/IP把1和2封装为一层，3和4还是独立的层，5和6和7封装成为一层，也就是说TCP/IP只有四层，但是在此我讲述的7层的具体意义。</p>
+<p>在这里我将假设一个场景，那就是把要传输数据的一方视为某个公司的经理，网络传输被视为这个经理要把一件事情告诉另一个公司的经理。</p>
+<p>网络的A端：</p>
+<ol>
+<li>应用层：A公司经理把他想要告诉B公司经理的事情用嘴讲了出来。</li>
+<li>表示层：秘书就把A公司经理说的事情翻译成为英文然后写在了纸上。</li>
+<li>会话层：行政的职员把秘书写的这封信，装到了信封封装好了，写上了信封的信息。</li>
+<li>传输层：A邮局的职工把这封信取走。</li>
+<li>网络层：A邮局的分派的职工，把这封信分派到指定送信区域。</li>
+<li>数据链路层：A邮局的装箱的职工，就把一同送往这个区域的信封装到一个木箱子里，然后送到A邮局物流站。</li>
+<li>物理层：A邮局的物流职工把木箱运到铁路</li>
+</ol>
+<p>这里的铁路就是网络连接物理介质</p>
+<p>网络的B端：<br>7. 物理层：B邮局的物流职工把木箱从铁路运到邮局的物流站。<br>6. 数据链路层：B邮局的拆箱的职工把物流站的木箱拆箱然后把所有的信件取出来。<br>5. 网络层：B邮局的分派的职工，把这封信分派到指定送信区域。<br>4. 传输层：B邮局的职工把这封信送到B公司。<br>3. 会话层：B公司行政的职员把公司的信件整理并且拆封信件（假设这是公司允许的情况下）并送到各自部门的秘书手里。<br>2. 表示层：B公司秘书把信上的英文翻译成为中文。</p>
+<ol>
+<li>应用层：B公司经理听秘书转述给他这封信的内容。</li>
+</ol>
+<p>到此为止一个完整的通过这7层的网络通讯顺利完成。接下来我将用技术术语并结合TCP/IP中的应用再描述一遍这7层协议。</p>
+<h3 id="应用层："><a href="#应用层：" class="headerlink" title="应用层："></a>应用层：</h3><p>与其他计算机进行通讯的一个应用，它是对应应用程序的通信服务的。例如，一个没有通信功能的字处理程序就不能执行通信的代码，从事字处理工作的程序员也不关心OSI的第7层。但是，如果添加了一个传输文件的选项，那么字处理器的程序员就需要实现OSI的第7层。示例：telnet，HTTP，FTP，WWW，NFS，SMTP等。​</p>
+<h2 id="表示层："><a href="#表示层：" class="headerlink" title="表示层："></a>表示层：</h2><p>这一层的主要功能是定义数据格式及加密。例如，FTP 允许你选择以二进制或ASII格式传输。如果选择二进制，那么发送方和接收方不改变文件的内容。如果选择ASII格式，发送方将把文本从发送方的字符集转换成标准的 ASII 后发送数据。在接收方将标准的ASII转换成接收方计算机的字符集。示例：加密，ASII等。​</p>
+<h2 id="会话层："><a href="#会话层：" class="headerlink" title="会话层："></a>会话层：</h2><p>他定义了如何开始、控制和结束一个会话，包括对多个双向小时的控制和管理，以便在只完成连续消息的一部分时可以通知应用，从而使表示层看到的数据是连续的，在某些情况下，如果表示层收到了所有的数据，则用数据代表表示层。示例：RPC，SQL等。​</p>
+<h2 id="传输层："><a href="#传输层：" class="headerlink" title="传输层："></a>传输层：</h2><p>这层的功能包括是否选择差错恢复协议还是无差错恢复协议，及在同一主机上对不同应用的数据流的输入进行复用，还包括对收到的顺序不对的数据包的重新排序功能。示例：TCP，UDP，SPX。​</p>
+<h2 id="网络层："><a href="#网络层：" class="headerlink" title="网络层："></a>网络层：</h2><p>这层对端到端的包传输进行定义，他定义了能够标识所有结点的逻辑地址，还定义了路由实现的方式和学习的方式。为了适应最大传输单元长度小于包长度的传输介质，网络层还定义了如何将一个包分解成更小的包的分段方法。示例：IP，IPX等。​</p>
+<h2 id="数据链路层："><a href="#数据链路层：" class="headerlink" title="数据链路层："></a>数据链路层：</h2><p>他定义了在单个链路上如何传输数据。这些协议与被讨论的各种介质有关。示例：ATM，FDDI等。​</p>
+<h2 id="物理层："><a href="#物理层：" class="headerlink" title="物理层："></a>物理层：</h2><p>OSI的物理层规范是有关传输介质的特性标准，这些规范通常也参考了其他组织制定的标准。连接头、针、针的使用、电流、电流、编码及光调制等都属于各种物理层规范中的内容。物理层常用多个规范完成对所有细节的定义。示例：Rj45，802.3等。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/06/25/%E8%AF%AD%E8%A8%80/web/Ajax-%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/06/25/%E8%AF%AD%E8%A8%80/web/Ajax-%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Ajax-跨域问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-06-25 14:55:57" itemprop="dateCreated datePublished" datetime="2015-06-25T14:55:57+08:00">2015-06-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JavaScript/" itemprop="url" rel="index"><span itemprop="name">JavaScript</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>Ajax由于受到浏览器的限制，该方法不允许跨域通信。如果尝试从不同的域请求数据，会出现安全错误。</p>
+<p>解决方法：</p>
+<ol>
+<li>在你的web中使用后端的语言，比如php、java去请求api接口拿到数据，然后给你web项目</li>
+<li><code>header(&quot;Access-Control-Allow-Origin:*&quot;);</code></li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/06/25/%E8%AF%AD%E8%A8%80/web/Ajax-%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/06/18/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E4%BF%AE%E6%94%B9%E7%9B%91%E5%90%AC%E7%AB%AF%E5%8F%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/06/18/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E4%BF%AE%E6%94%B9%E7%9B%91%E5%90%AC%E7%AB%AF%E5%8F%A3/" class="post-title-link" itemprop="url">Tomcat-修改监听端口</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-06-18 16:32:57" itemprop="dateCreated datePublished" datetime="2015-06-18T16:32:57+08:00">2015-06-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在Tomcat的conf文件夹里有个server.xml文件，修改里面的&lt;Connector port=”80”</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/06/14/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-Runtime%E7%B1%BB%E7%9A%84gc()%E5%92%8CrunFinalization()%E6%96%B9%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -710,242 +958,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC27%E7%AB%A0-%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC27%E7%AB%A0-%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">设计模式之禅-第27章-解释器模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-24 13:06:12" itemprop="dateCreated datePublished" datetime="2015-05-24T13:06:12+08:00">2015-05-24</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>解释器模式（Interpreter Pattern）</p>
-<p>Given a language, define a representation for its grammer along with an interpreter that uses the representation to interpret sentences in the language.（给定一门语言，定义它的文法的一种表示，并定义一个解释器，该解释器使用该表示来解释语言中的句子）</p>
-<hr>
-<p>解释器模式优点：它最显著的优点就是扩展性，修改语法规则只要修改相应的非终结符表达式就可以了，若扩展语法，则只要增加非终结符类就可以了。</p>
-<hr>
-<p>解释器模式缺点：</p>
-<ul>
-<li>会引起类膨胀</li>
-<li>采用递归调用方法</li>
-<li>效率问题</li>
-</ul>
-<hr>
-<p>解释器模式使用场景：</p>
-<ul>
-<li>重复发生的问题</li>
-<li>一个简单语法需要解释的场景</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/24/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%B3%95-%E5%8F%8C%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/24/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%B3%95-%E5%8F%8C%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1/" class="post-title-link" itemprop="url">设计方法-双接口设计</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-24 11:33:52" itemprop="dateCreated datePublished" datetime="2015-05-24T11:33:52+08:00">2015-05-24</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">设计方法</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>双接口设计，我们的一个类可以实现多个接口，在系统设计时，如果考虑对象的安全问题，则可以提供两个接口，一个是业务的正常接口，实现必要的业务逻辑，叫做宽接口；另外一个接口是一个空接口，说明方法都没有，其目的是提供给子系统外的模块访问，比如容器对象，这个叫做窄接口，由于窄接口中没有提供任何操纵数据的方法，因此相对来说比较安全。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC26%E7%AB%A0-%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B9%8B%E7%A6%85/%E7%AC%AC26%E7%AB%A0-%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">设计模式之禅-第26章-状态模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-24 11:03:51" itemprop="dateCreated datePublished" datetime="2015-05-24T11:03:51+08:00">2015-05-24</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>状态模式</p>
-<p>定义：Allow an object to alter its behavior when its internal state changes. The object will appear to change its class.（当一个对象在状态改变时允许其改变行为，这个对象看起来像改变了其类。）</p>
-<hr>
-<p>状态模式的优点：</p>
-<ul>
-<li>结构清晰；</li>
-<li>遵循设计原则；</li>
-<li>封装性非常好。</li>
-</ul>
-<hr>
-<p>状态模式的缺点：</p>
-<ul>
-<li>子类太多，类膨胀。</li>
-</ul>
-<hr>
-<p>状态模式的使用场景：</p>
-<ul>
-<li>行为随状态变化而变化的场景；</li>
-<li>条件、分支判断语句的替代者。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1017,7 +1029,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">691</span>
+          <span class="site-state-item-count">694</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1030,7 +1042,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">342</span>
+        <span class="site-state-item-count">343</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
