@@ -1245,125 +1245,6 @@ When bash is invoked as an interactive login shell, or as a non-interactive shel
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/" class="post-title-link" itemprop="url">HDFS</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-12 14:21:34" itemprop="dateCreated datePublished" datetime="2020-03-12T14:21:34+08:00">2020-03-12</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>HDFS（Hadoop Distributed File System，Hadoop 分布式文件系统）</p>
-<h2 id="相关概念"><a href="#相关概念" class="headerlink" title="相关概念"></a>相关概念</h2><h3 id="块"><a href="#块" class="headerlink" title="块"></a>块</h3><p>在传统的文件系统中，为了提高磁盘读写效率，一般以数据块为单位，而不是以字节为单位。比如，机械式硬盘（磁盘的一种）包含了磁头和转动部件，在读取数据时有一个寻道的过程，通过转动盘片和移动磁头的位置，来找到数据在机械式硬盘中的存储位置，然后才能进行读写。在 I/O 开销中，机械式硬盘的寻址时间是最耗时的部分，一旦找到第条记录，剩下的顺序读取效率是非常高的。因此，以块为单位读写数据，可以把磁盘寻道时间分摊到大量数据中。</p>
-<p>HDFS 也同样采用了块的概念，默认的一个块大小是 64 MB。</p>
-<p>当客户端需要访问一个文件时，首先从名称节点获得组成这个文件的数据块的位置列表，然后根据位置列表获取实际存储各个数据块的数据节点的位置，最后数据节点根据数据块信息在本地 Linux 文件系统中找到对应的文件，并把数据返回给客户端。</p>
-<h3 id="名称节点"><a href="#名称节点" class="headerlink" title="名称节点"></a>名称节点</h3><p>名称节点（NameNode）负责管理分布式文件系统的命名空间（Namespace），保存了两个核心的数据结构，即 FsImage 和 EditLog。</p>
-<ul>
-<li>FsImage：维护文件系统树以及文件树中所有的文件和文件夹的元数据。</li>
-<li>EditLog：记录了所有针对文件的创建、删除、重命名等操作。</li>
-</ul>
-<p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.png" alt="名称节点的数据结构"></p>
-<p>名称节点记录了每个文件中各个块所在的数据节点的位置信息，但是并不持久化存储这些信息，而是在系统每次启动时扫描所有数据节点重构得到这些信息。</p>
-<h3 id="数据节点"><a href="#数据节点" class="headerlink" title="数据节点"></a>数据节点</h3><p>数据节点（DataNode）是分布式文件系统HDFS的工作节点，负责数据的存储和读取，会根据客户端或者名称节点的调度来进行数据的存储和检索，并且向名称节点定期发送自己所存储的块的列表。每个数据节点中的数据会被保存在各自节点的本地Linux文件系统中。</p>
-<h3 id="第二名称节点"><a href="#第二名称节点" class="headerlink" title="第二名称节点"></a>第二名称节点</h3><p>在名称节点运行期间，HDFS会不断发生更新操作，这些更新操作都是直接被写人到 EditLog 文件，因此 EditLog 文件也会逐渐变大。在名称节点运行期间，不断变大的 EditLog 文件通常对于系统性能不会产生显著影响，但是当名称节点重启时，需要将 FsImage 加载到内存中，然后逐条执行 EditLog 中的记录，使得 FsImage 保持最新。可想而知，如果 EditLog 很大，就会导致整个过程变得非常缓慢，使得名称节点在启动过程中长期处于“安全模式”，无法正常对外提供写操作，影响了用户的使用。</p>
-<p>为了有效解决 EditLog 逐渐变大带来的问题，HDFS 在设计中采用了第二名称节点（Secondary NameNode）。第二名称节点是 HDFS 架构的一个重要组成部分，具有两个方面的功能：</p>
-<ul>
-<li>首先，可以完成 EditLog 与 Fslmage 的合并操作，减小 EditLog 文件大小，缩短名称节点重启时间；</li>
-<li>其次，可以作为名称节点的“检查点”，保存名称节点中的元数据信息。</li>
-</ul>
-<p>具体如下：</p>
-<ol>
-<li>EditLog 与 Fslmage 的合并操作。每隔一段时间，第二名称节点会和名称节点通信，请求其停止使用 EditLog 文件（这里假设这个时刻为 t），暂时将新到达的写操作添加到一个新的文件 EditLog.new 中。然后，第二名称节点把名称节点中的 FsImage 文件和 EditLog 文件拉回到本地，再加载到内存中；对二者执行合并操作，即在内存中逐条执行 EditLog 中的操作，使得 FsImage 保持最新。合并结束后，第二名称节点会把合并后得到的最新的 FsImage 文件发送到名称节点。名称节点收到后，会用最新的 FsImage 文件去替换旧的 FsImage 文件，同时用 EditLog.new 文件去替换 EditLog 文件（这里假设这个时刻为 t2），从而减小了，EditLog 文件的大小。</li>
-<li>作为名称节点的“检查点”。从上面的合并过程可以看出，第二名称节点会定期和名称节点通信，从名称节点获取 FsImage 文件和 EditLog 文件，执行合并操作得到新的 FsImage 文件。从这个角度来讲，第二名称节点相当于为名称节点设置了一个“检查点”，周期性地备份名称节点中的元数据信息，当名称节点发生故障时，就可以用第二名称节点中记录的元数据信息进行系统恢复。但是，在第二名称节点上合并操作得到的新的 FsImage 文件是合并操作发生时（即 t1 时刻）HDFS 记录的元数据信息，并没有包含 t1 时刻和 t2 时刻期间发生的更新操作，如果名称节点在 t1 时刻和 t2 时刻期间发生故障，系统就会丢失部分元数据信息，在 HDFS 的设计中，也并不支持把系统直接切换到第二名称节点，因此从这个角度来讲，第二名称节点只是起到了名称节点的“检查点”作用，并不能起到“热备份”作用。即使有了第二名称节点的存在，当名称节点发生故障时，系统还是有可能会丢失部分元数据信息的。</li>
-</ol>
-<p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/%E7%AC%AC%E4%BA%8C%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9%E5%B7%A5%E4%BD%9C%E8%BF%87%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="第二名称节点工作过程示意图"></p>
-<h2 id="HDFS-体系结构"><a href="#HDFS-体系结构" class="headerlink" title="HDFS 体系结构"></a>HDFS 体系结构</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/HDFS%E7%9A%84%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84.png" alt="HDFS的体系结构"></p>
-<h3 id="HDFS-命名控件管理"><a href="#HDFS-命名控件管理" class="headerlink" title="HDFS 命名控件管理"></a>HDFS 命名控件管理</h3><p>HDFS 的命名空间包含目录、文件和块。命名空间管理是指命名空间支持对 HDFS 中的目录、文件和块做类似文件系统的创建、修改、删除等基本操作。在当前的 HDFS 体系结构中，在整个 HDFS 集群中只有一个命名空间，并且只有唯一一个名称节点，该节点负责对这个命名空间进行管理。</p>
-<p>HDFS 使用的是传统的分级文件体系，因此用户可以像使用普通文件系统样，创建、删除目录和文件，在目录间转移文件、重命名文件等。但是，HDFS 还没有实现磁盘配额和文件访问权限等功能，也不支持文件的硬连接和软连接（快捷方式）。</p>
-<h3 id="通信协议"><a href="#通信协议" class="headerlink" title="通信协议"></a>通信协议</h3><p>HDFS 是一个部署在集群上的分布式文件系统，因此很多数据需要通过网络进行传输。所有的 HDFS 通信协议都是构建在 TCP/IP 协议基础之上的。客户端通过一个可配置的端口向名称节点主动发起 TCP 连，并使用客户端协议与名称节点进行交互。名称节点和数据节点之间则使用数据节点协议进行交互。客户端与数据节点的交互是通过 RPC（Remote Procedure Call）来实现的。在设计上，名称节点不会主动发起 RPC，而是响应来自客户端和数据节点的 RPC 请求。</p>
-<h3 id="HDFS-体系结构的局限性"><a href="#HDFS-体系结构的局限性" class="headerlink" title="HDFS 体系结构的局限性"></a>HDFS 体系结构的局限性</h3><p>HDFS只设置唯一一个名称节点，这样做虽然大大简化了系统设计，但也带来了一些明显的局限性，具体如下。</p>
-<ol>
-<li>命名空间的限制。名称节点是保存在内存中的，因此名称节点能够容纳对象（文件、块）的个数会受到内存空间大小的限制。</li>
-<li>性能的瓶颈。整个分布式文件系统的吞吐量受限于单个名称节点的吞吐量。</li>
-<li>隔离问题。由于集群中只有一个名称节点，只有一个命名空间，因此无法对不同应用程序进行隔离。</li>
-<li>集群的可用性。一旦这个唯一的名称节点发生故障，会导致整个集群变得不可用。</li>
-</ol>
-<h2 id="HDFS-的存储原理"><a href="#HDFS-的存储原理" class="headerlink" title="HDFS 的存储原理"></a>HDFS 的存储原理</h2><h3 id="数据的冗余存储"><a href="#数据的冗余存储" class="headerlink" title="数据的冗余存储"></a>数据的冗余存储</h3><p>HDFS 采用了多副本方式对数据进行冗余存储，通常一个数据块的多个副本会被分布到不同的数据节点上。</p>
-<p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/HDFS%E6%95%B0%E6%8D%AE%E5%9D%97%E5%A4%9A%E5%89%AF%E6%9C%AC%E5%AD%98%E5%82%A8.png" alt="HDFS数据块多副本存储"></p>
-<p>多副本方式具有以下 3 个优点：</p>
-<ol>
-<li>加快数据传输速度。当多个客户端需要同时访问同个文件时，可以让各个客户端分别从不同的数据块副本中读取数据，这就大大加快了数据传输速度。</li>
-<li>容易检查数据错误。HDFS 的数据节点之间通过网络传输数据，采用多个副本可以很容易判断数据传输是否出错。</li>
-<li>保证数据的可靠性。即使某个数据节点出现故障失效，也不会造成数据丢失。</li>
-</ol>
-<h3 id="数据存取策略"><a href="#数据存取策略" class="headerlink" title="数据存取策略"></a>数据存取策略</h3><h4 id="数据存放"><a href="#数据存放" class="headerlink" title="数据存放"></a>数据存放</h4><p>HDFS 默认的冗余复制因子是 3，每一个文件块会被同时保存到 3 个地方，其中，有两份副本放在同一个机架的不同机器上面，第三个副本放在不同机架的机器上面，这样既可以保证机架发生异常时的数据恢复，也可以提高数据读写性能（同机架内带宽高）。一般而言，HDFS 副本的放置策略如下：</p>
-<ol>
-<li>如果是在集群内发起写操作请求，则把第一个副本放置在发起写操作请求的数据节点上，实现就近写入数据。如果是来自集群外部的写操作请求，则从集群内部挑选一台磁盘不太满、CPU 不太忙的数据节点，作为第一个副本的存放地。</li>
-<li>第二个副本会被放置在与第一个副本不同的机架的数据节点上。</li>
-<li>第三个副本会被放置在与第一个副本相同的机架的其他节点上。</li>
-<li>如果还有更多的副本，则继续从集群中随机选择数据节点进行存放。</li>
-</ol>
-<h4 id="数据读取"><a href="#数据读取" class="headerlink" title="数据读取"></a>数据读取</h4><p>HDFS 提供了一个 API 可以确定一个数据节点所属的机架 ID，客户端也可以调用 API 获取自已所属的机架 ID。当客户端读取数据时，从名称节点获得数据块不同副本的存放位置列表，列表中包含了副本所在的数据节点，可以调用 API 来确定客户端和这些数据节点所属的机架 ID。当发现某个数据块副本对应的机架 ID 和客户端对应的机架 ID 相同时，就优先选择该副本读取数据，如果没有发现，就随机选择-个副本读取数据。</p>
-<h4 id="数据复制"><a href="#数据复制" class="headerlink" title="数据复制"></a>数据复制</h4><p>HDFS 的数据复制采用了流水线复制的策略，大大提高了数据复制过程的效率。当客户端要往 HDFS 中写入一个文件时，这个文件会首先被写入本地，并被切分成若千个块，每个块的大小是由 HDFS 的设定值来决定的。每个块都向 HDFS 集群中的名称节点发起写请求，名称节点会根据系统中各个数据节点的使用情况，选择一个数据节点列表返回给客户端，然后客户端就把数据首先写入列表中的第一个数据节点，同时把列表传给第一个数据节点，当第一个数据节点接收到 4 KB 数据的时候，写入本地，并且向列表中的第二个数据节点发起连接请求，把自己已经接收到的 4 KB 数据和列表传给第二个数据节点，当第二个数据节点接收到 4 KB 数据的时候，写人本地，并且向列表中的第三个数据节点发起连接请求，依次类推，列表中的多个数据节点形成一条数据复制的流水线。最后，当文件写完的时候，数据复制也同时完成。</p>
-<h3 id="数据错误与恢复"><a href="#数据错误与恢复" class="headerlink" title="数据错误与恢复"></a>数据错误与恢复</h3><h4 id="名称节点出错"><a href="#名称节点出错" class="headerlink" title="名称节点出错"></a>名称节点出错</h4><p>Hadoop 采用两种机制来确保名称节点的安全：</p>
-<ul>
-<li>第一，把名称节点上的元数据信息同步存储到其他文件系统（比如远程挂载的网络文件系统 NFS）中；</li>
-<li>第二，运行一个第二名称节点，当名称节点宕机以后，可以把第二名称节点作为一种弥补措施，利用第二名称节点中的元数据信息进行系统恢复。</li>
-</ul>
-<h4 id="数据节点出错"><a href="#数据节点出错" class="headerlink" title="数据节点出错"></a>数据节点出错</h4><p>每个数据节点会定期向名称节点发送“心跳”信息，向名称节点报告自己的状态。当数据节点发生故障，或者网络发生断网时，名称节点就无法收到来自一些数据节点的“心跳”信息，这时这些数据节点就会被标记为“宕机”，节点上面的所有数据都会被标记为“不可读”，名称节点不会再给它们发送任何 IO 请求。</p>
-<p>这时，有可能出现一种情形，即由于些数据节点的不可用，会导致一些数据块的副本数量小于冗余因子。名称节点会定期检查这种情况，一旦发现某个数据块的副本数量小于冗余因子，就会启动数据冗余复制，为它生成新的副本。HDFS 与其他分布式文件系统的最大区别就是可以调整冗余数据的位置。</p>
-<h4 id="数据出错"><a href="#数据出错" class="headerlink" title="数据出错"></a>数据出错</h4><p>网络传输和磁盘错误等因素都会造成数据错误。客户端在读取到数据后，会采用 md5 和 sha1 对数据块进行校验，以确定读取到正确的数据。在文件被创建时，客户端就会对每一个文件块进行信息摘录，并把这些信息写人同一个路径的隐藏文件里面。当客户端读取文件的时候，会先读取该信息文件，然后利用该信息文件对每个读取的数据块进行校验，如果校验出错，客户端就会请求到另外一个数据节点读取该文件块，并且向名称节点报告这个文件块有错误，名称节点会定期检查并且重新复制这个块。</p>
-<h2 id="HDFS-的数据读写过程"><a href="#HDFS-的数据读写过程" class="headerlink" title="HDFS 的数据读写过程"></a>HDFS 的数据读写过程</h2><h3 id="读数据的过程"><a href="#读数据的过程" class="headerlink" title="读数据的过程"></a>读数据的过程</h3><p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/HDFS%E8%AF%BB%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B.png" alt="HDFS读数据的过程"></p>
-<h3 id="写数据的过程"><a href="#写数据的过程" class="headerlink" title="写数据的过程"></a>写数据的过程</h3><p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/HDFS%E5%86%99%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B.png" alt="HDFS写数据的过程"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1488,6 +1369,180 @@ When bash is invoked as an interactive login shell, or as a non-interactive shel
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/01/07/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/07/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5/" class="post-title-link" itemprop="url">数据库-索引优化策略.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-07 19:50:22" itemprop="dateCreated datePublished" datetime="2020-01-07T19:50:22+08:00">2020-01-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/103665903">https://blog.csdn.net/zzti_erlie/article/details/103665903</a></p>
+<h2 id="索引的种类"><a href="#索引的种类" class="headerlink" title="索引的种类"></a>索引的种类</h2><p>众所周知，索引类似于字典的目录，可以提高查询的效率。</p>
+<p>索引从物理上可以分为：聚集索引，非聚集索引</p>
+<p>从逻辑上可以分为：普通索引，唯一索引，主键索引，联合索引，全文索引</p>
+<h2 id="索引优化策略"><a href="#索引优化策略" class="headerlink" title="索引优化策略"></a>索引优化策略</h2><h3 id="不要在索引列上进行运算或使用函数"><a href="#不要在索引列上进行运算或使用函数" class="headerlink" title="不要在索引列上进行运算或使用函数"></a>不要在索引列上进行运算或使用函数</h3><p>在列上进行运算或使用函数会使索引失效，从而进行全表扫描。如下面例子在 publish_time，id 列上分别加上索引，publish_time 为 datetime 类型，id 为 int 类型</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where year(publish_time) &lt; 2019</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where publish_time &lt; &#x27;2019-01-01&#x27;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where id  + 1 = 5</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where id = 4</span><br></pre></td></tr></table></figure>
+
+<h3 id="小心隐式类型转换"><a href="#小心隐式类型转换" class="headerlink" title="小心隐式类型转换"></a>小心隐式类型转换</h3><p>假设 id 为 varchar 类型</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where id = 100</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where id = &#x27;100&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>为什么呢？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id = 100</span><br><span class="line">-- 等价于</span><br><span class="line">select * from article where CAST(id AS signed int) = 100</span><br></pre></td></tr></table></figure>
+
+<p>上一条规则说过，不要在索引列上使用函数，隐式类型转换在索引字段上做了函数操作，因此会全表扫描</p>
+<p>那么如果 id 是 int，执行下面这个语句是否会导致全表扫描呢？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id = &#x27;100&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>答案是会用到索引，我们来分析一下为什么会用到索引</p>
+<p>我们先来做一个实验，看一下数据库中字符串和数字做比较的时候，是怎么转换的？</p>
+<p>这里有个简单的方法执行select “10” &gt; 9即可</p>
+<ul>
+<li>如果结果是1，则是把字符串转成数字，然后进行比较</li>
+<li>如果结果是0，则是把数字转成字符串（因为字符串比较是从高位到低位按照asciss码来逐位比较，“1”比“9”小，所以为0），然后进行比较<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select &quot;10&quot; &gt; 9;</span><br><span class="line">+----------+</span><br><span class="line">| &quot;10&quot; &gt; 9 |</span><br><span class="line">+----------+</span><br><span class="line">|        1 |</span><br><span class="line">+----------+</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>结果为 1 表明当字符串和数字进行比较的时候，是把字符串转成数字</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select &quot;a&quot; = 0;</span><br><span class="line">+---------+</span><br><span class="line">| &quot;a&quot; = 0 |</span><br><span class="line">+---------+</span><br><span class="line">|       1 |</span><br><span class="line">+---------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select &quot;123abc&quot; = 123;</span><br><span class="line">+----------------+</span><br><span class="line">| &quot;123abc&quot; = 123 |</span><br><span class="line">+----------------+</span><br><span class="line">|              1 |</span><br><span class="line">+----------------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select &quot;  123abc456&quot; = 123;</span><br><span class="line">+---------------------+</span><br><span class="line">| &quot;  123abc456&quot; = 123 |</span><br><span class="line">+---------------------+</span><br><span class="line">|                   1 |</span><br><span class="line">+---------------------+</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<p><strong>从实验结果中可以看到，当字符串不含有数字时，会转成 0，否则转成字符串中第一段连续的数字</strong></p>
+<p>我们接着来分析上面的例子，为什么一会会用到索引，一会不会用到</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">-- id列上有索引，id为varchar，不会走索引</span><br><span class="line">-- id是字符串时，数据库中的id都要转成数字，转成的值不确定（例如id=&#x27;12ab&#x27;会被转成12，不可能从索引上找到12这个值的）</span><br><span class="line">-- 所以得全表扫描</span><br><span class="line">select * from article where id = 100</span><br><span class="line"></span><br><span class="line">-- id列上有索引，id为int，会走索引</span><br><span class="line">-- id是int时，&#x27;100&#x27;会被转成数字100，所以能走索引</span><br><span class="line">select * from article where id = &#x27;100&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="前导模糊查询不会使用索引"><a href="#前导模糊查询不会使用索引" class="headerlink" title="前导模糊查询不会使用索引"></a>前导模糊查询不会使用索引</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where author like &#x27;%李&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>%李,%李%都会导致全表扫描，非前导模糊查询可以使用索引</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where author like &#x27;李%&#x27;</span><br></pre></td></tr></table></figure>
+
+<h3 id="联合索引最左前缀原则"><a href="#联合索引最左前缀原则" class="headerlink" title="联合索引最左前缀原则"></a>联合索引最左前缀原则</h3><p>mysql 会一直向右匹配直到遇到范围查询（&gt;、&lt;、between、like）就停止匹配，比如 <code>a = 1 and b = 2 and c &gt; 3 and d = 4</code> 如果建立（a,b,c,d）顺序的索引，d 是用不到索引的，如果建立（a,b,d,c）的索引则都可以用到，a,b,d 的顺序可以任意调整</p>
+<ol>
+<li>将区分度最高的字段放在最左边</li>
+</ol>
+<p>当不需要考虑排序和分组时，将区分度最高的列放在前面通常是很好的。这时候索引的作用只是用于优化 WHERE 条件的查找</p>
+<p>如果在 a b 列上建立联合索引，该如何建立，才能使查询效率最高</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select count(distinct a) / count(*), count(distinct b) / count(*), count(*) from table</span><br></pre></td></tr></table></figure>
+
+<p>执行如下语句，假设 3 个输出依次为 0.0001,0.373,16049，可以看到 b 列的选择性最高，因此将其作为联合索引的第一列，即建立（b, a）的联合索引</p>
+<ol start="2">
+<li><p>查询时=可以乱序<br>如果建立了联合索引（a, b）。例如下面的2个写法是等价的，因为MySQL会将查询的顺序优化成和联合索引的顺序一致</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where a = &#x27;1&#x27; and b = &#x27;1&#x27;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where b = &#x27;1&#x27; and a = &#x27;1&#x27;</span><br></pre></td></tr></table></figure></li>
+<li><p>优化查询，避免出现 filesort</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where a = ? and b = ? order by c</span><br></pre></td></tr></table></figure>
+<p>最左前缀原则不仅用在查询中，还能用在排序中。MySQL 中，有两种方式生成有序结果集：</p>
+</li>
+<li><p>通过有序索引顺序扫描直接返回有序数据</p>
+</li>
+<li><p>Filesort排序，对返回的数据进行排序</p>
+</li>
+</ol>
+<p>因为索引的结构是 B+树，索引中的数据是按照一定顺序进行排列的，所以在排序查询中如果能利用索引，就能避免额外的排序操作。EXPLAIN 分析查询时，Extra 显示为 Using index。</p>
+<p>所有不是通过索引直接返回排序结果的操作都是 Filesort 排序，也就是说进行了额外的排序操作。EXPLAIN 分析查询时，Extra 显示为 Using filesort，当出现 Using filesort 时对性能损耗较大，所以要尽量避免 Using filesort</p>
+<p>对于如下sql</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where a = ? and b = ? order by c</span><br></pre></td></tr></table></figure>
+<p>可以建立联合索引（a, b, c）</p>
+<p>如果索引中有范围查找，那么索引有序性无法利用，如</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where a &gt; 10 order by b</span><br></pre></td></tr></table></figure>
+<p>索引（a，b）无法排序。</p>
+<p>放几个例子</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">-- 使用了a列</span><br><span class="line">where a = 3</span><br><span class="line"></span><br><span class="line">-- 使用了a b列</span><br><span class="line">where a = 3 and b = 5</span><br><span class="line"></span><br><span class="line">-- 使用了a b c列</span><br><span class="line">where a = 3 and c = 4 and b = 5</span><br><span class="line"> </span><br><span class="line">-- 没有使用索引</span><br><span class="line">where b = 3</span><br><span class="line"></span><br><span class="line">-- 使用了a列 </span><br><span class="line">where a = 3 and c = 4</span><br><span class="line"></span><br><span class="line">-- 使用了a b列 </span><br><span class="line">where a = 3 and b &gt; 10 and c = 7</span><br><span class="line"> </span><br><span class="line">-- 使用了a b 列</span><br><span class="line">where a = 3 and b like &#x27;xx%&#x27; and c = 7</span><br></pre></td></tr></table></figure>
+
+<h3 id="union，or，in-都能命中索引，建议使用in"><a href="#union，or，in-都能命中索引，建议使用in" class="headerlink" title="union，or，in 都能命中索引，建议使用in"></a>union，or，in 都能命中索引，建议使用in</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id = 1</span><br><span class="line">union all</span><br><span class="line">select * from article where id = 2</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id in (1 , 2)</span><br></pre></td></tr></table></figure>
+<p>新版MySQL的or可以命中索引</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from article where id = 1 or id = 2</span><br></pre></td></tr></table></figure>
+<p>效率从高到低为union，in，or。in 和 union 的效率差别可以忽略不计，建议使用 in</p>
+<h3 id="负向条件索引不会使用索引，建议用-in"><a href="#负向条件索引不会使用索引，建议用-in" class="headerlink" title="负向条件索引不会使用索引，建议用 in"></a>负向条件索引不会使用索引，建议用 in</h3><p>负向条件有：!=、&lt;&gt;、not in、not exists、not like 等</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 全表扫描</span><br><span class="line">select * from article where id != 1 and id != 2</span><br></pre></td></tr></table></figure>
+<p>知道 id 的所有取值范围，可以改为类似如下形式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 走索引</span><br><span class="line">select * from article where id in (0, 3, 4)</span><br></pre></td></tr></table></figure>
+
+<h3 id="建立覆盖索引"><a href="#建立覆盖索引" class="headerlink" title="建立覆盖索引"></a>建立覆盖索引</h3><p>众所周知，表数据是放在一个聚集索引上的，而建立的索引为非聚集索引，非聚集索引的叶子节点存放索引键值，以及该索引键指向的主键。一般查找的过程是从非聚集索引上找到数据的主键，然后根据该主键到聚集索引上查找记录，这个过程称为回表，不清楚的看推荐阅读。</p>
+<p>如有下面这个sql</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select uid, login_time from user where username = ? and passwd = ?</span><br></pre></td></tr></table></figure>
+<p>可以建立（username, passwd, login_time）的联合索引，由于 login_time 的值可以直接从索引中拿到，不用再回表查询，提高了查询效率</p>
+<h3 id="经常更改，区分度不高的列上不宜加索引"><a href="#经常更改，区分度不高的列上不宜加索引" class="headerlink" title="经常更改，区分度不高的列上不宜加索引"></a>经常更改，区分度不高的列上不宜加索引</h3><p>更新会变更 B+ 树，更新频繁的字段建立索引会大大降低数据库性能。</p>
+<p>“性别”这种区分度不大的属性，建立索引是没有什么意义的，不能有效过滤数据，性能与全表扫描类似。</p>
+<p>一般区分度在80%以上的时候就可以建立索引，区分度可以使用 <code>count(distinct(列名))/count(*)</code> 来计算</p>
+<h3 id="明确知道只会返回一条记录，可以加limit-1"><a href="#明确知道只会返回一条记录，可以加limit-1" class="headerlink" title="明确知道只会返回一条记录，可以加limit 1"></a>明确知道只会返回一条记录，可以加limit 1</h3><p>当查询确定只有一条记录时，可以加 liimit 1，让 MySQL 停止游标移动，提高查询效率</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select uid from user where username = ? and passwd = ?</span><br></pre></td></tr></table></figure>
+<p>可改为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select uid from user where username = ? and passwd = ? limit 1</span><br></pre></td></tr></table></figure>
+
+<h3 id="对文本建立前缀索引"><a href="#对文本建立前缀索引" class="headerlink" title="对文本建立前缀索引"></a>对文本建立前缀索引</h3><p>用邮箱登录是一个常见的问题，如果对email整个字段建立索引，会让索引变得大且慢</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select username from user where email=&#x27;xxx&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>这时我们可以索引开始的部分字符，这样可以大大节约索引空间，从而提高索引效率，但这样也会降低索引的区分度。索引的区分度是指，不重复的索引值和数据表的记录总数的比值。索引的区分度越高则查询效率越高，因为区分度高的索引可以让MySQL在查找时过滤掉更多的行。</p>
+<p>因此我们选择足够长的前缀保证较高的区分度，同时又不能太长（以便节约空间）</p>
+<p>可以进行如下实验</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">select count(distinct left(email, 5)) / count(*) as col5,</span><br><span class="line">count(distinct left(email, 6)) / count(*) as col6,</span><br><span class="line">count(distinct left(email, 7)) / count(*) as col7</span><br><span class="line">from user</span><br></pre></td></tr></table></figure>
+
+<p>假设输出依次为0.0305，0.0309，0.0310<br>查询显示当前缀长度达到7的时候，再增加前缀长度，区分度提升的幅度已经很小了，因此创建email(7)的前缀索引即可</p>
+<p><strong>需要注意的一点是，前缀索引不能使用覆盖索引</strong></p>
+<h3 id="建立索引的列不为NULL"><a href="#建立索引的列不为NULL" class="headerlink" title="建立索引的列不为NULL"></a>建立索引的列不为NULL</h3><p>只要列中包含有 NULL 值都将不会被包含在索引中，复合索引中只要有一列含有 NULL值，那么这一列对于此复合索引就是无效的。</p>
+<p>因此，在数据库设计时，除非有一个很特别的原因使用 NULL 值，不然尽量不要让字段的默认值为 NULL。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -1559,7 +1614,7 @@ When bash is invoked as an interactive login shell, or as a non-interactive shel
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">681</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

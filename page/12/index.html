@@ -188,283 +188,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" class="post-title-link" itemprop="url">接口-0-知识点汇总.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-09-01 12:10:14" itemprop="dateCreated datePublished" datetime="2019-09-01T12:10:14+08:00">2019-09-01</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="接口设计"><a href="#接口设计" class="headerlink" title="接口设计"></a>接口设计</h2><ul>
-<li><p>遇到的问题</p>
-<ul>
-<li><p><strong>高并发下如何保证接口的幂等性？</strong></p>
-<ul>
-<li>幂等性定义<ul>
-<li>幂等性就是同一个操作执行多次，产生的效果一样。如 http 的 get 请求、数据库的 select 请求就是幂等的。</li>
-<li>如提交订单、扣款等接口都要保证幂等性，不然会造成重复创建订单、重复扣款</li>
-</ul>
-</li>
-<li>解决方法<ul>
-<li>前端保证幂等性的方法<ul>
-<li>按钮只能点击一次<ul>
-<li>用户点击按钮后将按钮置灰，或者显示 loading 状态</li>
-</ul>
-</li>
-<li>RPG 模式<ul>
-<li>即 Post-Redirect-Get，当客户提交表单后，去执行一个客户端的重定向，转到提交成功页面。避免用户按 F5 刷新导致的重复提交，也能消除按浏览器后退键导致的重复提交问题。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>后端保证幂等性的方法<ul>
-<li>使用唯一索引<ul>
-<li>对业务唯一的字段加上唯一索引，这样当数据重复时，插入数据库会抛异常</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E5%94%AF%E4%B8%80%E7%B4%A2%E5%BC%95.jpg" alt="接口幂等性_唯一索引"></li>
-</ul>
-</li>
-<li>状态机幂等<ul>
-<li>如果业务上需要修改订单状态，例如订单状态有待支付，支付中，支付成功，支付失败。设计时最好只支持状态的单向改变。这样在更新的时候就可以加上条件，多次调用也只会执行一次。例如想把订单状态更新为支持成功，则之前的状态必须为支付中。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E7%8A%B6%E6%80%81%E6%9C%BA.jpg" alt="接口幂等性_状态机"></li>
-</ul>
-</li>
-<li>悲观锁<ul>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E6%82%B2%E8%A7%82%E9%94%81.jpg" alt="接口幂等性_悲观锁"></li>
-</ul>
-</li>
-<li>乐观锁<ul>
-<li>步骤<ol>
-<li>查询数据获得版本号</li>
-<li>通过版本号去更新，版本号匹配则更新，版本号不匹配则不更新</li>
-</ol>
-</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E4%B9%90%E8%A7%82%E9%94%81.jpg" alt="接口幂等性_乐观锁"></li>
-</ul>
-</li>
-<li>防重表<ul>
-<li>增加一个防重表，业务唯一的 id 作为唯一索引，如订单号，当想针对订单做一系列操作时，可以向防重表中插入一条记录，插入成功，执行后续操作，插入失败，则不执行后续操作。本质上可以看成是基于 MySQL 实现的分布式锁。根据业务场景决定执行成功后，是否删除防重表中对应的数据。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E9%98%B2%E9%87%8D%E8%A1%A8.jpg" alt="接口幂等性_防重表"></li>
-</ul>
-</li>
-<li>select+insert<ul>
-<li>先查询一下有没有符合要求的数据，如果没有再执行插入。没有并发的系统中可以保证幂等性，高并发下不要用这种方法，也会造成数据的重复插入。我一般做消息幂等的时候就是先 select，有数据直接返回，没有数据加分布式锁进行 insert 操作。</li>
-</ul>
-</li>
-<li>分布式锁<ul>
-<li>执行方法时，先根据业务唯一的 id 获取分布式锁，获取成功，则执行，失败则不执行。分布式锁可以基于 Redis、zookeeper、MySQL 来实现。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81.jpg" alt="接口幂等性_分布式锁"></li>
-</ul>
-</li>
-<li>全局唯一号<ul>
-<li>通过 source（来源）+ seq（序列号）来判断请求是否重复，重复则直接返回请求重复提交，否则执行。如当多个三方系统调用服务的时候，就可以采用这种方式。</li>
-</ul>
-</li>
-<li>获取 token<ul>
-<li>该方案跟之前的所有方案都有点不一样，需要两次请求才能完成一次业务操作。</li>
-<li>步骤<ol>
-<li>第一次请求获取 token<ul>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E8%8E%B7%E5%8F%96token_1.jpg" alt="接口幂等性_获取token_1"></li>
-</ul>
-</li>
-<li>第二次请求带着这个 token，完成业务操作。<ul>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E8%8E%B7%E5%8F%96token_2.jpg" alt="接口幂等性_获取token_2"></li>
-</ul>
-</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>多版本共存</p>
-<ul>
-<li><p>解决方案</p>
-<ul>
-<li><p>Header 版本控制</p>
-<ul>
-<li><p>此方法需要客户端将指示资源版本的自定义 Header 添加到请求中，如果省略了此 Header，按默认值（一般是最新版）处理。</p>
-</li>
-<li><p>```</p>
-<h1 id="Request"><a href="#Request" class="headerlink" title="Request"></a>Request</h1><p>GET <a target="_blank" rel="noopener" href="http://adventure-works.com/customers/3">http://adventure-works.com/customers/3</a><br>Custom-Header: api-version=1</p>
-<h1 id="Response"><a href="#Response" class="headerlink" title="Response"></a>Response</h1><p>HTTP/1.1 200 OK<br>Content-Type: application/json; charset=utf-8</p>
-<p>{“id”:3,”name”:”Contoso LLC”,”address”:”1 Microsoft Way Redmond WA 98053”}</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">  - 优点：纯粹的版本控制机制，符合 RESTful API「每个资源使用唯一的URI定位」的原则</span><br><span class="line">  - 缺点：不直观，无法支持表单直接调用（众所周知 HTML 表单是不能添加自定义 Header 的），缓存不友好（不能认为同一 URI/查询字符串指向的是相同数据，因此难以缓存）</span><br><span class="line">- 媒体类型版本控制</span><br><span class="line">  - 通常，Accept 标头的用途是由客户端指定响应的正文是 XML、JSON或其他格式。但是，可以定义包括以下信息的自定义媒体类型：该信息使客户端应用程序可以指示它所需的资源版本。</span><br><span class="line">  - ```</span><br><span class="line">    # Request</span><br><span class="line">    GET http://adventure-works.com/customers/3 HTTP/1.1</span><br><span class="line">    Accept: application/vnd.adventure-works.v1+json</span><br></pre></td></tr></table></figure></li>
-<li><p>服务端负责处理 Accept 标头并尽可能采用该值（可以在 Accept 标头中指定多种格式，在这种情况下，服务端在其中选择最适合的格式用于响应正文）。返回结果中的 Content-Type 标头确认响应正文中的数据格式：</p>
-</li>
-<li><p>```</p>
-<h1 id="Response-1"><a href="#Response-1" class="headerlink" title="Response"></a>Response</h1><p>Content-Type: application/vnd.company.myapp-v3+xml</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- URI 版本控制</span><br><span class="line">  - ```</span><br><span class="line">    # Request</span><br><span class="line">    GET http://adventure-works.com/v2/customers/3</span><br></pre></td></tr></table></figure></li>
-<li><p>优点：直观，缓存友好，支持表单直接调用</p>
-</li>
-<li><p>缺点：不符合「每个资源使用唯一的URI定位」的原则</p>
-</li>
-</ul>
-</li>
-<li><p>查询字符串版本控制</p>
-<ul>
-<li><pre><code># Request
-GET http://adventure-works.com/customers/3?version=2
-</code></pre>
-</li>
-<li>优点：直观，缓存友好，支持表单直接调用，符合「每个资源使用唯一的URI定位」的原则</li>
-<li>缺点：某些较旧的 Web 浏览器和代理不会缓存在 URI 中包含字符串的请求的响应，这会对性能产生影响</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p><strong>如何保证 API 接口数据安全？</strong></p>
-<ol>
-<li>登陆验证</li>
-<li>权限验证</li>
-<li>HTTPS</li>
-<li>接口签名<ul>
-<li>签名流程<ul>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%AE%89%E5%85%A8%E6%80%A7_%E7%AD%BE%E5%90%8D%E6%B5%81%E7%A8%8B.png" alt="接口安全性_签名流程"></li>
-</ul>
-</li>
-<li>签名规则<ul>
-<li>线下分配 appid 和 appsecret，针对不同的调用方分配不同的 appid 和 appsecret<ul>
-<li>appSecret 的作用主要是区分不同客户端 app。并且利用获取到的 appSecret 参与到 sign 签名，保证了客户端的请求签名是由我们后台控制的，我们可以为不同的客户端颁发不同的 appSecret。</li>
-</ul>
-</li>
-<li>加入 timestamp（时间戳），5 分钟内数据有效</li>
-<li>加入临时流水号 nonce（防止重复提交），至少为 10 位。针对查询接口，流水号只用于日志落地，便于后期日志核查。针对办理类接口需校验流水号在有效期内的唯一性，以避免重复请求。</li>
-<li>加入签名字段 signature，所有数据的签名信息。</li>
-</ul>
-</li>
-<li>客户端签名生成<ul>
-<li>所有动态参数 = 请求头部分 + 请求 URL 地址 + 请求 Request 参数 + 请求 Body<ul>
-<li>上面的动态参数以 key-value 的格式存储，并以 key 值正序排序，进行拼接</li>
-</ul>
-</li>
-<li>最后拼接的字符串再拼接 appSecret</li>
-<li>拼接成一个字符串，然后做md5不可逆加密<ul>
-<li><code>signature = DigestUtils.md5DigestAsHex(sortParamsMap + appSecret)</code></li>
-</ul>
-</li>
-</ul>
-</li>
-<li>服务端签名验证<ul>
-<li>验证流程<ol>
-<li>验证必须的头部参数</li>
-<li>获取头部参数，request 参数，Url 请求路径，请求体 Body，把这些值放入 SortMap 中进行排序</li>
-<li>对 SortMap 里面的值进行拼接</li>
-<li>对拼接的值进行加密，生成 sign</li>
-<li>把生成的 sign 和前端传入的 sign 进行比较，如果不相同就返回错误</li>
-</ol>
-</li>
-<li>附加功能<ul>
-<li>可以通过对请求的 timestamp 进行时间验证，如果大于 10 分钟表示此链接已经超时，防止别人来到这个链接去请求。</li>
-<li>利用 nonce 参数，防止重复提交</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h2><ul>
-<li>计数器（固定窗口）算法<ul>
-<li>计数器算法是使用计数器在周期内累加访问次数，当达到设定的限流值时，触发限流策略。下一个周期开始时，进行清零，重新计数。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88%E5%9B%BA%E5%AE%9A%E7%AA%97%E5%8F%A3%EF%BC%89%E7%AE%97%E6%B3%95_1.png" alt="限流算法_计数器（固定窗口）算法_1"></li>
-<li>这个算法通常用于QPS限流和统计总访问量，对于秒级以上的时间周期来说，会存在一个非常严重的问题，那就是临界问题。<ul>
-<li>假设 1min 内服务器的负载能力为 100，因此一个周期的访问量限制在 100，然而在第一个周期的最后 5 秒和下一个周期的开始 5 秒时间段内，分别涌入 100 的访问量，虽然没有超过每个周期的限制量，但是整体上 10 秒内已达到 200 的访问量，已远远超过服务器的负载能力，由此可见，计数器算法方式限流对于周期比较长的限流，存在很大的弊端。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88%E5%9B%BA%E5%AE%9A%E7%AA%97%E5%8F%A3%EF%BC%89%E7%AE%97%E6%B3%95_2.png" alt="限流算法_计数器（固定窗口）算法_2"></li>
-</ul>
-</li>
-</ul>
-</li>
-<li>滑动窗口算法<ul>
-<li>滑动窗口算法是将时间周期分为 N 个小周期，分别记录每个小周期内访问次数，并且根据时间滑动删除过期的小周期。<ul>
-<li>假设时间周期为 1min，将 1min 再分为 2 个小周期，统计每个小周期的访问数量，则第一个时间周期内，访问数量为 75，第二个时间周期内，访问数量为 100，超过 100 的访问则被限流掉了。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E7%AE%97%E6%B3%95.png" alt="限流算法_滑动窗口算法"></li>
-</ul>
-</li>
-<li>当滑动窗口的格子划分的越多，那么滑动窗口的滚动就越平滑，限流的统计就会越精确。</li>
-<li>此算法可以很好的解决固定窗口算法的临界问题。</li>
-</ul>
-</li>
-<li>漏桶算法<ul>
-<li>漏桶算法是访问请求到达时直接放入漏桶，如当前容量已达到上限（限流值），则进行丢弃（触发限流策略）。漏桶以固定的速率进行释放访问请求（即请求通过），直到漏桶为空。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E6%BC%8F%E6%A1%B6%E7%AE%97%E6%B3%95.png" alt="限流算法_漏桶算法"></li>
-</ul>
-</li>
-<li>令牌桶算法<ul>
-<li>令牌桶算法是程序以 r（r=时间周期/限流值）的速度向令牌桶中增加令牌，直到令牌桶满，请求到达时向令牌桶请求令牌，如获取到令牌则通过请求，否则触发限流策略。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95.png" alt="限流算法_令牌桶算法"></li>
-<li>Google 开源工具包 Guava 提供了限流工具类 RateLimiter，该类基于令牌桶算法来完成限流，非常易于使用。</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -4822,6 +4545,727 @@ char buf[];保存字符串的数组
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" class="post-title-link" itemprop="url">Java-框架、相关技术-0-知识点汇总</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-26 15:28:58" itemprop="dateCreated datePublished" datetime="2019-08-26T15:28:58+08:00">2019-08-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="框架"><a href="#框架" class="headerlink" title="框架"></a>框架</h2><h3 id="Spring"><a href="#Spring" class="headerlink" title="Spring"></a>Spring</h3><h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li>控制反转（IOC）<ul>
+<li>注入方式<ul>
+<li>构造器注入</li>
+<li>setter 注入方式</li>
+<li>注解注入</li>
+<li>接口注入</li>
+</ul>
+</li>
+<li>循环依赖<ul>
+<li>singletonObjects：第一级缓存，里面放置的是实例化好的单例对象；</li>
+<li>earlySingletonObjects：第二级缓存，里面存放的是提前曝光的单例对象；</li>
+<li>singletonFactories：第三级缓存，里面存放的是要被实例化的对象的对象工厂</li>
+<li>注入步骤<ul>
+<li>创建 bean 的时候 Spring 首先从一级缓存 singletonObjects 中获取。</li>
+<li>如果获取不到，并且对象正在创建中，就再从二级缓存 earlySingletonObjects 中获取。</li>
+<li>如果还是获取不到就从三级缓存 singletonFactories 中取。（Bean 调用构造函数进行实例化后，即使属性还未填充，就可以通过三级缓存向外提前暴露依赖的引用值（提前曝光），根据对象引用能定位到堆中的对象，其原理是基于 Java的 引用传递），取到后从三级缓存移动到了二级缓存完全初始化之后将自己放入到一级缓存中供其他使用。</li>
+</ul>
+</li>
+<li>因为加入 singletonFactories 三级缓存的前提是执行了构造器，所以构造器的循环依赖没法解决。<ul>
+<li>构造器循环依赖解决办法<ul>
+<li>在构造函数中使用 @Lazy 注解延迟加载。在注入依赖时，先注入代理对象，当首次使用时再创建对象。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>面向切面编程（AOP）<ul>
+<li>名词<ul>
+<li>切面（Aspect）：切面是通知和切点的结合。通知和切点共同定义了切面的全部内容。 在 Spring AOP 中，切面可以使用通用类（基于模式的风格） 或者在普通类中以 @AspectJ 注解来实现。</li>
+<li>连接点（Join point）：指方法，在 Spring AOP 中，一个连接点总是代表一个方法的执行。应用可能有数以千计的时机应用通知。这些时机被称为连接点。连接点是在应用执行过程中能够插入切面的一个点。这个点可以是调用方法时、抛出异常时、甚至修改一个字段时。切面代码可以利用这些点插入到应用的正常流程之中，并添加新的行为。<ul>
+<li><strong>Spring 只支持方法级别的连接点</strong><ul>
+<li>因为 Spring 基于动态代理，所以 Spring 只支持方法连接点。Spring 缺少对字段连接点的支持，而且它不支持构造器连接点。方法之外的连接点拦截功能，我们可以利用 Aspect 来补充。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通知（Advice）：在 AOP 术语中，切面的工作被称为通知。<ul>
+<li>5 种类型的通知<ul>
+<li>前置通知（Before）：在目标方法被调用之前调用通知功能；</li>
+<li>后置通知（After）：在目标方法完成之后调用通知，此时不会关心方法的输出是什么；</li>
+<li>返回通知（After-returning）：在目标方法成功执行之后调用通知；</li>
+<li>异常通知（After-throwing）：在目标方法抛出异常后调用通知；</li>
+<li>环绕通知（Around）：通知包裹了被通知的方法，在被通知的方法调用之前和调用之后执行自定义的行为。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>切入点（Pointcut）：切点的定义会匹配通知所要织入的一个或多个连接点。我们通常使用明确的类和方法名称，或是利用正则表达式定义所匹配的类和方法名称来指定这些切点。</li>
+<li>引入（Introduction）：引入允许我们向现有类添加新方法或属性。</li>
+<li>目标对象（Target Object）：被一个或者多个切面（aspect）所通知（advise）的对象。它通常是一个代理对象。也有人把它叫做被通知（adviced）对象。 既然 Spring AOP 是通过运行时代理实现的，这个对象永远是一个被代理（proxied）对象。</li>
+<li>织入（Weaving）：织入是把切面应用到目标对象并创建新的代理对象的过程。在目标对象的生命周期里有多少个点可以进行织入<ul>
+<li>编译期：切面在目标类编译时被织入。AspectJ 的织入编译器是以这种方式织入切面的。</li>
+<li>类加载期：切面在目标类加载到 JVM 时被织入。需要特殊的类加载器，它可以在目标类被引入应用之前增强该目标类的字节码。AspectJ5 的加载时织入就支持以这种方式织入切面。</li>
+<li>运行期：切面在应用运行的某个时刻被织入。一般情况下，在织入切面时，AOP 容器会为目标对象动态地创建一个代理对象。SpringAOP 就是以这种方式织入切面。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通过动态代理方式实现<ul>
+<li>JDK 动态代理<ul>
+<li>实现原理<ul>
+<li>通过实现 InvocationHandlet 接口创建自己的调用处理器；</li>
+<li>通过为 Proxy 类指定 ClassLoader 对象和一组 interface 来创建动态代理；</li>
+<li>通过反射机制获取动态代理类的构造函数，其唯一参数类型就是调用处理器接口类型；</li>
+<li>通过构造函数创建动态代理类实例，构造时调用处理器对象作为参数参入；</li>
+</ul>
+</li>
+<li>是面向接口的代理模式，如果被代理目标没有接口那么 Spring 也无能为力，Spring 通过 Java 的反射机制生产被代理接口的新的匿名实现类，重写了其中 AOP 的增强方法。</li>
+</ul>
+</li>
+<li>CGLib 动态代理<ul>
+<li>Spring 在运行期间通过 CGlib 继承要被动态代理的类，重写父类的方法，实现 AOP 面向切面编程呢。CGLib 动态代理是通过字节码底层继承要代理类来实现（如果被代理类被 final 关键字所修饰，那么会失败）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>配置 AOP 执行顺序<ul>
+<li>通过实现 org.springframework.core.Ordered 接口</li>
+<li>通过 <code>@Order()</code> 注解</li>
+<li>通过配置文件配置</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Spring-容器"><a href="#Spring-容器" class="headerlink" title="Spring 容器"></a>Spring 容器</h4><ul>
+<li><p>基础组件</p>
+<ul>
+<li><p>BeanFactory</p>
+<ul>
+<li>Spring 底层容器，定义了最基本的容器功能</li>
+<li>BeanFactory 位于整个容器类体系结构的顶端，其基本实现类为 DefaultListableBeanFactory。之所以称其为核心容器，是因为该类容器实现 IOC 的核心功能：比如配置文件的加载解析，Bean 依赖的注入以及生命周期的管理等。BeanFactory 作为 Spring 框架的基础设施，面向 Spring 框架本身，一般不会被用户直接使用。</li>
+</ul>
+</li>
+<li><p>ApplicationContext</p>
+<ul>
+<li><p>扩展于 BeanFactory，拥有更丰富的功能。例如：添加事件发布机制、父子级容器，一般都是直接使用 ApplicationContext。</p>
+</li>
+<li><p>通常译为应用上下文，不过称其为应用容器可能更形象些。它在 BeanFactory 提供的核心 IOC 功能之上作了扩展。通常 ApplicationContext 的实现类内部都持有一个 BeanFactory 的实例，IOC 容器的核心功能会交由它去完成。而 ApplicationContext 本身，则专注于在应用层对 BeanFactory 作扩展，比如提供对国际化的支持，支持框架级的事件监听机制以及增加了很多对应用环境的适配等。ApplicationContext 面向的是使用 Spring 框架的开发者。开发中经常使用的 ClassPathXmlApplicationContext 就是典型的 Spring 的应用容器，也是要进行解读的 IOC 容器。</p>
+</li>
+<li><p>相关类</p>
+<ul>
+<li><p>AbstractApplicationContext</p>
+<ul>
+<li><p>ApplicationContext 接口的抽象实现类，能够自动检测并注册各种后置处理器（PostProcessor）和事件监听器（Listener），以模板方法模式定义了一些容器的通用方法，比如启动容器的真正方法 <code>refresh()</code> 就是在该类中定义的。</p>
+</li>
+<li><p><code>refresh()</code> 方法</p>
+<ul>
+<li><p>```<br>@Override<br>public void refresh() throws BeansException, IllegalStateException {<br>  synchronized (this.startupShutdownMonitor) {</p>
+<pre><code>  // Prepare this context for refreshing.
+  // 准备，记录容器的启动时间 startupDate，标记容器为激活，初始化上下文环境如文件路径信息，验证必填属性是否填写
+  prepareRefresh();
+
+  // Tell the subclass to refresh the internal bean factory.
+  // 这步比较重要（解析），告诉子类去刷新 bean 工厂，这步完成后配置文件就解析成一个个 bean 定义，注册到 BeanFactory（但是未被初始化，仅将信息写到了 beanDefination 的 map 中）
+  ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+
+  // Prepare the bean factory for use in this context.
+  // 设置 beanFactory 类加载器，添加多个 beanPostProcesser
+  prepareBeanFactory(beanFactory);
+
+  try &#123;
+    // Allows post-processing of the bean factory in context subclasses.
+    // 允许子类上下文中对 beanFactory 做后期处理
+    postProcessBeanFactory(beanFactory);
+
+    // Invoke factory processors registered as beans in the context.
+    // 调用 BeanFactoryPostProcessor 各个实现类的方法
+    invokeBeanFactoryPostProcessors(beanFactory);
+
+    // Register bean processors that intercept bean creation.
+    // 注册 BeanPostProcessor 的实现类，注意看和 BeanFactoryPostProcessor 的区别
+    // 此接口两个方法: postProcessBeforeInitialization 和 postProcessAfterInitialization
+    // 两个方法分别在 Bean 初始化之前和初始化之后得到执行。注意，到这里 Bean 还没初始化
+    registerBeanPostProcessors(beanFactory);
+
+    // Initialize message source for this context.
+    //初始化 ApplicationContext 的 MessageSource
+    initMessageSource();
+
+    // Initialize event multicaster for this context.
+    // 初始化 ApplicationContext 事件广播器
+    initApplicationEventMulticaster();
+
+    // Initialize other special beans in specific context subclasses.
+    // 初始化子类特殊 bean（钩子方法）
+    onRefresh();
+
+    // Check for listener beans and register them.
+    // 注册事件监听器
+    registerListeners();
+
+    // Instantiate all remaining (non-lazy-init) singletons.
+    // 初始化所有 singleton bean
+    finishBeanFactoryInitialization(beanFactory);
+
+    // Last step: publish corresponding event.
+    // 广播事件，ApplicationContext 初始化完成
+    finishRefresh();
+  &#125;
+
+  catch (BeansException ex) &#123;
+    if (logger.isWarnEnabled()) &#123;
+        logger.warn(&quot;Exception encountered during context initialization - &quot; +
+              &quot;cancelling refresh attempt: &quot; + ex);
+    &#125;
+
+    // Destroy already created singletons to avoid dangling resources.
+    destroyBeans();
+
+    // Reset &#39;active&#39; flag.
+    cancelRefresh(ex);
+
+    // Propagate exception to caller.
+    throw ex;
+  &#125;
+
+  finally &#123;
+    // Reset common introspection caches in Spring&#39;s core, since we
+    // might not ever need metadata for singleton beans anymore...
+    resetCommonCaches();
+  &#125;
+</code></pre>
+<p>  }<br>}</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line">      - AbstractRefreshableApplicationContext</span><br><span class="line">        - 继承 AbstractApplicationContext 的抽象类。内部持有一个 DefaultListableBeanFactory 的实例，使得继承 AbstractRefreshableApplicationContext 的 Spring 的应用容器内部默认有一个 Spring 的核心容器，那么 Spring 容器的一些核心功能就可以委托给内部的核心容器去完成。</span><br><span class="line">        - AbstractRefreshableApplicationContext 在内部定义了创建、销毁以及刷新核心容器 BeanFactory 的方法。</span><br><span class="line">      - ClassPathXmlApplicationContext</span><br><span class="line">        - 最常用的 Spring 的应用容器之一。在启动时会加载类路径下的 xml 文件作为容器的配置信息。</span><br><span class="line">      - BeanFactoryPostProcessor</span><br><span class="line">        - 实现该接口，可以在 Spring 的 bean 创建之前，修改 bean 的定义属性。也就是说，Spring 允许 BeanFactoryPostProcessor 在容器实例化任何其它 bean 之前读取配置元数据，并可以根据需要进行修改，例如可以把 bean 的 scope 从 singleton 改为 prototype，也可以把 property 的值给修改掉。可以同时配置多个 BeanFactoryPostProcessor，并通过设置&#x27;order&#x27;属性来控制各个 BeanFactoryPostProcessor 的执行次序。</span><br><span class="line">        - BeanFactoryPostProcessor 是在 spring 容器加载了 bean 的定义文件之后，在 bean 实例化之前执行的。接口方法的入参是 ConfigurrableListableBeanFactory，使用该参数，可以获取到相关 bean 的定义信息。</span><br><span class="line">        - Spring 中，有内置的一些 BeanFactoryPostProcessor 实现类，常用的有：</span><br><span class="line">          - org.springframework.beans.factory.config.PropertyPlaceholderConfigurer</span><br><span class="line">          - org.springframework.beans.factory.config.PropertyOverrideConfigurer</span><br><span class="line">          - org.springframework.beans.factory.config.CustomEditorConfigurer：用来注册自定义的属性编辑器</span><br><span class="line">      - BeanPostProcessor</span><br><span class="line">        - BeanPostProcessor，可以在 Spring 容器实例化 bean 之后，在执行 bean 的初始化方法前后，添加一些自己的处理逻辑。</span><br><span class="line">        - 这里说的初始化方法，指的是下面两种：</span><br><span class="line">          - bean 实现了 InitializingBean 接口，对应的方法为 afterPropertiesSet</span><br><span class="line">          - 在 bean 定义的时候，通过 init-method 设置的方法</span><br><span class="line">        - BeanPostProcessor 是在 Spring 容器加载了 bean 的定义文件并且实例化 bean 之后执行的。BeanPostProcessor 的执行顺序是在 BeanFactoryPostProcessor 之后。</span><br><span class="line">        - Spring中，有内置的一些 BeanPostProcessor 实现类，例如：</span><br><span class="line">          - org.springframework.context.annotation.CommonAnnotationBeanPostProcessor：支持 @Resource 注解的注入</span><br><span class="line">          - org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor：支持 @Required 注解的注入</span><br><span class="line">          - org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor：支持 @Autowired 注解的注入</span><br><span class="line">          - org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor：支持 @PersistenceUnit 和 @PersistenceContext 注解的注入</span><br><span class="line">          - org.springframework.context.support.ApplicationContextAwareProcessor：用来为 bean 注入 ApplicationContext 等容器对象</span><br><span class="line">  - Resource</span><br><span class="line">    - bean 配置文件，一般为 xml 文件。可以理解为保存 bean 信息的文件。</span><br><span class="line">  - BeanDefinition</span><br><span class="line">    - BeanDefinition 定义了 bean 的基本信息，根据它来创造 bean。</span><br><span class="line">- 容器启动步骤</span><br><span class="line">  - ![Spring_容器启动的整个流程](Java-框架、相关技术-0-知识点汇总/Spring_容器启动的整个流程.png)</span><br><span class="line">  1. 资源定位：找到配置文件</span><br><span class="line">  2. BeanDefinition 载入和解析</span><br><span class="line">  3. BeanDefinition 注册</span><br><span class="line">  4. bean 的实例化和依赖注入</span><br><span class="line">- BeanFactory</span><br><span class="line">  - BeanFactory 定义的标准处理顺序</span><br><span class="line">    1. BeanNameAware&#x27;s setBeanName</span><br><span class="line">    2. BeanClassLoaderAware&#x27;s setBeanClassLoader</span><br><span class="line">    3. BeanFactoryAware&#x27;s setBeanFactory</span><br><span class="line">    4. ResourceLoaderAware&#x27;s setResourceLoader (only applicable when running in an application context)</span><br><span class="line">    5. ApplicationEventPublisherAware&#x27;s setApplicationEventPublisher (only applicable when running in an application context)</span><br><span class="line">    6. MessageSourceAware&#x27;s setMessageSource (only applicable when running in an application context)</span><br><span class="line">    7. ApplicationContextAware&#x27;s setApplicationContext (only applicable when running in an application context)</span><br><span class="line">    8. ServletContextAware&#x27;s setServletContext (only applicable when running in a web application context)</span><br><span class="line">    9. postProcessBeforeInitialization methods of BeanPostProcessors</span><br><span class="line">    10. InitializingBean&#x27;s afterPropertiesSet</span><br><span class="line">    11. a custom init-method definition</span><br><span class="line">    12. postProcessAfterInitialization methods of BeanPostProcessors</span><br><span class="line">    - 第 9 点和 12 点是通过 BeanPostProccessor 接口进行处理的</span><br><span class="line">    - 第 10 点是通过 InitializingBean 接口去实现的</span><br><span class="line">  - BeanFactory 关闭的处理顺序</span><br><span class="line">    1. DisposableBean&#x27;s destroy</span><br><span class="line">    2. a custom destroy-method definition</span><br><span class="line"></span><br><span class="line">#### Spring 事件监听机制</span><br><span class="line">- 说明</span><br><span class="line">  - 事件监听机制可以理解为是一种观察者模式，有数据发布者（事件源）和数据接受者（监听器）；</span><br><span class="line">  - 在 Java 中，事件对象都是继承 java.util.EventObject 对象，事件监听器都是 java.util.EventListener 实例；</span><br><span class="line">  - EventObject 对象不提供默认构造器，需要外部传递 source 参数，即用于记录并跟踪事件的来源；</span><br><span class="line">- Spring 事件</span><br><span class="line">  - Spring 事件对象为 ApplicationEvent，继承 EventObject</span><br><span class="line">  - Spring 事件监听器为 ApplicationListener，继承 EventListener</span><br><span class="line">- 实现 Spring 事件监听有两种方式：</span><br><span class="line">  - 面向接口编程，实现 ApplicationListener 接口；</span><br><span class="line">  - 基于注解驱动，@EventListener（Spring 自定义的注解）；</span><br><span class="line">- Spring 自带的监听器</span><br><span class="line">  - ContextLoaderListener</span><br><span class="line">    - 在启动 Web 容器时，自动装配 Spring applicationContext.xml 的配置信息。</span><br><span class="line">    - 因为它实现了 ServletContextListener 这个接口，在 web.xml 配置这个监听器，启动容器时，就会默认执行它实现的方法。在 ContextLoaderListener 中关联了 ContextLoader 这个类，所以整个加载配置过程由 ContextLoader 来完成。</span><br><span class="line">  - RequestContextListener</span><br><span class="line">    - Spring2.0 中新增了三个 web 作用域：request、session、global session，如果希望 web 容器中的某个 bean 具有新的作用域，除了在 bean 中配置相应的 scope 属性外，还需要在容器中进行额外的初始化配置。</span><br><span class="line"></span><br><span class="line">#### SpringMVC</span><br><span class="line">- MVC 模式代表 Model-View-Controller（模型-视图-控制器）模式。</span><br><span class="line">- 原理</span><br><span class="line">  - ![SpringMVC_请求处理的流程](Java-框架、相关技术-0-知识点汇总/SpringMVC_请求处理的流程.png)</span><br><span class="line">  - 执行流程</span><br><span class="line">    - 用户向服务器发送请求，请求会到 DispatcherServlet，DispatcherServlet 对请求 URL 进行解析，得到请求资源标识符（URI），然后根据该 URI，调用 HandlerMapping 获得该 Handler 配置的所有相关的对象（包括一个 Handler 处理器对象、多个 HandlerInterceptor 拦截器对象），最后以 HandlerExecutionChain 对象的形式返回。</span><br><span class="line">    - DispatcherServlet 根据获得的 Handler，选择一个合适的 HandlerAdapter。提取 Request 中的模型数据，填充 Handler 入参，开始执行 Handler（Controller）。 在填充 Handler 的入参过程中，根据你的配置，Spring 将帮你做一些额外的工作：</span><br><span class="line">      - HttpMessageConveter： 将请求消息（如 Json、xml 等数据）转换成一个对象，将对象转换为指定的响应信息</span><br><span class="line">      - 数据转换：对请求消息进行数据转换。如 String 转换成 Integer、Double 等</span><br><span class="line">      - 数据格式化：对请求消息进行数据格式化。 如将字符串转换成格式化数字或格式化日期等</span><br><span class="line">      - 数据验证： 验证数据的有效性（长度、格式等），验证结果存储到 BindingResult 或 Error 中</span><br><span class="line">    - Handler 执行完成后，向 DispatcherServlet 返回一个 ModelAndView 对象；根据返回的 ModelAndView，选择一个适合的 ViewResolver 返回给 DispatcherServlet；ViewResolver 结合 Model 和 View，来渲染视图，最后将渲染结果返回给客户端。</span><br><span class="line"></span><br><span class="line">#### 注解</span><br><span class="line">- 注入相关</span><br><span class="line">  - @Qualifier</span><br><span class="line">    - 用处：当一个接口有多个实现的时候，为了指名具体调用哪个类的实现。</span><br><span class="line">  - @Resource</span><br><span class="line">    - 可以通过 byName 和 byType 的方式注入，默认先按 byName 的方式进行匹配，如果匹配不到，再按 byType 的方式进行匹配。</span><br><span class="line">    - 由 JSR-250 提供</span><br><span class="line">  - @Autowired</span><br><span class="line">    - 按 byType 方式注入，如果按 byType 冲突或找不到的话可以用 @Qualifier 来找 byName</span><br><span class="line">    - 由 spring 提供</span><br><span class="line">  - @Inject</span><br><span class="line">    - 由 JSR-330 提供</span><br><span class="line">    - 注意</span><br><span class="line">      - 使用前需要导入 jar 包——javax.inject；</span><br><span class="line">      - 支持 @Primary 注解，而且因为没有精确匹配，@Primary 的优先级最高；</span><br><span class="line">      - 不支持 required=false，即不能注入 null，如果找不到组件肯定报错；</span><br><span class="line">      - 默认按照属性名跟 bean 的名称匹配查找，如果不存在，再按类型匹配查找。</span><br><span class="line"></span><br><span class="line">#### 事务</span><br><span class="line">- 事务传播机制</span><br><span class="line">  - PROPAGATION_REQUIRED：如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常⻅的选择。 </span><br><span class="line">  - PROPAGATION_SUPPORTS：支持当前事务，如果当前没有事务，就以非事务方式执行。 </span><br><span class="line">  - PROPAGATION_MANDATORY：使用当前的事务，如果当前没有事务，就抛出异常。 </span><br><span class="line">  - PROPAGATION_REQUIRES_NEW：新建事务，如果当前存在事务，把当前事务挂起。 </span><br><span class="line">  - PROPAGATION_NOT_SUPPORTED：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。</span><br><span class="line">  - PROPAGATION_NEVER：以非事务方式执行，如果当前存在事务，则抛出异常。 </span><br><span class="line">  - PROPAGATION_NESTED：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行。与 PROPAGATION_REQUIRED 类似的操作。</span><br><span class="line">- 事务原理</span><br><span class="line">  - Spring 在扫描 bean 的时候会扫描方法上是否包含 @Transactional 注解，如果包含，Spring 会为这个 bean 动态地生成一个子类（即代理类，proxy），代理类是继承原来那个 bean 的。此时，当这个有注解的方法被调用的时候，实际上是由代理类来调用的，代理类在调用之前就会启动 transaction。</span><br><span class="line">    - ```</span><br><span class="line">      @Service</span><br><span class="line">      class A&#123;</span><br><span class="line">          @Transactinal</span><br><span class="line">          method b()&#123;...&#125;</span><br><span class="line">          </span><br><span class="line">          method a()&#123;    //标记1</span><br><span class="line">              b();</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      </span><br><span class="line">      //Spring扫描注解后，创建了另外一个代理类，并为有注解的方法插入一个startTransaction()方法：</span><br><span class="line">      class proxy$A&#123;</span><br><span class="line">          A objectA = new A();</span><br><span class="line">          method b()&#123;    //标记2</span><br><span class="line">              startTransaction();</span><br><span class="line">              objectA.b();</span><br><span class="line">          &#125;</span><br><span class="line">      </span><br><span class="line">          method a()&#123;    //标记3</span><br><span class="line">              objectA.a();    //由于a()没有注解，所以不会启动transaction，而是直接调用A的实例的a()方法</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>@Transactional 注解事务不生效的情况</p>
+<ul>
+<li>数据库<ul>
+<li>事务生效的前提是你的数据源得支持事务，比如 mysql 的 MyISAM 引擎就不支持事务，而 Innodb 支持事务</li>
+</ul>
+</li>
+<li>类内部访问<ul>
+<li>在一个 Service 内部，事务方法之间的嵌套调用，普通方法和事务方法之间的嵌套调用，都不会开启新的事务。<ul>
+<li>非事务方法 A 调用事务方法 B，方法 B 事务不生效<ul>
+<li>因为 spring 采用动态代理机制来实现事务控制，而动态代理最终都是要调用原始对象的，而原始对象在去调用方法时，是不会再触发代理了</li>
+</ul>
+</li>
+<li>在事务方法 A 中调用另外一个事务方法 B，被调用方法 B 的事务没起作用<ul>
+<li>spring 是通过代理代管理事务的，当在第一个方法 insertUser1 内直接调用 insertUser2 的时候 ，insertUser2 上的事务是不会起作用的（也就是 insertUser2 是没有开启事务）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>私有方法<ul>
+<li>在私有方法上，添加 @Transactional 注解也不会生效，私有方法外部不能访问，所以只能内部访问，上面的 case 不生效，这个当然也不生效了</li>
+</ul>
+</li>
+<li>异常不匹配<ul>
+<li>@Transactional 注解默认处理运行时异常，即只有抛出运行时异常时，才会触发事务回滚，否则并不会如</li>
+</ul>
+</li>
+<li>多线程<ul>
+<li>在标记事务的方法内部，另起子线程执行 db 操作，此时事务同样不会生效</li>
+</ul>
+</li>
+<li>传播属性<ul>
+<li>几种传播方式是不走事务执行的</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Bean"><a href="#Bean" class="headerlink" title="Bean"></a>Bean</h4><ul>
+<li>Bean 的作用域<ul>
+<li>singleton : bean 在每个 Spring ioc 容器中只有一个实例。</li>
+<li>prototype：一个 bean 的定义可以有多个实例。</li>
+<li>request：每次 http 请求都会创建一个 bean，该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+<li>session：在一个 HTTP Session 中，一个 bean 定义对应一个实例。该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+<li>global-session：在一个全局的 HTTP Session 中，一个 bean 定义对应一个实例。该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+</ul>
+</li>
+<li>Bean 的生命周期<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Spring_bean%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg" alt="Spring_bean的生命周期"></li>
+</ul>
+<ol>
+<li>Spring 启动，查找并加载需要被 Spring 管理的 Bean，进行 Bean 的实例化</li>
+<li>Bean 实例化后对将 Bean 的引入和值注入到 Bean 的属性中</li>
+<li>如果 Bean 实现了 BeanNameAware 接口的话，Spring 将 Bean 的 Id 传递给 setBeanName() 方法</li>
+<li>如果 Bean 实现了 BeanFactoryAware 接口的话，Spring 将调用 setBeanFactory() 方法，将 BeanFactory 容器实例传入</li>
+<li>如果 Bean 实现了 ApplicationContextAware 接口的话，Spring 将调用 Bean 的 setApplicationContext() 方法，将 Bean 所在应用上下文引用传入进来。</li>
+<li>如果 Bean 实现了 BeanPostProcessor 接口，Spring 就将调用他们的 postProcessBeforeInitialization() 方法。</li>
+<li>如果 Bean 实现了 InitializingBean 接口，Spring 将调用他们的 afterPropertiesSet() 方法。类似的，如果 Bean 使用 init-method 声明了初始化方法，该方法也会被调用</li>
+<li>如果 Bean 实现了 BeanPostProcessor 接口，Spring 就将调用他们的 postProcessAfterInitialization() 方法。</li>
+<li>此时，Bean 已经准备就绪，可以被应用程序使用了。他们将一直驻留在应用上下文中，直到应用上下文被销毁。</li>
+<li>如果 Bean 实现了 DisposableBean 接口，Spring 将调用它的 destory() 接口方法，同样，如果 Bean 使用了 destory-method 声明销毁方法，该方法也会被调用。</li>
+</ol>
+</li>
+<li>获取 bean 流程<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Java_Spring_%E8%8E%B7%E5%8F%96bean%E6%B5%81%E7%A8%8B.JPG" alt="Java_Spring_获取bean流程"></li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>Spring 框架中的单例 bean 是线程安全的吗？</strong><ul>
+<li>不是，Spring 框架中的单例 bean 不是线程安全的。</li>
+<li>spring 中的 bean 默认是单例模式，spring 框架并没有对单例 bean 进行多线程的封装处理。</li>
+<li>实际上大部分时候 spring bean 无状态的（比如 dao 类），所有某种程度上来说 bean 也是安全的，但如果 bean 有状态的话（比如 view model 对象），那就要开发者自己去保证线程安全了，最简单的就是改变 bean 的作用域，把“singleton”变更为“prototype”，这样请求 bean 相当于 <code>new Bean()</code> 了，所以就可以保证线程安全了。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h4><ul>
+<li>application.yml 中的 MySQL 密码可以通过第三方包加密（jasypt）</li>
+</ul>
+<h4 id="相关问题"><a href="#相关问题" class="headerlink" title="相关问题"></a>相关问题</h4><ul>
+<li><strong>Spring 框架中都用到了哪些设计模式？</strong><ul>
+<li>工厂模式：BeanFactory 就是简单工厂模式的体现，用来创建对象的实例；</li>
+<li>单例模式：Bean 默认为单例模式。</li>
+<li>代理模式：Spring 的 AOP 功能用到了 JDK 的动态代理和 CGLIB 字节码生成技术；</li>
+<li>模板方法：用来解决代码重复的问题。比如：RestTemplate, JmsTemplate, JpaTemplate。</li>
+<li>观察者模式：定义对象键一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都会得到通知被制动更新，如 Spring 中 listener 的实现 ApplicationListener。</li>
+</ul>
+</li>
+<li><strong>Spring BeanFactory 与 FactoryBean 的区别</strong><ul>
+<li>BeanFactory<ul>
+<li>BeanFactory，以 Factory 结尾，表示它是一个工厂类（接口），用于管理 Bean 的一个工厂。在 Spring 中，BeanFactory 是 IOC 容器的核心接口，它的职责包括：实例化、定位、配置应用程序中的对象及建立这些对象间的依赖。</li>
+<li>Spring 为我们提供了许多易用的 BeanFactory 实现，XmlBeanFactory 就是常用的一个，该实现将以 XML 方式描述组成应用的对象及对象间的依赖关系。XmlBeanFactory 类将持有此 XML 配置元数据，并用它来构建一个完全可配置的系统或应用。</li>
+</ul>
+</li>
+<li>FactoryBean<ul>
+<li>以 Bean 结尾，表示它是一个 Bean，不同于普通 Bean 的是：它是实现了 <code>FactoryBean&lt;T&gt;</code> 接口的 Bean，根据该 Bean 的 ID 从 BeanFactory 中获取的实际上是 FactoryBean 的 <code>getObject()</code> 返回的对象，而不是 FactoryBean 本身，如果要获取F actoryBean 对象，请在 id 前面加一个 &amp; 符号来获取。</li>
+<li>例如自己实现一个 FactoryBean，功能：用来代理一个对象，对该对象的所有方法做一个拦截，在调用前后都输出一行 LOG，模仿 ProxyFactoryBean 的功能。</li>
+</ul>
+</li>
+<li>BeanFactory 是个 Factory，也就是 IOC 容器或对象工厂，FactoryBean 是个 Bean。在 Spring 中，所有的 Bean 都是由 BeanFactory（也就是 IOC 容器）来进行管理的。但对 FactoryBean 而言，这个 Bean 不是简单的 Bean，而是一个能生产或者修饰对象生成的工厂 Bean，它的实现与设计模式中的工厂模式和修饰器模式类似。</li>
+</ul>
+</li>
+<li><strong>如何指定 bean 的初始化顺序？</strong><ul>
+<li>构造方法依赖<ul>
+<li>是最简单也是最常见的使用姿势，但是在使用时，需要注意循环依赖等问题。</li>
+<li>bean 的注入方式之中，有一个就是通过构造方法来注入，借助这种方式，我们可以解决有优先级要求的 bean 之间的初始化顺序。</li>
+<li>虽然这种方式比较直观简单，但是有几个限制<ul>
+<li>需要有注入关系，如 CDemo2 通过构造方法注入到 CDemo1 中，如果需要指定两个没有注入关系的 bean 之间优先级，则不太合适（比如我希望某个 bean 在所有其他的 Bean 初始化之前执行）</li>
+<li>循环依赖问题，如过上面的 CDemo2 的构造方法有一个 CDemo1 参数，那么循环依赖产生，应用无法启动</li>
+</ul>
+</li>
+<li>另外一个需要注意的点是，在构造方法中，不应有复杂耗时的逻辑，会拖慢应用的启动时间</li>
+</ul>
+</li>
+<li>@DependOn 注解<ul>
+<li>这是一个专用于解决 bean 的依赖问题，当一个 bean 需要在另一个 bean 初始化之后再初始化时，可以使用这个注解</li>
+<li>在使用这个注解的时候，有一点需要特别注意，它能控制 bean 的实例化顺序，但是 bean 的初始化操作（如构造 bean 实例之后，调用 @PostConstruct 注解的初始化方法）顺序则不能保证<ul>
+<li>完整的 bean 创建，分成了两块顺序<ul>
+<li>实例化（调用构造方法）</li>
+<li>初始化（注入依赖属性，调用 @PostConstruct 方法）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BeanPostProcessor 扩展<ul>
+<li>非典型的使用方式，如非必要，请不要用这种方式来控制 bean 的加载顺序</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Spring 如何统计 bean 的数量？</strong><ul>
+<li>通过实现 BeanFactoryPostProcessor 接口，调用 ConfigurableListableBeanFactory 的 <code>getBeanDefinitionCount()</code> 方法。</li>
+</ul>
+</li>
+</ul>
+<h3 id="SpringBoot"><a href="#SpringBoot" class="headerlink" title="SpringBoot"></a>SpringBoot</h3><ul>
+<li>maven<ul>
+<li>spring-boot-starter-parent<ul>
+<li>通过这个作为 parent，可以继承其中定义的配置、各项依赖以及版本号</li>
+<li>在本项目中添加依赖时，可以省略版本号</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="MyBatis"><a href="#MyBatis" class="headerlink" title="MyBatis"></a>MyBatis</h3><ul>
+<li>介绍<ul>
+<li>MyBatis 是一款优秀的持久层框架，它支持定制化 SQL、存储过程以及高级映射。MyBatis 避免了几乎所有的 JDBC 代码和手动设置参数以及获取结果集。MyBatis 可以使用简单的 XML 或注解来配置和映射原生类型、接口和 Java 的 POJO（Plain Old Java Objects，普通老式 Java 对象）为数据库中的记录。</li>
+</ul>
+</li>
+<li>语法<ul>
+<li><code>#&#123;&#125;</code> 和 <code>$&#123;&#125;</code><ul>
+<li><code>#&#123;&#125;</code>：使用的是预编译，对应 JBDC 中的 PreparedStatement</li>
+<li><code>$&#123;&#125;</code>：不会修改或者转义字符换，直接输出变量值<ul>
+<li>会引发 SQL 注入问题</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>SqlSession<ul>
+<li>SqlSession 是 Mybatis 最重要的构建之一，可以简单的认为 Mybatis 一系列的配置目的是生成类似 JDBC 生成的 Connection 对象的 SqlSession 对象，这样才能与数据库开启“沟通”，通过 SqlSession 可以实现增删改查（当然现在更加推荐是使用 Mapper 接口形式）。</li>
+</ul>
+</li>
+<li>工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/MyBatis_%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="MyBatis_工作原理"></li>
+</ul>
+<ol>
+<li>读取 MyBatis 配置文件：mybatis-config.xml 为 MyBatis 的全局配置文件，配置了 MyBatis 的运行环境等信息，例如数据库连接信息。</li>
+<li>加载映射文件。映射文件即 SQL 映射文件，该文件中配置了操作数据库的 SQL 语句，需要在 MyBatis 配置文件 mybatis-config.xml 中加载。mybatis-config.xml 文件可以加载多个映射文件，每个文件对应数据库中的一张表。</li>
+<li>构造会话工厂：通过 MyBatis 的环境等配置信息构建会话工厂 SqlSessionFactory。</li>
+<li>创建会话对象：由会话工厂创建 SqlSession 对象，该对象中包含了执行 SQL 语句的所有方法。</li>
+<li>Executor 执行器：MyBatis 底层定义了一个 Executor 接口来操作数据库，它将根据 SqlSession 传递的参数动态地生成需要执行的 SQL 语句，同时负责查询缓存的维护。</li>
+<li>MappedStatement 对象：在 Executor 接口的执行方法中有一个 MappedStatement 类型的参数，该参数是对映射信息的封装，用于存储要映射的 SQL 语句的 id、参数等信息。</li>
+<li>输入参数映射：输入参数类型可以是 Map、List 等集合类型，也可以是基本数据类型和 POJO 类型。输入参数映射过程类似于 JDBC 对 preparedStatement 对象设置参数的过程。</li>
+<li>输出结果映射：输出结果类型可以是 Map、 List 等集合类型，也可以是基本数据类型和 POJO 类型。输出结果映射过程类似于 JDBC 对结果集的解析过程。</li>
+</ol>
+</li>
+<li>一级缓存与二级缓存<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/MyBatis_%E7%BC%93%E5%AD%98.jpg" alt="MyBatis_缓存"></li>
+<li>一级缓存<ul>
+<li>该级缓存默认开启，不能关闭；</li>
+<li>该级缓存为 SqlSession 级别的缓存，也称为本地缓存；</li>
+<li>以下 4 种情况将会导致该级缓存失效：<ul>
+<li>在不同 SqlSession 中查询数据；</li>
+<li>相同 SqlSession 中查询数据，但查询条件不同</li>
+<li>相同 SqlSession 中查询数据，但两次查询之间执行了增删改操作</li>
+<li>同 SqlSession 中查询数据，但第二次查询前，程序调用 SqlSession 对象 <code>clearCache()</code> 方法手动清除了一级缓存</li>
+</ul>
+</li>
+<li>原理<ul>
+<li>第一次发出一个查询 sql，sql 查询结果写入 sqlsession 的一级缓存中，缓存使用的数据结构是一个 map。<ul>
+<li>key：MapperID+offset+limit+Sql+所有的入参</li>
+<li>value：用户信息</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>二级缓存<ul>
+<li>该级缓存默认不开启，但如果使用二级缓存需要在每个 XML 映射文件中添加 <code>&lt;cache&gt;&lt;/cache&gt;</code> 以配置该级缓存（相应实体类要序列化）。二级缓存可以通过在全局配置文件配置 setting 标签来关闭该级缓存。<ul>
+<li>如果这样配置的话，很多其他的配置就会被默认进行，如：<ul>
+<li>映射文件所有的 select 语句会被缓存</li>
+<li>映射文件的所有的 insert、update 和 delete 语句会刷新缓存</li>
+<li>缓存会使用默认的 Least Recently Used（LRU，最近最少使用原则）的算法来回收缓存空间</li>
+<li>根据时间表，比如 No Flush Interval，（CNFI，没有刷新间隔），缓存不会以任何时间顺序来刷新</li>
+<li>缓存会存储列表集合或对象（无论查询方法返回什么）的 1024 个引用</li>
+<li>缓存会被视为是 read/write（可读/可写）的缓存，意味着对象检索不是共享的，而且可以很安全的被调用者修改，不干扰其他调用者或县城所作的潜在修改</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>该级缓存为 namespace 级别的缓存</li>
+<li>工作机制：通过 SqlSession 查询数据，这些数据将会放到当前会话的一级缓存中；如果当前会话关闭，则一级缓存中的数据会被保存到二级缓存中，此后新的 SqlSession 将从二级缓存中查找数据；</li>
+<li>select 标签的 useCache 属性用于设置是否使用二级缓存；insert、update、delete 或 select 标签均有 flushCache 属性，其中增删改默认true，即 sql 执行以后，会同时清空一级和二级缓存，查询默认 false。</li>
+<li>为了提高扩展性，MyBatis 定义了 Cache 缓存接口，可以通过实现该缓存接口自定义二级缓存</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Mybatis 的分页原理<ul>
+<li>Mybatis 使用 RowBounds 对象进行分页，它是针对 ResultSet 结果集执行的内存分页，而非物理分页，可以在 sql 内直接书写带有物理分页的参数来完成物理分页功能，也可以使用分页插件来完成物理分页。</li>
+<li>分页插件的原理就是使用 MyBatis 提供的插件接口，实现自定义插件，在插件的拦截方法内，拦截待执行的 SQL，然后根据设置的 dialect（方言），和设置的分页参数，重写 SQL，生成带有分页语句的 SQL，执行重写后的 SQL，从而实现分页。</li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>Mybatis 为什么出现？为什么不是直接使用 jdbc？</strong><ul>
+<li>JDBC 操作数据库的步骤<ul>
+<li>注册驱动；</li>
+<li>获取数据库连接；</li>
+<li>拼接sql语句，设置sql参数；</li>
+<li>执行sql语句；</li>
+<li>sql返回结果；</li>
+<li>执行语句和数据库连接；</li>
+</ul>
+</li>
+<li>直接用 JDBC 每次都要做大量的相同的操作，并且还要对执行 sql 语句过程中所出现的各种异常和资源释放进行处理，而真正涉及到业务功能的代码其实很少，这明显影响了效率。</li>
+<li>再有就是当你接收数据库返回的结果集的时候，需要赋值给程序中的实体，使用 JDBC 需要你手动写代码去遍历每一条记录赋值给对应的实体 list 集合中，使用 JDBC 意味着需要更多的代码来提取结果并将它们映射到对象实例中，</li>
+<li><strong>MyBatis 避免了几乎所有的 JDBC 代码和手动设置参数以及获取结果集。</strong></li>
+</ul>
+</li>
+<li><strong>通常一个 Xml 映射文件，都会写一个 Dao 接口与之对应，请问，这个 Dao 接口的工作原理是什么？Dao 接口里的方法，参数不同时，方法能重载吗？</strong><ul>
+<li>Dao 接口，就是人们常说的 Mapper 接口，接口的全限名，就是映射文件中的 namespace 的值，接口的方法名，就是映射文件中 MappedStatement 的 id 值，接口方法内的参数，就是传递给 sql 的参数。Mapper 接口是没有实现类的，当调用接口方法时，接口全限名+方法名拼接字符串作为 key 值，可唯一定位一个 MappedStatement，举例：com.mybatis3.mappers.StudentDao.findStudentById，可以唯一找到 namespace 为 com.mybatis3.mappers.StudentDao 下面 id = findStudentById 的 MappedStatement。在 Mybatis 中，每一个 <code>&lt;select&gt;</code>、<code>&lt;insert&gt;</code>、<code>&lt;update&gt;</code>、<code>&lt;delete&gt;</code>标签，都会被解析为一个 MappedStatement 对象。</li>
+<li>Dao 接口里的方法，是不能重载的，因为是全限名+方法名的保存和寻找策略。</li>
+<li>Dao 接口的工作原理是 JDK 动态代理，Mybatis 运行时会使用 JDK 动态代理为 Dao 接口生成代理 proxy 对象，代理对象 proxy 会拦截接口方法，转而执行 MappedStatement 所代表的 sql，然后将 sql 执行结果返回。</li>
+</ul>
+</li>
+<li><strong>简述 MyBatis 的插件运行原理，以及如何编写一个插件？</strong><ul>
+<li>Mybatis 仅可以编写针对 ParameterHandler、ResultSetHandler、StatementHandler、Executor 这 4 种接口的插件，Mybatis 使用 JDK  的动态代理，为需要拦截的接口生成代理对象以实现接口方法拦截功能，每当执行这 4 种接口对象的方法时，就会进入拦截方法，具体就是 InvocationHandler 的 <code>invoke()</code> 方法，当然，只会拦截那些你指定需要拦截的方法。实现 Mybatis 的 Interceptor 接口并复写 <code>intercept()</code> 方法，然后在给插件编写注解，指定要拦截哪一个接口的哪些方法即可，记住，还需要在配置文件中配置你编写的插件。<ul>
+<li>StatementHandler<ul>
+<li>StatementHandler 是数据库会话器，专门用来处理数据库会话的。StatementHandler 内运用了适配器模式和策略模式的思想</li>
+</ul>
+</li>
+<li>ResultSetHandler<ul>
+<li>ResultHandler 是一个结果处理器，StatementHandler 完成了查询之后，最终就是通过 ResultHandler 来实现结果集映射，ResultSetHandler 接口中只定义了3个方法用来处理结果。</li>
+<li>ResultHandler 也默认提供了一个实现类：DefaultResultSetHandler。一般我们平常用的最多的就是通过 handleResultSets 来实现结果集转换。</li>
+</ul>
+</li>
+<li>ParameterHandler<ul>
+<li>ParameterHandler 是一个参数处理器，主要是用来对预编译语句进行参数设置的，只有一个默认实现类 DefaultParameterHandler。</li>
+<li>ParameterHandler 中只定义了两个方法，一个获取参数，一个设置参数。</li>
+</ul>
+</li>
+<li>Executor<ul>
+<li>Executor 就是真正用来执行 Sql 语句的对象，我们调用 SqlSession 中的方法，最终实际上都是通过 Executor 来完成的。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="ShardingSphere-JDBC"><a href="#ShardingSphere-JDBC" class="headerlink" title="ShardingSphere-JDBC"></a>ShardingSphere-JDBC</h3><ul>
+<li>Apache ShardingSphere 是一套开源的分布式数据库解决方案组成的生态圈，它由 JDBC、Proxy 和 Sidecar（规划中）这 3 款既能够独立部署，又支持混合部署配合使用的产品组成。它们均提供标准化的数据水平扩展、分布式事务和分布式治理等功能，可适用于如 Java 同构、异构语言、云原生等各种多样化的应用场景。</li>
+</ul>
+<h3 id="Netty"><a href="#Netty" class="headerlink" title="Netty"></a>Netty</h3><ul>
+<li>介绍<ul>
+<li>Netty 是一个 基于 NIO 的 client-server（客户端服务器）框架，使用它可以快速简单地开发网络应用程序。</li>
+<li>它极大地简化并优化了 TCP 和 UDP 套接字服务器等网络编程，并且性能以及安全性等很多方面甚至都要更好。</li>
+<li>支持多种协议，如 FTP、SMTP、HTTP 以及各种二进制和基于文本的传统协议。</li>
+<li>很多开源项目比如我们常用的 Dubbo、RocketMQ、ElasticSearch、gRPC 等等都用到了 Netty。</li>
+</ul>
+</li>
+<li>本质：JBoss 做的一个 Jar 包</li>
+<li>目的：快速开发高性能、高可靠性的网络服务器和客户端程序</li>
+<li>优点<ul>
+<li>统一的 API，支持多种传输类型，阻塞和非阻塞的。</li>
+<li>简单而强大的线程模型。</li>
+<li>自带编解码器解决 TCP 粘包/拆包问题。</li>
+<li>自带各种协议栈。</li>
+<li>真正的无连接数据包套接字支持。</li>
+<li>比直接使用 Java 核心 API 有更高的吞吐量、更低的延迟、更低的资源消耗和更少的内存复制。</li>
+<li>安全性不错，有完整的 SSL/TLS 以及 StartTLS 支持。</li>
+<li>社区活跃</li>
+<li>成熟稳定，经历了大型项目的使用和考验，而且很多开源项目都使用到了 Netty， 比如我们经常接触的 Dubbo、RocketMQ 等等。</li>
+</ul>
+</li>
+<li>应用场景<ul>
+<li>作为 RPC 框架的网络通信工具<ul>
+<li>我们在分布式系统中，不同服务节点之间经常需要相互调用，这个时候就需要 RPC 框架了。不同服务节点之间的通信是如何做的呢？可以使用 Netty 来做。比如我调用另外一个节点的方法的话，至少是要让对方知道我调用的是哪个类中的哪个方法以及相关参数吧！</li>
+</ul>
+</li>
+<li>实现一个自己的 HTTP 服务器<ul>
+<li>通过 Netty 我们可以自己实现一个简单的 HTTP 服务器，这个大家应该不陌生。说到 HTTP 服务器的话，作为 Java 后端开发，我们一般使用 Tomcat 比较多。一个最基本的 HTTP 服务器可要以处理常见的 HTTP Method 的请求，比如 POST 请求、GET 请求等等。</li>
+</ul>
+</li>
+<li>实现一个即时通讯系统 <ul>
+<li>使用 Netty 我们可以实现一个可以聊天类似微信的即时通讯系统。</li>
+</ul>
+</li>
+<li>实现消息推送系统<ul>
+<li>市面上有很多消息推送系统都是基于 Netty 来做的。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>架构<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E6%9E%B6%E6%9E%84%E5%9B%BE.jpg" alt="Netty_架构图"><ul>
+<li>绿色的部分 Core 核心模块，包括零拷贝、API 库、可扩展的事件模型。</li>
+<li>橙色部分 Protocol Support 协议支持，包括 Http 协议、webSocket、SSL（安全套接字协议）、谷歌 Protobuf 协议、zlib/gzip 压缩与解压缩、Large File Transfer 大文件传输等等。</li>
+<li>红色的部分 Transport Services 传输服务，包括 Socket、Datagram、Http Tunnel 等等。</li>
+</ul>
+</li>
+<li>构成部分<ul>
+<li>Channel<ul>
+<li>NIO 基本结构，代表一个用于连接到实体如硬件设备、文件、网络套接字或程序组件，能否执行一个或多个不同的 I/O 操作的开放连接。</li>
+<li>比较常用的 Channel 接口实现类是 NioServerSocketChannel（服务端）和 NioSocketChannel（客户端），这两个 Channel 可以和 BIO 编程模型中的 ServerSocket 以及 Socket 两个概念对应上。Netty 的 Channel 接口所提供的 API，大大地降低了直接使用 Socket 类的复杂性。</li>
+</ul>
+</li>
+<li>Future<ul>
+<li>提供了另一种通知应用操作已经完成的方式，这个对象作为一个一步操作结果的占位符，他将在将来的某个时候完成并提交结果。</li>
+<li>Netty 提供自己的实现，ChannelFuture，用于执行异步操作时使用。每个 Netty 的 outbound I/O 操作都会返回一个 ChannelFuture，这样就不会阻塞，这便是 Netty 所谓的“自底向上的异步和事件驱动”。相关实现的步骤如下：<ol>
+<li>异步连接到远程对等节点，调用立即返回并提供 ChannelFuture；</li>
+<li>操作完成后通知注册一个 ChannelFutureListener；</li>
+<li>当 <code>operationComplete()</code> 调用时检查操作的状态；</li>
+<li>如果成功就创建一个 ByteBuf 来保存数据；</li>
+<li>异步发送数据到远程，再次返回 ChannelFuture；</li>
+<li>如果有一个错误则抛出 Throwable，描述错误原因。</li>
+</ol>
+</li>
+<li>相关类<ul>
+<li>ChannelFuture<ul>
+<li>Netty 是异步非阻塞的，所有的 I/O 操作都为异步的。</li>
+<li>因此，我们不能立刻得到操作是否执行成功，但是，你可以通过 ChannelFuture 接口的 <code>addListener()</code> 方法注册一个 ChannelFutureListener，当操作执行成功或者失败时，监听就会自动触发返回结果。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Event 和 Handle<ul>
+<li>Netty 使用不同的事件来通知我们更改的状态或操作的状态，这使我们能够根据发声的事件触发适当的行为。</li>
+<li>这些行为可能包括：日志、数据转换、流控制、应用程序逻辑，由于 Netty 是一个网络框架，事件很清晰的跟入栈或出出站数据流相关，因为一些事件可能触发的传入的数据或状态的变化包括：活动或非活动连接、数据的读取、用户事件、错误，出站事件是由于在未来操作将触发的一个动作，这些包括：打开或关闭一个连接到远程、写或冲刷数据到 socket。</li>
+<li>每个事件都可以分配给用户实现处理程序类的方法，这些范例可直接转换为应用程序构建块。</li>
+<li>Netty 的 ChannelHandler 是各种处理程序的基本抽象，每个处理器实例就是一个回调，用于执行各种事件的响应。</li>
+<li>相关类<ul>
+<li>ChannelHandler<ul>
+<li>ChannelHandler 是消息的具体处理器。他负责处理读写操作、客户端连接等事情。</li>
+</ul>
+</li>
+<li>ChannelPipeline<ul>
+<li>ChannelPipeline 为 ChannelHandler 的链，提供了一个容器并定义了用于沿着链传播入站和出站事件流的 API 。当 Channel 被创建时，它会被自动地分配到它专属的 ChannelPipeline。</li>
+<li>我们可以在 ChannelPipeline 上通过 <code>addLast()</code> 方法添加一个或者多个 ChannelHandler ，因为一个数据或者事件可能会被多个 Handler 处理。当一个 ChannelHandler 处理完之后就将数据交给下一个 ChannelHandler 。</li>
+</ul>
+</li>
+<li>EventLoop<ul>
+<li>EventLoop 定义了 Netty 的核心抽象，用于处理连接的生命周期中所发生的事件。</li>
+<li>EventLoop 的主要作用实际就是负责监听网络事件并调用事件处理器进行相关 I/O 操作的处理。</li>
+<li>Channel 为 Netty 网络操作（读写等操作）抽象类，EventLoop 负责处理注册到其上的 Channel 处理 I/O 操作，两者配合参与 I/O 操作。</li>
+</ul>
+</li>
+<li>EventLoopGroup<ul>
+<li>EventLoopGroup 包含多个 EventLoop（每一个 EventLoop 通常内部包含一个线程），上面我们已经说了 EventLoop 的主要作用实际就是负责监听网络事件并调用事件处理器进行相关 I/O 操作的处理。</li>
+<li>并且 EventLoop 处理的 I/O 事件都将在它专有的 Thread 上被处理，即 Thread 和 EventLoop 属于 1 : 1 的关系，从而保证线程安全。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>Bootstrap 和 ServerBootstrap<ul>
+<li>Bootstrap 是客户端的启动引导类/辅助类</li>
+<li>ServerBootstrap 客户端的启动引导类/辅助类</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 的线程模型<ul>
+<li>对于网络请求一般可以分为两个处理阶段，一是接收请求任务，二是处理网络请求。根据不同阶段处理方式分为以下几种线程模型：<ul>
+<li>串行化处理模型<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B_%E4%B8%B2%E8%A1%8C%E5%8C%96%E5%A4%84%E7%90%86%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型_串行化处理模型"></li>
+<li>这个模型中用一个线程来处理网络请求连接和任务处理，当 worker 接受到一个任务之后，就立刻进行处理，也就是说任务接受和任务处理是在同一个 worker 线程中进行的，没有进行区分。这样做存在一个很大的问题是，必须要等待某个 task 处理完成之后，才能接受处理下一个 task。</li>
+<li>因此可以把接收任务和处理任务两个阶段分开处理，一个线程接收任务，放入任务队列，另外的线程异步处理任务队列中的任务。</li>
+</ul>
+</li>
+<li>并行化处理模型<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B_%E5%B9%B6%E8%A1%8C%E5%8C%96%E5%A4%84%E7%90%86%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型_并行化处理模型"></li>
+<li>由于任务处理一般比较缓慢，会导致任务队列中任务积压长时间得不到处理，这时可以使用线程池来处理。可以通过为每个线程维护一个任务队列来改进这种模型。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 具体线程模型<ul>
+<li>Reactor 模式基于事件驱动，采用多路复用将事件分发给相应的 Handler 处理，非常适合处理海量 IO 的场景。</li>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型"></li>
+<li>每个 NioEventLoop 都绑定了一个 Selector，所以在 Netty 的线程模型中，是由多个 Selecotr 在监听 I/O 就绪事件。而 Channel 注册到 Selector。</li>
+<li>一个 Channel 绑定一个 NioEventLoop，相当于一个连接绑定一个线程，这个连接所有的 ChannelHandler 都是在一个线程中执行的，避免了多线程干扰。更重要的是 ChannelPipline 链表必须严格按照顺序执行的。单线程的设计能够保证 ChannelHandler 的顺序执行。</li>
+<li>一个 NioEventLoop 的 selector 可以被多个 Channel 注册，也就是说多个 Channel 共享一个 EventLoop。EventLoop 的 Selecctor 对这些 Channel 进行检查。</li>
+<li>相关问题<ul>
+<li><strong>如何理解 NioEventLoop 和 NioEventLoopGroup</strong><ul>
+<li>NioEventLoop 实际上就是工作线程，可以直接理解为一个线程。NioEventLoopGroup 是一个线程池，线程池中的线程就是 NioEventLoop。</li>
+<li>实际上 bossGroup 中有多个 NioEventLoop 线程，每个 NioEventLoop 绑定一个端口，也就是说，如果程序只需要监听 1 个端口的话，bossGroup 里面只需要有一个 NioEventLoop 线程就行了。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 工作原理<ul>
+<li>server 端工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_Server%E7%AB%AF%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="Netty_Server端工作原理"></li>
+</ul>
+</li>
+<li>client 端工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_Client%E7%AB%AF%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="Netty_Client端工作原理"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 的零拷贝<ul>
+<li>零复制（英语：Zero-copy；也译零拷贝）技术是指计算机执行操作时，CPU 不需要先将数据从某处内存复制到另一个特定区域。这种技术通常用于通过网络传输文件时节省 CPU 周期和内存带宽。</li>
+<li>在 OS 层面上的 Zero-copy 通常指避免在用户态（User-space）与内核态（Kernel-space）之间来回拷贝数据。而在 Netty 层面，零拷贝主要体现在对于数据操作的优化。</li>
+<li>Netty 中的零拷贝体现在以下几个方面：<ul>
+<li>使用 Netty 提供的 CompositeByteBuf 类, 可以将多个 ByteBuf 合并为一个逻辑上的 ByteBuf, 避免了各个 ByteBuf 之间的拷贝。</li>
+<li>ByteBuf 支持 slice 操作, 因此可以将 ByteBuf 分解为多个共享同一个存储区域的 ByteBuf, 避免了内存的拷贝。</li>
+<li>通过 FileRegion 包装的 FileChannel.tranferTo 实现文件传输, 可以直接将文件缓冲区的数据发送到目标 Channel, 避免了传统通过循环 write 方式导致的内存拷贝问题。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -4893,7 +5337,7 @@ char buf[];保存字符串的数组
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">681</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

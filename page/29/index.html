@@ -188,134 +188,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-27.%E9%98%BF%E5%A7%86%E8%BE%BE%E5%B0%94%E5%AE%9A%E5%BE%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/13/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-27.%E9%98%BF%E5%A7%86%E8%BE%BE%E5%B0%94%E5%AE%9A%E5%BE%8B/" class="post-title-link" itemprop="url">Java-并发性和多线程-27.阿姆达尔定律</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-13 18:13:52" itemprop="dateCreated datePublished" datetime="2016-12-13T18:13:52+08:00">2016-12-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/amdahls-law/">http://ifeve.com/amdahls-law/</a></p>
-<p>阿姆达尔定律可以用来计算处理器平行运算之后效率提升的能力。阿姆达尔定律因Gene Amdal 在1967年提出这个定律而得名。绝大多数使用并行或并发系统的开发者有一种并发或并行可能会带来提速的感觉，甚至不知道阿姆达尔定律。不管怎样，了解阿姆达尔定律还是有用的。</p>
-<p>我会首先以算术的方式介绍阿姆达尔定律定律，然后再用图表演示一下。</p>
-<h2 id="阿姆达尔定律定义"><a href="#阿姆达尔定律定义" class="headerlink" title="阿姆达尔定律定义"></a>阿姆达尔定律定义</h2><p>一个程序（或者一个算法）可以按照是否可以被并行化分为下面两个部分：</p>
-<ul>
-<li>可以被并行化的部分</li>
-<li>不可以被并行化的部分</li>
-</ul>
-<p>假设一个程序处理磁盘上的文件。这个程序的一小部分用来扫描路径和在内存中创建文件目录。做完这些后，每个文件交个一个单独的线程去处理。扫描路径和创建文件目录的部分不可以被并行化，不过处理文件的过程可以。</p>
-<p>程序串行（非并行）执行的总时间我们记为T。时间T包括不可以被并行和可以被并行部分的时间。不可以被并行的部分我们记为B。那么可以被并行的部分就是T-B。下面的列表总结了这些定义：</p>
-<ul>
-<li>T = 串行执行的总时间</li>
-<li>B = 不可以并行的总时间</li>
-<li>T- B = 并行部分的总时间</li>
-</ul>
-<p>从上面可以得出：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">T = B + (T – B)</span><br></pre></td></tr></table></figure>
-<p>首先，这个看起来可能有一点奇怪，程序的可并行部分在上面这个公式中并没有自己的标识。然而，由于这个公式中可并行可以用总时间T 和 B（不可并行部分）表示出来，这个公式实际上已经从概念上得到了简化，也即是指以这种方式减少了变量的个数。</p>
-<p>T- B 是可并行化的部分，以并行的方式执行可以提高程序的运行速度。可以提速多少取决于有多少线程或者多少个CPU来执行。线程或者CPU的个数我们记为N。可并行化部分被执行的最快时间可以通过下面的公式计算出来：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(T – B ) / N</span><br></pre></td></tr></table></figure>
-<p>或者通过这种方式</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(1 / N) * (T – B)</span><br></pre></td></tr></table></figure>
-<p>维基中使用的是第二种方式。</p>
-<p>根据阿姆达尔定律，当一个程序的可并行部分使用N个线程或CPU执行时，执行的总时间为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">T(N) = B + ( T – B ) / N</span><br></pre></td></tr></table></figure>
-<p>T(N)指的是在并行因子为N时的总执行时间。因此，T(1)就执行在并行因子为1时程序的总执行时间。使用T(1)代替T，阿姆达尔定律定律看起来像这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">T(N) = B + (T(1) – B) / N</span><br></pre></td></tr></table></figure>
-<p>表达的意思都是是一样的。</p>
-<h2 id="一个计算例子"><a href="#一个计算例子" class="headerlink" title="一个计算例子"></a>一个计算例子</h2><p>为了更好的理解阿姆达尔定律，让我们来看一个计算的例子。执行一个程序的总时间设为1.程序的不可并行化占40%，按总时间1计算，就是0.4.可并行部分就是1 – 0.4 = 0.6.</p>
-<p>在并行因子为2的情况下，程序的执行时间将会是：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">T(2) = 0.4 + ( 1 - 0.4 ) / 2</span><br><span class="line"> = 0.4 + 0.6 / 2</span><br><span class="line"> = 0.4 + 0.3</span><br><span class="line"> = 0.7</span><br></pre></td></tr></table></figure>
-<p>在并行因子为5的情况下，程序的执行时间将会是：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">T(5) = 0.4 + ( 1 - 0.4 ) / 5</span><br><span class="line"> = 0.4 + 0.6 / 6</span><br><span class="line"> = 0.4 + 0.12</span><br><span class="line"> = 0.52</span><br></pre></td></tr></table></figure>
-
-<h2 id="阿姆达尔定律图示"><a href="#阿姆达尔定律图示" class="headerlink" title="阿姆达尔定律图示"></a>阿姆达尔定律图示</h2><p>为了更好地理解阿姆达尔定律，我会尝试演示这个定定律是如何诞生的。</p>
-<p>首先，一个程序可以被分割为两部分，一部分为不可并行部分B，一部分为可并行部分1 – B。如下图：</p>
-<p>![amdahl’ s law1.png](Java-并发性和多线程-27.阿姆达尔定律/amdahl’ s law1.png)</p>
-<p>在顶部被带有分割线的那条直线代表总时间 T(1)。</p>
-<p>下面你可以看到在并行因子为2的情况下的执行时间：</p>
-<p>![amdahl’s law2.png](Java-并发性和多线程-27.阿姆达尔定律/amdahl’s law2.png)</p>
-<p>并行因子为3的情况：</p>
-<p>![amdahl’ s law3.png](Java-并发性和多线程-27.阿姆达尔定律/amdahl’ s law3.png)</p>
-<h2 id="优化算法"><a href="#优化算法" class="headerlink" title="优化算法"></a>优化算法</h2><p>从阿姆达尔定律可以看出，程序的可并行化部分可以通过使用更多的硬件（更多的线程或CPU）运行更快。对于不可并行化的部分，只能通过优化代码来达到提速的目的。因此，你可以通过优化不可并行化部分来提高你的程序的运行速度和并行能力。你可以对不可并行化在算法上做一点改动，如果有可能，你也可以把一些移到可并行化放的部分。</p>
-<h3 id="优化串行分量"><a href="#优化串行分量" class="headerlink" title="优化串行分量"></a>优化串行分量</h3><p>如果你优化一个程序的串行化部分，你也可以使用阿姆达尔定律来计算程序优化后的执行时间。如果不可并行部分通过一个因子O来优化，那么阿姆达尔定律看起来就像这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">T(O, N) = B / O + (1 - B / O) / N</span><br></pre></td></tr></table></figure>
-<p>记住，现在程序的不可并行化部分占了B / O的时间，所以，可并行化部分就占了1 - B / O的时间.</p>
-<p>如果B为0.1，O为2，N为5，计算看起来就像这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">T(2,5) = 0.4 / 2 + (1 - 0.4 / 2) / 5</span><br><span class="line">   = 0.2 + (1 - 0.4 / 2) / 5</span><br><span class="line">   = 0.2 + (1 - 0.2) / 5</span><br><span class="line">   = 0.2 + 0.8 / 5</span><br><span class="line">   = 0.2 + 0.16</span><br><span class="line">   = 0.36</span><br></pre></td></tr></table></figure>
-
-<h2 id="运行时间-vs-加速"><a href="#运行时间-vs-加速" class="headerlink" title="运行时间 vs. 加速"></a>运行时间 vs. 加速</h2><p>到目前为止，我们只用阿姆达尔定律计算了一个程序或算法在优化后或者并行化后的执行时间。我们也可以使用阿姆达尔定律计算加速比（speedup），也就是经过优化后或者串行化后的程序或算法比原来快了多少。</p>
-<p>如果旧版本的程序或算法的执行时间为T，那么增速比就是：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Speedup = T / T(O , N);</span><br></pre></td></tr></table></figure>
-<p>为了计算执行时间，我们常常把T设为1，加速比为原来时间的一个分数。公式大致像下面这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Speedup = 1 / T（O,N)</span><br></pre></td></tr></table></figure>
-<p>如果我们使用阿姆达尔定律来代替T(O,N)，我们可以得到下面的公式：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Speedup = 1 / ( B / O + (1 - B / O) / N)</span><br></pre></td></tr></table></figure>
-<p>如果B = 0.4， O = 2， N = 5， 计算变成下面这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Speedup = 1 / ( 0.4 / 2 + (1 - 0.4 / 2) / 5)</span><br><span class="line">    = 1 / ( 0.2 + (1 - 0.4 / 2) / 5)</span><br><span class="line">    = 1 / ( 0.2 + (1 - 0.2) / 5 )</span><br><span class="line">    = 1 / ( 0.2 + 0.8 / 5 )</span><br><span class="line">    = 1 / ( 0.2 + 0.16 )</span><br><span class="line">    = 1 / 0.36</span><br><span class="line">    = 2.77777 ...</span><br></pre></td></tr></table></figure>
-<p>上面的计算结果可以看出，如果你通过一个因子2来优化不可并行化部分，一个因子5来并行化可并行化部分，这个程序或算法的最新优化版本最多可以比原来的版本快2.77777倍。</p>
-<h2 id="测量，不要仅是计算"><a href="#测量，不要仅是计算" class="headerlink" title="测量，不要仅是计算"></a>测量，不要仅是计算</h2><p>虽然阿姆达尔定律允许你并行化一个算法的理论加速比，但是不要过度依赖这样的计算。在实际场景中，当你优化或并行化一个算法时，可以有很多的因子可以被考虑进来。</p>
-<p>内存的速度，CPU缓存，磁盘，网卡等可能都是一个限制因子。如果一个算法的最新版本是并行化的，但是导致了大量的CPU缓存浪费，你可能不会再使用x N个CPU来获得x N的期望加速。如果你的内存总线（memory bus），磁盘，网卡或者网络连接都处于高负载状态，也是一样的情况。</p>
-<p>我们的建议是，使用阿姆达尔定律定律来指导我们优化程序，而不是用来测量优化带来的实际加速比。记住，有时候一个高度串行化的算法胜过一个并行化的算法，因为串行化版本不需要进行协调管理（上下文切换），而且一个单个的CPU在底层硬件工作（CPU管道、CPU缓存等）上的一致性可能更好。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/13/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-26.%E9%9D%9E%E9%98%BB%E5%A1%9E%E7%AE%97%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1266,6 +1138,98 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/12/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-16.%E5%B5%8C%E5%A5%97%E7%AE%A1%E7%A8%8B%E9%94%81%E6%AD%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/12/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E5%B9%B6%E5%8F%91%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java-%E5%B9%B6%E5%8F%91%E6%80%A7%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B-16.%E5%B5%8C%E5%A5%97%E7%AE%A1%E7%A8%8B%E9%94%81%E6%AD%BB/" class="post-title-link" itemprop="url">Java-并发性和多线程-16.嵌套管程锁死</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-12 21:06:58" itemprop="dateCreated datePublished" datetime="2016-12-12T21:06:58+08:00">2016-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/nested-monitor-lockout/">http://ifeve.com/nested-monitor-lockout/</a></p>
+<p>嵌套管程锁死类似于死锁，下面是一个嵌套管程锁死的场景：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">线程1获得A对象的锁。</span><br><span class="line">线程1获得对象B的锁（同时持有对象A的锁）。</span><br><span class="line">线程1决定等待另一个线程的信号再继续。</span><br><span class="line">线程1调用B.wait()，从而释放了B对象上的锁，但仍然持有对象A的锁。</span><br><span class="line"></span><br><span class="line">线程2需要同时持有对象A和对象B的锁，才能向线程1发信号。</span><br><span class="line">线程2无法获得对象A上的锁，因为对象A上的锁当前正被线程1持有。</span><br><span class="line">线程2一直被阻塞，等待线程1释放对象A上的锁。</span><br><span class="line"></span><br><span class="line">线程1一直阻塞，等待线程2的信号，因此，不会释放对象A上的锁，</span><br><span class="line">而线程2需要对象A上的锁才能给线程1发信号……</span><br></pre></td></tr></table></figure>
+
+<p>你可以能会说，这是个空想的场景，好吧，让我们来看看下面这个比较挫的Lock实现：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">//lock implementation with nested monitor lockout problem</span><br><span class="line">public class Lock&#123;</span><br><span class="line">	protected MonitorObject monitorObject = new MonitorObject();</span><br><span class="line">	protected boolean isLocked = false;</span><br><span class="line"></span><br><span class="line">	public void lock() throws InterruptedException&#123;</span><br><span class="line">		synchronized(this)&#123;</span><br><span class="line">			while(isLocked)&#123;</span><br><span class="line">				synchronized(this.monitorObject)&#123;</span><br><span class="line">					this.monitorObject.wait();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			isLocked = true;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	public void unlock()&#123;</span><br><span class="line">		synchronized(this)&#123;</span><br><span class="line">			this.isLocked = false;</span><br><span class="line">			synchronized(this.monitorObject)&#123;</span><br><span class="line">				this.monitorObject.notify();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，lock()方法首先在”this”上同步，然后在monitorObject上同步。如果isLocked等于false，因为线程不会继续调用monitorObject.wait()，那么一切都没有问题 。但是如果isLocked等于true，调用lock()方法的线程会在monitorObject.wait()上阻塞。</p>
+<p>这里的问题在于，调用monitorObject.wait()方法只释放了monitorObject上的管程对象，而与”this“关联的管程对象并没有释放。换句话说，这个刚被阻塞的线程仍然持有”this”上的锁。</p>
+<p>（校对注：如果一个线程持有这种Lock的时候另一个线程执行了lock操作）当一个已经持有这种Lock的线程想调用unlock(),就会在unlock()方法进入synchronized(this)块时阻塞。这会一直阻塞到在lock()方法中等待的线程离开synchronized(this)块。但是，在unlock中isLocked变为false，monitorObject.notify()被执行之后，lock()中等待的线程才会离开synchronized(this)块。</p>
+<p>简而言之，在lock方法中等待的线程需要其它线程成功调用unlock方法来退出lock方法，但是，在lock()方法离开外层同步块之前，没有线程能成功执行unlock()。</p>
+<p>结果就是，任何调用lock方法或unlock方法的线程都会一直阻塞。这就是嵌套管程锁死。</p>
+<h2 id="一个更现实的例子"><a href="#一个更现实的例子" class="headerlink" title="一个更现实的例子"></a>一个更现实的例子</h2><p>你可能会说，这么挫的实现方式我怎么可能会做呢？你或许不会在里层的管程对象上调用wait或notify方法，但完全有可能会在外层的this上调。</p>
+<p>有很多类似上面例子的情况。例如，如果你准备实现一个公平锁。你可能希望每个线程在它们各自的QueueObject上调用wait()，这样就可以每次唤醒一个线程。</p>
+<p>下面是一个比较挫的公平锁实现方式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">//Fair Lock implementation with nested monitor lockout problem</span><br><span class="line">public class FairLock &#123;</span><br><span class="line">	private boolean isLocked = false;</span><br><span class="line">	private Thread lockingThread = null;</span><br><span class="line">	private List waitingThreads =</span><br><span class="line">		new ArrayList();</span><br><span class="line"></span><br><span class="line">	public void lock() throws InterruptedException&#123;</span><br><span class="line">		QueueObject queueObject = new QueueObject();</span><br><span class="line"></span><br><span class="line">		synchronized(this)&#123;</span><br><span class="line">			waitingThreads.add(queueObject);</span><br><span class="line"></span><br><span class="line">			while(isLocked ||</span><br><span class="line">				waitingThreads.get(0) != queueObject)&#123;</span><br><span class="line"></span><br><span class="line">				synchronized(queueObject)&#123;</span><br><span class="line">					try&#123;</span><br><span class="line">						queueObject.wait();</span><br><span class="line">					&#125;catch(InterruptedException e)&#123;</span><br><span class="line">						waitingThreads.remove(queueObject);</span><br><span class="line">						throw e;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			waitingThreads.remove(queueObject);</span><br><span class="line">			isLocked = true;</span><br><span class="line">			lockingThread = Thread.currentThread();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	public synchronized void unlock()&#123;</span><br><span class="line">		if(this.lockingThread != Thread.currentThread())&#123;</span><br><span class="line">			throw new IllegalMonitorStateException(</span><br><span class="line">				&quot;Calling thread has not locked this lock&quot;);</span><br><span class="line">		&#125;</span><br><span class="line">		isLocked = false;</span><br><span class="line">		lockingThread = null;</span><br><span class="line">		if(waitingThreads.size() &gt; 0)&#123;</span><br><span class="line">			QueueObject queueObject = waitingThread.get(0);</span><br><span class="line">			synchronized(queueObject)&#123;</span><br><span class="line">				queueObject.notify();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">public class QueueObject &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>乍看之下，嗯，很好，但是请注意lock方法是怎么调用queueObject.wait()的，在方法内部有两个synchronized块，一个锁定this，一个嵌在上一个synchronized块内部，它锁定的是局部变量queueObject。</p>
+<p>当一个线程调用queueObject.wait()方法的时候，它仅仅释放的是在queueObject对象实例的锁，并没有释放”this”上面的锁。</p>
+<p>现在我们还有一个地方需要特别注意， unlock方法被声明成了synchronized，这就相当于一个synchronized（this）块。这就意味着，如果一个线程在lock()中等待，该线程将持有与this关联的管程对象。所有调用unlock()的线程将会一直保持阻塞，等待着前面那个已经获得this锁的线程释放this锁，但这永远也发生不了，因为只有某个线程成功地给lock()中等待的线程发送了信号，this上的锁才会释放，但只有执行unlock()方法才会发送这个信号。</p>
+<p>因此，上面的公平锁的实现会导致嵌套管程锁死。更好的公平锁实现方式可以参考Starvation and Fairness。</p>
+<h2 id="嵌套管程锁死-VS-死锁"><a href="#嵌套管程锁死-VS-死锁" class="headerlink" title="嵌套管程锁死 VS 死锁"></a>嵌套管程锁死 VS 死锁</h2><p>嵌套管程锁死与死锁很像：都是线程最后被一直阻塞着互相等待。</p>
+<p>但是两者又不完全相同。在死锁中我们已经对死锁有了个大概的解释，死锁通常是因为两个线程获取锁的顺序不一致造成的，线程1锁住A，等待获取B，线程2已经获取了B，再等待获取A。如死锁避免中所说的，死锁可以通过总是以相同的顺序获取锁来避免。</p>
+<p>但是发生嵌套管程锁死时锁获取的顺序是一致的。线程1获得A和B，然后释放B，等待线程2的信号。线程2需要同时获得A和B，才能向线程1发送信号。所以，一个线程在等待唤醒，另一个线程在等待想要的锁被释放。</p>
+<p>不同点归纳如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">死锁中，二个线程都在等待对方释放锁。</span><br><span class="line"></span><br><span class="line">嵌套管程锁死中，线程1持有锁A，同时等待从线程2发来的信号，线程2需要锁A来发信号给线程1。</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -1337,7 +1301,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">681</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

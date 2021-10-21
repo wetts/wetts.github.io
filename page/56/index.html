@@ -188,88 +188,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-XML%E9%85%8D%E7%BD%AE-bean%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/05/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-XML%E9%85%8D%E7%BD%AE-bean%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/" class="post-title-link" itemprop="url">依赖注入-XML配置-bean的生命周期</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-05-15 20:58:22" itemprop="dateCreated datePublished" datetime="2015-05-15T20:58:22+08:00">2015-05-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在低版本的Spring中，由于只有两个Bean作用域，所以采用<code>singleton=&quot;true|false&quot;</code>的配置方式，Spring为了向后兼容，依旧支持这种配置方式。不过，Spring推荐采用新的配置方式：scope=”作用域类型”。</p>
-<p>scope分类</p>
-<ul>
-<li>singleton</li>
-<li>prototype</li>
-<li>request</li>
-<li>session</li>
-<li>globalSession</li>
-</ul>
-<p>Spring默认是singleton。在启动容器的时候默认实例化，并缓存于容器中。如果用户不希望在容器启动的时候提前实例化singleton的Bean，可以通过lazy-init=”true”来进行控制。</p>
-<h3 id="自定义作用域"><a href="#自定义作用域" class="headerlink" title="自定义作用域"></a>自定义作用域</h3><p>可以通过<code>org.springframework.beans.factory.config.Scope</code>接口定义新的作用域，再通过<code>org.springframework.beans.factory.config.CustomScopeConfigurer</code>这个BeanFactoryPostProcessor注册自定义的Bean作用域。</p>
-<h3 id="Web相关作用域的Bean注入"><a href="#Web相关作用域的Bean注入" class="headerlink" title="Web相关作用域的Bean注入"></a>Web相关作用域的Bean注入</h3><p>将Web相关作用域的Bean注入到singleton或prototype的Bean中，我们需要在配置文件中添加<code>&lt;aop:scoped-proxy /&gt;</code>，使引用者从指定的域中取得应用。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;bean id=&quot;car&quot; class=&quot;&quot; scope=&quot;request&quot;&gt;</span><br><span class="line">	&lt;aop:scoped-proxy /&gt;</span><br><span class="line">&lt;/bean&gt;</span><br><span class="line">&lt;bean id=&quot;boss&quot; class=&quot;&quot;&gt;</span><br><span class="line">	&lt;property name=&quot;car&quot; ref=&quot;car&quot; /&gt;</span><br><span class="line">&lt;/bean&gt;</span><br></pre></td></tr></table></figure>
-<p>car Bean是request作用域，它被singleton作用域的boss Bean引用。为了boss能够从适当作用域中获取car Bean的引用，需要使用Spring AOP的语法为car Bean配置一个代理类。</p>
-<p>在boss Bean在Web环境下，调用car Bean时，Spring AOP将启动动态代理只能判断boss Bean位于哪个HTTP请求线程中，并从对应的HTTP请求线程中获取对应的car Bean。</p>
-<p>boss Bean的作用域是singleton，也就是说，在Spring容器中始终只有一个实例，而car Bean的作用域为request，所以每个调用到car Bean的那些HTTP请求都会创建一个car Bean。Spring通过动态代理技术，能够让boss Bean引用到对应HTTP请求的car Bean。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/Spring1.0%E5%92%8C2.0%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1188,6 +1106,84 @@ public void updateProperties() &#123;
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/05/05/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E7%B1%BB%E8%A3%85%E8%BD%BD%E5%99%A8ClassLoader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/05/05/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Spring3.x%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98/%E7%B1%BB%E8%A3%85%E8%BD%BD%E5%99%A8ClassLoader/" class="post-title-link" itemprop="url">类装载器ClassLoader</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-05-05 22:16:32" itemprop="dateCreated datePublished" datetime="2015-05-05T22:16:32+08:00">2015-05-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="类装载器工作机制"><a href="#类装载器工作机制" class="headerlink" title="类装载器工作机制"></a>类装载器工作机制</h3><p>类装载器就是寻找类的字节码文件并构造出类在JVM内部表示的对象组建。</p>
+<p>在Java中，类装载器把一个类装入JVM中，要经过以下步骤：</p>
+<ol>
+<li>装载：查找和导入Class文件；</li>
+<li>链接：执行校验、准备和解析步骤，其中解析步骤是可选的：</li>
+<li>检验：检查载入Class文件数据的正确性；</li>
+<li>准备：给类的静态变量分配存储空间；</li>
+<li>解析：将符号引用准成直接引用。</li>
+<li>初始化：对类的静态变量、静态代码块执行初始化工作。</li>
+</ol>
+<p>JVM在运行时会产生三个ClassLoader：跟装载器、ExtClassLoader（扩展类装载器）和AppClassLoader（系统类装载器）。</p>
+<p>其中，根装载器不是ClassLoader的子类，它使用C++编写，因此Java中看不到它，根装载器负责装载JRE的核心类库，如JRE目标下的rt.jar、charsets.jar等。ExtClassLoader和AppClassLoader都是ClassLoader的子类。其中ExtClassLoader负责装载JRE扩展目录ext中的JAR类包；AppClassLoader负责装载Classpath路径下的类包。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
@@ -1259,7 +1255,7 @@ public void updateProperties() &#123;
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">681</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
