@@ -188,153 +188,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC3%E7%AB%A0%20-%20Immutable%20Object%EF%BC%88%E4%B8%8D%E5%8F%AF%E5%8F%98%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC3%E7%AB%A0%20-%20Immutable%20Object%EF%BC%88%E4%B8%8D%E5%8F%AF%E5%8F%98%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第3章-Immutable Object（不可变对象）模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-12 20:42:31" itemprop="dateCreated datePublished" datetime="2016-11-12T20:42:31+08:00">2016-11-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
-<h2 id="第三张-Immutable-Object（不可变对象）模式"><a href="#第三张-Immutable-Object（不可变对象）模式" class="headerlink" title="第三张 Immutable Object（不可变对象）模式"></a>第三张 Immutable Object（不可变对象）模式</h2><h4 id="模式简介"><a href="#模式简介" class="headerlink" title="模式简介"></a>模式简介</h4><ul>
-<li>多线程共享变量的情况下，为了保证数据一致性，往往需要对这些变量的访问进行加锁。这些同步访问控制，如显式锁（Explicit Lock）和 CAS（Compare and Swap）操作，会带来额外的开销和问题，如上下文切换、等待时间和 ABA 问题等。</li>
-<li>Immutable Object 模式使得我们可以在不使用锁的情况下，即保证共享变量访问的线程安全，又能避免引入锁可能带来的问题和开销。</li>
-<li>Immutable Object 模式的意图是通过使用对外可见的状态不可变的对象，使得被共享的对象“天生”具有线程安全性，而无须额外地同步访问控制。</li>
-<li>所谓状态不可变的对象，即对象一经创建，其对外可见的状态就保持不变。</li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC3%E7%AB%A0%20-%20Immutable%20Object%EF%BC%88%E4%B8%8D%E5%8F%AF%E5%8F%98%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/08/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat%E9%85%8D%E7%BD%AE%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%9B%BE%E7%89%87%E8%B7%AF%E5%BE%84%E4%B8%8D%E5%9C%A8%E9%A1%B9%E7%9B%AE%E4%B8%8B%E7%9A%84%E5%A4%84%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/08/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat%E9%85%8D%E7%BD%AE%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%9B%BE%E7%89%87%E8%B7%AF%E5%BE%84%E4%B8%8D%E5%9C%A8%E9%A1%B9%E7%9B%AE%E4%B8%8B%E7%9A%84%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">Tomcat配置项目的图片路径不在项目下的处理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-08 08:55:57" itemprop="dateCreated datePublished" datetime="2016-11-08T08:55:57+08:00">2016-11-08</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>tomcat配置项目的图片路径不在项目下的处理</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;Host appBase=&quot;webapps&quot; autoDeploy=&quot;true&quot; name=&quot;localhost&quot; unpackWARs=&quot;true&quot; xmlNamespaceAware=&quot;false&quot; xmlValidation=&quot;false&quot;&gt;</span><br><span class="line"></span><br><span class="line">     &lt;Context docBase=&quot;weibo&quot; path=&quot;/weibo&quot; reloadable=&quot;true&quot; source=&quot;org.eclipse.jst.jee.server:weibo&quot;/&gt;</span><br><span class="line">          &lt;!-- 设置图片虚拟路径[访问时路径为/static_img] --&gt;</span><br><span class="line">     &lt;Context path=&quot;/static_img&quot; docBase=&quot;F:\temp&quot; reloadable=&quot;false&quot; /&gt;</span><br><span class="line">&lt;/Host&gt;</span><br><span class="line">&lt;!-- 也可以这样设置图片虚拟路径 --&gt;</span><br><span class="line">&lt;Host name=&quot;10.0.0.123&quot; appBase=&quot;webapps&quot;</span><br><span class="line">            unpackWARs=&quot;true&quot; autoDeploy=&quot;true&quot;</span><br><span class="line">            xmlValidation=&quot;false&quot; xmlNamespaceAware=&quot;false&quot;&gt;</span><br><span class="line"></span><br><span class="line">	 &lt;Context path=&quot;&quot; docBase=&quot;F:\temp&quot; reloadable=&quot;false&quot; &gt;&lt;/Context&gt;</span><br><span class="line">&lt;/Host&gt;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -384,7 +237,7 @@
       
           <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zwl156135995/article/details/51445862">https://blog.csdn.net/zwl156135995/article/details/51445862</a></p>
 <h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><p>作用：</p>
-<p>select for update 是为了在查询时,避免其他用户以该表进行插入,修改或删除等操作,造成表的不一致性.</p>
+<p>select for update 是为了在查询时，避免其他用户以该表进行插入，修改或删除等操作，造成表的不一致性。</p>
 <p>给你举几个例子：</p>
 <ul>
 <li>select * from t for update 会等待行锁释放之后，返回查询结果。</li>
@@ -400,47 +253,47 @@
 <li>防止无限期地等待被锁定的行；</li>
 <li>允许应用程序中对锁的等待时间进行更多的控制。</li>
 <li>对于交互式应用程序非常有用，因为这些用户不能等待不确定</li>
-<li>若使用了skip locked，则可以越过锁定的行，不会报告由wait n 引发的‘资源忙’异常报告</li>
+<li>若使用了 skip locked，则可以越过锁定的行，不会报告由 wait n 引发的‘资源忙’异常报告</li>
 </ol>
 <p>补充几点：</p>
 <p>分成两类：加锁范围子句和加锁行为子句</p>
 <ul>
-<li>加锁范围子句：在select…for update之后，可以使用of子句选择对select的特定数据表进行加锁操作。默认情况下，不使用of子句表示在select所有的数据表中加锁</li>
-<li>加锁行为子句：当我们进行for update的操作时，与普通select存在很大不同。一般select是不需要考虑数据是否被锁定，最多根据多版本一致读的特性读取之前的版本。加入for update之后，Oracle就要求启动一个新事务，尝试对数据进行加锁。如果当前已经被加锁，默认的行为必然是block等待。使用nowait子句的作用就是避免进行等待，当发现请求加锁资源被锁定未释放的时候，直接报错返回。</li>
+<li>加锁范围子句：在 select…for update 之后，可以使用 of 子句选择对 select 的特定数据表进行加锁操作。默认情况下，不使用 of 子句表示在 select 所有的数据表中加锁</li>
+<li>加锁行为子句：当我们进行 for update 的操作时，与普通 select 存在很大不同。一般 select 是不需要考虑数据是否被锁定，最多根据多版本一致读的特性读取之前的版本。加入 for update 之后，Oracle 就要求启动一个新事务，尝试对数据进行加锁。如果当前已经被加锁，默认的行为必然是 block 等待。使用 nowait 子句的作用就是避免进行等待，当发现请求加锁资源被锁定未释放的时候，直接报错返回。</li>
 </ul>
-<p>在日常中，我们对for update的使用还是比较普遍的，特别是在如pl/sql developer中手工修改数据。此时只是觉得方便，而对for update真正的含义缺乏理解。</p>
-<p>For update是Oracle提供的手工提高锁级别和范围的特例语句。Oracle的锁机制是目前各类型数据库锁机制中比较优秀的。所以，Oracle认为一般不需要用户和应用直接进行锁的控制和提升。甚至认为死锁这类锁相关问题的出现场景，大都与手工提升锁有关。</p>
-<p>所以，Oracle并不推荐使用for update作为日常开发使用。而且，在平时开发和运维中，使用了for update却忘记提交，会引起很多锁表故障。 那么，什么时候需要使用for update？就是那些需要业务层面数据独占时，可以考虑使用for update。场景上，比如火车票订票，在屏幕上显示邮票，而真正进行出票时，需要重新确定一下这个数据没有被其他客户端修改。所以，在这个确认过程中，可以使用for update。这是统一的解决方案方案问题，需要前期有所准备。</p>
+<p>在日常中，我们对 for update 的使用还是比较普遍的，特别是在如 pl/sql developer 中手工修改数据。此时只是觉得方便，而对 for update 真正的含义缺乏理解。</p>
+<p>For update 是 Oracle 提供的手工提高锁级别和范围的特例语句。Oracle 的锁机制是目前各类型数据库锁机制中比较优秀的。所以，Oracle 认为一般不需要用户和应用直接进行锁的控制和提升。甚至认为死锁这类锁相关问题的出现场景，大都与手工提升锁有关。</p>
+<p>所以，Oracle 并不推荐使用 for update 作为日常开发使用。而且，在平时开发和运维中，使用了 for update 却忘记提交，会引起很多锁表故障。那么，什么时候需要使用 for update？就是那些需要业务层面数据独占时，可以考虑使用 for update。场景上，比如火车票订票，在屏幕上显示邮票，而真正进行出票时，需要重新确定一下这个数据没有被其他客户端修改。所以，在这个确认过程中，可以使用 for update。这是统一的解决方案方案问题，需要前期有所准备。</p>
 <hr>
 <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Victor_Cindy1/article/details/78142956">https://blog.csdn.net/Victor_Cindy1/article/details/78142956</a></p>
-<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。"><a href="#问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。" class="headerlink" title="问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。"></a>问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。</h2><p><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/1.png" alt="1"><br>所以想到用select for update来控制不允许多线程插入（其实这种方式并没有解决问题）</p>
-<h2 id="先来了解几个名词"><a href="#先来了解几个名词" class="headerlink" title="先来了解几个名词:"></a>先来了解几个名词:</h2><ul>
-<li>statement: 一个SQL语句。 </li>
-<li>session: 一个由ORACLE用户产生的连接，一个用户能产生多个SESSION ，但相互之间是独立的。 </li>
-<li>transaction:所有的改动都能划分到transaction里，一个transaction包含一个或多个SQL。当一个SESSION建立的时候就是个TRANSACTION开始的时刻，此后transaction的开始和结束由DCL控制，也就是每个COMMIT/ROLLBACK都标示着一个transaction的结束。 </li>
+<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。"><a href="#问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。" class="headerlink" title="问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。"></a>问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。</h2><p><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/1.png" alt="1"><br>所以想到用 select for update 来控制不允许多线程插入（其实这种方式并没有解决问题）</p>
+<h2 id="先来了解几个名词"><a href="#先来了解几个名词" class="headerlink" title="先来了解几个名词"></a>先来了解几个名词</h2><ul>
+<li>statement：一个 SQL 语句。 </li>
+<li>session：一个由 ORACLE 用户产生的连接，一个用户能产生多个 SESSION，但相互之间是独立的。 </li>
+<li>transaction：所有的改动都能划分到 transaction 里，一个 transaction 包含一个或多个 SQL。当一个 SESSION 建立的时候就是个 TRANSACTION 开始的时刻，此后 transaction 的开始和结束由 DCL 控制，也就是每个 COMMIT/ROLLBACK 都标示着一个 transaction 的结束。 </li>
 </ul>
-<h2 id="用法介绍："><a href="#用法介绍：" class="headerlink" title="用法介绍："></a>用法介绍：</h2><p>select … for update会LOCK相应的ROW 。 </p>
-<p>只有一个TRANSACTION可以LOCK相应的行，也就是说如果一个ROW已经LOCKED了，那就不能被其他TRANSACTION所LOCK了。 </p>
-<p>LOCK由statement产生但却由TRANSACTION结尾（commit，rollback），也就是说一个SQL完成后LOCK还会存在，只有在COMMIT/ROLLBACK后才会师释放。</p>
-<p>使用这个行锁的情况一般是对并发的情况要求比较高的时候，需要锁住某行进行一些更新语句之后进行释放，再让其他transaction 去操作。很好的利用了这点解决了并发的问题。数据库中锁类型:有两种基本的锁类型，排它锁（Exclusive Locks，即X锁）和共享锁（Share Locks，即S锁）。当数据对象被加上排它锁时，其他的事务不能对它读取和修改。加了共享锁的数据对象可以被其他事务读取，但不能修改。数据库利用这两种基本的锁类型来对数据库的事务进行并发控制。</p>
-<h3 id="Oracle给Select结果集加锁-Skip-Locked-跳过加锁行获得可以加锁的结果集"><a href="#Oracle给Select结果集加锁-Skip-Locked-跳过加锁行获得可以加锁的结果集" class="headerlink" title="Oracle给Select结果集加锁,Skip Locked(跳过加锁行获得可以加锁的结果集)"></a>Oracle给Select结果集加锁,Skip Locked(跳过加锁行获得可以加锁的结果集)</h3><h3 id="for-update-后面还可以跟着-OF-cols-NOWAIT"><a href="#for-update-后面还可以跟着-OF-cols-NOWAIT" class="headerlink" title="for update 后面还可以跟着[OF cols] [NOWAIT]"></a>for update 后面还可以跟着<code>[OF cols] [NOWAIT]</code></h3><p>of 的使用主要是针对多表关联的时候，如果不使用of，对两个表涉及到的行都将锁住，使用of可以指定锁定哪个表，</p>
+<h2 id="用法介绍："><a href="#用法介绍：" class="headerlink" title="用法介绍："></a>用法介绍：</h2><p>select … for update 会 LOCK 相应的 ROW。 </p>
+<p>只有一个 TRANSACTION 可以 LOCK 相应的行，也就是说如果一个 ROW 已经 LOCKED 了，那就不能被其他 TRANSACTION 所 LOCK 了。 </p>
+<p>LOCK 由 statement 产生但却由 TRANSACTION 结尾（commit，rollback），也就是说一个 SQL 完成后 LOCK 还会存在，只有在 COMMIT/ROLLBACK 后才会师释放。</p>
+<p>使用这个行锁的情况一般是对并发的情况要求比较高的时候，需要锁住某行进行一些更新语句之后进行释放，再让其他 transaction 去操作。很好的利用了这点解决了并发的问题。数据库中锁类型：有两种基本的锁类型，排它锁（Exclusive Locks，即 X 锁）和共享锁（Share Locks，即 S 锁）。当数据对象被加上排它锁时，其他的事务不能对它读取和修改。加了共享锁的数据对象可以被其他事务读取，但不能修改。数据库利用这两种基本的锁类型来对数据库的事务进行并发控制。</p>
+<h3 id="Oracle-给-Select-结果集加锁，Skip-Locked（跳过加锁行获得可以加锁的结果集）"><a href="#Oracle-给-Select-结果集加锁，Skip-Locked（跳过加锁行获得可以加锁的结果集）" class="headerlink" title="Oracle 给 Select 结果集加锁，Skip Locked（跳过加锁行获得可以加锁的结果集）"></a>Oracle 给 Select 结果集加锁，Skip Locked（跳过加锁行获得可以加锁的结果集）</h3><h3 id="for-update-后面还可以跟着-OF-cols-NOWAIT"><a href="#for-update-后面还可以跟着-OF-cols-NOWAIT" class="headerlink" title="for update 后面还可以跟着 [OF cols] [NOWAIT]"></a>for update 后面还可以跟着 <code>[OF cols] [NOWAIT]</code></h3><p>of 的使用主要是针对多表关联的时候，如果不使用of，对两个表涉及到的行都将锁住，使用of可以指定锁定哪个表，</p>
 <p>例如：<code>select a.MOBILE,b.NAME from  connector a,student b where a.STU_ID=b.ID and a.MOBILE=&#39;13937134399&#39; for updata of a.MOBILE  </code></p>
 <p>这样的话student表中对应的行是不加锁的，对connector一个表中行加锁，不使用两个表都加锁。</p>
 <p><code>[NOWAIT]</code>的使用是当锁冲突的时候提示的情况：</p>
-<p>当有LOCK冲突时会提示错误并结束STATEMENT而不是在那里等待.返回错误是”ORA-00054: resource busy and acquire with NOWAIT specified” ，如果不使用就会一直等待，直到锁释放之后执行。在页面上调试的时候由于异常处理不好，把数据锁住了没有提交，也没有rollback，遇到这样的情况的时候可以通过以下方式解决：</p>
+<p>当有 LOCK 冲突时会提示错误并结束 STATEMENT 而不是在那里等待。返回错误是 “ORA-00054: resource busy and acquire with NOWAIT specified”，如果不使用就会一直等待，直到锁释放之后执行。在页面上调试的时候由于异常处理不好，把数据锁住了没有提交，也没有 rollback，遇到这样的情况的时候可以通过以下方式解决：</p>
 <p>—–查看被锁对象的序列号、sid</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SELECT o.owner,o.object_name,o.object_type,s.sid,s.serial# </span><br><span class="line">FROM v$locked_object l,dba_objects o,v$session s </span><br><span class="line">WHERE l.object_id=o.object_id </span><br><span class="line">AND l.session_id=s.sid </span><br><span class="line">ORDER BY o.object_id,xidusn DESC</span><br><span class="line">/</span><br><span class="line">------利用sid 和序列号删除</span><br><span class="line">alter system kill session &#x27;243,10265&#x27;;</span><br><span class="line">243是sid 10265是序列号</span><br></pre></td></tr></table></figure>
 
 <h2 id="效果图演示"><a href="#效果图演示" class="headerlink" title="效果图演示"></a>效果图演示</h2><p>开两个窗口：</p>
 <ol>
-<li><p>第一个窗口用select for update查询<br><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/2.png" alt="2"></p>
+<li><p>第一个窗口用 select for update 查询<br><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/2.png" alt="2"></p>
 </li>
-<li><p>在另一个窗口用同样的语句查询，会显示一直在查询…说明被block了<br><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/3.png" alt="3"></p>
+<li><p>在另一个窗口用同样的语句查询，会显示一直在查询…说明被 block 了<br><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/3.png" alt="3"></p>
 </li>
 <li><p>点击第一个窗口里的提交事务按钮，另一个窗口可以立刻获取查询结果<br><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/4.png" alt="4"></p>
 </li>
 </ol>
-<p>继续回到我们开始提出的问题，为什么用for update不可以避免多线程插入的问题，因为：select for update只能针对已经存在的数据进行加排他锁，如果查询的数据是null，根本就不存在所谓的锁了。其中之一的解决办法是：加上唯一性约束条件。我们就给OPEN_UID和LOGIN_TYPE一起加唯一性约束unique。所以数据库会保证只有一个唯一确定的记录,当两个请求同时向数据库插入相同的OPEN_UID和LOGIN_TYPE时，会采用抢占式插入，谁先插入其他方就不能再插入数据。</p>
+<p>继续回到我们开始提出的问题，为什么用 for update 不可以避免多线程插入的问题，因为：select for update 只能针对已经存在的数据进行加排他锁，如果查询的数据是 null，根本就不存在所谓的锁了。其中之一的解决办法是：加上唯一性约束条件。我们就给 OPEN_UID 和 LOGIN_TYPE 一起加唯一性约束 unique。所以数据库会保证只有一个唯一确定的记录，当两个请求同时向数据库插入相同的 OPEN_UID 和 LOGIN_TYPE 时，会采用抢占式插入，谁先插入其他方就不能再插入数据。</p>
 <p>就会报唯一约束的异常：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">### </span><br><span class="line">### ### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br><span class="line">### The error occurred while setting parameters</span><br><span class="line">### SQL: insert into SL$THIRD_LOGIN (OPEN_UID, REQUEST_SOURCE, LOGIN_TYPE, BIND_AID, NICK_NAME, ACCESS_TOKEN, EXPIRES_IN, UNION_ID)     values (      ?,       ?,       ?,       ?,          ?,          ?,          ?,         ?       )</span><br><span class="line">### Cause: java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br><span class="line">; SQL []; ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br><span class="line">; nested exception is java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br><span class="line">... 86 more</span><br><span class="line">Caused by: java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br></pre></td></tr></table></figure>
       
@@ -461,7 +314,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/04/%E8%AF%AD%E8%A8%80/Java/Java8/Java-API-JDK8%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/04/%E8%AF%AD%E8%A8%80/Java/JDK/Java8/Java-API-JDK8%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -475,7 +328,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/11/04/%E8%AF%AD%E8%A8%80/Java/Java8/Java-API-JDK8%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4/" class="post-title-link" itemprop="url">Java-API-JDK8中的时间</a>
+            <a href="/2016/11/04/%E8%AF%AD%E8%A8%80/Java/JDK/Java8/Java-API-JDK8%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4/" class="post-title-link" itemprop="url">Java-API-JDK8中的时间</a>
         </h2>
 
         <div class="post-meta">
@@ -516,7 +369,7 @@
 <li><p>GMT是老的时间计量标准。</p></li></ul>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2016/11/04/%E8%AF%AD%E8%A8%80/Java/Java8/Java-API-JDK8%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4/#more" rel="contents">
+              <a class="btn" href="/2016/11/04/%E8%AF%AD%E8%A8%80/Java/JDK/Java8/Java-API-JDK8%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -540,7 +393,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-%E4%BE%9D%E8%B5%96%E6%90%9C%E7%B4%A2%E5%BA%8F%E5%88%97/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-%E4%BE%9D%E8%B5%96%E6%90%9C%E7%B4%A2%E5%BA%8F%E5%88%97/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -554,7 +407,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/11/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-%E4%BE%9D%E8%B5%96%E6%90%9C%E7%B4%A2%E5%BA%8F%E5%88%97/" class="post-title-link" itemprop="url">Maven-修改本地仓库位置</a>
+            <a href="/2016/11/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-%E4%BE%9D%E8%B5%96%E6%90%9C%E7%B4%A2%E5%BA%8F%E5%88%97/" class="post-title-link" itemprop="url">Maven-修改本地仓库位置</a>
         </h2>
 
         <div class="post-meta">
@@ -659,16 +512,43 @@
 
       
           <p>转自：<a target="_blank" rel="noopener" href="http://lib.csdn.net/article/architecture/5384">http://lib.csdn.net/article/architecture/5384</a></p>
-<p>摘要：本部分首先简单介绍sharding系统的基本架构，然后重点介绍sharding机制中常用的三种表数据划分方法。</p>
-<h2 id="一-数据划分算法"><a href="#一-数据划分算法" class="headerlink" title="一. 数据划分算法"></a>一. 数据划分算法</h2><h3 id="1-Sharding-系统的基本结构"><a href="#1-Sharding-系统的基本结构" class="headerlink" title="1. Sharding 系统的基本结构"></a>1. Sharding 系统的基本结构</h3><p>上节我们说到Sharding可以简单定义为将大数据库分布到多个物理节点上的一个分区方案。每个shard都被放置在一个节点上面。Sharding系统是一个shared-nothing的系统，基本上都采用下图中所示的架构。最下面是很多数据库服务器节点，每个节点上面都会运行一个或多个数据库的实例。中间一层叫做查询路由器，客户端的连接都通过它进行转发。查询路由器负责解析用户的查询语句，并将这些语句转发到包含有所需要的数据的shard节点上面去执行。执行的结果也会通过查询路由器进行汇总并发送给相应的客户端。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+<p>摘要：本部分首先简单介绍 sharding 系统的基本架构，然后重点介绍 sharding 机制中常用的三种表数据划分方法。</p>
+<h2 id="一-数据划分算法"><a href="#一-数据划分算法" class="headerlink" title="一. 数据划分算法"></a>一. 数据划分算法</h2><h3 id="1-Sharding-系统的基本结构"><a href="#1-Sharding-系统的基本结构" class="headerlink" title="1. Sharding 系统的基本结构"></a>1. Sharding 系统的基本结构</h3><p>上节我们说到 Sharding 可以简单定义为将大数据库分布到多个物理节点上的一个分区方案。每个 shard 都被放置在一个节点上面。Sharding 系统是一个 shared-nothing 的系统，基本上都采用下图中所示的架构。最下面是很多数据库服务器节点，每个节点上面都会运行一个或多个数据库的实例。中间一层叫做查询路由器，客户端的连接都通过它进行转发。查询路由器负责解析用户的查询语句，并将这些语句转发到包含有所需要的数据的 shard 节点上面去执行。执行的结果也会通过查询路由器进行汇总并发送给相应的客户端。</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%86%E7%89%87.png" alt="数据库分片"></p>
+<p>对于这样一个 sharding 系统，我们需要考虑到下面几个问题：如何将数据划分到多个 shard 节点上面；用户的查询语句如何正确的转发到相应的节点上面去执行；当节点数据变化的时候怎样重新划分数据。对于数据划分和查询路由来说，所用的算法一般是对应的。下面就讲一下一些常用的数据划分的方法。这里的假设前提是：只考虑单个表，并且这个表的划分键（Partitioning Key）已经被指定。</p>
+<h3 id="2-常见的表划分算法"><a href="#2-常见的表划分算法" class="headerlink" title="2. 常见的表划分算法"></a>2. 常见的表划分算法</h3><p>本节介绍三种常见的数据划分方法：轮流放置（Round-Robin）、一致性哈希（Consistent Hashing）和区间划分（Range-based Partitioning）。</p>
+<h4 id="2-1-Round-Robin"><a href="#2-1-Round-Robin" class="headerlink" title="2.1 Round-Robin"></a>2.1 Round-Robin</h4><p>轮流放置是最简单的划分方法：即每条元组都会被依次放置在下一个节点上，以此进行循环。一般在实际应用中为了处理的方便，通常按照主键的值来决定次序从而进行划分。即给定一个表T，表T的划分键（Partitioning Key）是 k，需要划分的节点数目 N，那么元组 $t ∈ T$ 将会被放置在节点 n 上面，其中 $n = t.k mod N$。由于划分只与划分键有关，因此我们可以把对元组的划分简化为对数字的划分，对于不是数字的键值可以通过其它方式比如哈希转化为数字形式。下面给出一个例子来表示这种划分方式，把 9 个元组分布到 3 个节点上的情况。</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E8%BD%AE%E6%B5%81%E6%94%BE%E7%BD%AE.png" alt="轮流放置"></p>
+<p>但是，简单的直接用划分键上的值来计算放置节点的算法可能会造成数据的不均匀。因此，轮流放置有很多改进版，比如说哈希方式（Hashing），即 $n = hash(t.k) mod N$。先将划分键的值进行 hash 操作，变成一个与输入分布无关、输出均匀的值，然后再进行取模操作。哈希函数可以有很多选择，你可以针对你的应用的特征去选取。</p>
+<p>Pros: 轮流放置算法的实现非常简单，而且几乎不需要元数据就可以进行查询的路由，因此有着比较广泛的应用。例如 EMC 的 Greenplum 的分布式数据仓库采用的就是轮流放置和哈希相结合的方式。</p>
+<p>Cons: 轮流放置同样具有很明显的缺点：当系统中添加或者删除节点时，数据的迁移量非常巨大。举个有 20 个节点的例子（下表），当系统由 4 个节点变为 5 个节点时，会有如下的放置结果：红色部分是 $mod 4$ 和 $mod 5$ 时结果不相等的情况，不相等意味着这些元组当系统由 4 个节点变为 5 个节点时需要进行迁移。也就是说多达 80% 的元组都需要迁移。数据的迁移会对系统的性能造成很大的影响，严重时可能会中断系统的服务。当系统的节点数目频繁变化时，是不提倡使用这种方式的。</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E8%BD%AE%E6%B5%81%E6%94%BE%E7%BD%AE%E6%89%A9%E5%B1%95.png" alt="轮流放置扩展"></p>
+<p>数据迁移量大的问题可以通过改进轮流放置算法来达到，比较常见的两个改进算法是一致性哈希和分区划分算法。</p>
+<h4 id="2-2-Consistent-Hashing"><a href="#2-2-Consistent-Hashing" class="headerlink" title="2.2 Consistent Hashing"></a>2.2 Consistent Hashing</h4><p>一致性哈希是一种特殊的哈希方式。传统的哈希方式（在上一小节中讲到）在当节点数目发生变化时，会引起大量的数据迁移。而使用一致性哈希则不会产生这种问题。一致性哈希最早是一个分布式缓存（Distributed Caching）系统的放置算法（现在很热门的Memcached就用的是一致性哈希）。但是现在它已经被广泛应用到了其它各个领域。对于任何一个哈希函数，其输出值都有一个取值范围，我们可以将这个取值区间画成一个环，如下图所示：</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C.png" alt="一致性哈希"></p>
+<p>通过哈希函数，每个节点都会被分配到环上的一个位置，每个键值也会被映射到环上的一个位置。这个键值最终被放置在距离该它的位置最近的，且位置编号大于等于该值的节点上面，即放置到顺时针的下一个节点上面。下图形象的表示了这种放置方案，其中 Node 0 上面放置 Range 0 上面的数据，以此类推。</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C2.png" alt="一致性哈希"></p>
+<p>Pros: 由于采用的哈希函数通常是与输入无关的均匀函数，因此当键值和节点都非常的多的时候，一致性哈希可以达到很好的分布式均匀性。并且由于特殊的放置规则，一致性哈希在节点数据发生变动时可以将影响控制在局部区间内，从而保证非常少的数据迁移（接近理论上的最小值）。当增加一个节点时，只有这个节点所在的区间内的数据需要被重新划分，如下图中，只需要将 range 2 上面的数据会从 node 1 中迁移到 node 3 上面。当删除一个节点时，只需要将这个节点上面的数据迁移到下一个节点上面，比如删除 node 3，只把 range 2 上面的数据迁移到 node 1 上面就可以并，而其它的数据是不需要迁移变动的。</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%E6%89%A9%E5%B1%95.png" alt="一致性哈希扩展"></p>
+<p>一致性哈希有非常广泛的应用，Key-Value 系统，文档数据库或者分布式关系数据库都可以使用。Amazon 的 NoSQL 系统 Dynamo 应用采用的就是一种改进的一致性哈希算法。在这个系统中又引入了虚拟节点的概念，使得这个算法的 load balance 更加的好，并且同时考虑了复制技术。环上的点就变成了虚拟节点，然后再采用其它的方式将这些虚拟节点映射到实际的物理节点上面去。这使得系统有很好的可扩展性和可用性。</p>
+<h4 id="2-3-Range-Based-Partitioning"><a href="#2-3-Range-Based-Partitioning" class="headerlink" title="2.3 Range-Based Partitioning"></a>2.3 Range-Based Partitioning</h4><p>区间划分是现在很热门的 NoSQL 数据库 MongoDB 的 sharding 方案中所使用的算法。系统会首先把所有的数据划分为多个区间，然后再将这些区间分配到系统的各个节点上面。最简单的区间划分是一个节点只持有一个区间：在有 n 个节点的情况下，将划分键的取值区间均匀划分（这里的均匀是指划分后的每个 partition 的数据量尽量一样大，而并非值域区间一样大）为 n 份，然后每个节点持有一块。例如，按照用户名首字母进行划分，可能有以下的划分方案：</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E5%8C%BA%E9%97%B4%E5%88%92%E5%88%861.png" alt="区间划分"></p>
+<p>如果发生数据分布不均匀的情况，可以通过调整区间分布达到均匀情况，数据迁移同样会很小。</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E5%8C%BA%E9%97%B4%E5%88%92%E5%88%862.png" alt="区间划分"></p>
+<p>但是另外一些情况下，可能会导致连锁迁移。</p>
+<ul>
+<li>情况一：数据分布不均，调整导致的连锁迁移</li>
+</ul>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E5%8C%BA%E9%97%B4%E5%88%92%E5%88%86%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB%E6%89%A9%E5%B1%95.png" alt="区间划分数据迁移扩展"></p>
+<ul>
+<li>情况二：增加或删除节点导致的连锁迁移：</li>
+</ul>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E5%8C%BA%E9%97%B4%E5%88%92%E5%88%86%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB%E6%89%A9%E5%B1%952.png" alt="区间划分数据迁移扩展2"></p>
+<p>为了解决这个问题，MongoDB 采用的是每个节点持有多个区间的方案（Multiple range shards）。当需要进行迁移的时候，将持有过多数据的节点上的区间分裂，使得分裂出来的区间刚好满足迁移需要，然后再进行迁移。举例来说（下图），如果 shard  中存有 $[a, f]$ 区间的数据，数据量为 500G，此时需要从 shard 1 上面迁移 100G 到 shard 4，以保证数据的均匀分布。经统计，shard 1 中的 $[a, d]$ 段的数据为 400G，$[d, f]$ 段数据为 100G，因此将 shard 1中的 $[d, f]$ 段的数据直接迁移到 shard 4 上面。同理，需要从 shard 2 中迁移 100G 的数据到 shard 3 中。这种迁移方式的数据迁移量是理论上的最小值。</p>
+<p><img src="/2016/10/29/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E7%94%A8sharding%E6%8A%80%E6%9C%AF%E6%9D%A5%E6%89%A9%E5%B1%95%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%88hash%E5%88%86%E5%B8%83%E6%89%A9%E5%B1%95%EF%BC%8C%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%EF%BC%89/%E5%8C%BA%E9%97%B4%E5%88%92%E5%88%86%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB%E6%89%A9%E5%B1%95%E6%9C%80%E4%BC%98.png" alt="区间划分数据迁移扩展最优"></p>
+<p>Cons: 每个节点多个区间的做法的缺点是使得对元数据的处理变得复杂，我们需要记录每个节点上面存储的所有区间。但是一般来说，每个节点上面的区间数目不是很大，因此元数据的数目不会很大。这种同时保证了数据的最小迁移，并且实现也比较简单的方案是一个很理想的做法，虽然它的无数据管理和同步上面会有一些问题。</p>
+<p>另外，区间划分非常适合处理有区间查询的查询语句，但是也带来很大的一个 trade-off。如果一个查询需要访问到多条元组，那么对区间的边界的选取就变得非常棘手，如果选择不当的话，很容易造成一个查询需要在多个节点上面进行运行的情况，这种跨节点的操作会对系统的性能进行很大的影响。</p>
+
       
     </div>
 
@@ -896,7 +776,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/10/23/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/10/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -910,7 +790,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/10/23/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">Docker-使用Docker搭建JavaWeb运行环境</a>
+            <a href="/2016/10/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/" class="post-title-link" itemprop="url">Docker-使用Docker搭建JavaWeb运行环境</a>
         </h2>
 
         <div class="post-meta">
@@ -946,15 +826,15 @@
           <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/zengkefu/p/5667046.html">http://www.cnblogs.com/zengkefu/p/5667046.html</a></p>
 <p>Docker 是 2014 年最为火爆的技术之一，几乎所有的程序员都听说过它。Docker 是一种“轻量级”容器技术，它几乎动摇了传统虚拟化技术的地位，现在国内外已经有越来越多的公司开始逐步使用 Docker 来替换现有的虚拟化平台了。作为一名 Java 程序员，我们是时候一起把 Docker 学起来了！<br>本文会对虚拟化技术与 Docker 容器技术做一个对比，然后引出一些 Docker 的名词术语，比如：容器、镜像等，随后将使用 Docker 搭建一个 Java Web 运行环境，最后将对本文做一个总结。</p>
 <p>我们先来回顾一下传统虚拟化技术的体系架构：</p>
-<p><img src="/2016/10/23/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/1.png" alt="1"></p>
+<p><img src="/2016/10/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/1.png" alt="1"></p>
 <p>可见，我们在宿主机的操作系统上，可安装了多个虚拟机，而在每个虚拟机中，通过虚拟化技术，实现了一个虚拟操作系统，随后，就可以在该虚拟操作系统上，安装自己所需的应用程序了。这一切看似非常简单，但其中的技术细节是相当高深莫测的，大神级人物都不一定说得清楚。</p>
 <p>凡是使用过虚拟机的同学，应该都知道，启动虚拟机就像启动一台计算机，初始化过程是相当慢的，我们需要等很久，才能看到登录界面。一旦虚拟机启动以后，就可以与宿主机建立网络连接，确保虚拟机与宿主机之间是互联互通的。不同的虚拟机之间却是相互隔离的，也就是说，彼此并不知道对方的存在，但每个虚拟机占用的都是宿主机的硬件与网络资源。</p>
 <p>我们再来对比一下 Docker 技术的体系架构吧：</p>
-<p><img src="/2016/10/23/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/2.png" alt="2"></p>
+<p><img src="/2016/10/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/2.png" alt="2"></p>
 <p>可见，在宿主机的操作系统上，有一个 Docker 服务在运行（或者称为“Docker 引擎”），在此服务上，我们可开启多个 Docker 容器，而每个 Docker 容器中可运行自己所需的应用程序，Docker 容器之间也是相互隔离的，同样地，都是占用的宿主机的硬件与网络资源。</p>
 <p>Docker 容器相对于虚拟机而言，除了在技术实现上完全不一样以外，启动速度较虚拟机而言有本质的飞跃，启动一个容器只在眨眼瞬间。不管是虚拟机还是 Docker 容器，它们都是为了隔离应用程序的运行环境，节省我们的硬件资源，为我们开发人员提供福利。</p>
 <p>我们再来看看 Docker 的 Logo 吧：</p>
-<p><img src="/2016/10/23/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/3.png" alt="3"></p>
+<p><img src="/2016/10/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E4%BD%BF%E7%94%A8Docker%E6%90%AD%E5%BB%BAJavaWeb%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/3.png" alt="3"></p>
 <p>很明显，这是一只鲸鱼，它托着许多集装箱。我们可以把宿主机可当做这只鲸鱼，把相互隔离的容器可看成集装箱，每个集装箱中都包含自己的应用程序。这 Logo 简直的太形象了！</p>
 <blockquote>
 <p>需要强调的是，笔者并非否定虚拟化技术，而是想通过本文让更多的读者了解如何使用 Docker 技术，让大家知道除了虚拟化技术以外，还有另一种替代技术，也能让应用程序隔离起来。</p>
@@ -1088,7 +968,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/10/18/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Docker/Docker-%E6%8C%82%E8%BD%BD%E6%9C%AC%E5%9C%B0%E7%9B%AE%E5%BD%95/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/10/18/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E6%8C%82%E8%BD%BD%E6%9C%AC%E5%9C%B0%E7%9B%AE%E5%BD%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1102,7 +982,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/10/18/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Docker/Docker-%E6%8C%82%E8%BD%BD%E6%9C%AC%E5%9C%B0%E7%9B%AE%E5%BD%95/" class="post-title-link" itemprop="url">Docker-挂载本地目录</a>
+            <a href="/2016/10/18/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E6%8C%82%E8%BD%BD%E6%9C%AC%E5%9C%B0%E7%9B%AE%E5%BD%95/" class="post-title-link" itemprop="url">Docker-挂载本地目录</a>
         </h2>
 
         <div class="post-meta">
@@ -1142,7 +1022,165 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it -v /home/dock/Downloads:/usr/Downloads:ro ubuntu64 /bin/bash</span><br></pre></td></tr></table></figure>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2016/10/18/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Docker/Docker-%E6%8C%82%E8%BD%BD%E6%9C%AC%E5%9C%B0%E7%9B%AE%E5%BD%95/#more" rel="contents">
+              <a class="btn" href="/2016/10/18/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E6%8C%82%E8%BD%BD%E6%9C%AC%E5%9C%B0%E7%9B%AE%E5%BD%95/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/10/18/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/OAuth2%E5%8D%8F%E8%AE%AE%E6%B5%81%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/10/18/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/OAuth2%E5%8D%8F%E8%AE%AE%E6%B5%81%E7%A8%8B/" class="post-title-link" itemprop="url">OAuth2协议流程</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-10-18 11:03:57" itemprop="dateCreated datePublished" datetime="2016-10-18T11:03:57+08:00">2016-10-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8E%88%E6%9D%83/" itemprop="url" rel="index"><span itemprop="name">授权</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ol>
+<li>客户端从资源拥有者那请求授权。授权请求可以直接发给资源拥有者，或间接的通过授权服务器这种中介，后者更可取。</li>
+<li>客户端收到一个授权许可，代表资源服务器提供的授权。</li>
+<li>客户端使用它自己的私有证书及授权许可到授权服务器验证。</li>
+<li>如果验证成功，则下发一个访问令牌。</li>
+<li>客户端使用访问令牌向资源服务器请求受保护资源。</li>
+<li>资源服务器会验证访问令牌的有效性，如果成功则下发受保护资源。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/10/17/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E5%91%BD%E4%BB%A4%E5%8C%BA%E5%88%AB-exec%E5%92%8Cattach/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/10/17/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E5%91%BD%E4%BB%A4%E5%8C%BA%E5%88%AB-exec%E5%92%8Cattach/" class="post-title-link" itemprop="url">Docker-命令区别-exec和attach</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-10-17 22:36:01" itemprop="dateCreated datePublished" datetime="2016-10-17T22:36:01+08:00">2016-10-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>不论是开发者是运维人员，都经常有需要进入容器的诉求。<br>目前看，主要的方法不外乎以下几种：</p>
+<ol>
+<li>使用ssh登陆进容器</li>
+<li>使用nsenter、nsinit等第三方工具</li>
+<li>使用docker本身提供的工具</li>
+</ol>
+<ul>
+<li>方法1需要在容器中启动ssh，存在开销和攻击面增大的问题。同时也违反了Docker所倡导的一个容器一个进程的原则。</li>
+<li>方法2需要额外学习使用第三方工具。</li>
+</ul>
+<p>所以大多数情况最好还是使用Docker原生方法，Docker目前主要提供了Docker exec和 Docker attach两个命令。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/10/17/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E5%91%BD%E4%BB%A4%E5%8C%BA%E5%88%AB-exec%E5%92%8Cattach/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1165,7 +1203,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/37/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/37/">37</a><span class="page-number current">38</span><a class="page-number" href="/page/39/">39</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/39/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/37/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/37/">37</a><span class="page-number current">38</span><a class="page-number" href="/page/39/">39</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/39/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1233,20 +1271,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

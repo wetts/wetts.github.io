@@ -28,7 +28,7 @@
 <meta property="og:description" content="数据文件和日志文件是数据库中最重要的文件。它们是数据存储的地方。每个数据库至少有一个与之相关的数据文件，通常情况下不只一个，有很多。数据在数据文件中是如何组织的？要了解这些内容我们首先必须理解什么是表空间（tablespace）、段（segment）、区（extent）、块（block），这些都是oracle数据库在数据文件中组织数据的基本单元。现在我们来理解这些概念。 块块是数据存储的物理单位，">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2015-07-06T04:52:12.000Z">
-<meta property="article:modified_time" content="2021-07-18T16:57:56.112Z">
+<meta property="article:modified_time" content="2021-10-14T06:01:05.486Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="Oracle">
 <meta name="twitter:card" content="summary">
@@ -250,10 +250,10 @@
 <li>表空间由一个或多个数据文件组成，一个表空间包含多个段</li>
 <li>段由一个或多个区组成</li>
 <li>区是数据文件中一个连续的分配空间，由一个或多个块组成</li>
-<li>块是数据库中最小、最基本的单位，是数据库使用的最小的I/O单元</li>
+<li>块是数据库中最小、最基本的单位，是数据库使用的最小的 I/O 单元</li>
 <li>每个用户都有一个对应的方案</li>
 </ol>
-<p>“我们可以把Database看作是一个大仓库，仓库分了很多很多的房间，Schema就是其中的房间，一个Schema代表一个房间，Table可以看作是每个Schema中的床，Table（床）被放入每个房间中，不能放置在房间之外，那岂不是晚上睡觉无家可归了，然后床上可以放置很多物品，就好比 Table上可以放置很多列和行一样，数据库中存储数据的基本单元是Table，现实中每个仓库放置物品的基本单位就是床， User就是每个Schema的主人，（所以Schema包含的是Object，而不是User），user和schema是一一对应的，每个user在没有特别指定下只能使用自己schema（房间）的东西，如果一个user想使用其他schema（房间）的东西，那就要看那个schema（房间）的user（主人）有没有给你这个权限了，或者看这个仓库的老大（DBA）有没有给你这个权限了。换句话说，如果你是某个仓库的主人，那么这个仓库的使用权和仓库中的所有东西都是你的（包括房间），你有完全的操作权，可以扔掉不用的东西从每个房间，也可以放置一些有用的东西到某一个房间，你还可以给每个User分配具体的权限，也就是他到某一个房间能做些什么，是只能看（Read-Only），还是可以像主人一样有所有的控制权（R/W），这个就要看这个User所对应的角色Role了。”</p>
+<p>“我们可以把 Database 看作是一个大仓库，仓库分了很多很多的房间，Schema 就是其中的房间，一个 Schema 代表一个房间，Table 可以看作是每个 Schema 中的床，Table（床）被放入每个房间中，不能放置在房间之外，那岂不是晚上睡觉无家可归了，然后床上可以放置很多物品，就好比 Table 上可以放置很多列和行一样，数据库中存储数据的基本单元是 Table，现实中每个仓库放置物品的基本单位就是床，User 就是每个 Schema 的主人，（所以 Schema 包含的是 Object，而不是 User），user 和 schema 是一一对应的，每个 user 在没有特别指定下只能使用自己 schema（房间）的东西，如果一个 user 想使用其他 schema（房间）的东西，那就要看那个 schema（房间）的 user（主人）有没有给你这个权限了，或者看这个仓库的老大（DBA）有没有给你这个权限了。换句话说，如果你是某个仓库的主人，那么这个仓库的使用权和仓库中的所有东西都是你的（包括房间），你有完全的操作权，可以扔掉不用的东西从每个房间，也可以放置一些有用的东西到某一个房间，你还可以给每个 User 分配具体的权限，也就是他到某一个房间能做些什么，是只能看（Read-Only），还是可以像主人一样有所有的控制权（R/W），这个就要看这个 User 所对应的角色 Role 了。”</p>
 
     </div>
 
@@ -354,20 +354,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

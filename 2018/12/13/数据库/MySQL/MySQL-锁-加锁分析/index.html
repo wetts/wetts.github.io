@@ -28,7 +28,7 @@
 <meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;rjzheng&#x2F;p&#x2F;9950951.html 引言大家在面试中有没遇到面试官问你下面六句Sql的区别呢 123456select * from table where id &#x3D; ?select * from table where id &lt; ?select * from table where id &#x3D; ? lock in share m">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2018-12-12T23:56:21.000Z">
-<meta property="article:modified_time" content="2021-07-12T23:12:44.138Z">
+<meta property="article:modified_time" content="2021-10-14T07:43:15.755Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="事务">
 <meta property="article:tag" content="面试">
@@ -254,24 +254,24 @@
 <li>如果存在索引是聚簇索引还是非聚簇索引呢？</li>
 </ul>
 <p>OK，开始回答</p>
-<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>本文假定读者，看过我的《MySQL(Innodb)索引的原理》。如果没看过，额，你记得三句话吧</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>本文假定读者，看过我的《MySQL（Innodb）索引的原理》。如果没看过，额，你记得三句话吧</p>
 <ul>
-<li>innodb一定存在聚簇索引，默认以主键作为聚簇索引</li>
-<li>有几个索引，就有几棵B+树(不考虑hash索引的情形)</li>
+<li>innodb 一定存在聚簇索引，默认以主键作为聚簇索引</li>
+<li>有几个索引，就有几棵 B+ 树（不考虑 hash 索引的情形）</li>
 <li>聚簇索引的叶子节点为磁盘上的真实数据。非聚簇索引的叶子节点还是索引，指向聚簇索引B+树。</li>
 </ul>
 <p>下面啰嗦点基础知识</p>
 <h3 id="锁类型"><a href="#锁类型" class="headerlink" title="锁类型"></a>锁类型</h3><ul>
-<li>共享锁(S锁):假设事务T1对数据A加上共享锁，那么事务T2可以读数据A，不能修改数据A。</li>
-<li>排他锁(X锁):假设事务T1对数据A加上排他锁，那么事务T2不能读数据A，不能修改数据A。</li>
+<li>共享锁（S锁）：假设事务T1对数据A加上共享锁，那么事务T2可以读数据A，不能修改数据A。</li>
+<li>排他锁（X锁）：假设事务T1对数据A加上排他锁，那么事务T2不能读数据A，不能修改数据A。</li>
 </ul>
-<p>我们通过<code>update</code>、<code>delete</code>等语句加上的锁都是行级别的锁。只有<code>LOCK TABLE … READ</code>和<code>LOCK TABLE … WRITE</code>才能申请表级别的锁。</p>
+<p>我们通过 <code>update</code>、<code>delete</code> 等语句加上的锁都是行级别的锁。只有 <code>LOCK TABLE … READ</code> 和 <code>LOCK TABLE … WRITE</code> 才能申请表级别的锁。</p>
 <ul>
-<li>意向共享锁(IS锁):一个事务在获取（任何一行/或者全表）S锁之前，一定会先在所在的表上加IS锁。</li>
-<li>意向排他锁(IX锁):一个事务在获取（任何一行/或者全表）X锁之前，一定会先在所在的表上加IX锁。</li>
+<li>意向共享锁（IS锁）：一个事务在获取（任何一行/或者全表）S锁之前，一定会先在所在的表上加IS锁。</li>
+<li>意向排他锁（IX锁）：一个事务在获取（任何一行/或者全表）X锁之前，一定会先在所在的表上加IX锁。</li>
 </ul>
 <p><em><strong>意向锁存在的目的?</strong></em></p>
-<p>OK，这里说一下意向锁存在的目的。假设事务T1，用X锁来锁住了表上的几条记录，那么此时表上存在IX锁，即意向排他锁。那么此时事务T2要进行<code>LOCK TABLE … WRITE</code>的表级别锁的请求，可以直接根据意向锁是否存在而判断是否有锁冲突。</p>
+<p>OK，这里说一下意向锁存在的目的。假设事务T1，用X锁来锁住了表上的几条记录，那么此时表上存在IX锁，即意向排他锁。那么此时事务T2要进行 <code>LOCK TABLE … WRITE</code> 的表级别锁的请求，可以直接根据意向锁是否存在而判断是否有锁冲突。</p>
 <h3 id="加锁算法"><a href="#加锁算法" class="headerlink" title="加锁算法"></a>加锁算法</h3><p>我的说法是来自官方文档：<code>https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html</code>。加上自己矫揉造作的见解得出。</p>
 <p>ok，记得如下三种，本文就够用了</p>
 <ul>
@@ -280,14 +280,14 @@
 <li>Next-Key Locks：这个理解为Record Lock+索引前面的Gap Lock。记住了，锁住的是索引前面的间隙！比如一个索引包含值，10，11，13和20。那么，间隙锁的范围如下<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(negative infinity, 10]</span><br><span class="line">(10, 11]</span><br><span class="line">(11, 13]</span><br><span class="line">(13, 20]</span><br><span class="line">(20, positive infinity)</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="快照读和当前读"><a href="#快照读和当前读" class="headerlink" title="快照读和当前读"></a>快照读和当前读</h3><p>最后一点基础知识了，大家坚持看完，这些是后面分析的基础！</p>
-<p>在mysql中select分为快照读和当前读，执行下面的语句</p>
+<p>在 mysql 中 select 分为快照读和当前读，执行下面的语句</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ?;</span><br></pre></td></tr></table></figure>
-<p>执行的是快照读，读的是数据库记录的快照版本，是不加锁的。（这种说法在隔离级别为Serializable中不成立，后面我会补充。）</p>
+<p>执行的是快照读，读的是数据库记录的快照版本，是不加锁的。（这种说法在隔离级别为 Serializable 中不成立，后面我会补充。）</p>
 <p>那么，执行</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ? lock in share mode;</span><br></pre></td></tr></table></figure>
-<p>会对读取记录加S锁 (共享锁)，执行</p>
+<p>会对读取记录加S锁（共享锁），执行</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ? for update</span><br></pre></td></tr></table></figure>
-<p>会对读取记录加X锁 (排他锁)，那么</p>
+<p>会对读取记录加X锁（排他锁），那么</p>
 <p><em><strong>加的是表锁还是行锁呢？</strong></em></p>
 <p>针对这点，我们先回忆一下事务的四个隔离级别，他们由弱到强如下所示:</p>
 <ul>
@@ -301,7 +301,7 @@
 <p>InnoDB行锁是通过给索引上的索引项加锁来实现的，这一点MySQL与Oracle不同，后者是通过在数据块中对相应数据行加锁来实现的。 InnoDB这种行锁实现特点意味着：只有通过索引条件检索数据，InnoDB才使用行级锁，否则，InnoDB将使用表锁！</p>
 </blockquote>
 <p>这句话大家可以搜一下，都是你抄我的，我抄你的。那么，这句话本身有两处错误！</p>
-<p><strong>错误一</strong>:并不是用表锁来实现锁表的操作，而是利用了Next-Key Locks，也可以理解为是用了行锁+间隙锁来实现锁表的操作!<br>为了便于说明，我来个例子，假设有表数据如下，pId为主键索引</p>
+<p><strong>错误一</strong>：并不是用表锁来实现锁表的操作，而是利用了Next-Key Locks，也可以理解为是用了行锁+间隙锁来实现锁表的操作!<br>为了便于说明，我来个例子，假设有表数据如下，pId为主键索引</p>
 <table>
 <thead>
 <tr>
@@ -330,7 +330,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where name = `aaa` for update</span><br></pre></td></tr></table></figure>
 <p>那么此时在pId=1,2,7这三条记录上存在行锁(把行锁住了)。另外，在(-∞,1)(1,2)(2,7)(7,+∞)上存在间隙锁(把间隙锁住了)。因此，给人一种整个表锁住的错觉！</p>
 <p>ps:对该结论有疑问的，可自行执行show engine innodb status;语句进行分析。</p>
-<p><strong>错误二</strong>:所有文章都不提隔离级别！</p>
+<p><strong>错误二</strong>：所有文章都不提隔离级别！</p>
 <p>注意我上面说的，之所以能够锁表，是通过行锁+间隙锁来实现的。那么，RU和RC都不存在间隙锁，这种说法在RU和RC中还能成立么？</p>
 <p>因此，该说法只在RR和Serializable中是成立的。如果隔离级别为RU和RC，无论条件列上是否有索引，都不会锁表，只锁行！</p>
 <h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>下面来对开始的问题作出解答，假设有表如下，pId为主键索引</p>
@@ -420,7 +420,7 @@
 </ol>
 <p>这里，大家可能有疑问</p>
 <p><em><strong>为什么条件列加不加索引，加锁情况是一样的？</strong></em></p>
-<p>ok,其实是不一样的。在RC/RU隔离级别中，MySQL Server做了优化。在条件列没有索引的情况下，尽管通过聚簇索引来扫描全表，进行全表加锁。但是，MySQL Server层会进行过滤并把不符合条件的锁当即释放掉，因此你看起来最终结果是一样的。但是R<strong>C/RU+条件列非索引比本例多了一个释放不符合条件的锁的过程</strong>！</p>
+<p>ok,其实是不一样的。在RC/RU隔离级别中，MySQL Server做了优化。在条件列没有索引的情况下，尽管通过聚簇索引来扫描全表，进行全表加锁。但是，MySQL Server层会进行过滤并把不符合条件的锁当即释放掉，因此你看起来最终结果是一样的。但是<strong>RC/RU+条件列非索引比本例多了一个释放不符合条件的锁的过程</strong>！</p>
 <p><strong>RC/RU+条件列是非聚簇索引</strong></p>
 <p>我们在num列上建上非唯一索引。此时有一棵聚簇索引(主键索引，pId)形成的B+索引树，其叶子节点为硬盘上的真实数据。以及另一棵非聚簇索引(非唯一索引，num)形成的B+索引树，其叶子节点依然为索引节点，保存了num列的字段值，和对应的聚簇索引。</p>
 <p>接下来分析开始</p>
@@ -662,20 +662,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

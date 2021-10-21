@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/01/03/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/%E6%9D%83%E9%99%90%E6%A8%A1%E5%9E%8B-RBAC%E6%A8%A1%E5%9E%8B/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/30/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%85%B6%E4%BB%96/Java-API-notify()%E5%92%8CnotifyAll()%E7%9A%84%E5%8C%BA%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -202,7 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2015/01/03/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/%E6%9D%83%E9%99%90%E6%A8%A1%E5%9E%8B-RBAC%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">权限模型-RBAC模型</a>
+            <a href="/2014/11/30/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%85%B6%E4%BB%96/Java-API-notify()%E5%92%8CnotifyAll()%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Java-API-Java中的Copy-On-Write容器</a>
         </h2>
 
         <div class="post-meta">
@@ -212,7 +212,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2015-01-03 08:01:12" itemprop="dateCreated datePublished" datetime="2015-01-03T08:01:12+08:00">2015-01-03</time>
+              <time title="创建时间：2014-11-30 12:30:01" itemprop="dateCreated datePublished" datetime="2014-11-30T12:30:01+08:00">2014-11-30</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -220,7 +220,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9D%83%E9%99%90%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">权限模型</span></a>
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
                 </span>
             </span>
 
@@ -235,15 +235,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>基于角色的访问控制（Role-Based Access Control，简称RBAC）</p>
-<p>作为传统访问控制（自主访问，强制访问）的有前景的代替受到广泛的关注。在RBAC中，权限与角色相关联，用户通过成为适当角色的成员而得到这些角色的权限。这就极大地简化了权限的管理。在一个组织中，角色是为了完成各种工作而创造，用户则依据它的责任和资格来被指派相应的角色，用户可以很容易地从一个角色被指派到另一个角色。角色可依新的需求和系统的合并而赋予新的权限，而权限也可根据需要而从某角色中回收。角色与角色的关系可以建立起来以囊括更广泛的客观情况。</p>
-<hr>
-<p>RBAC支持三个著名的安全原则：最小权限原则，责任分离原则和数据抽象原则。</p>
-<ol>
-<li>最小权限原则之所以被RBAC所支持，是因为RBAC可以将其角色配置成其完成任务所需要的最小的权限集。</li>
-<li>责任分离原则可以通过调用相互独立互斥的角色来共同完成敏感的任务而体现，比如要求一个计帐员和财务管理员共参与同一过帐。</li>
-<li>数据抽象可以通过权限的抽象来体现，如财务操作用借款、存款等抽象权限，而不用操作系统提供的典型的读、写、执行权限。然而这些原则必须通过RBAC各部件的详细配置才能得以体现。</li>
-</ol>
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/armyao/archive/2010/12/27/1917989.html">http://www.cnblogs.com/armyao/archive/2010/12/27/1917989.html</a></p>
+<ul>
+<li><p>notifyAll使所有原来在该对象上等待被notify的线程统统退出wait的状态，变成等待该对象上的锁，一旦该对象被解锁，他们就会去竞争。</p>
+</li>
+<li><p>notify则文明得多他只是选择一个wait状态线程进行通知，并使它获得该对象上的锁，但不惊动其他同样在等待被该对象notify的线程们，当第一个线程运行完毕以后释放对象上的锁此时如果该对象没有再次使用notify语句，则即便该对象已经空闲，其他wait状态等待的线程由于没有得到该对象的通知，继续处在wait状态，直到这个对象发出一个notify或notifyAll，它们等待的是被notify或notifyAll，而不是锁。</p>
+</li>
+</ul>
 
       
     </div>
@@ -263,7 +261,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/29/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E7%94%A8%E6%B3%95-%E5%9C%A8xml%E6%96%87%E4%BB%B6%E4%B8%AD%E5%A4%84%E7%90%86%E5%A4%A7%E4%BA%8E%E5%8F%B7%E5%B0%8F%E4%BA%8E%E5%8F%B7%E7%9A%84%E6%96%B9%E6%B3%95/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E7%94%A8%E6%B3%95-#{}%E5%92%8C${}%E7%9A%84%E5%8C%BA%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -277,7 +275,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/12/29/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E7%94%A8%E6%B3%95-%E5%9C%A8xml%E6%96%87%E4%BB%B6%E4%B8%AD%E5%A4%84%E7%90%86%E5%A4%A7%E4%BA%8E%E5%8F%B7%E5%B0%8F%E4%BA%8E%E5%8F%B7%E7%9A%84%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">Mybatis-用法-在xml文件中处理大于号小于号的方法</a>
+            <a href="/2014/11/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E7%94%A8%E6%B3%95-#%7B%7D%E5%92%8C$%7B%7D%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Mybatis-用法-#{}和${}的区别</a>
         </h2>
 
         <div class="post-meta">
@@ -287,7 +285,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-12-29 17:18:44" itemprop="dateCreated datePublished" datetime="2014-12-29T17:18:44+08:00">2014-12-29</time>
+              <time title="创建时间：2014-11-27 13:47:24" itemprop="dateCreated datePublished" datetime="2014-11-27T13:47:24+08:00">2014-11-27</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -311,10 +309,8 @@
 
       
           <ul>
-<li><p>方法一:<br>转义</p>
-</li>
-<li><p>方法二:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;![CDATA[ when min(starttime)&lt;=&#x27;12:00&#x27; and max(endtime)&lt;=&#x27;12:00&#x27; ]]&gt;   </span><br></pre></td></tr></table></figure></li>
+<li>#{}相当于jdbc中的preparedstatement，预编译</li>
+<li>${}是输出变量的值，sql拼接</li>
 </ul>
 
       
@@ -335,7 +331,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/27/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E5%A4%84%E7%90%86%E6%96%87%E6%9C%AC-sed%E3%80%81awk%E3%80%81grep/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/25/%E8%AF%AD%E8%A8%80/web/Web-Cookie%E5%92%8CSession/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -349,7 +345,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/12/27/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E5%A4%84%E7%90%86%E6%96%87%E6%9C%AC-sed%E3%80%81awk%E3%80%81grep/" class="post-title-link" itemprop="url">Linux-命令-处理文本-sed、awk、grep</a>
+            <a href="/2014/11/25/%E8%AF%AD%E8%A8%80/web/Web-Cookie%E5%92%8CSession/" class="post-title-link" itemprop="url">Web-Cookie和Session</a>
         </h2>
 
         <div class="post-meta">
@@ -359,7 +355,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-12-27 21:17:57" itemprop="dateCreated datePublished" datetime="2014-12-27T21:17:57+08:00">2014-12-27</time>
+              <time title="创建时间：2014-11-25 19:17:39" itemprop="dateCreated datePublished" datetime="2014-11-25T19:17:39+08:00">2014-11-25</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -367,7 +363,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                  <a href="/categories/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
                 </span>
             </span>
 
@@ -382,103 +378,14 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="awk-关键字-分析-amp-处理"><a href="#awk-关键字-分析-amp-处理" class="headerlink" title="awk(关键字:分析&amp;处理)"></a>awk(关键字:分析&amp;处理)</h2><p>一行一行的分析处理 <code>awk &#39;条件类型1&#123;动作1&#125;条件类型2&#123;动作2&#125;&#39; filename</code>, awk 也可以读取来自前一个指令的 standard  input</p>
-<p>相对于sed常常用于一整行处理, awk则比较倾向于一行当中分成数个”字段”(区域)来处理, 默认的分隔符是空格键或tab键</p>
-<p>例如:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">last -n 5 | awk &#x27;&#123;print $1 &quot;\t&quot; $3&#125;&#x27;</span><br></pre></td></tr></table></figure>
-<p>这里大括号内<code>$1&quot;\t&quot;$3</code> 之间不加空格也可以, 不过最好还是加上个空格, 另外注意<code>&quot;\t&quot;</code>是有双引号的, 因为本身这些内容都在单引号内</p>
-<ul>
-<li>$0 代表整行</li>
-<li>$1 代表第一个区域, 依此类推</li>
-</ul>
-<p>awk的处理流程是:</p>
+          <p>转自：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/19786827/answer/28752144">https://www.zhihu.com/question/19786827/answer/28752144</a></p>
 <ol>
-<li>读第一行, 将第一行资料填入变量 $0, $1… 等变量中</li>
-<li>依据条件限制, 执行动作</li>
-<li>接下来执行下一行</li>
+<li>由于HTTP协议是无状态的协议，所以服务端需要记录用户的状态时，就需要用某种机制来识具体的用户，这个机制就是Session.典型的场景比如购物车，当你点击下单按钮时，由于HTTP协议无状态，所以并不知道是哪个用户操作的，所以服务端要为特定的用户创建了特定的Session，用用于标识这个用户，并且跟踪用户，这样才知道购物车里面有几本书。这个Session是保存在服务端的，有一个唯一标识。在服务端保存Session的方法很多，内存、数据库、文件都有。集群的时候也要考虑Session的转移，在大型的网站，一般会有专门的Session服务器集群，用来保存用户会话，这个时候 Session 信息都是放在内存的，使用一些缓存服务比如Memcached之类的来放 Session。</li>
+<li>思考一下服务端如何识别特定的客户？这个时候Cookie就登场了。每次HTTP请求的时候，客户端都会发送相应的Cookie信息到服务端。实际上大多数的应用都是用 Cookie 来实现Session跟踪的，第一次创建Session的时候，服务端会在HTTP协议中告诉客户端，需要在 Cookie 里面记录一个Session ID，以后每次请求把这个会话ID发送到服务器，我就知道你是谁了。有人问，如果客户端的浏览器禁用了 Cookie 怎么办？一般这种情况下，会使用一种叫做URL重写的技术来进行会话跟踪，即每次HTTP交互，URL后面都会被附加上一个诸如 sid=xxxxx 这样的参数，服务端据此来识别用户。</li>
+<li>Cookie其实还可以用在一些方便用户的场景下，设想你某次登陆过一个网站，下次登录的时候不想再次输入账号了，怎么办？这个信息可以写到Cookie里面，访问网站的时候，网站页面的脚本可以读取这个信息，就自动帮你把用户名给填了，能够方便一下用户。这也是Cookie名称的由来，给用户的一点甜头。</li>
 </ol>
-<p>所以, AWK一次处理是一行, 而一次中处理的最小单位是一个区域, 另外还有3个变量,</p>
-<ul>
-<li>NF: 每一行处理的字段数,</li>
-<li>NR 目前处理到第几行</li>
-<li>FS 目前的分隔符逻辑判断 &gt; &lt; &gt;= &lt;= == !== , 赋值直接使用=</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/passwd | awk &#x27;&#123;FS=&quot;:&quot;&#125; $3&lt;10 &#123;print $1 &quot;\t&quot; $3&#125;&#x27;</span><br></pre></td></tr></table></figure>
-<p>首先定义分隔符为:, 然后判断, 注意看, 判断没有写在{}中, 然后执行动作, FS=”:”这是一个动作, 赋值动作, 不是一个判断, 所以不写在{}中</p>
-<p>BEGIN END , 给程序员一个初始化和收尾的工作, BEGIN之后列出的操作在{}内将在awk开始扫描输入之前执行, 而END{}内的操作, 将在扫描完输入文件后执行.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk &#x27;/test/ &#123;print NR&#125;&#x27; abc</span><br></pre></td></tr></table></figure>
-<p>将带有test的行的行号打印出来, 注意//之间可以使用正则表达式</p>
-<p>awk {}内, 可以使用 <code>if else ,for(i=0;i&lt;10;i++), i=1 while(i&lt;NF) </code>可见, awk的很多用法都等同于C语言, 比如<code>&quot;\t&quot;</code> 分隔符, print的格式, if, while, for 等等</p>
-<p>awk 是相当复杂的工具, 真正使用时, 再补充吧. (有关工具的picture)</p>
-<h2 id="sed-关键字-编辑"><a href="#sed-关键字-编辑" class="headerlink" title="sed(关键字: 编辑)"></a>sed(关键字: 编辑)</h2><p>以行为单位的文本编辑工具 sed可以直接修改档案, 不过一般不推荐这么做, 可以分析 standard input</p>
-<p>基本工作方式: <code>sed [-nef] &#39;[动作]&#39; [输入文本]</code></p>
-<ul>
-<li>-n : 安静模式, 一般sed用法中, 来自stdin的数据一般会被列出到屏幕上, 如果使用-n参数后, 只有经过sed处理的那一行被列出来.</li>
-<li>-e : 多重编辑, 比如你同时又想删除某行, 又想改变其他行, 那么可以用 sed -e ‘1,5d’ -e ‘s/abc/xxx/g’ filename</li>
-<li>-f : 首先将 sed的动作写在一个档案内, 然后通过 sed -f scriptfile 就可以直接执行 scriptfile 内的sed动作 (没有实验成功, 不推荐使用)</li>
-<li>-i : 直接编辑, 这回就是真的改变文件中的内容了, 别的都只是改变显示. (不推荐使用)</li>
-</ul>
-<p>动作:</p>
-<ul>
-<li><p>a 新增, a 后面可以接字符串, 而这个字符串会在新的一行出现. (下一行)</p>
-</li>
-<li><p>c 取代, c 后面的字符串, 这些字符串可以取代 n1,n2之间的行</p>
-</li>
-<li><p>d 删除, 后面不接任何东西</p>
-</li>
-<li><p>i 插入, 后面的字符串, 会在上一行出现</p>
-</li>
-<li><p>p 打印, 将选择的资料列出, 通常和 sed -n 一起运作 sed -n ‘3p’ 只打印第3行</p>
-</li>
-<li><p>s 取代, 类似vi中的取代, 1,20s/old/new/g</p>
-</li>
-<li><p>[line-address]q 退出, 匹配到某行退出, 提高效率</p>
-</li>
-<li><p>[line-address]r 匹配到的行读取某文件 例如: sed ‘1r qqq’ abc , 注意, 写入的文本是写在了第1行的后边, 也就是第2行</p>
-</li>
-<li><p>[line-address]w file, 匹配到的行写入某文件  例如: sed -n ‘/m/w qqq’ abc , 从abc中读取带m的行写到qqq文件中, 注意, 这个写入带有覆盖性.</p>
-</li>
-</ul>
-<p>举例:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed &#x27;1d&#x27; abc</span><br></pre></td></tr></table></figure>
-<p>删除 abc 档案里的第一行, 注意, 这时会显示除了第一行之外的所有行, 因为第一行已经被删除了(实际文件并没有被删除,而只是显示的时候被删除了)</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed -n &#x27;1d&#x27; abc</span><br></pre></td></tr></table></figure>
-<p>什么内容也不显示, 因为经过sed处理的行, 是个删除操作, 所以不现实.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed &#x27;2,$d&#x27; abc</span><br></pre></td></tr></table></figure>
-<p>删除abc中从第二行到最后一行所有的内容, 注意, $符号正则表达式中表示行末尾, 但是这里并没有说那行末尾, 就会指最后一行末尾, ^开头, 如果没有指定哪行开头, 那么就是第一行开头</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed &#x27;$d&#x27; abc</span><br></pre></td></tr></table></figure>
-<p>只删除了最后一行, 因为并没有指定是那行末尾, 就认为是最后一行末尾</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed &#x27;/test/d&#x27; abc</span><br></pre></td></tr></table></figure>
-<p>文件中所有带 test 的行, 全部删除</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed &#x27;/test/a RRRRRRR&#x27; abc</span><br></pre></td></tr></table></figure>
-<p>将 RRRRRRR 追加到所有的带 test 行的下一行 也有可能通过行</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed &#x27;1,5c RRRRRRR&#x27; abc sed &#x27;/test/c RRRRRRR&#x27; abc</span><br></pre></td></tr></table></figure>
-<p>将 RRRRRRR 替换所有带 test 的行, 当然, 这里也可以是通过行来进行替换, 比如 sed ‘1,5c RRRRRRR’ abc</p>
-<h2 id="grep-关键字-截取"><a href="#grep-关键字-截取" class="headerlink" title="grep(关键字: 截取)"></a>grep(关键字: 截取)</h2><p>文本搜集工具, 结合正则表达式非常强大</p>
-<p>主要参数 []</p>
-<ul>
-<li>-c : 只输出匹配的行</li>
-<li>-I : 不区分大小写</li>
-<li>-h : 查询多文件时不显示文件名<h2 id="grep-关键字-截取-1"><a href="#grep-关键字-截取-1" class="headerlink" title="grep(关键字: 截取)"></a>grep(关键字: 截取)</h2>文本搜集工具, 结合正则表达式非常强大</li>
-</ul>
-<p>主要参数 []</p>
-<ul>
-<li>-c : 只输出匹配的行</li>
-<li>-I : 不区分大小写</li>
-<li>-h : 查询多文件时不显示文件名</li>
-<li>-l : 查询多文件时, 只输出包含匹配字符的文件名</li>
-<li>-n : 显示匹配的行号及行</li>
-<li>-v : 显示不包含匹配文本的所有行(我经常用除去grep本身)</li>
-</ul>
-<p>基本工作方式: grep 要匹配的内容 文件名,</p>
-<p>例如:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep &#x27;test&#x27; d*</span><br></pre></td></tr></table></figure>
-<p>显示所有以d开头的文件中包含test的行</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep &#x27;test&#x27; aa bb cc</span><br></pre></td></tr></table></figure>
-
-<p>显示在 aa bb cc 文件中包含test的行</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep &#x27;[a-z]\&#123;5&#125;\&#x27; aa</span><br></pre></td></tr></table></figure>
-<p>显示所有包含字符串至少有5个连续小写字母的串</p>
+<h3 id="Cookie"><a href="#Cookie" class="headerlink" title="Cookie"></a>Cookie</h3><p>Cookie是客户端保存用户信息的一种机制，用来记录用户的一些信息，也是实现Session的一种方式。</p>
+<h3 id="Session"><a href="#Session" class="headerlink" title="Session"></a>Session</h3><p>Session是在服务端保存的一个数据结构，用来跟踪用户的状态，这个数据可以保存在集群、数据库、文件中。</p>
 
       
     </div>
@@ -498,7 +405,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/27/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E5%A4%84%E7%90%86%E6%96%87%E6%9C%AC/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-ORACLE%E4%B8%ADROWNUM/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -512,7 +419,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/12/27/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E5%A4%84%E7%90%86%E6%96%87%E6%9C%AC/" class="post-title-link" itemprop="url">Linux-命令-处理文本</a>
+            <a href="/2014/11/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-ORACLE%E4%B8%ADROWNUM/" class="post-title-link" itemprop="url">Oracle-ORACLE中ROWNUM</a>
         </h2>
 
         <div class="post-meta">
@@ -522,7 +429,80 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-12-27 16:20:57" itemprop="dateCreated datePublished" datetime="2014-12-27T16:20:57+08:00">2014-12-27</time>
+              <time title="创建时间：2014-11-13 20:29:44" itemprop="dateCreated datePublished" datetime="2014-11-13T20:29:44+08:00">2014-11-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ORACLE-中-ROWNUM"><a href="#ORACLE-中-ROWNUM" class="headerlink" title="ORACLE 中 ROWNUM"></a>ORACLE 中 ROWNUM</h1><hr>
+<p>假设某个表 <code>t1(c1)</code> 有 20 条记录。  </p>
+<p>如果用 <code>select rownum,c1 from t1 where rownum &lt; 10</code>，只要是用小于号，查出来的结果很容易地与一般理解在概念上能达成一致，应该不会有任何疑问的。  </p>
+<p>可如果用 <code>select rownum,c1 from t1 where rownum &gt; 10</code>（如果写下这样的查询语句，这时候在您的头脑中应该是想得到表中后面 10 条记录），你就会发现，显示出来的结果要让您失望了，也许您还会怀疑是不谁删了一些记录，然后查看记录数，仍然是 20 条啊？那问题是出在哪呢？  </p>
+<p>先好好理解 rownum 的意义吧。因为 ROWNUM 是对结果集加的一个伪列，即先查到结果集之后再加上去的一个列（强调：先要有结果集）。简单的说 rownum 是对符合条件结果的序列号。它总是从 1 开始排起的。所以你选出的结果不可能没有 1，而有其他大于 1 的值。  </p>
+<p>rownum &gt;10 没有记录，因为第一条不满足去掉的话，第二条的 ROWNUM 又成了 1，所以永远没有满足条件的记录。或者可以这样理解：</p>
+<p>ROWNUM 是一个序列，是 oracle 数据库从数据文件或缓冲区中读取数据的顺序。它取得第一条记录则 rownum 值为 1，第二条为 2，依次类推。如果你用 &gt;,&gt;=,=,between…and 这些条件，因为从缓冲区或数据文件中得到的第一条记录的 rownum 为 1，则被删除，接着取下条，可是它的 rownum 还是 1，又被删除，依次类推，便没有了数据。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/06/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E7%8E%AF%E5%A2%83-profile%E3%80%81bashrc%E3%80%81bash_profile%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%81%94%E7%B3%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/11/06/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E7%8E%AF%E5%A2%83-profile%E3%80%81bashrc%E3%80%81bash_profile%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%81%94%E7%B3%BB/" class="post-title-link" itemprop="url">Linux-环境-profile、bashrc、bash_profile之间的区别和联系</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-11-06 12:03:27" itemprop="dateCreated datePublished" datetime="2014-11-06T12:03:27+08:00">2014-11-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -545,19 +525,27 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>按日期查找时间段的nginx日志</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed -n &quot;/14\/Jul\/2015:00:00:00/,/15\/Jul\/2015:15:00:00/&quot;p access.log &gt; time_access.log</span><br></pre></td></tr></table></figure>
+          <h2 id="etc-profile"><a href="#etc-profile" class="headerlink" title="/etc/profile"></a><code>/etc/profile</code></h2><p>此文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行。并从 /etc/profile.d 目录的配置文件中搜集 shell 的设置。</p>
+<p>英文描述为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># /etc/profile</span><br><span class="line"># System wide environment and startup programs, for login setup # Functions and aliases go in /etc/bashrc</span><br><span class="line"># It&#x27;s NOT a good idea to change this file unless you know what you # are doing. It&#x27;s much better to create a custom.sh shell script in # /etc/profile.d/ to make custom changes to your environment, as this # will prevent the need for merging in future updates.</span><br></pre></td></tr></table></figure>
+<p>所以如果你有对/etc/profile有修改的话必须得重启你的修改才会生效，此修改对每个用户都生效。</p>
+<h2 id="etc-bashrc"><a href="#etc-bashrc" class="headerlink" title="/etc/bashrc"></a><code>/etc/bashrc</code></h2><p>为每一个运行 bash shell 的用户执行此文件。当 bash shell 被打开时，该文件被读取。</p>
+<p>英文描述为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># /etc/bashrc</span><br><span class="line"># System wide functions and aliases # Environment stuff goes in /etc/profile</span><br><span class="line"># It&#x27;s NOT a good idea to change this file unless you know what you # are doing. It&#x27;s much better to create a custom.sh shell script in # /etc/profile.d/ to make custom changes to your environment, as this # will prevent the need for merging in future updates.</span><br></pre></td></tr></table></figure>
+<p>如果你想对所有的使用 bash 的用户修改某个配置并在以后打开的 bash 都生效的话可以修改这个文件，修改这个文件不用重启，重新打开一个bash即可生效。</p>
+<h2 id="bash-profile"><a href="#bash-profile" class="headerlink" title="~/.bash_profile"></a><code>~/.bash_profile</code></h2><p>每个用户都可使用该文件输入专用于自己使用的 shell 信息，当用户登录时，该文件仅仅执行一次！默认情况下，他设置一些环境变量，执行用户的 .bashrc 文件。</p>
+<p>此文件类似于 /etc/profile，也是需要需要重启才会生效，/etc/profile 对所有用户生效，~/.bash_profile 只对当前用户生效。</p>
+<h2 id="bashrc"><a href="#bashrc" class="headerlink" title="~/.bashrc"></a><code>~/.bashrc</code></h2><p>该文件包含专用于你的 bash shell 的 bash 信息，当登录时以及每次打开新的 shell 时，该文件被读取.（每个用户都有一个 .bashrc 文件，在用户目录下）</p>
+<p>此文件类似于 /etc/bashrc，不需要重启生效，重新打开一个 bash 即可生效，/etc/bashrc 对所有用户新打开的 bash 都生效，但 ~/.bashrc 只对当前用户新打开的 bash 生效。</p>
+<h2 id="bash-logout"><a href="#bash-logout" class="headerlink" title="~/.bash_logout"></a><code>~/.bash_logout</code></h2><p>当每次退出系统（退出 bash shell）时，执行该文件.</p>
+<hr>
+<p>另外，/etc/profile 中设定的变量（全局）的可以作用于任何用户，而 ~/.bashrc 等中设定的变量（局部）只能继承 /etc/profile 中的变量，他们是“父子”关系。</p>
+<ul>
+<li>~/.bash_profile 是交互式 login 方式进入 bash 运行的；</li>
+<li>~/.bashrc 是交互式 non-login 方式进入 bash 运行的；</li>
+</ul>
+<p>通常二者设置大致相同，所以通常前者会调用后者。</p>
 
-<p>查找504错误的页面和数量的nginx日志</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk &#x27;($9 ~ /504/)&#x27; time_access.log | awk &#x27;&#123;print $7&#125;&#x27; | sort | uniq -c | sort -rn &gt; 504.log</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2014/12/27/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E5%A4%84%E7%90%86%E6%96%87%E6%9C%AC/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
       
     </div>
 
@@ -576,7 +564,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/25/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E5%8C%BA%E5%88%AB-RMAN%E5%92%8CEXPIMP/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-%E5%A4%8D%E5%88%B6%E8%A1%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -590,7 +578,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/12/25/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E5%8C%BA%E5%88%AB-RMAN%E5%92%8CEXPIMP/" class="post-title-link" itemprop="url">Oracle-区别-RMAN和EXPIMP</a>
+            <a href="/2014/11/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-%E5%A4%8D%E5%88%B6%E8%A1%A8/" class="post-title-link" itemprop="url">Oracle-语法-复制表</a>
         </h2>
 
         <div class="post-meta">
@@ -600,7 +588,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-12-25 13:21:11" itemprop="dateCreated datePublished" datetime="2014-12-25T13:21:11+08:00">2014-12-25</time>
+              <time title="创建时间：2014-11-05 12:33:32" itemprop="dateCreated datePublished" datetime="2014-11-05T12:33:32+08:00">2014-11-05</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -624,19 +612,9 @@
 
       
           <ul>
-<li>RMAN是基于物理结构的备份，基于数据块的备份，支持与online redolog和archive redolog一起做恢复操作，是Oracle推荐的备份恢复工具。</li>
-<li>Data IMP/EXP是基于逻辑结构的导入导出工具，是基于数据对象（如表、存储过程等）的导入导出工具，不支持与online redolog和archive redolog一起使用，如果用作备份与恢复只能恢复到导出的那个时间点，是Oracle推荐的数据移动工具，可以从一个库导出再导入到另一个库。</li>
-</ul>
-<p>一般数据库备份策略建议每天用RMAN做备份，隔几天使用Data EXP做导出备份，这样如果数据文件等物理结构出故障可用使用RMAN+Redolog恢复，如果只是恢复某张表可以用Data IMP直接导入，提高效率。</p>
-<ul>
-<li><p>exp-逻辑备份，只备份数据及对象创建语句，恢复时需要先建立数据库，然后重建对象，导入数据</p>
-</li>
-<li><p>rman-物理备份，可以从文件级备份数据，恢复时恢复数据文件，同时也就恢复了数据</p>
-</li>
-<li><p>exp着眼于数据</p>
-</li>
-<li><p>rman着眼于文件</p>
-</li>
+<li>直接建相同的表 <code>create table students_backup as select * from students;</code></li>
+<li>直接建相同的表结构 <code>create table students_backup as select * from students where 1=2;</code></li>
+<li>如果建好了表 <code>insert into students_backup select * from students;</code></li>
 </ul>
 
       
@@ -657,7 +635,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/25/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6-passwd%E6%96%87%E4%BB%B6/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -671,7 +649,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/12/25/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6-passwd%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">Linux-文件-passwd文件</a>
+            <a href="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">UML类图几种关系的总结</a>
         </h2>
 
         <div class="post-meta">
@@ -681,7 +659,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-12-25 11:03:57" itemprop="dateCreated datePublished" datetime="2014-12-25T11:03:57+08:00">2014-12-25</time>
+              <time title="创建时间：2014-11-03 14:27:25" itemprop="dateCreated datePublished" datetime="2014-11-03T14:27:25+08:00">2014-11-03</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -689,7 +667,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                  <a href="/categories/UML/" itemprop="url" rel="index"><span itemprop="name">UML</span></a>
                 </span>
             </span>
 
@@ -704,182 +682,62 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>/etc/passwd 文件是一个纯文本文件，每行采用了相同的格式：</p>
-<ul>
-<li>name:password:uid:gid:comment:home:shell</li>
-<li>name 用户登录名</li>
-<li>password 用户口令。此域中的口令是加密的,常用x表示。当用户登录系统时，系统对输入的口令采取相同的算法，与此域中的内容进行比较。如果此域为空，表明该用户登录时不需要口令。</li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2014/12/25/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6-passwd%E6%96%87%E4%BB%B6/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/25/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6-shadow%E6%96%87%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/12/25/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6-shadow%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">Linux-文件-shadow文件</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-12-25 10:33:12" itemprop="dateCreated datePublished" datetime="2014-12-25T10:33:12+08:00">2014-12-25</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>如果查看/etc/shadow文件存放的特殊帐号信息如下：<br>name:!!:13675:0:99999:7:::<br>每一行给一个特殊帐户定义密码信息，每个字段用 : 隔开。</p>
-<ul>
-<li>字段 1 定义与这个 shadow 条目相关联的特殊用户帐户。</li>
-<li>字段 2 包含一个加密的密码。</li>
-<li>字段 3 自 1/1/1970 起，密码被修改的天数</li>
-<li>字段 4 密码将被允许修改之前的天数（0 表示“可在任何时间修改”）</li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2014/12/25/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E6%96%87%E4%BB%B6-shadow%E6%96%87%E4%BB%B6/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/21/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%96%87%E4%BB%B6%E5%A4%B4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/12/21/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%96%87%E4%BB%B6%E5%A4%B4/" class="post-title-link" itemprop="url">HTTP-文件头</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-12-21 22:31:09" itemprop="dateCreated datePublished" datetime="2014-12-21T22:31:09+08:00">2014-12-21</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/HTTP/" itemprop="url" rel="index"><span itemprop="name">HTTP</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="HTML4-01"><a href="#HTML4-01" class="headerlink" title="HTML4.01"></a>HTML4.01</h3><p>有三种文档类型：</p>
-<ul>
-<li><p>HTML Strict DTD:如果您需要干净的标记，免于表现层的混乱，请使用此类型。请与层叠样式表（CSS）配合使用：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01//EN&quot; &quot;http://www.w3.org/TR/html4/strict.dtd&quot;&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>HTML Transitional DTD:Transitional DTD 可包含 W3C 所期望移入样式表的呈现属性和元素。如果您的读者使用了不支持层叠样式表（CSS）的浏览器以至于您不得不使用 HTML 的呈现特性时，请使用此类型：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>Frameset DTD:Frameset DTD 应当被用于带有框架的文档。除 frameset 元素取代了 body 元素之外，Frameset DTD 等同于 Transitional DTD：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Frameset//EN&quot; &quot;http://www.w3.org/TR/html4/frameset.dtd&quot;&gt;</span><br></pre></td></tr></table></figure></li>
+          <p>在UML类图中，常见的有以下几种关系:泛化（Generalization）,实现（Realization）,关联（Association）,聚合（Aggregation）,组合（Composition），依赖（Dependency）</p>
+<h3 id="泛化（Generalization）"><a href="#泛化（Generalization）" class="headerlink" title="泛化（Generalization）"></a>泛化（Generalization）</h3><ul>
+<li>【泛化关系】：是一种继承关系,它指定了子类如何特化父类的所有特征和行为例如：老虎是动物的一种.</li>
+<li>【箭头指向】：带三角箭头的实线，箭头指向父类</li>
+<li><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E6%B3%9B%E5%8C%96.png" alt="泛化"></li>
 </ul>
-<h3 id="XHTML1-0"><a href="#XHTML1-0" class="headerlink" title="XHTML1.0"></a>XHTML1.0</h3><p>有三种文档类型：</p>
-<ul>
-<li><p>XHTML Strict DTD:如果您需要干净的标记，免于表现层的混乱，请使用此类型。请与层叠样式表（CSS）配合使用：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Strict//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&quot;&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>XHTML Transitional DTD:Transitional DTD 可包含 W3C 所期望移入样式表的呈现属性和元素。如果您的读者使用了不支持层叠样式表（CSS）的浏览器以至于您不得不使用 XHTML 的呈现特性时，请使用此类型：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>XHTML Frameset DTD:当您希望使用框架时，请使用此 DTD！</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Frameset//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd&quot;&gt;</span><br></pre></td></tr></table></figure></li>
+<h3 id="实现（Realization）"><a href="#实现（Realization）" class="headerlink" title="实现（Realization）"></a>实现（Realization）</h3><ul>
+<li>【实现关系】：是一种类与接口的关系，表示类是接口所有特征和行为的实现</li>
+<li>【箭头指向】：带三角箭头的虚线，箭头指向接口</li>
+<li><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E5%AE%9E%E7%8E%B0.png" alt="实现"></li>
 </ul>
-<h3 id="HTML5"><a href="#HTML5" class="headerlink" title="HTML5"></a>HTML5</h3><p><code>&lt;!DOCTYPE html&gt;</code></p>
+<h3 id="关联（Association）"><a href="#关联（Association）" class="headerlink" title="关联（Association）"></a>关联（Association）</h3><ul>
+<li>【关联关系】：是一种拥有的关系,它使一个类知道另一个类的属性和方法；如：老师与学生，丈夫与妻子<ul>
+<li>关联可以是双向的，也可以是单向的。双向的关联可以有两个箭头或者没有箭头，单向的关联有一个箭头。</li>
+</ul>
+</li>
+<li>【代码体现】：成员变量</li>
+<li>【箭头及指向】：带普通箭头的实心线，指向被拥有者</li>
+<li><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E5%85%B3%E8%81%94.png" alt="关联"><ul>
+<li>上图中，老师与学生是双向关联，老师有多名学生，学生也可能有多名老师。但学生与某课程间的关系为单向关联，一名学生可能要上多门课程，课程是个抽象的东西他不拥有学生。</li>
+</ul>
+</li>
+<li><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E5%85%B3%E8%81%942.png" alt="关联2"><ul>
+<li>上图为自身关联：</li>
+</ul>
+</li>
+</ul>
+<h3 id="聚合（Aggregation）"><a href="#聚合（Aggregation）" class="headerlink" title="聚合（Aggregation）"></a>聚合（Aggregation）</h3><ul>
+<li>【聚合关系】：是整体与部分的关系.如车和轮胎是整体和部分的关系.<ul>
+<li>聚合关系是关联关系的一种，是强的关联关系；关联和聚合在语法上无法区分，必须考察具体的逻辑关系。</li>
+</ul>
+</li>
+<li>【代码体现】：成员变量</li>
+<li>【箭头及指向】：带空心菱形的实心线，菱形指向整体</li>
+<li><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E8%81%9A%E5%90%88.png" alt="聚合"></li>
+</ul>
+<h3 id="组合（Composition）"><a href="#组合（Composition）" class="headerlink" title="组合（Composition）"></a>组合（Composition）</h3><ul>
+<li>【组合关系】：是整体与部分的关系.没有公司就不存在部门<ul>
+<li>组合关系是关联关系的一种，是比聚合关系还要强的关系，它要求普通的聚合关系中代表整体的对象负责代表部分的对象的生命周期</li>
+</ul>
+</li>
+<li>【代码体现】：成员变量</li>
+<li>【箭头及指向】：带实心菱形的实线，菱形指向整体</li>
+<li><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E7%BB%84%E5%90%88.png" alt="组合"></li>
+</ul>
+<h3 id="依赖（Dependency）"><a href="#依赖（Dependency）" class="headerlink" title="依赖（Dependency）"></a>依赖（Dependency）</h3><ul>
+<li>【依赖关系】：是一种使用的关系,所以要尽量不使用双向的互相依赖。</li>
+<li>【代码表现】：局部变量、方法的参数或者对静态方法的调用</li>
+<li>【箭头及指向】：带箭头的虚线，指向被使用者</li>
+<li><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E4%BE%9D%E8%B5%96.png" alt="依赖"></li>
+</ul>
+<hr>
+<p>各种关系的强弱顺序：</p>
+<p><strong>泛化= 实现&gt; 组合&gt; 聚合&gt; 关联&gt; 依赖</strong></p>
+<p>下面这张UML图，比较形象地展示了各种类图关系：</p>
+<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E4%B8%BE%E4%BE%8B.png" alt="举例"></p>
 
       
     </div>
@@ -899,7 +757,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/17/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E6%96%87%E4%BB%B6%E8%BF%9C%E7%A8%8B%E4%BC%A0%E8%BE%93/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/03/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E7%94%A8%E6%B3%95-SpringMVC%E7%9A%84%E5%87%A0%E7%A7%8D%E8%BF%94%E5%9B%9E%E6%96%B9%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -913,7 +771,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/12/17/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E6%96%87%E4%BB%B6%E8%BF%9C%E7%A8%8B%E4%BC%A0%E8%BE%93/" class="post-title-link" itemprop="url">Linux-命令-文件远程传输</a>
+            <a href="/2014/11/03/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E7%94%A8%E6%B3%95-SpringMVC%E7%9A%84%E5%87%A0%E7%A7%8D%E8%BF%94%E5%9B%9E%E6%96%B9%E5%BC%8F/" class="post-title-link" itemprop="url">SpringMVC-用法-SpringMVC的几种返回方式</a>
         </h2>
 
         <div class="post-meta">
@@ -923,7 +781,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-12-17 14:17:52" itemprop="dateCreated datePublished" datetime="2014-12-17T14:17:52+08:00">2014-12-17</time>
+              <time title="创建时间：2014-11-03 14:03:17" itemprop="dateCreated datePublished" datetime="2014-11-03T14:03:17+08:00">2014-11-03</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -931,7 +789,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
                 </span>
             </span>
 
@@ -946,17 +804,79 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>scp是有Security的文件copy，基于ssh登录。</p>
-<p>命令基本格式：<br><code>scp [OPTIONS] file_source file_target</code></p>
-<p>OPTIONS：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-v 和大多数 linux 命令中的 -v 意思一样 , 用来显示进度 . 可以用来查看连接、认证、 或是配置错误</span><br><span class="line">-C 使能压缩选项</span><br><span class="line">-P 选择端口 . 注意 -p 已经被 rcp 使用</span><br></pre></td></tr></table></figure>
+          <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line">package com.boventech.learning.controller;</span><br><span class="line"></span><br><span class="line">import java.util.HashMap;</span><br><span class="line">import java.util.Map;</span><br><span class="line"></span><br><span class="line">import org.springframework.stereotype.Controller;</span><br><span class="line">import org.springframework.ui.Model;</span><br><span class="line">import org.springframework.web.bind.annotation.RequestMapping;</span><br><span class="line">import org.springframework.web.bind.annotation.RequestMethod;</span><br><span class="line">import org.springframework.web.bind.annotation.RequestParam;</span><br><span class="line">import org.springframework.web.bind.annotation.ResponseBody;</span><br><span class="line">import org.springframework.web.servlet.ModelAndView;</span><br><span class="line"></span><br><span class="line">import com.boventech.learning.entity.User;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * MVCReturn</span><br><span class="line"> * @author peng.xia</span><br><span class="line"> *</span><br><span class="line"> */</span><br><span class="line">@Controller</span><br><span class="line">@RequestMapping(&quot;/MVCReturn&quot;)</span><br><span class="line">public class SpringMVCReturnController &#123;</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value=&quot;/index1&quot;,method=RequestMethod.GET)</span><br><span class="line">    public ModelAndView index()&#123;</span><br><span class="line">        ModelAndView modelAndView = new ModelAndView(&quot;/user/index&quot;);</span><br><span class="line">        modelAndView.addObject(&quot;name&quot;, &quot;xxx&quot;);</span><br><span class="line">        return modelAndView;</span><br><span class="line">    &#125;</span><br><span class="line">    //对于ModelAndView构造函数可以指定返回页面的名称，也可以通过setViewName方法来设置所需要跳转的页面；</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value=&quot;/index2&quot;,method=RequestMethod.GET)</span><br><span class="line">    public ModelAndView index2()&#123;</span><br><span class="line">        ModelAndView modelAndView = new ModelAndView();</span><br><span class="line">        modelAndView.addObject(&quot;name&quot;, &quot;xxx&quot;);</span><br><span class="line">        modelAndView.setViewName(&quot;/user/index&quot;);</span><br><span class="line">        return modelAndView;</span><br><span class="line">    &#125;</span><br><span class="line">    //返回的是一个包含模型和视图的ModelAndView对象；</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * Model一个模型对象，</span><br><span class="line">     * 主要包含spring封装好的model和modelMap,以及java.util.Map，</span><br><span class="line">     * 当没有视图返回的时候视图名称将由requestToViewNameTranslator决定；</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    @RequestMapping(value=&quot;/index3&quot;,method=RequestMethod.GET)</span><br><span class="line">    public Map&lt;String, String&gt; index3()&#123;</span><br><span class="line">        Map&lt;String, String&gt; map = new HashMap&lt;String, String&gt;();</span><br><span class="line">        map.put(&quot;1&quot;, &quot;1&quot;);</span><br><span class="line">        //map.put相当于request.setAttribute方法</span><br><span class="line">        return map;</span><br><span class="line">    &#125;</span><br><span class="line">    //响应的view应该也是该请求的view。等同于void返回。</span><br><span class="line"></span><br><span class="line">    //返回String</span><br><span class="line">    //通过model进行使用</span><br><span class="line">    @RequestMapping(value=&quot;/index4&quot;,method = RequestMethod.GET)</span><br><span class="line">    public String index(Model model) &#123;</span><br><span class="line">        String retVal = &quot;user/index&quot;;</span><br><span class="line">        User user = new User();</span><br><span class="line">        user.setName(&quot;XXX&quot;);</span><br><span class="line">        model.addAttribute(&quot;user&quot;, user);</span><br><span class="line">        return retVal;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //通过配合@ResponseBody来将内容或者对象作为HTTP响应正文返回（适合做即时校验）；</span><br><span class="line">    @RequestMapping(value = &quot;/valid&quot;, method = RequestMethod.GET)</span><br><span class="line">    @ResponseBody</span><br><span class="line">    public String valid(@RequestParam(value = &quot;userId&quot;, required = false) Integer userId,</span><br><span class="line">            @RequestParam(value = &quot;name&quot;) String name) &#123;</span><br><span class="line">        return String.valueOf(true);</span><br><span class="line">    &#125;</span><br><span class="line">    //返回字符串表示一个视图名称，这个时候如果需要在渲染视图的过程中需要模型的话，就可以给处理器添加一个模型参数，然后在方法体往模型添加值就可以了，</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @RequestMapping(method=RequestMethod.GET)</span><br><span class="line">    public void index5()&#123;</span><br><span class="line">        ModelAndView modelAndView = new ModelAndView();</span><br><span class="line">        modelAndView.addObject(&quot;xxx&quot;, &quot;xxx&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    //返回的结果页面还是：/type</span><br><span class="line">    //这个时候我们一般是将返回结果写在了HttpServletResponse 中了，如果没写的话，</span><br><span class="line">    //spring就会利用RequestToViewNameTranslator 来返回一个对应的视图名称。如果这个时候需要模型的话，处理方法和返回字符串的情况是相同的。</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<ol>
-<li><p>拷贝单个文件至远程主机</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp ./test.txt root@192.168.1.100:/root/</span><br></pre></td></tr></table></figure></li>
-<li><p>远程文件/文件夹下载</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp -r root@192.168.62.10:/root/ ~/tmp/</span><br></pre></td></tr></table></figure></li>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/03/%E5%B7%A5%E5%85%B7/Eclipse/Eclipse-45%E7%A7%92%E5%90%AF%E5%8A%A8%E6%97%B6%E9%97%B4%E4%BF%AE%E6%94%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/11/03/%E5%B7%A5%E5%85%B7/Eclipse/Eclipse-45%E7%A7%92%E5%90%AF%E5%8A%A8%E6%97%B6%E9%97%B4%E4%BF%AE%E6%94%B9/" class="post-title-link" itemprop="url">Eclipse-45秒启动时间修改</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-11-03 12:51:22" itemprop="dateCreated datePublished" datetime="2014-11-03T12:51:22+08:00">2014-11-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>Eclipse启动Tomcat时，默认配置的启动超时时长为45秒。假若项目启动超过45秒将会报错。 两种解决方法：</p>
+<p> 1. 改<code>XML eclipse\workspace\.metadata\.plugins\org.eclipse.wst.server.core\servers.xml  start-timeout=&quot;45&quot;</code>  </p>
+<ol start="2">
+<li>双击Servers视图中的对应的Server，打开Server的属性界面，右边有个Timeouts，把里面的45改大些</li>
 </ol>
+<p><img src="/2014/11/03/%E5%B7%A5%E5%85%B7/Eclipse/Eclipse-45%E7%A7%92%E5%90%AF%E5%8A%A8%E6%97%B6%E9%97%B4%E4%BF%AE%E6%94%B9/1.png" alt="1"></p>
 
       
     </div>
@@ -976,7 +896,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E5%8E%8B%E7%BC%A9%E5%92%8C%E8%A7%A3%E5%8E%8B/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/27/%E8%AF%AD%E8%A8%80/web/HTML-input%E6%A0%87%E7%AD%BE%E7%9A%84disable%E5%92%8Creadonly/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -990,7 +910,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/12/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-%E5%8E%8B%E7%BC%A9%E5%92%8C%E8%A7%A3%E5%8E%8B/" class="post-title-link" itemprop="url">Linux-命令-压缩和解压</a>
+            <a href="/2014/10/27/%E8%AF%AD%E8%A8%80/web/HTML-input%E6%A0%87%E7%AD%BE%E7%9A%84disable%E5%92%8Creadonly/" class="post-title-link" itemprop="url">HTML-input标签的disable和readonly</a>
         </h2>
 
         <div class="post-meta">
@@ -1000,7 +920,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-12-14 10:29:31" itemprop="dateCreated datePublished" datetime="2014-12-14T10:29:31+08:00">2014-12-14</time>
+              <time title="创建时间：2014-10-27 15:13:58" itemprop="dateCreated datePublished" datetime="2014-10-27T15:13:58+08:00">2014-10-27</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1008,7 +928,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                  <a href="/categories/HTML/" itemprop="url" rel="index"><span itemprop="name">HTML</span></a>
                 </span>
             </span>
 
@@ -1023,53 +943,22 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="tar命令详解"><a href="#tar命令详解" class="headerlink" title="tar命令详解"></a>tar命令详解</h2><ul>
-<li>-c: 建立压缩档案</li>
-<li>-x：解压</li>
-<li>-t：查看内容</li>
-<li>-r：向压缩归档文件末尾追加文件</li>
-<li>-u：更新原压缩包中的文件</li>
-</ul>
-<p>这五个是独立的命令，压缩解压都要用到其中一个，可以和别的命令连用但只能用其中一个。</p>
-<p>下面的参数是根据需要在压缩或解压档案时可选的。</p>
+          <p><code>&lt;input name=&quot;country&quot; id=&quot;country&quot; size=12 value=&quot;disabled提交时得不到该值 &quot; disabled=&quot;disabled&quot; &gt;</code></p>
+<p>放在form表单中提交后得不到该值。将<code>disabled=&quot;disabled&quot;</code> 改为 <code>readonly = &quot;readonly&quot;</code> 即可。</p>
+<p>按照W3C的规范：<a target="_blank" rel="noopener" href="http://www.w3.org/TR/REC-html40/interact/forms.html#h-17.12">http://www.w3.org/TR/REC-html40/interact/forms.html#h-17.12</a></p>
+<p>设置为disabled的input将会有下面的限制：</p>
 <ul>
-<li><p>-z：有gzip属性的</p>
-</li>
-<li><p>-j：有bz2属性的</p>
-</li>
-<li><p>-Z：有compress属性的</p>
-</li>
-<li><p>-v：显示所有过程</p>
-</li>
-<li><p>-O：将文件解开到标准输出</p>
-</li>
-<li><p>-C：change to directory DIR</p>
+<li>不能接收焦点</li>
+<li>使用tab键时将被跳过</li>
+<li>可能不是successful的</li>
+</ul>
+<p>设置为readonly的input将会有下面的限制：</p>
 <ul>
-<li><p>解包</p>
-<p>指定路径：<code>tar -xvf FileName.tar -C ./target</code></p>
-</li>
-<li><p>打包</p>
-<p><code>tar -cvf file2.tar /home/usr2/file2</code>。该命令可以将/home/usr2/file2文件打包到当前目录下的file2.tar中，需要注意的是：会将路径也打入包内。</p>
-<p><code>tar -cvf file2.tar -C /home/usr2 file2</code>。该命令中的-C dir参数，将tar的工作目录从当前目录改为/home/usr2，将file2文件（不带绝对路径）压缩到file2.tar中。</p>
-<p>注意：-C dir参数的作用在于改变工作目录，其有效期为该命令中下一次-C dir参数之前。</p>
-</li>
+<li>可以接收焦点但不能被修改</li>
+<li>可以使用tab键进行导航</li>
+<li>可能是successful的</li>
 </ul>
-</li>
-</ul>
-<p><strong>参数-f是必须的</strong></p>
-<ul>
-<li>-f: 使用档案名字，切记，这个参数是最后一个参数，后面只能接档案名。</li>
-</ul>
-<h3 id="tar"><a href="#tar" class="headerlink" title=".tar"></a>.tar</h3><p>解包：<code>tar -xvf FileName.tar</code><br>打包：<code>tar -cvf FileName.tar DirName</code><br>（注：tar是打包，不是压缩！）</p>
-<hr>
-<h3 id="gz"><a href="#gz" class="headerlink" title=".gz"></a>.gz</h3><p>解压：<code>gzip -d FileName.gz</code><br>压缩：<code>gzip FileName</code></p>
-<h3 id="tar-gz-和-tgz"><a href="#tar-gz-和-tgz" class="headerlink" title=".tar.gz 和 .tgz"></a>.tar.gz 和 .tgz</h3><p>解压：<code>tar -zxvf FileName.tar.gz</code><br>压缩：<code>tar -zcvf FileName.tar.gz DirName</code></p>
-<hr>
-<h3 id="tar-bz2"><a href="#tar-bz2" class="headerlink" title=".tar.bz2"></a>.tar.bz2</h3><p>解压：<code>tar -jxvf FileName.tar.bz2</code><br>压缩：<code>tar -jcvf FileName.tar.bz2 DirName</code></p>
-<hr>
-<h3 id="zip"><a href="#zip" class="headerlink" title=".zip"></a>.zip</h3><p>解压：<code>unzip FileName.zip</code><br>压缩：<code>zip FileName.zip DirName</code></p>
-<hr>
-<h3 id="rar"><a href="#rar" class="headerlink" title=".rar"></a>.rar</h3><p>解压：<code>rar -x FileName.rar</code><br>压缩：<code>rar -a FileName.rar DirName</code></p>
+<p>只有successful的表单元素才是有效数据，也即是可以进行提交。disabled和readonly的文本输入框只能通过脚本进行修改value属性。</p>
 
       
     </div>
@@ -1088,7 +977,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/64/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/64/">64</a><span class="page-number current">65</span><a class="page-number" href="/page/66/">66</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/66/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/64/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/64/">64</a><span class="page-number current">65</span><a class="page-number" href="/page/66/">66</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/66/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1156,20 +1045,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

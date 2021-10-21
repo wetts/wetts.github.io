@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="分层    应用层 应用层 DNS 域名解析协议 域名解析协议是能够来将域名和 IP 地址相互映射，使人更方便地访问互联网的协议。   FTP 文件传输协议 FTP 协议是基于 TCP 的传输，FTP 采用双 TCP 连接方式，提供一种在服务器和客户机之间上传和下载文件的有效方式，支持授权与认证机制，提供目录列表功能。   SMTP 简单邮件传输协议 SMTP 简单邮件传输协议是一种提供可靠且有效">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络-0-知识点汇总.md">
+<meta property="og:url" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="分层    应用层 应用层 DNS 域名解析协议 域名解析协议是能够来将域名和 IP 地址相互映射，使人更方便地访问互联网的协议。   FTP 文件传输协议 FTP 协议是基于 TCP 的传输，FTP 采用双 TCP 连接方式，提供一种在服务器和客户机之间上传和下载文件的有效方式，支持授权与认证机制，提供目录列表功能。   SMTP 简单邮件传输协议 SMTP 简单邮件传输协议是一种提供可靠且有效">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/net_1.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/net_2.gif">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE%E5%88%86%E5%B1%82.JPG">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/SSL_%E5%BA%94%E7%94%A8.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TSL_%E7%BB%93%E6%9E%84.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E6%8A%A5%E6%96%87%E5%A4%B4%E9%83%A8.jpeg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP.gif">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE.JPG">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP_ISN.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E6%A0%A1%E9%AA%8C%E5%92%8C.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E7%A1%AE%E8%AE%A4%E5%BA%94%E7%AD%94%E4%B8%8E%E5%BA%8F%E5%88%97%E5%8F%B7.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP_%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP_%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/UDP_QUIC_%E7%BD%91%E7%BB%9C%E5%B1%82%E5%AF%B9%E6%AF%94%E5%9B%BE.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/UDP_QUIC_%E9%80%9A%E8%AE%AF%E6%97%B6%E9%97%B4%E5%AF%B9%E6%AF%94%E5%9B%BE.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2.png">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/DNS%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90.png">
+<meta property="article:published_time" content="2019-09-01T07:15:42.000Z">
+<meta property="article:modified_time" content="2021-10-14T08:58:14.372Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="计算机网络">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/net_1.jpg">
+
+<link rel="canonical" href="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>计算机网络-0-知识点汇总.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          计算机网络-0-知识点汇总.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-01 15:15:42" itemprop="dateCreated datePublished" datetime="2019-09-01T15:15:42+08:00">2019-09-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="分层"><a href="#分层" class="headerlink" title="分层"></a>分层</h2><ul>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/net_1.jpg" alt="net_1"></li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/net_2.gif" alt="net_2"></li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE%E5%88%86%E5%B1%82.JPG" alt="网络协议分层"></li>
+<li>应用层<ul>
+<li>应用层<ul>
+<li>DNS 域名解析协议<ul>
+<li>域名解析协议是能够来将域名和 IP 地址相互映射，使人更方便地访问互联网的协议。</li>
+</ul>
+</li>
+<li>FTP 文件传输协议<ul>
+<li>FTP 协议是基于 TCP 的传输，FTP 采用双 TCP 连接方式，提供一种在服务器和客户机之间上传和下载文件的有效方式，支持授权与认证机制，提供目录列表功能。</li>
+</ul>
+</li>
+<li>SMTP 简单邮件传输协议<ul>
+<li>SMTP 简单邮件传输协议是一种提供可靠且有效的电子邮件传输的协议，它控制两个相互通信的 SMTP 进程交换信息。有以下三个阶段，连接建立、邮件传送、连接释放。</li>
+</ul>
+</li>
+<li>HTTP 超文本传输协议<ul>
+<li>HTTP 超文本传输协议是用于从万维网服务器传输超文本到本地浏览器的传送协议，它一个无状态的请求/响应协议，是因特网上应用最为广泛的一种网络传输协议，所有的 WWW 文件都必须遵守这个标准，HTTP 超文本传输协议基于 TCP/IP 通信协议来传递数据。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>表示层</li>
+<li>会话层</li>
+</ul>
+</li>
+<li>传输层<ul>
+<li>传输层协议为不同主机上运行的应用进程提供逻辑通信</li>
+<li>传输层则负责将数据可靠地传送到相应的端口（<strong>端到端</strong>），传输层提供了主机应用程序进程之间的端到端的服务。传输层利用网络层提供的服务，并通过传输层地址提供给高层用户传输数据的通信端口，使高层用户看到的只是在两个传输实体间的一条端到端的、可由用户控制和设定的、可靠的数据通路。</li>
+</ul>
+</li>
+<li>网络层<ul>
+<li>网络层协议为不同主机提供逻辑通信。</li>
+<li>网络层只是根据网络地址将源结点发出的数据包传送到目的结点（<strong>点到点</strong>），其主要任务是：通过路由选择算法，为报文或分组通过通信子网选择最适当的路径。该层控制数据链路层与传输层之间的信息转发，建立、维持和终止网络的连接。具体地说，数据链路层的数据在这一层被转换为数据包，然后通过路径选择、分段组合、顺序、进/出路由等控制，将信息从一个网络设备传送到另一个网络设备。</li>
+<li>路由器的主要功能<ul>
+<li>路由选择、分组转发，掌握原理</li>
+</ul>
+</li>
+<li>动态路由算法<ul>
+<li>距离向量路由算法、链路状态路由算法</li>
+</ul>
+</li>
+<li>IP 地址<ul>
+<li>IP 地址是 IP 协议提供的一种统一的地址格式，它为互联网上的每一个网络和每一台主机分配一个逻辑地址，以此来屏蔽物理地址的差异</li>
+</ul>
+</li>
+<li>MAC 地址<ul>
+<li>MAC 是地址物理地址，用来定义网络设备的位置，在 OSI 模型中，第三层网络层负责 IP 地址，第二层数据链路层则负责 MAC 地址。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>网络接口层<ul>
+<li>数据链路层<ul>
+<li>可靠传输机制<ul>
+<li>序列号、校验和、确认应答机制、超时重传、连接管理（三次握手四次挥手）、流量控制、拥塞控制</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>物理层<ul>
+<li>物理层的几种复用<ul>
+<li>频分复用、时分复用、波分复用、码分复用</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
+<li>路由器和交换机  <ul>
+<li>路由器<ul>
+<li>DHCP<ul>
+<li>DHCP 是动态主机设置协议的简称</li>
+<li>主要有两个用途<ul>
+<li>用于内部网或网络服务供应商自动分配IP地址；</li>
+<li>给用户用于内部网管理员作为对所有计算机作中央管理的手段。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>区别<ul>
+<li>工作层次不同<ul>
+<li>交换机主要工作在数据链路层（第二层）</li>
+<li>路由器工作在网络层（第三层）</li>
+</ul>
+</li>
+<li>转发依据不同<ul>
+<li>交换机转发所依据的对象时：MAC 地址。（物理地址）</li>
+<li>路由转发所依据的对象是：IP 地址。（网络地址）</li>
+</ul>
+</li>
+<li>主要功能不同<ul>
+<li>交换机主要用于组建局域网。</li>
+<li>路由主要功能是将由交换机组好的局域网相互连接起来，或者接入Interne。</li>
+<li>交换机能做的，路由都能做。</li>
+<li>交换机不能分割广播域，路由可以。</li>
+<li>路由还可以提供防火墙的功能。</li>
+<li>路由配置比交换机复杂。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="网络层协议"><a href="#网络层协议" class="headerlink" title="网络层协议"></a>网络层协议</h2><h3 id="ICMP"><a href="#ICMP" class="headerlink" title="ICMP"></a>ICMP</h3><ul>
+<li>ICMP（Internet Control Message Protocol）Internet 控制报文协议。它是 TCP/IP 协议簇的一个子协议，用于在 IP 主机、路由器之间传递控制消息。控制消息是指网络通不通、主机是否可达、路由是否可用等网络本身的消息。这些控制消息虽然并不传输用户数据，但是对于用户数据的传递起着重要的作用。</li>
+<li>ICMP 使用 IP 的基本支持，就像它是一个更高级别的协议，但是，ICMP 实际上是 IP 的一个组成部分，必须由每个 IP 模块实现。</li>
+<li><strong>PING 命令是利用 ICMP 协议</strong></li>
+</ul>
+<h3 id="SSL-TSL"><a href="#SSL-TSL" class="headerlink" title="SSL/TSL"></a>SSL/TSL</h3><ul>
+<li>SSL<ul>
+<li>SSL（Secure Socket Layer 安全套接层）以及其继承者 TSL（Transport Layer Security 传输层安全）是为了网络通信安全，提供安全及数据完整性的一种安全协议。TLS 与 SSL 在传输层对网络连接进行加密。</li>
+<li>SSL 协议位于 TCP/IP 协议与各种应用层协议之间，为数据通讯提供安全支持。</li>
+<li>SSL 协议可分为两层：<ul>
+<li>SSL 记录协议（SSL Record Protocol）<ul>
+<li>它建立在可靠的传输协议（如 TCP）之上，为高层协议提供数据封装、压缩、加密等基本功能的支持。</li>
+</ul>
+</li>
+<li>SSL 握手协议（SSL Handshake Protocol）<ul>
+<li>它建立在 SSL 记录协议之上，用于在实际的数据传输开始前，通讯双方进行身份认证、协商加密算法、交换加密密钥等。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/SSL_%E5%BA%94%E7%94%A8.jpg" alt="SSL_应用"></li>
+</ul>
+</li>
+<li>TSL<ul>
+<li>TLS（Transport Layer Security）传输层安全是 IETF 在 SSL3.0 基础上设计的协议，实际上相当于 SSL 的后续版本。</li>
+<li>结构<ul>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TSL_%E7%BB%93%E6%9E%84.jpg" alt="TSL_结构"></li>
+<li>TLS主要分为两层<ul>
+<li>底层的是 TLS 记录协议，主要负责使用对称密码对消息进行加密。</li>
+<li>上层的是 TLS 握手协议，主要分为握手协议，密码规格变更协议和应用数据协议 4 个部分。<ul>
+<li>握手协议负责在客户端和服务器端商定密码算法和共享密钥，包括证书认证，是 4 个协议中最最复杂的部分。</li>
+<li>密码规格变更协议负责向通信对象传达变更密码方式的信号</li>
+<li>警告协议负责在发生错误的时候将错误传达给对方</li>
+<li>应用数据协议负责将 TLS 承载的应用数据传达给通信对象的协议。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="传输层协议"><a href="#传输层协议" class="headerlink" title="传输层协议"></a>传输层协议</h2><h3 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h3><ul>
+<li>报文<ul>
+<li>报文头部<ul>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E6%8A%A5%E6%96%87%E5%A4%B4%E9%83%A8.jpeg" alt="TCP报文头部"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>流程<ul>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP.gif" alt="TCP"></li>
+<li>在 TCP 中，有个 FLAGS 字段，这个字段有以下几个标识<ul>
+<li>SYN<ul>
+<li>表示建立连接</li>
+</ul>
+</li>
+<li>FIN<ul>
+<li>表示关闭连接</li>
+</ul>
+</li>
+<li>ACK<ul>
+<li>表示响应</li>
+<li>ACK 是可能与 SYN，FIN 等同时使用的</li>
+</ul>
+</li>
+<li>PSH<ul>
+<li>表示有 DATA 数据传输</li>
+</ul>
+</li>
+<li>RST<ul>
+<li>表示连接重置</li>
+</ul>
+</li>
+<li>URG</li>
+</ul>
+</li>
+<li>TCP 状态表<ul>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE.JPG" alt="TCP状态转换图"></li>
+<li>CLOSED<ul>
+<li>关闭状态，没有连接活动或正在进行</li>
+</ul>
+</li>
+<li>LISTEN<ul>
+<li>监听状态，服务器正在等待连接进入</li>
+</ul>
+</li>
+<li>SYN RCVD<ul>
+<li>收到一个连接请求，尚未确认</li>
+</ul>
+</li>
+<li>SYN SENT<ul>
+<li>已经发出连接请求，等待确认</li>
+</ul>
+</li>
+<li>ESTABLISHED<ul>
+<li>连接建立，正常数据传输状态</li>
+</ul>
+</li>
+<li>FIN WAIT 1<ul>
+<li>（主动关闭）已经发送关闭请求，等待确认</li>
+</ul>
+</li>
+<li>FIN WAIT 2<ul>
+<li>（主动关闭）收到对方关闭确认，等待对方关闭请求</li>
+</ul>
+</li>
+<li>TIME WAIT<ul>
+<li>完成双向关闭，等待所有分组死掉</li>
+</ul>
+</li>
+<li>CLOSING<ul>
+<li>双方同时尝试关闭，等待对方确认</li>
+</ul>
+</li>
+<li>CLOSE WAIT<ul>
+<li>（被动关闭）收到对方关闭请求，已经确认</li>
+</ul>
+</li>
+<li>LAST ACK<ul>
+<li>（被动关闭）等待最后一个关闭确认，并等待所有分组死掉</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>由<code>客户端端口+服务端端口+客户端IP+服务端IP+传输协议</code>组成的五元组可以明确的标识一条连接</li>
+<li>使用 TCP 的协议：FTP（文件传输协议）、Telnet（远程登录协议）、SMTP（简单邮件传输协议）、POP3（和 SMTP 相对，用于接收邮件）、HTTP 协议等。</li>
+<li>安全性<ul>
+<li>初始化序列号 ISN（Initial Sequence Number）<ul>
+<li>三次握手过程是建立 TCP 连接的第一步，所以这里的序列号叫初始序列号 ISN。在后续通信中的序列号都是基于 ISN 计算出来的。所以 ISN 是后续通信的基础，如果在后续的报文中检查序列号不匹配，这个报文将被认为是非法报文，做丢弃处理。</li>
+<li>ISN 生成基本规则<ol>
+<li>递增，直到超过最大值，再从较小的值开始。ISN 如果不是递增的，就可能因为网络延迟导致 ISN 重复，引起后续通信错乱，连接失败。</li>
+<li>随机，ISN 必须是不可预测的随机数，如果 ISN 可以预测，将会引起很多安全问题。</li>
+</ol>
+</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP_ISN.png" alt="TCP_ISN"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>拆包、封包<ul>
+<li>TCP 是个”流”协议，所谓流，就是没有界限的一串数据。大家可以想想河里的流水，是连成一片的，其间是没有分界线的。但一般通讯程序开发是需要定义一个个相互独立的数据包的，比如用于登陆的数据包，用于注销的数据包。</li>
+<li>由于 TCP “流”的特性以及网络状况，在进行数据传输时会出现以下几种情况<ol>
+<li>先接收到 data1，然后接收到 data2</li>
+<li>先接收到 data1 的部分数据,然后接收到 data2 余下的部分以及 data2 的全部</li>
+<li>先接收到了 data1 的全部数据和 data2 的部分数据，然后接收到了 data2 的余下的数据</li>
+<li>一次性接收到了 data1 和 data2 的全部数据</li>
+</ol>
+<ul>
+<li>2、3、4 的情况就是大家经常说的”粘包”，就需要我们把接收到的数据进行拆包，拆成一个个独立的数据包。为了拆包就必须在发送端进行封包。<ul>
+<li>封包<ul>
+<li>封包就是给一段数据加上包头,这样一来数据包就分为包头和包体两部分内容了。</li>
+<li>包头其实上是个大小固定的结构体，其中有个结构体成员变量表示包体的长度，这是个很重要的变量，其他的结构体成员可根据需要自己定义。根据包头长度固定以及包头中含有包体长度的变量就能正确的拆分出一个完整的数据包。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>保活机制（keepAlive）<ul>
+<li>保活机制是由一个保活计时器实现的。当计时器被激发，连接端将发送一个保活探测报文，另一端接收报文的同时会发送一个 ACK 作为响应。</li>
+<li>相关配置<ul>
+<li>保活时间：默认 7200 秒（2 小时）</li>
+<li>保活时间间隔：默认 75 秒</li>
+<li>保活探测数：默认 9 次</li>
+</ul>
+</li>
+<li>过程描述<ul>
+<li>连接中启动保活功能的一端，在保活时间内连接处于非活动状态，则向对方发送一个保活探测报文，如果收到响应，则重置保活计时器，如果没有收到响应报文，则经过一个保活时间间隔后再次向对方发送一个保活探测报文，如果还没有收到响应报文，则继续，直到发送次数到达保活探测数，此时，对方主机将确认为不可到达，连接被中断。</li>
+</ul>
+</li>
+<li>TCP 保活功能工作过程中，开启该功能的一端会发现对方处于以下四种状态之一：<ul>
+<li>对方主机仍在工作，并且可以到达。此时请求端将保活计时器重置。如果在计时器超时之前应用程序通过该连接传输数据，计时器再次被设定为保活时间值。</li>
+<li>对方主机已经崩溃，包括已经关闭或者正在重新启动。这时对方的 TCP 将不会响应。请求端不会接收到响应报文，并在经过保活时间间隔指定的时间后超时。超时前，请求端会持续发送探测报文，一共发送保活探测数指定次数的探测报文，如果请求端没有收到任何探测报文的响应，那么它将认为对方主机已经关闭，连接也将被断开。</li>
+<li>客户主机崩溃并且已重启。在这种情况下，请求端会收到一个对其保活探测报文的响应，但这个响应是一个重置报文段 RST，请求端将会断开连接。</li>
+<li>对方主机仍在工作，但是由于某些原因不能到达请求端（例如网络无法传输，而且可能使用 ICMP 通知也可能不通知对方这一事实）。这种情况与状态 2 相同，因为 TCP 不能区分状态 2 与状态 4，结果是都没有收到探测报文的响应。</li>
+</ul>
+</li>
+<li>弊端<ul>
+<li>在出现短暂的网络错误的时候，保活机制会使一个好的连接断开；</li>
+<li>保活机制会占用不必要的带宽；</li>
+</ul>
+</li>
+<li>保活功能在默认情况下是关闭的。没有经过应用层的请求，Linux 系统不会提供保活功能。</li>
+<li>相关问题<ul>
+<li><strong>TCP 连接时，一方如何知道另一方【异常断开连接】?</strong><ul>
+<li>TCP 不是轮询的协议，否则 TCP 将占用大量网络带宽。可以说 TCP 属于事件触发的协议，对等方的异常断链只能在应用层通过 <code>send()</code> 函数来判断，所以业界通常的做法是定时 send HEARTBEAD。TCP 还有个套接字 Option，设置后每隔 2 小时如果没有数据交互的话协议会自动检测。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>确保可靠性的方式：<ul>
+<li>校验和<ul>
+<li>计算方式<ul>
+<li>在数据传输的过程中，将发送的数据段都当做一个 16 位的整数。将这些整数加起来。并且前面的进位不能丢弃，补在后面，最后取反，得到校验和。</li>
+</ul>
+</li>
+<li>发送方：在发送数据之前计算检验和，并进行校验和的填充。</li>
+<li>接收方：收到数据后，对数据以同样的方式进行计算，求出校验和，与发送方的进行比对。</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E6%A0%A1%E9%AA%8C%E5%92%8C.png" alt="TCP校验和"></li>
+<li>如果接收方比对校验和与发送方不一致，那么数据一定传输有误。但是如果接收方比对校验和与发送方一致，<strong>数据不一定传输成功</strong>。</li>
+</ul>
+</li>
+<li>序列号、确认应答<ul>
+<li>序列号<ul>
+<li>TCP 传输时将每个字节的数据都进行了编号，这就是序列号。</li>
+</ul>
+</li>
+<li>确认应答<ul>
+<li>TCP 传输的过程中，每次接收方收到数据后，都会对传输方进行确认应答。也就是发送 ACK 报文。这个 ACK 报文当中带有对应的确认序列号，告诉发送方，接收到了哪些数据，下一次的数据从哪里发。</li>
+</ul>
+</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E7%A1%AE%E8%AE%A4%E5%BA%94%E7%AD%94%E4%B8%8E%E5%BA%8F%E5%88%97%E5%8F%B7.png" alt="TCP确认应答与序列号"></li>
+<li>序列号的作用不仅仅是应答的作用，有了序列号能够将接收到的数据根据序列号排序，并且去掉重复序列号的数据。这也是TCP传输可靠性的保证之一。</li>
+</ul>
+</li>
+<li>超时重传<ul>
+<li>发送方没有介绍到响应的ACK报文原因可能有两点：<ul>
+<li>数据在传输过程中由于网络原因等直接全体丢包，接收方根本没有接收到。</li>
+<li>接收方接收到了响应的数据，但是发送的ACK报文响应却由于网络原因丢包了。</li>
+</ul>
+</li>
+<li>重传机制就是发送方在发送完数据后等待一个时间，时间到达没有接收到 ACK 报文，那么对刚才发送的数据进行重新发送。如果是刚才第一个原因，接收方收到二次重发的数据后，便进行 ACK 应答。如果是第二个原因，接收方发现接收的数据已存在（判断存在的根据就是序列号，所以上面说序列号还有去除重复数据的作用），那么直接丢弃，仍旧发送ACK应答。<ul>
+<li>最大超时时间（也就是等待的时间）是动态计算的<ul>
+<li>在 Linux 中（BSD Unix 和 Windows 下也是这样）超时以 500ms 为一个单位进行控制，每次判定超时重发的超时时间都是 500ms 的整数倍。重发一次后，仍未响应，那么等待 <code>2*500ms</code> 的时间后，再次重传。等待 <code>4*500ms</code> 的时间继续重传。以一个指数的形式增长。累计到一定的重传次数，TCP 就认为网络或者对端出现异常，强制关闭连接。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>连接管理<ul>
+<li>握手、挥手<ul>
+<li>三次握手<ul>
+<li>过程描述<ul>
+<li>第一次握手：客户端给服务端发一个 SYN 报文，并指明客户端的初始化序列号 ISN(c)。此时客户端处于 SYN_SEND 状态。<ul>
+<li>首部的同步位 SYN=1，初始序号 seq=x，SYN=1 的报文段不能携带数据，但要消耗掉一个序号。</li>
+</ul>
+</li>
+<li>第二次握手：服务器收到客户端的 SYN 报文之后，会以自己的 SYN 报文作为应答，并且也是指定了自己的初始化序列号 ISN(s)。同时会把客户端的 ISN + 1 作为 ACK 的值，表示自己已经收到了客户端的 SYN，此时服务器处于 SYN_REVD 的状态。<ul>
+<li>在确认报文段中 SYN=1，ACK=1，确认号 ack=x+1，初始序号 seq=y。</li>
+<li>SYN-ACK 重传次数<ul>
+<li>服务器发送完SYN-ACK包，如果未收到客户确认包，服务器进行首次重传，等待一段时间仍未收到客户确认包，进行第二次重传。如果重传次数超过系统规定的最大重传次数，系统将该连接信息从半连接队列中删除。</li>
+<li>注意，每次重传等待的时间不一定相同，一般会是指数增长，例如间隔时间为 1s，2s，4s，8s…</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>第三次握手：客户端收到 SYN 报文之后，会发送一个 ACK 报文，当然，也是一样把服务器的 ISN + 1 作为 ACK 的值，表示已经收到了服务端的 SYN 报文，此时客户端处于 ESTABLISHED 状态。服务器收到 ACK 报文之后，也处于 ESTABLISHED 状态，此时，双方已建立起了连接。<ul>
+<li>确认报文段 ACK=1，确认号 ack=y+1，序号 seq=x+1（初始为 seq=x，第二个报文段所以要 +1），ACK 报文段可以携带数据，不携带数据则不消耗序号。</li>
+</ul>
+</li>
+<li>发送第一个 SYN 的一端将执行主动打开（active open），接收这个 SYN 并发回下一个 SYN 的另一端执行被动打开（passive open）。</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP_%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B.jpg" alt="TCP_三次握手"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>四次挥手<ul>
+<li>过程描述<ul>
+<li>第一次挥手：客户端发送一个 FIN 报文，报文中会指定一个序列号。此时客户端处于 FIN_WAIT1 状态。<ul>
+<li>即发出连接释放报文段（FIN=1，序号seq=u），并停止再发送数据，主动关闭 TCP 连接，进入 FIN_WAIT1（终止等待 1）状态，等待服务端的确认。</li>
+</ul>
+</li>
+<li>第二次挥手：服务端收到 FIN 之后，会发送 ACK 报文，且把客户端的序列号值 +1 作为 ACK 报文的序列号值，表明已经收到客户端的报文了，此时服务端处于 CLOSE_WAIT 状态。<ul>
+<li>即服务端收到连接释放报文段后即发出确认报文段（ACK=1，确认号 ack=u+1，序号 seq=v），服务端进入 CLOSE_WAIT（关闭等待）状态，此时的 TCP 处于半关闭状态，客户端到服务端的连接释放。客户端收到服务端的确认后，进入 FIN_WAIT2（终止等待2）状态，等待服务端发出的连接释放报文段。</li>
+</ul>
+</li>
+<li>第三次挥手：如果服务端也想断开连接了，和客户端的第一次挥手一样，发给 FIN 报文，且指定一个序列号。此时服务端处于 LAST_ACK 的状态。<ul>
+<li>即服务端没有要向客户端发出的数据，服务端发出连接释放报文段（FIN=1，ACK=1，序号seq=w，确认号 ack=u+1），服务端进入 LAST_ACK（最后确认）状态，等待客户端的确认。</li>
+</ul>
+</li>
+<li>第四次挥手：客户端收到 FIN 之后，一样发送一个 ACK 报文作为应答，且把服务端的序列号值 +1 作为自己 ACK 报文的序列号值，此时客户端处于 TIME_WAIT 状态。需要过一阵子以确保服务端收到自己的 ACK 报文之后才会进入 CLOSED 状态，服务端收到 ACK 报文之后，就处于关闭连接了，处于 CLOSED 状态。<ul>
+<li>即客户端收到服务端的连接释放报文段后，对此发出确认报文段（ACK=1，seq=u+1，ack=w+1），客户端进入 TIME_WAIT（时间等待）状态。此时 TCP 未释放掉，需要经过时间等待计时器设置的时间 2MSL 后，客户端才进入 CLOSED 状态。</li>
+</ul>
+</li>
+<li>收到一个 FIN 只意味着在这一方向上没有数据流动。客户端执行主动关闭并进入 TIME_WAIT 是正常的，服务端通常执行被动关闭，不会进入 TIME_WAIT 状态。</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP_%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B.jpg" alt="TCP_四次挥手"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>为什么要三次握手？</strong><ul>
+<li>防止失效的连接请求报文段被服务端接收，从而产生错误。<ul>
+<li>失效的连接请求：若客户端向服务端发送的连接请求丢失，客户端等待应答超时后就会再次发送连接请求，此时，上一个连接请求就是『失效的』。</li>
+</ul>
+</li>
+<li>若建立连接只需两次握手，客户端并没有太大的变化，仍然需要获得服务端的应答后才进入 ESTABLISHED 状态，而服务端在收到连接请求后就进入 ESTABLISHED 状态。此时如果网络拥塞，客户端发送的连接请求迟迟到不了服务端，客户端便超时重发请求，如果服务端正确接收并确认应答，双方便开始通信，通信结束后释放连接。此时，如果那个失效的连接请求抵达了服务端，由于只有两次握手，服务端收到请求就会进入 ESTABLISHED 状态，等待发送数据或主动发送数据。但此时的客户端早已进入 CLOSED 状态，服务端将会一直等待下去，这样浪费服务端连接资源。</li>
+</ul>
+</li>
+<li><strong>什么是半连接队列？</strong><ul>
+<li>服务器第一次收到客户端的 SYN 之后，就会处于 SYN_RCVD 状态，此时双方还没有完全建立其连接，服务器会把此种状态下请求连接放在一个队列里，我们把这种队列称之为半连接队列。</li>
+<li>当然还有一个全连接队列，就是已经完成三次握手，建立起连接的就会放在全连接队列中。如果队列满了就有可能会出现丢包现象。</li>
+</ul>
+</li>
+<li><strong>为什么要四次挥手？</strong><ul>
+<li>试想一下，假如现在你是客户端你想断开跟 Server 的所有连接该怎么做？第一步，你自己先停止向 Server 端发送数据，并等待 Server 的回复。但事情还没有完，虽然你自身不往 Server 发送数据了，但是因为你们之前已经建立好平等的连接了，所以此时他也有主动权向你发送数据；故 Server 端还得终止主动向你发送数据，并等待你的确认。其实，说白了就是保证双方的一个合约的完整执行！</li>
+</ul>
+</li>
+<li><strong>为什么 TIME_WAIT 状态需要经过 2MSL（最大报文段生存时间）才能返回到 CLOSE 状态？</strong><ul>
+<li>为了保证 Server 能收到 Client 的确认应答。</li>
+<li>若 Client 发完确认应答后直接进入 CLOSED 状态，那么如果该应答丢失，Server 等待超时后就会重新发送连接释放请求，但此时 Client 已经关闭了，不会作出任何响应，因此 Server 永远无法正常关闭。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>流量控制与拥塞控制<ul>
+<li>流量控制<ul>
+<li>接收端在接收到数据后，对其进行处理。如果发送端的发送速度太快，导致接收端的结束缓冲区很快的填充满了。此时如果发送端仍旧发送数据，那么接下来发送的数据都会丢包，继而导致丢包的一系列连锁反应，超时重传呀什么的。而 TCP 根据接收端对数据的处理能力，决定发送端的发送速度，这个机制就是流量控制。</li>
+<li>在 TCP 协议的报头信息当中，有一个 16 位字段的窗口大小。在介绍这个窗口大小时我们知道，窗口大小的内容实际上是接收端接收数据缓冲区的剩余大小。这个数字越大，证明接收端接收缓冲区的剩余空间越大，网络的吞吐量越大。接收端会在确认应答发送 ACK 报文时，将自己的即时窗口大小填入，并跟随 ACK 报文一起发送过去。而发送方根据 ACK 报文里的窗口大小的值的改变进而改变自己的发送速度。如果接收到窗口大小的值为 0，那么发送方将停止发送数据。并定期的向接收端发送窗口探测数据段，让接收端把窗口大小告诉发送端。</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6.png" alt="TCP流量控制"></li>
+<li>16 位的窗口大小最大能表示 65535 个字节（64K），但是 TCP 的窗口大小最大并不是 64K。在 TCP 首部中 40 个字节的选项中还包含了一个窗口扩大因子 M，实际的窗口大小就是 16 为窗口字段的值左移 M 位。每移一位，扩大一倍。</li>
+</ul>
+</li>
+<li>拥塞控制<ul>
+<li>TCP 传输的过程中，发送端开始发送数据的时候，如果刚开始就发送大量的数据，那么就可能造成一些问题。网络可能在开始的时候就很拥堵，如果给网络中在扔出大量数据，那么这个拥堵就会加剧。拥堵的加剧就会产生大量的丢包，就对大量的超时重传，严重影响传输。</li>
+<li>TCP 引入了慢启动的机制，在开始发送数据时，先发送少量的数据探路。探清当前的网络状态如何，再决定多大的速度进行传输。这时候就引入一个叫做拥塞窗口的概念。发送刚开始定义拥塞窗口为 1，每次收到 ACK 应答，拥塞窗口加 1。在发送数据之前，首先将拥塞窗口与接收端反馈的窗口大小比对，取较小的值作为实际发送的窗口。</li>
+<li>拥塞窗口的增长是指数级别的。慢启动的机制只是说明在开始的时候发送的少，发送的慢，但是增长的速度是非常快的。为了控制拥塞窗口的增长，不能使拥塞窗口单纯的加倍，设置一个拥塞窗口的阈值，当拥塞窗口大小超过阈值时，不能再按照指数来增长，而是线性的增长。在慢启动开始的时候，慢启动的阈值等于窗口的最大值，一旦造成网络拥塞，发生超时重传时，慢启动的阈值会为原来的一半（这里的原来指的是发生网络拥塞时拥塞窗口的大小），同时拥塞窗口重置为 1。</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/TCP%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6.png" alt="TCP拥塞控制"></li>
+<li>操作步骤<ul>
+<li>慢开始：最开始发送方的拥塞窗口为 1，由小到大逐渐增大发送窗口和拥塞窗口。每经过一个传输轮次，拥塞窗口 cwnd 加倍。当 cwnd 超过慢开始门限，则使用拥塞避免算法，避免 cwnd 增长过大。</li>
+<li>拥塞避免：每经过一个往返时间 RTT，cwnd 就增长1。另外在慢开始和拥塞避免的过程中，一旦发现网络拥塞，就把慢开始门限设为当前值的一半，并且重新设置 cwnd 为 1，重新慢启动。（乘法减小，加法增大）</li>
+<li>快重传：接收方每次收到一个失序的报文段后就立即发出重复确认，发送方只要连续收到三个重复确认就立即重传（尽早重传未被确认的报文段）。</li>
+<li>快恢复：当发送方连续收到了三个重复确认，就乘法减半（慢开始门限减半），将当前的拥塞窗口设置为慢开始门限，并且采用拥塞避免算法（连续收到了三个重复请求，说明当前网络可能没有拥塞）。</li>
+<li>采用慢开始和拥塞避免算法的时候<ul>
+<li>一旦 cwnd &gt; 慢开始门限，就采用拥塞避免算法，减慢增长速度</li>
+<li>一旦出现丢包的情况，就重新进行慢开始，减慢增长速度</li>
+</ul>
+</li>
+<li>采用快恢复和快重传算法的时候<ul>
+<li>一旦 cwnd &gt; 慢开始门限，就采用拥塞避免算法，减慢增长速度</li>
+<li>一旦发送方连续收到了三个重复确认，就采用拥塞避免算法，减慢增长速度</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>发送端实际可用的窗口：接收端通知窗口（流量控制中的发送窗口）和拥塞窗口中的较小者。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>滑动窗口的作用</strong>：<ul>
+<li>流量控制<ul>
+<li>接收端窗口大小，代表接收端缓冲区还有多少大小，从而控制发送端发送大小，达到流量控制的目的。</li>
+</ul>
+</li>
+<li>拥塞控制<ul>
+<li>拥塞控制也就是考虑当前的网络环境，动态调整窗口大小，没有发生拥塞情况，则窗口增大，拥塞了窗口减小，如此往复，最终应该接近与接收端的窗口大小。</li>
+</ul>
+</li>
+<li>提高传输效率<ul>
+<li>在确认应答机制中，对每一个发送的数据段，都要给一个 ACK 确认应答，收到 ACK 后再发送下一个数据段。这样做有一个比较大的缺点，就是性能较差。而有了滑动窗口，通信双方就不用发送一个报文后，收到此报文的确认后再发送下一个报文，而是可以连续发送多个报文，只要别超过窗口大小限制。<ul>
+<li>粘包<ul>
+<li>发送端为了将多个发往接收端的包，更加高效的的发给接收端，于是采用了优化算法（Nagle算法），将多次间隔较小、数据量较小的数据，合并成一个数据量大的数据块，然后进行封包。</li>
+<li>产生原因<ul>
+<li>发送方原因</li>
+<li>接收方原因<ul>
+<li>TCP 接收到数据包时，并不会马上交到应用层进行处理，或者说应用层并不会立即处理。实际上，TCP 将接收到的数据包保存在接收缓存里，然后应用程序主动从缓存读取收到的分组。这样一来，如果 TCP 接收数据包到缓存的速度大于应用程序从缓存中读取数据包的速度，多个包就会被缓存，应用程序就有可能读取到多个首尾相接粘到一起的包。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>TCP 本来就是基于字节流而不是消息包的协议，按长度解析包就行。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="UDP"><a href="#UDP" class="headerlink" title="UDP"></a>UDP</h3><ul>
+<li>UDP 是无连接的，即发送数据之前不需要建立连接，减少了开销和发送数据之前的时延。UDP 使用尽最大努力交付，即不保证可靠交付，主机不需要维持复杂的连接状态表。UDP 面向报文，发送方的 UDP 对应用程序交下来的报文，在添加首部后就向下交付 IP 层。UDP 对应用层交下来的报文，既不合并，也不拆分，而是保留这些报文的边界。</li>
+<li>Quic<ul>
+<li>Quic 全称 quick udp internet connection，“快速 UDP 互联网连接”，（和英文 quick 谐音，简称“快”）是由 Google 提出的使用 udp 进行多路并发传输的协议。</li>
+<li>Quic 相比现在广泛应用的 http2+tcp+tls 协议有如下优势：<ul>
+<li>减少了 TCP 三次握手及 TLS 握手时间；</li>
+<li>改进的拥塞控制；</li>
+<li>避免队头阻塞的多路复用；</li>
+<li>连接迁移；</li>
+<li>前向冗余纠错。</li>
+</ul>
+</li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/UDP_QUIC_%E7%BD%91%E7%BB%9C%E5%B1%82%E5%AF%B9%E6%AF%94%E5%9B%BE.png" alt="UDP_QUIC_网络层对比图"></li>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/UDP_QUIC_%E9%80%9A%E8%AE%AF%E6%97%B6%E9%97%B4%E5%AF%B9%E6%AF%94%E5%9B%BE.png" alt="UDP_QUIC_通讯时间对比图"></li>
+<li>需要 QUIC 的原因<ul>
+<li>问题描述<ul>
+<li>协议历史悠久导致中间设备僵化；</li>
+<li>依赖于操作系统的实现导致协议本身僵化；</li>
+<li>建立连接的握手延迟大；</li>
+<li>队头阻塞。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="应用层协议"><a href="#应用层协议" class="headerlink" title="应用层协议"></a>应用层协议</h2><h3 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h3><ul>
+<li>HTTP（HyperText Transfer Protocol）: 超文本传输协议。是互联网上应用最广泛的一种网络协议。所有 www 文件都必须遵守的一个标准，是以 ASCII 码传输，建立在 TCP/IP 协议之上的应用层规范。简单点说就是一种固定的通讯规则。</li>
+<li>HTTP 状态码<ul>
+<li><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">已定义范围</th>
+<th align="center">分类</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1XX</td>
+<td align="center">100-101</td>
+<td align="center">信息提示</td>
+</tr>
+<tr>
+<td align="center">2XX</td>
+<td align="center">200-206</td>
+<td align="center">成功</td>
+</tr>
+<tr>
+<td align="center">3XX</td>
+<td align="center">300-305</td>
+<td align="center">重定向</td>
+</tr>
+<tr>
+<td align="center">4XX</td>
+<td align="center">400-415</td>
+<td align="center">客户端错误</td>
+</tr>
+<tr>
+<td align="center">5XX</td>
+<td align="center">500-505</td>
+<td align="center">服务器错误</td>
+</tr>
+</tbody></table>
+</li>
+<li>常见状态码：<ul>
+<li>200 OK。服务器成功处理了请求（这个是我们见到最多的）</li>
+<li>301/302 Moved Permanently（重定向）。请求的 URL 已移走。Response 中应该包含一个 Location URL, 说明资源现在所处的位置</li>
+<li>400 Bad Request（坏请求）。告诉客户端，它发送了一个错误的请求。</li>
+<li>404 Not Found。未找到资源</li>
+<li>500 Internal Server Error（内部服务器错误）。服务器遇到一个错误，使其无法为请求提供服务</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>生命周期<ul>
+<li>HTTP 的生命周期通过 Request 来界定，也就是一个 Request 一个 Response，那么在 HTTP1.0 中，这次 HTTP 请求就结束了。</li>
+<li>在 HTTP1.1 中进行了改进，使得有一个 keep-alive，也就是说，在一个 HTTP 连接中，可以发送多个 Request，接收多个 Response。</li>
+</ul>
+</li>
+<li>特点<ul>
+<li>被动性：只能由客户端发起请求</li>
+</ul>
+</li>
+<li>请求方式<ul>
+<li>分类<ul>
+<li>POST<ul>
+<li>浏览器先发送 header，服务器响应 100 continue，浏览器再发送 data，服务器响应 200 ok（返回数据）</li>
+</ul>
+</li>
+<li>GET<ul>
+<li>请求过程<ul>
+<li>浏览器会把 http header 和 data 一并发送出去，服务器响应 200（返回数据）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>PUT</li>
+<li>DELETE</li>
+</ul>
+</li>
+<li>GET 和 POST 的区别<ul>
+<li>get 参数通过 url 传递，post 放在 request body 中。</li>
+<li>get 请求在 url 中传递的参数是有长度限制的，而 post 没有。</li>
+<li>get 比 post 更不安全，因为参数直接暴露在 url 中，所以不能用来传递敏感信息。</li>
+<li>get 请求只能进行 url 编码，而 post 支持多种编码方式。</li>
+<li>get 请求会浏览器主动 cache。</li>
+<li>get 请求参数会被完整保留在浏览历史记录里，而 post 中的参数不会被保留。</li>
+<li>GET 和 POST 本质上就是 TCP 链接，并无差别。但是由于 HTTP 的规定和浏览器/服务器的限制，导致他们在应用过程中体现出一些不同。</li>
+<li>GET 产生一个 TCP 数据包；POST 产生两个 TCP 数据包。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>发展历史<ul>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/HTTP%E5%8F%91%E5%B1%95%E5%8F%B2.png" alt="HTTP发展史"></li>
+<li>HTTP/0.9 版本<ul>
+<li>这是最早定稿的HTTP版本，这个版本中它的内容非常地简单。<ul>
+<li>首先它只有一个命令 GET。对应到现在的 GET 请求和 POST 请求，这些叫做 HTTP 的命令或者方法。</li>
+<li>它没有 HEADER 等描述数据的信息。因为这个时候的请求非常简单，它需要达到的目的也非常简单，没有那么多数据格式。</li>
+<li>服务器发送完内容之后，就关闭 TCP 连接。这里需要注意一点，这里的 TCP 连接和 http 请求是不一样的。http 请求和 TCP 连接不是一个概念。一个 http 请求通过 TCP 连接发送，而一个 TCP 连接里面可以发送很多个 http 请求（HTTP/0.9 不能这么做，但是 HTTP/1.1 可以这么做，而且在 HTTP/2 这方面会更大程度地优化，来提高 HTTP 协议传输的效率以及服务器的性能），所以一个 TCP 连接对应的是多个 http 请求，一个 http 请求肯定是在某一个 TCP 连接里面进行发送的。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>HTTP/1.0 版本<ul>
+<li>这个版本和 HTTP/1.1 差不多，在 HTTP/0.9 版本基础上进行了改进。<ul>
+<li>增加了很多命令。比如：POST、PUT、HEADER 这些命令。</li>
+<li>增加了 status code 和 header 相关的内容。<ul>
+<li>status code 是用来描述服务器端处理某一个请求之后的状态的；</li>
+<li>header 主要包含：请求和发送数据的描述以及对这部分数据进行操作的方法。</li>
+</ul>
+</li>
+<li>增加了多字符集支持、多部分发送、权限、缓存等相关的内容。这些内容有利于更好地使用 http 请求去实现 WEB 服务。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>HTTP/1.1 版本<ul>
+<li>这个版本是在 HTTP/1.0 的基础上增加了一些功能来优化网络连接的过程。<ul>
+<li>在这个版本支持了持久连接。在 HTTP/1.0 版本里面，一个 http 请求要发送就要先在客户端和服务器端之间创建一个 TCP 连接，创建完这个 TCP 连接之后，等服务器端返回完数据之后，这个 TCP 连接就关闭了。</li>
+<li>增加了 pipeline。可以在同一个 TCP 连接里面发送多个 http 请求，就是上面说的那样。但是在 HTTP/1.1 里面，虽然是可以在同一个 TCP 连接里面发送多个 http 请求，但是服务器端对于进来的请求，是要按照顺序进行数据返回的。<ul>
+<li>因此，如果前一个请求等待时间非常长，而后一个请求处理得比较快。这个时候后一个请求不能先发送，而是要等第一个请求数据全部发送完成之后，才能进行发送，即是串行的。等待的这部分时间就体现出了与并行传输性能之间的差距 <strong>【这个在HTTP/2里面得到了优化。】</strong>。</li>
+</ul>
+</li>
+<li>增加了 HTTP 的头 host 和其他一些命令。其中比较重要的就是 host，有了 host 之后就可以在同一台服务器（物理服务器）上同时跑多个 web 服务。比如说一个 Node.js 的 web 服务，一个 Java 的 web 服务。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>HTTP/2 版本<ul>
+<li>所有数据都是以二进制进行传输的。在 HTTP/1.1 里面大部分的数据传输是通过字符串，所以数据的分片方式是不太一样的。在 HTTP/2 里面所有的数据都是以帧进行传输的。</li>
+<li>多路复用。同一个连接里面发送多个请求时，服务器端不再需要按照顺序来返回处理后的数据了。而是可以在返回第一个请求里面数据的时候，同时返回第二个请求里面的数据。这样的并行传输能够更大限度地提高 web 应用的传输效率。</li>
+<li>新增头信息压缩以及推送等功能，提高了传输效率。HTTP/2 其实主要就是改善了 HTTP/1.1 里面造成性能低下的一些问题。<ul>
+<li>头信息的压缩<ul>
+<li>在 HTTP/1.1 里面每一次发送请求和返回请求，很多 http 头都是必须要进行完整的发送和返回的，但是这一部分头信息里面有很多的内容比如说：Headers 字段、Content-Type、accept 等字段是以字符串的形式保存的。</li>
+<li>所以占用较大的带宽量。所以 HTTP/2 里面对头信息进行了压缩，可以有效地减少带宽使用</li>
+</ul>
+</li>
+<li>推送的功能<ul>
+<li>指的是 HTTP/2 之前，只能由客户端发送数据，服务器端返回数据。客户端是主动方，服务器端永远是被动方。在 HTTP/2 里面有了”推送”的概念，也就是说服务器端可以主动向客户端发起一些数据传输。</li>
+<li>例子<ul>
+<li>一个 web 页面加载时会要求一些 html、css、js 等文件，css 和 js文件是以链接的形式在 html 文本里面显示的，只有通过浏览器解析了 html 里面的内容之后，才能根据链接里面包含的 URL 地址去请求对应的 css 和 js 文件。</li>
+<li>在 HTTP/2 之前，这个传输过程会包含顺序问题，需要先请求到 html 的文件，通过浏览器运行解析这个 html 文件之后，才能去发送 css 的请求和 js 的请求。</li>
+<li>HTTP/2 中有了推送功能之后，在请求 html 的同时，服务器端可以主动把 html 里面所引用到的 css 和 js 文件推送到客户端，这样 html、css 和 js 的发送就是并行的而不是串行的，整体的传输效率和性能就提高了不少。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>HTTP/3<ul>
+<li>之前协议的问题<ul>
+<li>虽然 HTTP/2 解决了很多之前旧版本的问题，但是它还是存在一个巨大的问题，虽然这个问题并不是它本身造成的，而是底层支撑的 TCP 协议的问题。<ul>
+<li>因为 HTTP/2 使用了多路复用，一般来说同一域名下只需要使用一个 TCP 连接。当这个连接中出现了丢包的情况，那就会导致 HTTP/2 的表现情况反倒不如 HTTP/1 了。</li>
+<li>因为在出现丢包的情况下，整个 TCP 都要开始等待重传，也就导致了后面的所有数据都被阻塞了。但是对于 HTTP/1 来说，可以开启多个 TCP 连接，出现这种情况反到只会影响其中一个连接，剩余的 TCP 连接还可以正常传输数据。</li>
+<li>那么可能就会有人考虑到去修改 TCP 协议，其实这已经是一件不可能完成的任务了。因为 TCP 存在的时间实在太长，已经充斥在各种设备中，并且这个协议是由操作系统实现的，更新起来不大现实。</li>
+<li>基于这个原因，Google 就更起炉灶搞了一个基于 UDP 协议的 QUIC 协议，并且使用在了 HTTP/3 上，当然 HTTP/3 之前名为 HTTP-over-QUIC，从这个名字中我们也可以发现，HTTP/3 最大的改造就是使用了 QUIC。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>HTTP3 核心新功能<ul>
+<li>QUIC<ul>
+<li>QUIC 是基于 UDP 实现的，UDP 协议虽然效率很高，但是并不是那么的可靠。QUIC 虽然基于 UDP，但是在原本的基础上新增了很多功能，比如多路复用、0-RTT、使用 TLS1.3 加密、流量控制、有序交付、重传等等功能。<ul>
+<li>多路复用<ul>
+<li>虽然 HTTP/2 支持了多路复用，但是 TCP 协议终究是没有这个功能的。QUIC 原生就实现了这个功能，并且传输的单个数据流可以保证有序交付且不会影响其他的数据流，这样的技术就解决了之前 TCP 存在的问题。</li>
+<li>并且 QUIC 在移动端的表现也会比 TCP 好。因为 TCP 是基于 IP 和端口去识别连接的，这种方式在多变的移动端网络环境下是很脆弱的。但是 QUIC 是通过 ID 的方式去识别一个连接，不管你网络环境如何变化，只要 ID 不变，就能迅速重连上。</li>
+</ul>
+</li>
+<li>0-RTT<ul>
+<li>通过使用类似 TCP 快速打开的技术，缓存当前会话的上下文，在下次恢复会话的时候，只需要将之前的缓存传递给服务端验证通过就可以进行传输了。</li>
+</ul>
+</li>
+<li>纠错机制<ul>
+<li>假如说这次我要发送三个包，那么协议会算出这三个包的异或值并单独发出一个校验包，也就是总共发出了四个包。</li>
+<li>当出现其中的非校验包丢包的情况时，可以通过另外三个包计算出丢失的数据包的内容。</li>
+<li>当然这种技术只能使用在丢失一个包的情况下，如果出现丢失多个包就不能使用纠错机制了，只能使用重传的方式了。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="WebSocket"><a href="#WebSocket" class="headerlink" title="WebSocket"></a>WebSocket</h3><ul>
+<li>特点<ul>
+<li>建立在 TCP 协议之上，服务器端的实现比较容易。</li>
+<li>与 HTTP 协议有着良好的兼容性。默认端口也是 80 和 443，并且握手阶段采用 HTTP 协议，因此握手时不容易屏蔽，能通过各种 HTTP 代理服务器。</li>
+<li>数据格式比较轻量，性能开销小，通信高效。</li>
+<li>可以发送文本，也可以发送二进制数据。</li>
+<li>没有同源限制，客户端可以与任意服务器通信。</li>
+<li>协议标识符是 ws（如果加密，则为 wss），服务器网址就是 URL。</li>
+</ul>
+</li>
+<li>对比技术<ul>
+<li>ajax 轮询<ul>
+<li>让浏览器隔个几秒就发送一次请求，询问服务器是否有新信息。</li>
+</ul>
+</li>
+<li>long poll<ul>
+<li>原理跟 ajax轮询 差不多，都是采用轮询的方式，不过采取的是阻塞模型（一直打电话，没收到就不挂电话），也就是说，客户端发起连接后，如果没消息，就一直不返回 Response 给客户端。直到有消息才返回，返回完之后，客户端再次建立连接，周而复始。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="请求过程"><a href="#请求过程" class="headerlink" title="请求过程"></a>请求过程</h4><ul>
+<li>网页请求过程<ol>
+<li>对网址进行 DNS 域名解析，得到对应的 IP 地址<ul>
+<li>DNS 域名解析采用的是递归查询的方式，过程是，先去找 DNS 缓存-&gt;缓存找不到就去找根域名服务器-&gt;根域名又会去找下一级，这样递归查找之后，找到了，给我们的 web 浏览器</li>
+</ul>
+</li>
+<li>根据这个 IP，找到对应的服务器，发起 TCP 的三次握手</li>
+<li>建立 TCP 连接后发起 HTTP 请求</li>
+<li>服务器响应 HTTP 请求，浏览器得到 HTML 代码</li>
+<li>关闭TCP连接<ul>
+<li>一般情况下，一旦 Web 服务器向浏览器发送了请求的数据，它就要关闭 TCP 连接，但是如果浏览器或者服务器在其头信息加入了这行代码：<code>Connection:keep-alive</code>。TCP 连接在发送后将仍然保持打开状态，于是，浏览器可以继续通过相同的连接发送请求。保持连接节省了为每个请求建立新连接所需的时间，还节约了网络带宽。</li>
+</ul>
+</li>
+<li>浏览器解析 HTML 代码，并请求 HTML 代码中的资源（如 js、css、图片等）（先得到 HTML 代码，才能去找这些资源）</li>
+<li>浏览器对页面进行渲染呈现给用户</li>
+</ol>
+</li>
+</ul>
+<h3 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h3><ul>
+<li><img src="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/DNS%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90.png" alt="DNS域名解析"></li>
+</ul>
+<h2 id="网络编程"><a href="#网络编程" class="headerlink" title="网络编程"></a>网络编程</h2><h3 id="网络编程模型"><a href="#网络编程模型" class="headerlink" title="网络编程模型"></a>网络编程模型</h3><ul>
+<li>Acceptor-Connector 模式<ul>
+<li>这种模式是面向连接的 TCP/IP 协议。</li>
+<li>模式思想<ul>
+<li>此模式只负责连接的建立，不管有多少连接上来，这个模式都能应对。</li>
+<li>至于连接建立之后如何通信，那是通信处理器的事情，与此模式不再有任何关系。</li>
+<li>资源的管理总是通过调用函数的返回值来做约定的处理。不用类型如果有特殊的资源管理需求，均可以覆盖父类的方法。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Asynchronous Completion Token 模式<ul>
+<li>ACT 就是应对应用程序异步调用服务操作，并处理相应的服务完成事件。</li>
+<li>例子<ul>
+<li>比如，通常应用程序会有调用第三方服务的需求，一般是业务线程请求都到，需要第三方资源的时候，去同步的发起第三方请求，而为了提升应用性能，需要异步的方式发起请求，但异步请求的话，等数据到达之后，此时的我方应用程序的语境以及上下文信息已经发生了变化，你没办法去处理。</li>
+<li>ACT 解决的就是这个问题，采用了一个 token 的方式记录异步发送前的信息，发送给接受方，接受方回复的时候再带上这个 token，此时就能恢复业务的调用场景。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Proactor 模式<ul>
+<li>Proactor 模型运用于异步 I/O 操作。</li>
+</ul>
+</li>
+<li>Reactor 模式<ul>
+<li>Reactor 模型用于同步 I/O。Reactor 模式是一种典型的事件驱动的编程模型。</li>
+<li>Reactor 模型中定义的三种角色：<ul>
+<li>Reactor<ul>
+<li>负责监听和分配事件，将 I/O 事件分派给对应的 Handler。新的事件包含连接建立就绪、读就绪、写就绪等。</li>
+</ul>
+</li>
+<li>Acceptor<ul>
+<li>处理客户端新连接，并分派请求到处理器链中。</li>
+</ul>
+</li>
+<li>Handler<ul>
+<li>将自身与事件绑定，执行非阻塞读/写任务，完成 channel 的读入，完成处理业务逻辑后，负责将结果写出 channel。可用资源池来管理。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>流程<ul>
+<li>Reactor 处理请求的流程：<ul>
+<li>读取操作：<ol>
+<li>应用程序注册读就绪事件和相关联的事件处理器</li>
+<li>事件分离器等待事件的发生</li>
+<li>当发生读就绪事件的时候，事件分离器调用第一步注册的事件处理器</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" rel="prev" title="分布式-0-知识点汇总.md">
+      <i class="fa fa-chevron-left"></i> 分布式-0-知识点汇总.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" rel="next" title="系统架构-0-知识点汇总.md">
+      系统架构-0-知识点汇总.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B1%82"><span class="nav-number">1.</span> <span class="nav-text">分层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">2.</span> <span class="nav-text">其他</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E5%B1%82%E5%8D%8F%E8%AE%AE"><span class="nav-number">3.</span> <span class="nav-text">网络层协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ICMP"><span class="nav-number">3.1.</span> <span class="nav-text">ICMP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SSL-TSL"><span class="nav-number">3.2.</span> <span class="nav-text">SSL&#x2F;TSL</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E8%BE%93%E5%B1%82%E5%8D%8F%E8%AE%AE"><span class="nav-number">4.</span> <span class="nav-text">传输层协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP"><span class="nav-number">4.1.</span> <span class="nav-text">TCP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UDP"><span class="nav-number">4.2.</span> <span class="nav-text">UDP</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%B1%82%E5%8D%8F%E8%AE%AE"><span class="nav-number">5.</span> <span class="nav-text">应用层协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP"><span class="nav-number">5.1.</span> <span class="nav-text">HTTP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WebSocket"><span class="nav-number">5.2.</span> <span class="nav-text">WebSocket</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%B7%E6%B1%82%E8%BF%87%E7%A8%8B"><span class="nav-number">5.2.1.</span> <span class="nav-text">请求过程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DNS"><span class="nav-number">5.3.</span> <span class="nav-text">DNS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B"><span class="nav-number">6.</span> <span class="nav-text">网络编程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="nav-number">6.1.</span> <span class="nav-text">网络编程模型</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '12001dbeb2a22aa5144358e5f70dad7e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

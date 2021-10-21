@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="工程及解决方案面向对象 SOLID 原则 The Single Responsibility Principle 单一责任原则 当需要修改某个类的时候原因有且只有一个（THERE SHOULD NEVER BE MORE THAN ONE REASON FOR A CLASS TO CHANGE）。换句话说就是让一个类只做一种类型责任，当这个类需要承当其他类型的责任的时候，就需要分解这个类。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="工程、解决方案-0-知识点汇总.md">
+<meta property="og:url" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="工程及解决方案面向对象 SOLID 原则 The Single Responsibility Principle 单一责任原则 当需要修改某个类的时候原因有且只有一个（THERE SHOULD NEVER BE MORE THAN ONE REASON FOR A CLASS TO CHANGE）。换句话说就是让一个类只做一种类型责任，当这个类需要承当其他类型的责任的时候，就需要分解这个类。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E8%A7%A3%E5%86%B3%E5%89%8A%E5%B3%B0.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%B5%81%E9%87%8F%E5%89%8A%E5%B3%B0%E6%BC%8F%E6%96%97.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/JWT_%E7%99%BB%E9%99%86%E6%B5%81%E7%A8%8B.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%8D%8F%E8%AE%AE%E8%AE%B8%E5%8F%AF%E8%AF%81.JPG">
+<meta property="article:published_time" content="2019-09-01T04:10:14.000Z">
+<meta property="article:modified_time" content="2021-10-14T10:06:57.997Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="工程">
+<meta property="article:tag" content="解决方案">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E8%A7%A3%E5%86%B3%E5%89%8A%E5%B3%B0.jpg">
+
+<link rel="canonical" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>工程、解决方案-0-知识点汇总.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          工程、解决方案-0-知识点汇总.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-01 12:10:14" itemprop="dateCreated datePublished" datetime="2019-09-01T12:10:14+08:00">2019-09-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">工程</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="工程及解决方案"><a href="#工程及解决方案" class="headerlink" title="工程及解决方案"></a>工程及解决方案</h1><h2 id="面向对象"><a href="#面向对象" class="headerlink" title="面向对象"></a>面向对象</h2><ul>
+<li>SOLID 原则<ul>
+<li>The Single Responsibility Principle<ul>
+<li>单一责任原则</li>
+<li>当需要修改某个类的时候原因有且只有一个（THERE SHOULD NEVER BE MORE THAN ONE REASON FOR A CLASS TO CHANGE）。换句话说就是让一个类只做一种类型责任，当这个类需要承当其他类型的责任的时候，就需要分解这个类。</li>
+</ul>
+</li>
+<li>The Open Closed Principle<ul>
+<li>开放封闭原则</li>
+<li>一个软件实体，如类、模块和函数应该对扩展开放，对修改关闭</li>
+</ul>
+</li>
+<li>The Liskov Substitution Principle<ul>
+<li>里氏替换原则</li>
+<li>所有引用基类的地方必须能透明地使用其子类的对象</li>
+</ul>
+</li>
+<li>The Dependency Inversion Principle<ul>
+<li>依赖倒置原则</li>
+<li>高层模块不应该依赖于低层模块，二者都应该依赖于抽象</li>
+<li>抽象不应该依赖于细节，细节应该依赖于抽象</li>
+</ul>
+</li>
+<li>The Interface Segregation Principle<ul>
+<li>接口分离原则</li>
+<li>不能强迫用户去依赖那些他们不使用的接口。换句话说，使用多个专门的接口比使用单一的总接口总要好。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><ul>
+<li>防止超卖<ul>
+<li>解决方案<ul>
+<li>使用 MySQL 的事务加排他锁来解决</li>
+<li>乐观锁<ul>
+<li><code>select version from goods WHERE id = 1001</code></li>
+<li><code>update goods set num = num - 1, version = version + 1 WHERE id= 1001 AND num &gt; 0 AND version = @version(上面查到的version);</code></li>
+</ul>
+</li>
+<li>使用文件锁实现<ul>
+<li>当用户抢到一件促销商品后先触发文件锁，防止其他用户进入，该用户抢到促销品后再解开文件锁，放其他用户进行操作。这样可以解决超卖的问题，但是会导致文件得 I/O 开销很大。</li>
+</ul>
+</li>
+<li>使用了 Redis 的队列来实现<ul>
+<li>将要促销的商品数量以队列的方式存入 Redis 中，每当用户抢到一件促销商品则从队列中删除一个数据，确保商品不会超卖。这个操作起来很方便，而且效率极高，最终我们采取这种方式来实现。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>流量削峰<ul>
+<li>由来<ul>
+<li>春节火车票抢购，大量的用户需要同一时间去抢购；以及大家熟知的阿里双 11 秒杀， 短时间上亿的用户涌入，瞬间流量巨大（高并发），比如：200 万人准备在凌晨 12:00 准备抢购一件商品，但是商品的数量缺是有限的 100-500 件左右。</li>
+<li>服务器的处理资源是有限的，所以出现峰值的时候，很容易导致服务器宕机，用户无法访问的情况出现。</li>
+</ul>
+</li>
+<li>解决方案<ul>
+<li>消息队列解决削峰<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E8%A7%A3%E5%86%B3%E5%89%8A%E5%B3%B0.jpg" alt="消息队列解决削峰"></li>
+</ul>
+</li>
+<li>流量削峰漏斗：层层削峰<ul>
+<li>对请求进行分层过滤，从而过滤掉一些无效的请求。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%B5%81%E9%87%8F%E5%89%8A%E5%B3%B0%E6%BC%8F%E6%96%97.jpg" alt="流量削峰漏斗"></li>
+<li>核心思想<ul>
+<li>通过在不同的层次尽可能地过滤掉无效请求。</li>
+<li>通过 CDN 过滤掉大量的图片，静态资源的请求。</li>
+<li>再通过类似 Redis 这样的分布式缓存，过滤请求等就是典型的在上游拦截读请求。</li>
+</ul>
+</li>
+<li>基本原则<ul>
+<li>对写数据进行基于时间的合理分片，过滤掉过期的失效请求。</li>
+<li>对写请求做限流保护，将超出系统承载能力的请求过滤掉。</li>
+<li>涉及到的读数据不做强一致性校验，减少因为一致性校验产生瓶颈的问题。</li>
+<li>对写数据进行强一致性校验，只保留最后有效的数据。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>密码存储<ul>
+<li>在注册时，根据用户设置的登录密码，生成其消息认证码，然后存储用户名和消息认证码，不存储原始密码。每次用户登录时，根据登录密码，生成消息认证码，与数据库中存储的消息认证码进行比对，以确认是否为有效用户，这样即使网站被脱库，用户的原始密码也不会泄露，不会为用户使用的其他网站带来账号风险。</li>
+<li>当然，使用的消息认证码算法其哈希碰撞的概率应该极低才行，目前一般在 HMAC 算法中使用 SHA256。对于这种方式需要注意一点：防止用户使用弱密码，否则也可能会被暴力破解。现在的网站一般要求用户密码 6 个字符以上，并且同时有数字和大小写字母，甚至要求有特殊字符。</li>
+<li>另外，也可以使用加入随机 salt 的哈希算法来存储校验用户密码。</li>
+</ul>
+</li>
+<li>登陆<ul>
+<li>JWT<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/JWT_%E7%99%BB%E9%99%86%E6%B5%81%E7%A8%8B.jpg" alt="JWT_登陆流程"></li>
+</ul>
+</li>
+<li>Token<ul>
+<li>生存 UUID 作为 Token</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="性能评估"><a href="#性能评估" class="headerlink" title="性能评估"></a>性能评估</h2><ul>
+<li>TPS、QPS<ul>
+<li>TPS<ul>
+<li>（Transactions Per Second），即每秒执行的事务总数。</li>
+<li>首先一个事务包括三个动作，即客户端请求服务端，服务端内部进行处理，服务端对客户端进行响应。</li>
+<li>将这三个动作看成一个整体，并将之称为一个事务，若在一秒内，服务端可以完成 N 个事务，则这个服务端的 TPS 为 N。</li>
+<li>一般来说，评价系统的性能主要看系统的 TPS，系统的整体性能取决于性能最低模块的 TPS 值。</li>
+</ul>
+</li>
+<li>QPS<ul>
+<li>（Queries Per Second），及每秒执行的查询总数（每秒有多少的请求响应）</li>
+<li>客户端请求一个地址时，比如百度首页，其实会产生很多的请求，比如 js、css、png等，像这样的每个单个请求都可以算作查询次数。</li>
+<li>若在一秒内，客户端请求服务端的首页，服务端返回了 N 个内部链接（js、css、png、html 等），那么服务端的 QPS 就为 N。</li>
+<li>QPS 反映系统的吞吐能力，更偏向于读取文件，查询数据。</li>
+</ul>
+</li>
+<li>举例<ul>
+<li>若在一秒内，用户请求了百度首页并看到了首页全貌，这样就形成了一个 TPS，但却形成了多个 QPS。</li>
+<li>若在一秒内，我们请求一个单调的网页，此网页只有一个 html，不包含任何其他内部链接，此时 TPS=QPS。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>独立访客、综合浏览量<ul>
+<li>网站流量是指网站的访问量，用来描述访问网站的用户数量以及用户所浏览的网页数量等指标，常用的统计指标包括网站的独立用户数量、总用户数量（含重复访问者）、网页浏览数量、每个用户的页面浏览数量、用户在网站的平均停留时间等。</li>
+<li>网站访问量的常用衡量标准：独立访客（UV）和 综合浏览量（PV），一般以日为单位来衡量和计算。<ul>
+<li>独立访客（UV）：指一定时间范围内相同访客多次访问网站，只计算为 1 个独立访客。</li>
+<li>综合浏览量（PV）：指一定时间范围内页面浏览量或点击量，用户每次刷新即被计算一次。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>PV 计算带宽<ul>
+<li>计算带宽大小需要关注两个指标：峰值流量和页面的平均大小。</li>
+<li>举个例子：<ul>
+<li><blockquote>
+<p>假设网站的平均日 PV：10w 的访问量，页面平均大小 0.4 M 。</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p>网站带宽 = <code>10w / （24 * 60 * 60）* 0.4M * 8 =3.7 Mbps</code></p>
+</blockquote>
+</li>
+<li><blockquote>
+<p>具体的计算公式是：<code>网站带宽 = PV / 统计时间（换算到s）* 平均页面大小（单位KB）* 8</code></p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>在实际的网站运行过程中，我们的网站必须要在峰值流量时保持正常的访问，假设，峰值流量是平均流量的 5 倍，按照这个计算，实际需要的带宽大约在 <code>3.7 Mbps * 5=18.5 Mbps</code>。</li>
+<li>PS:<ol>
+<li>字节的单位是 Byte，而带宽的单位是 bit，1Byte=8bit，所以转换为带宽的时候，要乘以 8。</li>
+<li>在实际运行中，由于缓存、CDN、白天夜里访问量不同等原因，这个是绝对情况下的算法。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>PV 与并发<ul>
+<li>具体的计算公式是：<code>并发连接数 = PV / 统计时间 * 页面衍生连接次数 * http响应时间 * 因数 / web服务器数量</code>；</li>
+<li>解释：<ul>
+<li>页面衍生连接次数：一个页面请求，会有好几次 http 连接，如外部的 css、js、图片等，这个根据实际情况而定。</li>
+<li>http 响应时间：平均一个 http 请求的响应时间，可以使用 1 秒或更少。</li>
+<li>因数：峰值流量和平均流量的倍数，一般使用 5，最好根据实际情况计算后得出。</li>
+</ul>
+</li>
+<li>例子：<ul>
+<li>10w PV 的并发连接数：<code>(100000PV / 86400秒 * 50个派生连接数 * 1秒内响应 * 5倍峰值) / 1台Web服务器 = 289 并发连接数</code></li>
+</ul>
+</li>
+<li>所以，如果我们能够测试出单机的并发连接数和日 pv 数，那么我们同样也能估算出需要 web 的服务器数量。</li>
+<li>还有一套通过单机 QPS 计算 pv 和 需要的 web 服务器数量的方法，目前一些公司采用这种计算方法，但是其实计算的原理都是差不多的。</li>
+</ul>
+</li>
+<li>QPS、PV 和需要部署机器数量计算公式<ul>
+<li>QPS = req/sec = 请求数/秒</li>
+<li>QPS统计方式：一般使用 http_load 进行统计</li>
+<li><code>QPS = 总请求数 / (进程总数 * 请求时间)</code></li>
+<li>QPS：单个进程每秒请求服务器的成功次数</li>
+<li>QPS 计算 PV 和机器的方式  <ul>
+<li>单台服务器每天 PV 计算<ul>
+<li>公式 1：<code>每天总 PV = QPS * 3600 * 6</code></li>
+<li>公式 2：<code>每天总 PV = QPS * 3600 * 8</code></li>
+</ul>
+</li>
+<li>服务器计算<ul>
+<li><code>服务器数量 = (每天总PV / 单台服务器每天总PV)</code></li>
+</ul>
+</li>
+<li>峰值 QPS 和机器计算公式<ul>
+<li>原理：每天 80% 的访问集中在 20% 的时间里，这 20% 时间叫做峰值时间</li>
+<li>公式：<code>(总 PV 数 * 80%) / (每天秒数 * 20%) = 峰值时间每秒请求数(QPS)</code></li>
+<li>机器：<code>峰值时间每秒 QPS / 单台机器的 QPS = 需要的机器</code></li>
+</ul>
+</li>
+<li>例子：每天 300w PV 的在单台机器上，这台机器需要多少 QPS？<ul>
+<li><code>(3000000 * 0.8) / (86400 *0.2) = 139 (QPS)</code></li>
+</ul>
+</li>
+<li>例子：如果一台机器的 QPS 是 58，需要几台机器来支持？<ul>
+<li><code>139 / 58 = 3</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><ul>
+<li>常见场景<ul>
+<li>新系统上线</li>
+<li>升级重构</li>
+<li>容量规划</li>
+<li>性能探测</li>
+<li>系统稳定性</li>
+</ul>
+</li>
+<li>常见的测试<ul>
+<li>基准测试<ul>
+<li>通过单用户循环调用接口，持续 10 分钟, 统计响应时间的平均值，和 TP90、TP99，了解接口在系统无压力情况下的性能数据。<ul>
+<li>相关概念<ul>
+<li>TP90，top percent 90，即 90% 的数据都满足某一条件；</li>
+<li>TP95，top percent 95，即 95% 的数据都满足某一条件；</li>
+<li>TP99，top percent 99，即 99% 的数据都满足某一条件；</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>负载测试<ul>
+<li>从 0 开始逐步增加系统压力，知道系统吞吐量或者系统资源消耗达到预估的标准，了解系统在安全运行下的极限。</li>
+</ul>
+</li>
+<li>压力测试<ul>
+<li>从负载测试探测到的系统吞吐量开始继续加压，直到系统错误率超标甚至不可以用，了解系统可服务的极限。</li>
+</ul>
+</li>
+<li>缓存穿透<ul>
+<li>了解系统缓存不可以下的吞吐量。</li>
+</ul>
+</li>
+<li>扩展性测试<ul>
+<li>扩展应用服务器数量，了解系统扩展能力。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>测试工具<ul>
+<li>LoadRunner</li>
+<li>Apache JMeter</li>
+<li>Siege<ul>
+<li>常用参数<ul>
+<li><code>-c</code><ul>
+<li>并发数量</li>
+</ul>
+</li>
+<li><code>-r</code><ul>
+<li>重复的次数</li>
+</ul>
+</li>
+<li><code>-t</code><ul>
+<li>测试时间</li>
+</ul>
+</li>
+<li><code>-i</code><ul>
+<li>随机访问 <code>-f</code> 指定的 url.txt 中的 url 列表项，以此模拟真实的访问情况（随机性）</li>
+</ul>
+</li>
+<li><code>-b</code><ul>
+<li>–benchmark：基准测试，请求之间没有延迟。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h2><ul>
+<li>一般负载分为软件负载和硬件负载，比如软件中使用 nginx 等工具实现负载均衡，而 F5 负载均衡器就是硬件网络性能优化设备。</li>
+<li>硬件<ul>
+<li>F5 负载均衡器<ul>
+<li>通俗的讲是将客户端请求量通过 F5 负载到各个服务器，增加吞吐量，从而降低服务器的压力，他不同于交换机、路由器这些网络基础设备，而是建立在现有网络结构上用来增加网络带宽和吞吐量的的硬件设备</li>
+<li>工作原理<ol>
+<li>客户发出服务请求到 VIP</li>
+<li>BIGIP 接收到请求，将数据包中目的 IP 地址改为选中的后台服务器 IP 地址，然后将数据包发出到后台选定的服务器</li>
+<li>后台服务器收到后，将应答包按照其路由发回到 BIGIP</li>
+<li>BIGIP 收到应答包后将其中的源地址改回成 VIP 的地址，发回客户端，由此就完成了一个标准的服务器负载平衡的流程</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="协议许可证"><a href="#协议许可证" class="headerlink" title="协议许可证"></a>协议许可证</h2><ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%8D%8F%E8%AE%AE%E8%AE%B8%E5%8F%AF%E8%AF%81.JPG" alt="协议许可证"></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/%E5%B7%A5%E7%A8%8B/" rel="tag"># 工程</a>
+              <a href="/tags/%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" rel="tag"># 解决方案</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" rel="prev" title="接口-0-知识点汇总.md">
+      <i class="fa fa-chevron-left"></i> 接口-0-知识点汇总.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" rel="next" title="分布式-0-知识点汇总.md">
+      分布式-0-知识点汇总.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B7%A5%E7%A8%8B%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">1.</span> <span class="nav-text">工程及解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1"><span class="nav-number">1.1.</span> <span class="nav-text">面向对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">1.2.</span> <span class="nav-text">解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E8%AF%84%E4%BC%B0"><span class="nav-number">1.3.</span> <span class="nav-text">性能评估</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">1.4.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">1.5.</span> <span class="nav-text">负载均衡</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E8%AE%B8%E5%8F%AF%E8%AF%81"><span class="nav-number">1.6.</span> <span class="nav-text">协议许可证</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '063090b13b4afe3febb040b619d69752',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

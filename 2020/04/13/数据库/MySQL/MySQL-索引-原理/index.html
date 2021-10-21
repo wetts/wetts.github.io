@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="转自：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;113917726 一Mysql 作为互联网中非常热门的数据库，其底层的存储引擎和数据检索引擎的设计非常重要，尤其是 Mysql 数据的存储形式以及索引的设计，决定了 Mysql 整体的数据检索性能。 我们知道，索引的作用是做数据的快速检索，而快速检索的实现的本质是数据结构。通过不同数据结构的选择，实现各种数据快速检索。在数据库中，高">
+  <meta name="description" content="转自：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;113917726 一MySQL 作为互联网中非常热门的数据库，其底层的存储引擎和数据检索引擎的设计非常重要，尤其是 MySQL 数据的存储形式以及索引的设计，决定了 MySQL 整体的数据检索性能。 我们知道，索引的作用是做数据的快速检索，而快速检索的实现的本质是数据结构。通过不同数据结构的选择，实现各种数据快速检索。在数据库中，高">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL-索引-原理.md">
 <meta property="og:url" content="https://wetts.github.io/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/index.html">
 <meta property="og:site_name" content="Wetts&#39;s blog">
-<meta property="og:description" content="转自：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;113917726 一Mysql 作为互联网中非常热门的数据库，其底层的存储引擎和数据检索引擎的设计非常重要，尤其是 Mysql 数据的存储形式以及索引的设计，决定了 Mysql 整体的数据检索性能。 我们知道，索引的作用是做数据的快速检索，而快速检索的实现的本质是数据结构。通过不同数据结构的选择，实现各种数据快速检索。在数据库中，高">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;113917726 一MySQL 作为互联网中非常热门的数据库，其底层的存储引擎和数据检索引擎的设计非常重要，尤其是 MySQL 数据的存储形式以及索引的设计，决定了 MySQL 整体的数据检索性能。 我们知道，索引的作用是做数据的快速检索，而快速检索的实现的本质是数据结构。通过不同数据结构的选择，实现各种数据快速检索。在数据库中，高">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://wetts.github.io/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/1.jpg">
 <meta property="og:image" content="https://wetts.github.io/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/2.jpg">
@@ -64,7 +64,7 @@
 <meta property="og:image" content="https://wetts.github.io/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/35.png">
 <meta property="og:image" content="https://wetts.github.io/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/36.png">
 <meta property="article:published_time" content="2020-04-12T17:19:48.000Z">
-<meta property="article:modified_time" content="2021-07-12T21:45:40.412Z">
+<meta property="article:modified_time" content="2021-09-10T03:09:38.355Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="面试">
 <meta property="article:tag" content="MySQL">
@@ -278,10 +278,10 @@
 
       
         <p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/113917726">https://zhuanlan.zhihu.com/p/113917726</a></p>
-<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><p>Mysql 作为互联网中非常热门的数据库，其底层的存储引擎和数据检索引擎的设计非常重要，尤其是 Mysql 数据的存储形式以及索引的设计，决定了 Mysql 整体的数据检索性能。</p>
-<p>我们知道，索引的作用是做数据的快速检索，而快速检索的实现的本质是数据结构。通过不同数据结构的选择，实现各种数据快速检索。在数据库中，高效的查找算法是非常重要的，因为数据库中存储了大量数据，一个高效的索引能节省巨大的时间。比如下面这个数据表，如果 Mysql 没有实现索引算法，那么查找 id=7 这个数据，那么只能采取暴力顺序遍历查找，找到 id=7 这个数据需要比较 7 次，如果这个表存储的是 1000W 个数据，查找 id=1000W 这个数据那就要比较 1000W 次，这种速度是不能接受的。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/1.jpg" alt="1"></p>
+<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><p>MySQL 作为互联网中非常热门的数据库，其底层的存储引擎和数据检索引擎的设计非常重要，尤其是 MySQL 数据的存储形式以及索引的设计，决定了 MySQL 整体的数据检索性能。</p>
+<p>我们知道，索引的作用是做数据的快速检索，而快速检索的实现的本质是数据结构。通过不同数据结构的选择，实现各种数据快速检索。在数据库中，高效的查找算法是非常重要的，因为数据库中存储了大量数据，一个高效的索引能节省巨大的时间。比如下面这个数据表，如果 MySQL 没有实现索引算法，那么查找 id=7 这个数据，那么只能采取暴力顺序遍历查找，找到 id=7 这个数据需要比较 7 次，如果这个表存储的是 1000W 个数据，查找 id=1000W 这个数据那就要比较 1000W 次，这种速度是不能接受的。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/1.jpg" alt="1"></p>
 <h2 id="Mysql-索引底层数据结构选型"><a href="#Mysql-索引底层数据结构选型" class="headerlink" title="Mysql 索引底层数据结构选型"></a>Mysql 索引底层数据结构选型</h2><h3 id="哈希表（Hash）"><a href="#哈希表（Hash）" class="headerlink" title="哈希表（Hash）"></a>哈希表（Hash）</h3><p>哈希表是做数据快速检索的有效利器。</p>
-<p>哈希算法：也叫散列算法，就是把任意值(key)通过哈希函数变换为固定长度的 key 地址，通过这个地址进行具体数据的数据结构。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/2.jpg" alt="2"></p>
+<p>哈希算法：也叫散列算法，就是把任意值（key）通过哈希函数变换为固定长度的 key 地址，通过这个地址进行具体数据的数据结构。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/2.jpg" alt="2"></p>
 <p>考虑这个数据库表 user，表中一共有 7 个数据，我们需要检索 id=7 的数据，SQL 语法是：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select \* from user where id=7;</span><br></pre></td></tr></table></figure>
 <p>哈希算法首先计算存储 id=7 的数据的物理地址 addr=hash(7)=4231，而 4231 映射的物理地址是 0x77，0x77 就是 id=7 存储的额数据的物理地址，通过该独立地址可以找到对应 user_name=’g’这个数据。这就是哈希算法快速检索数据的计算过程。</p>
@@ -292,13 +292,13 @@
 <p>针对以上这个语句，我们希望做的是找出 id&gt;3 的数据，这是很典型的范围查找。如果使用哈希算法实现的索引，范围查找怎么做呢？一个简单的思路就是一次把所有数据找出来加载到内存，然后再在内存里筛选筛选目标范围内的数据。但是这个范围查找的方法也太笨重了，没有一点效率而言。</p>
 <p>所以，使用哈希算法实现的索引虽然可以做到快速检索数据，但是没办法做数据高效范围查找，因此哈希索引是不适合作为 Mysql 的底层索引的数据结构。</p>
 <h3 id="二叉查找树-BST"><a href="#二叉查找树-BST" class="headerlink" title="二叉查找树(BST)"></a>二叉查找树(BST)</h3><p>二叉查找树是一种支持数据快速查找的数据结构，如图下所示:<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/5.jpg" alt="5"></p>
-<p>二叉查找树的时间复杂度是 O(lgn)，比如针对上面这个二叉树结构，我们需要计算比较 3 次就可以检索到 id=7 的数据，相对于直接遍历查询省了一半的时间，从检索效率上看来是能做到高速检索的。此外二叉树的结构能不能解决哈希索引不能提供的范围查找功能呢？</p>
+<p>二叉查找树的时间复杂度是 $O(lgn)$，比如针对上面这个二叉树结构，我们需要计算比较 3 次就可以检索到 id=7 的数据，相对于直接遍历查询省了一半的时间，从检索效率上看来是能做到高速检索的。此外二叉树的结构能不能解决哈希索引不能提供的范围查找功能呢？</p>
 <p>答案是可以的。观察上面的图，二叉树的叶子节点都是按序排列的，从左到右依次升序排列，如果我们需要找 id&gt;5 的数据，那我们取出节点为 6 的节点以及其右子树就可以了，范围查找也算是比较容易实现。</p>
-<p>但是普通的二叉查找树有个致命缺点：极端情况下会退化为线性链表，二分查找也会退化为遍历查找，时间复杂退化为 O（N），检索性能急剧下降。比如以下这个情况，二叉树已经极度不平衡了，已经退化为链表了，检索速度大大降低。此时检索 id=7 的数据的所需要计算的次数已经变为 7 了。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/6.jpg" alt="6"></p>
-<p>在数据库中，数据的自增是一个很常见的形式，比如一个表的主键是 id，而主键一般默认都是自增的，如果采取二叉树这种数据结构作为索引，那上面介绍到的不平衡状态导致的线性查找的问题必然出现。因此，简单的二叉查找树存在不平衡导致的检索性能降低的问题，是不能直接用于实现 Mysql 底层索引的。</p>
+<p>但是普通的二叉查找树有个致命缺点：极端情况下会退化为线性链表，二分查找也会退化为遍历查找，时间复杂退化为 $O(N)$，检索性能急剧下降。比如以下这个情况，二叉树已经极度不平衡了，已经退化为链表了，检索速度大大降低。此时检索 id=7 的数据的所需要计算的次数已经变为 7 了。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/6.jpg" alt="6"></p>
+<p>在数据库中，数据的自增是一个很常见的形式，比如一个表的主键是 id，而主键一般默认都是自增的，如果采取二叉树这种数据结构作为索引，那上面介绍到的不平衡状态导致的线性查找的问题必然出现。因此，简单的二叉查找树存在不平衡导致的检索性能降低的问题，是不能直接用于实现 MySQL 底层索引的。</p>
 <h3 id="AVL-树和红黑树"><a href="#AVL-树和红黑树" class="headerlink" title="AVL 树和红黑树"></a>AVL 树和红黑树</h3><p>二叉查找树存在不平衡问题，因此学者提出通过树节点的自动旋转和调整，让二叉树始终保持基本平衡的状态，就能保持二叉查找树的最佳查找性能了。基于这种思路的自调整平衡状态的二叉树有 AVL 树和红黑树。</p>
-<p>首先简单介绍红黑树，这是一颗会自动调整树形态的树结构，比如当二叉树处于一个不平衡状态时，红黑树就会自动左旋右旋节点以及节点变色，调整树的形态，使其保持基本的平衡状态（时间复杂度为 O（logn）），也就保证了查找效率不会明显减低。比如从 1 到 7 升序插入数据节点，如果是普通的二叉查找树则会退化成链表，但是红黑树则会不断调整树的形态，使其保持基本平衡状态，如下图所示。下面这个红黑树下查找 id=7 的所要比较的节点数为 4，依然保持二叉树不错的查找效率。</p>
-<p>红黑树拥有不错的平均查找效率，也不存在极端的 O(n)情况，那红黑树作为 Mysql 底层索引实现是否可以呢？其实红黑树也存在一些问题，观察下面这个例子。</p>
+<p>首先简单介绍红黑树，这是一颗会自动调整树形态的树结构，比如当二叉树处于一个不平衡状态时，红黑树就会自动左旋右旋节点以及节点变色，调整树的形态，使其保持基本的平衡状态（时间复杂度为 $O(logn)$），也就保证了查找效率不会明显减低。比如从 1 到 7 升序插入数据节点，如果是普通的二叉查找树则会退化成链表，但是红黑树则会不断调整树的形态，使其保持基本平衡状态，如下图所示。下面这个红黑树下查找 id=7 的所要比较的节点数为 4，依然保持二叉树不错的查找效率。</p>
+<p>红黑树拥有不错的平均查找效率，也不存在极端的 $O(n)$ 情况，那红黑树作为 MySQL 底层索引实现是否可以呢？其实红黑树也存在一些问题，观察下面这个例子。</p>
 <p>红黑树顺序插入 1~7 个节点，查找 id=7 时需要计算的节点数为 4。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/7.jpg" alt="7"></p>
 <p>红黑树顺序插入 1~16 个节点，查找 id=16 需要比较的节点数为 6 次。观察一下这个树的形态，是不是当数据是顺序插入时，树的形态一直处于“右倾”的趋势呢？从根本上上看，红黑树并没有完全解决二叉查找树虽然这个“右倾”趋势远没有二叉查找树退化为线性链表那么夸张，但是数据库中的基本主键自增操作，主键一般都是数百万数千万的，如果红黑树存在这种问题，对于查找性能而言也是巨大的消耗，我们数据库不可能忍受这种无意义的等待的。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/8.jpg" alt="8"></p>
 <p>现在考虑另一种更为严格的自平衡二叉树 AVL 树。因为 AVL 树是个绝对平衡的二叉树，因此他在调整二叉树的形态上消耗的性能会更多。</p>
@@ -306,10 +306,10 @@
 <p>AVL 树顺序插入 1~16 个节点，查找 id=16 需要比较的节点数为 4。从查找效率而言，AVL 树查找的速度要高于红黑树的查找效率（AVL 树是 4 次比较，红黑树是 6 次比较）。从树的形态看来，AVL 树不存在红黑树的“右倾”问题。也就是说，大量的顺序插入不会导致查询性能的降低，这从根本上解决了红黑树的问题。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/10.jpg" alt="10"></p>
 <p>总结一下 AVL 树的优点：</p>
 <ol>
-<li>不错的查找性能（O（logn）），不存在极端的低效查找的情况。</li>
+<li>不错的查找性能（$O(logn)$），不存在极端的低效查找的情况。</li>
 <li>可以实现范围查找、数据排序。</li>
 </ol>
-<p>看起来 AVL 树作为数据查找的数据结构确实很不错，但是 AVL 树并不适合做 Mysql 数据库的索引数据结构，因为考虑一下这个问题：</p>
+<p>看起来 AVL 树作为数据查找的数据结构确实很不错，但是 AVL 树并不适合做 MySQL 数据库的索引数据结构，因为考虑一下这个问题：</p>
 <p>数据库查询数据的瓶颈在于磁盘 IO，如果使用的是 AVL 树，我们每一个树节点只存储了一个数据，我们一次磁盘 IO 只能取出来一个节点上的数据加载到内存里，那比如查询 id=7 这个数据我们就要进行磁盘 IO 三次，这是多么消耗时间的。所以我们设计数据库索引时需要首先考虑怎么尽可能减少磁盘 IO 的次数。</p>
 <p>磁盘 IO 有个有个特点，就是从磁盘读取 1B 数据和 1KB 数据所消耗的时间是基本一样的，我们就可以根据这个思路，我们可以在一个树节点上尽可能多地存储数据，一次磁盘 IO 就多加载点数据到内存，这就是 B 树，B+树的的设计原理了。</p>
 <h3 id="B-树"><a href="#B-树" class="headerlink" title="B 树"></a>B 树</h3><p>下面这个 B 树，每个节点限制最多存储两个 key，一个节点如果超过两个 key 就会自动分裂。比如下面这个存储了 7 个数据 B 树，只需要查询两个节点就可以知道 id=7 这数据的具体位置，也就是两次磁盘 IO 就可以查询到指定数据，优于 AVL 树。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/11.jpg" alt="11"></p>
@@ -319,7 +319,7 @@
 <p>一个存储了 16 个数据的 B 树，查询 id=7 这个数据所要进行的磁盘 IO 为 2 次。相对于 AVL 树而言磁盘 IO 次数降低为一半。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/14.jpg" alt="14"></p>
 <p>所以数据库索引数据结构的选型而言，B 树是一个很不错的选择。总结来说，B 树用作数据库索引有以下优点：</p>
 <ol>
-<li>优秀检索速度，时间复杂度：B 树的查找性能等于 O（h*logn），其中 h 为树高，n 为每个节点关键词的个数；</li>
+<li>优秀检索速度，时间复杂度：B 树的查找性能等于 $O(h*logn)$，其中 h 为树高，n 为每个节点关键词的个数；</li>
 <li>尽可能少的磁盘 IO，加快了检索速度；</li>
 <li>可以支持范围查找。</li>
 </ol>
@@ -392,13 +392,13 @@
 <p>其实这也很好算，假设主键ID为bigint类型，长度为8字节，而指针大小在InnoDB源码中设置为6字节，这样一共14字节</p>
 <p>我们一个页中能存放多少这样的单元，其实就代表有多少指针，即16384/14=1170。</p>
 <p>那么可以算出一棵高度为2的B+树，能存放1170*16=18720条这样的数据记录。</p>
-<p>根据同样的原理可以算出一个高度为3的B+树可以存放：1170<em>1170</em>16=21902400条这样的记录。</p>
-<p>所以在InnoDB中B+树高度一般为1-3层，它就能满足千万级的数据存储。</p>
+<p>根据同样的原理可以算出一个高度为3的B+树可以存放：1170<em>1170</em>16=21902400 条这样的记录。</p>
+<p>所以在 InnoDB 中 B+ 树高度一般为1-3层，它就能满足千万级的数据存储。</p>
 <p>在查找数据时，一次页的查找代表一次IO，所以通过主键索引查询通常只需要1-3次IO操作即可查找到数据。</p>
-<p><strong>怎么得到InnoDB主键索引B+树的高度？</strong></p>
-<p>上面通过推断得出B+树的高度通常是1-3，下面从另外一个侧面证明这个结论。</p>
-<p>在InnoDB的表空间文件中，<strong>约定page number为3</strong>的代表主键索引的根页，而在<strong>根页偏移量为64</strong>的地方存放了该B+树的page level。</p>
-<p>如果page level为1，树高为2，page level为2，则树高为3。即B+树的高度=page level+1；下面将从实际环境中尝试找到这个page level。</p>
+<p><strong>怎么得到InnoDB主键索引 B+ 树的高度？</strong></p>
+<p>上面通过推断得出 B+ 树的高度通常是 1-3，下面从另外一个侧面证明这个结论。</p>
+<p>在 InnoDB 的表空间文件中，<strong>约定page number为 3</strong>的代表主键索引的根页，而在<strong>根页偏移量为 64</strong>的地方存放了该 B+ 树的 page level。</p>
+<p>如果 page level 为 1，树高为 2，page level 为 2，则树高为 3。即 <code>B+树的高度=page level+1</code>；下面将从实际环境中尝试找到这个 page level。</p>
 <p>在实际操作之前，可以通过InnoDB元数据表确认主键索引根页的page number为3，也可以从《InnoDB存储引擎》这本书中得到确认。<br><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/26.jpg" alt="26"></p>
 <p><img src="/2020/04/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95-%E5%8E%9F%E7%90%86/27.jpg" alt="27"></p>
 <p>可以看出数据库dbt3下的customer表、lineitem表主键索引根页的page number均为3，而其他的二级索引page number为4。</p>
@@ -420,7 +420,7 @@
 <p><strong>简单回答是：</strong></p>
 <p>因为B树不管叶子节点还是非叶子节点，都会保存数据，这样导致在非叶子节点中能保存的指针数量变少（有些资料也称为扇出）</p>
 <p>指针少的情况下要保存大量数据，只能增加树的高度，导致IO操作变多，查询性能变低；</p>
-<p>小结<br>本文从一个问题出发，逐步介绍了InnoDB索引组织表的原理、查询方式，并结合已有知识，回答该问题，结合实践来证明。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>本文从一个问题出发，逐步介绍了InnoDB索引组织表的原理、查询方式，并结合已有知识，回答该问题，结合实践来证明。</p>
 <p>当然为了表述简单易懂，文中忽略了一些细枝末节，比如一个页中不可能所有空间都用于存放数据，它还会存放一些少量的其他字段比如page level，index number等等，另外还有页的填充因子也导致一个页不可能全部用于保存数据。</p>
 <hr>
 <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/rjzheng/p/9915754.html">https://www.cnblogs.com/rjzheng/p/9915754.html</a></p>
@@ -528,7 +528,7 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/04/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-brew-java/" rel="prev" title="Mac-brew-java.md">
+    <a href="/2020/04/05/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-java/" rel="prev" title="Mac-brew-java.md">
       <i class="fa fa-chevron-left"></i> Mac-brew-java.md
     </a></div>
       <div class="post-nav-item">
@@ -594,7 +594,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80"><span class="nav-number">1.</span> <span class="nav-text">一</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mysql-%E7%B4%A2%E5%BC%95%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E9%80%89%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Mysql 索引底层数据结构选型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E8%A1%A8%EF%BC%88Hash%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">哈希表（Hash）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E5%8F%89%E6%9F%A5%E6%89%BE%E6%A0%91-BST"><span class="nav-number">1.1.2.</span> <span class="nav-text">二叉查找树(BST)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AVL-%E6%A0%91%E5%92%8C%E7%BA%A2%E9%BB%91%E6%A0%91"><span class="nav-number">1.1.3.</span> <span class="nav-text">AVL 树和红黑树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%A0%91"><span class="nav-number">1.1.4.</span> <span class="nav-text">B 树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%A0%91-1"><span class="nav-number">1.1.5.</span> <span class="nav-text">B+树</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb-%E5%BC%95%E6%93%8E%E5%92%8C-Myisam-%E5%BC%95%E6%93%8E%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.2.</span> <span class="nav-text">Innodb 引擎和 Myisam 引擎的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MyISAM-%E5%BC%95%E6%93%8E%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%EF%BC%88%E9%9D%9E%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">MyISAM 引擎的底层实现（非聚集索引方式）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Innodb-%E5%BC%95%E6%93%8E%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%EF%BC%88%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">Innodb 引擎的底层实现（聚集索引方式）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C"><span class="nav-number">2.</span> <span class="nav-text">二</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">2.0.1.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="nav-number">2.0.2.</span> <span class="nav-text">面试题</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89"><span class="nav-number">3.</span> <span class="nav-text">三</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">3.1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">3.2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E7%A7%91%E6%99%AE"><span class="nav-number">3.2.1.</span> <span class="nav-text">索引的科普</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D"><span class="nav-number">3.2.2.</span> <span class="nav-text">索引原理介绍</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80"><span class="nav-number">1.</span> <span class="nav-text">一</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mysql-%E7%B4%A2%E5%BC%95%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E9%80%89%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">Mysql 索引底层数据结构选型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E8%A1%A8%EF%BC%88Hash%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">哈希表（Hash）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E5%8F%89%E6%9F%A5%E6%89%BE%E6%A0%91-BST"><span class="nav-number">1.1.2.</span> <span class="nav-text">二叉查找树(BST)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AVL-%E6%A0%91%E5%92%8C%E7%BA%A2%E9%BB%91%E6%A0%91"><span class="nav-number">1.1.3.</span> <span class="nav-text">AVL 树和红黑树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%A0%91"><span class="nav-number">1.1.4.</span> <span class="nav-text">B 树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#B-%E6%A0%91-1"><span class="nav-number">1.1.5.</span> <span class="nav-text">B+树</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb-%E5%BC%95%E6%93%8E%E5%92%8C-Myisam-%E5%BC%95%E6%93%8E%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.2.</span> <span class="nav-text">Innodb 引擎和 Myisam 引擎的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MyISAM-%E5%BC%95%E6%93%8E%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%EF%BC%88%E9%9D%9E%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">MyISAM 引擎的底层实现（非聚集索引方式）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Innodb-%E5%BC%95%E6%93%8E%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%EF%BC%88%E8%81%9A%E9%9B%86%E7%B4%A2%E5%BC%95%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">Innodb 引擎的底层实现（聚集索引方式）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C"><span class="nav-number">2.</span> <span class="nav-text">二</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">2.0.1.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="nav-number">2.0.2.</span> <span class="nav-text">面试题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">2.0.3.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89"><span class="nav-number">3.</span> <span class="nav-text">三</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">3.1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E6%96%87"><span class="nav-number">3.2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E7%9A%84%E7%A7%91%E6%99%AE"><span class="nav-number">3.2.1.</span> <span class="nav-text">索引的科普</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D"><span class="nav-number">3.2.2.</span> <span class="nav-text">索引原理介绍</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -610,20 +610,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

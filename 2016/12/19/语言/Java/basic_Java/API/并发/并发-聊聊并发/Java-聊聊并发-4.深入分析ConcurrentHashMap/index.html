@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：http:&#x2F;&#x2F;ifeve.com&#x2F;concurrenthashmap&#x2F; 术语定义 哈希算法（hash algorithm）：是一种将任意内容的输入转换成相同长度输出的加密方式，其输出被称为哈希值。 哈希表（hash table）根据设定的哈希函数H(key)和处理冲突方法将一组关键字映象到一个有限的地址区间上，并以关键字在地址区间中的象作为记录在表中的存储位置，这种表称为哈希表或散列，所得存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java-聊聊并发-4.深入分析ConcurrentHashMap">
+<meta property="og:url" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;ifeve.com&#x2F;concurrenthashmap&#x2F; 术语定义 哈希算法（hash algorithm）：是一种将任意内容的输入转换成相同长度输出的加密方式，其输出被称为哈希值。 哈希表（hash table）根据设定的哈希函数H(key)和处理冲突方法将一组关键字映象到一个有限的地址区间上，并以关键字在地址区间中的象作为记录在表中的存储位置，这种表称为哈希表或散列，所得存">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/ConcurrentHashMap%E7%B1%BB%E5%9B%BE.png">
+<meta property="og:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/ConcurrentHashMap%E7%BB%93%E6%9E%84%E5%9B%BE.png">
+<meta property="article:published_time" content="2016-12-19T08:55:22.000Z">
+<meta property="article:modified_time" content="2017-03-11T03:12:50.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="并发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/ConcurrentHashMap%E7%B1%BB%E5%9B%BE.png">
+
+<link rel="canonical" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java-聊聊并发-4.深入分析ConcurrentHashMap | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java-聊聊并发-4.深入分析ConcurrentHashMap
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-19 16:55:22" itemprop="dateCreated datePublished" datetime="2016-12-19T16:55:22+08:00">2016-12-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/concurrenthashmap/">http://ifeve.com/concurrenthashmap/</a></p>
+<h2 id="术语定义"><a href="#术语定义" class="headerlink" title="术语定义"></a>术语定义</h2><ul>
+<li>哈希算法（hash algorithm）：是一种将任意内容的输入转换成相同长度输出的加密方式，其输出被称为哈希值。</li>
+<li>哈希表（hash table）根据设定的哈希函数H(key)和处理冲突方法将一组关键字映象到一个有限的地址区间上，并以关键字在地址区间中的象作为记录在表中的存储位置，这种表称为哈希表或散列，所得存储位置称为哈希地址或散列地址。</li>
+</ul>
+<h2 id="线程不安全的HashMap"><a href="#线程不安全的HashMap" class="headerlink" title="线程不安全的HashMap"></a>线程不安全的HashMap</h2><p>因为多线程环境下，使用Hashmap进行put操作会引起死循环，导致CPU利用率接近100%，所以在并发情况下不能使用HashMap。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">final HashMap&lt;String, String&gt; map = new HashMap&lt;String, String&gt;(2);</span><br><span class="line"></span><br><span class="line">Thread t = new Thread(new Runnable() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void run() &#123;</span><br><span class="line">        for (int i = 0; i &lt; 10000; i++) &#123;</span><br><span class="line">            new Thread(new Runnable() &#123;</span><br><span class="line">                @Override</span><br><span class="line">                public void run() &#123;</span><br><span class="line">                    map.put(UUID.randomUUID().toString(), &quot;&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;, &quot;ftf&quot; + i).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, &quot;ftf&quot;);</span><br><span class="line">t.start();</span><br><span class="line">t.join();</span><br></pre></td></tr></table></figure>
+
+<h2 id="效率低下的HashTable容器"><a href="#效率低下的HashTable容器" class="headerlink" title="效率低下的HashTable容器"></a>效率低下的HashTable容器</h2><p>HashTable容器使用synchronized来保证线程安全，但在线程竞争激烈的情况下HashTable的效率非常低下。因为当一个线程访问HashTable的同步方法时，其他线程访问HashTable的同步方法时，可能会进入阻塞或轮询状态。如线程1使用put进行添加元素，线程2不但不能使用put方法添加元素，并且也不能使用get方法来获取元素，所以竞争越激烈效率越低。</p>
+<h2 id="ConcurrentHashMap的锁分段技术"><a href="#ConcurrentHashMap的锁分段技术" class="headerlink" title="ConcurrentHashMap的锁分段技术"></a>ConcurrentHashMap的锁分段技术</h2><p>HashTable容器在竞争激烈的并发环境下表现出效率低下的原因，是因为所有访问HashTable的线程都必须竞争同一把锁，那假如容器里有多把锁，每一把锁用于锁容器其中一部分数据，那么当多线程访问容器里不同数据段的数据时，线程间就不会存在锁竞争，从而可以有效的提高并发访问效率，这就是ConcurrentHashMap所使用的锁分段技术，首先将数据分成一段一段的存储，然后给每一段数据配一把锁，当一个线程占用锁访问其中一个段数据的时候，其他段的数据也能被其他线程访问。</p>
+<h2 id="ConcurrentHashMap的结构"><a href="#ConcurrentHashMap的结构" class="headerlink" title="ConcurrentHashMap的结构"></a>ConcurrentHashMap的结构</h2><p>我们通过ConcurrentHashMap的类图来分析ConcurrentHashMap的结构。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/ConcurrentHashMap%E7%B1%BB%E5%9B%BE.png" alt="ConcurrentHashMap类图"></p>
+<p>ConcurrentHashMap是由Segment数组结构和HashEntry数组结构组成。Segment是一种可重入锁ReentrantLock，在ConcurrentHashMap里扮演锁的角色，HashEntry则用于存储键值对数据。一个ConcurrentHashMap里包含一个Segment数组，Segment的结构和HashMap类似，是一种数组和链表结构， 一个Segment里包含一个HashEntry数组，每个HashEntry是一个链表结构的元素， 每个Segment守护者一个HashEntry数组里的元素,当对HashEntry数组的数据进行修改时，必须首先获得它对应的Segment锁。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-4.%E6%B7%B1%E5%85%A5%E5%88%86%E6%9E%90ConcurrentHashMap/ConcurrentHashMap%E7%BB%93%E6%9E%84%E5%9B%BE.png" alt="ConcurrentHashMap结构图"></p>
+<h2 id="ConcurrentHashMap的初始化"><a href="#ConcurrentHashMap的初始化" class="headerlink" title="ConcurrentHashMap的初始化"></a>ConcurrentHashMap的初始化</h2><p>ConcurrentHashMap初始化方法是通过initialCapacity，loadFactor, concurrencyLevel几个参数来初始化segments数组，段偏移量segmentShift，段掩码segmentMask和每个segment里的HashEntry数组。</p>
+<p><strong>初始化segments数组</strong>。让我们来看一下初始化segmentShift，segmentMask和segments数组的源代码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">if (concurrencyLevel &gt; MAX_SEGMENTS)</span><br><span class="line">  concurrencyLevel = MAX_SEGMENTS;</span><br><span class="line"></span><br><span class="line">// Find power-of-two sizes best matching arguments</span><br><span class="line">int sshift = 0;</span><br><span class="line">int ssize = 1;</span><br><span class="line"></span><br><span class="line">while (ssize &lt; concurrencyLevel) &#123;</span><br><span class="line">  ++sshift;</span><br><span class="line">  ssize &lt;&lt;= 1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">segmentShift = 32 - sshift;</span><br><span class="line">segmentMask = ssize - 1;</span><br><span class="line">this.segments = Segment.newArray(ssize);</span><br></pre></td></tr></table></figure>
+<p>由上面的代码可知segments数组的长度ssize通过concurrencyLevel计算得出。为了能通过按位与的哈希算法来定位segments数组的索引，必须保证segments数组的长度是2的N次方（power-of-two size），所以必须计算出一个是大于或等于concurrencyLevel的最小的2的N次方值来作为segments数组的长度。假如concurrencyLevel等于14，15或16，ssize都会等于16，即容器里锁的个数也是16。注意concurrencyLevel的最大大小是65535，意味着segments数组的长度最大为65536，对应的二进制是16位。</p>
+<p><strong>初始化segmentShift和segmentMask</strong>。这两个全局变量在定位segment时的哈希算法里需要使用，sshift等于ssize从1向左移位的次数，在默认情况下concurrencyLevel等于16，1需要向左移位移动4次，所以sshift等于4。segmentShift用于定位参与hash运算的位数，segmentShift等于32减sshift，所以等于28，这里之所以用32是因为ConcurrentHashMap里的hash()方法输出的最大数是32位的，后面的测试中我们可以看到这点。segmentMask是哈希运算的掩码，等于ssize减1，即15，掩码的二进制各个位的值都是1。因为ssize的最大长度是65536，所以segmentShift最大值是16，segmentMask最大值是65535，对应的二进制是16位，每个位都是1。</p>
+<p><strong>初始化每个Segment</strong>。输入参数initialCapacity是ConcurrentHashMap的初始化容量，loadfactor是每个segment的负载因子，在构造方法里需要通过这两个参数来初始化数组中的每个segment。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">if (initialCapacity &gt; MAXIMUM_CAPACITY)</span><br><span class="line">  initialCapacity = MAXIMUM_CAPACITY;</span><br><span class="line"></span><br><span class="line">int c = initialCapacity / ssize;</span><br><span class="line">if (c * ssize &lt; initialCapacity)</span><br><span class="line">  ++c;</span><br><span class="line"></span><br><span class="line">int cap = 1;</span><br><span class="line"></span><br><span class="line">while (cap &lt; c)</span><br><span class="line">  cap &lt;&lt;= 1;</span><br><span class="line"></span><br><span class="line">for (int i = 0; i &lt; this.segments.length; ++i)</span><br><span class="line">  this.segments[i] = new Segment&lt;K,V&gt;(cap, loadFactor);</span><br></pre></td></tr></table></figure>
+<p>上面代码中的变量cap就是segment里HashEntry数组的长度，它等于initialCapacity除以ssize的倍数c，如果c大于1，就会取大于等于c的2的N次方值，所以cap不是1，就是2的N次方。segment的容量threshold＝(int)cap*loadFactor，默认情况下initialCapacity等于16，loadfactor等于0.75，通过运算cap等于1，threshold等于零。</p>
+<h3 id="定位Segment"><a href="#定位Segment" class="headerlink" title="定位Segment"></a>定位Segment</h3><p>既然ConcurrentHashMap使用分段锁Segment来保护不同段的数据，那么在插入和获取元素的时候，必须先通过哈希算法定位到Segment。可以看到ConcurrentHashMap会首先使用Wang/Jenkins hash的变种算法对元素的hashCode进行一次再哈希。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">private static int hash(int h) &#123;</span><br><span class="line">  h += (h &lt;&lt; 15) ^ 0xffffcd7d; h ^= (h &gt;&gt;&gt; 10);</span><br><span class="line">  h += (h &lt;&lt; 3); h ^= (h &gt;&gt;&gt; 6);</span><br><span class="line">  h += (h &lt;&lt; 2) + (h &lt;&lt; 14); return h ^ (h &gt;&gt;&gt; 16);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再哈希，其目的是为了减少哈希冲突，使元素能够均匀的分布在不同的Segment上，从而提高容器的存取效率。假如哈希的质量差到极点，那么所有的元素都在一个Segment中，不仅存取元素缓慢，分段锁也会失去意义。我做了一个测试，不通过再哈希而直接执行哈希计算。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(Integer.parseInt(&quot;0001111&quot;, 2) &amp; 15);</span><br><span class="line">System.out.println(Integer.parseInt(&quot;0011111&quot;, 2) &amp; 15);</span><br><span class="line">System.out.println(Integer.parseInt(&quot;0111111&quot;, 2) &amp; 15);</span><br><span class="line">System.out.println(Integer.parseInt(&quot;1111111&quot;, 2) &amp; 15);</span><br></pre></td></tr></table></figure>
+<p>计算后输出的哈希值全是15，通过这个例子可以发现如果不进行再哈希，哈希冲突会非常严重，因为只要低位一样，无论高位是什么数，其哈希值总是一样。我们再把上面的二进制数据进行再哈希后结果如下，为了方便阅读，不足32位的高位补了0，每隔四位用竖线分割下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0100｜0111｜0110｜0111｜1101｜1010｜0100｜1110</span><br><span class="line">1111｜0111｜0100｜0011｜0000｜0001｜1011｜1000</span><br><span class="line">0111｜0111｜0110｜1001｜0100｜0110｜0011｜1110</span><br><span class="line">1000｜0011｜0000｜0000｜1100｜1000｜0001｜1010</span><br></pre></td></tr></table></figure>
+<p>可以发现每一位的数据都散列开了，通过这种再哈希能让数字的每一位都能参加到哈希运算当中，从而减少哈希冲突。ConcurrentHashMap通过以下哈希算法定位segment。</p>
+<p>默认情况下segmentShift为28，segmentMask为15，再哈希后的数最大是32位二进制数据，向右无符号移动28位，意思是让高4位参与到hash运算中， (hash &gt;&gt;&gt; segmentShift) &amp; segmentMask的运算结果分别是4，15，7和8，可以看到hash值没有发生冲突。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">final Segment&lt;K,V&gt; segmentFor(int hash) &#123;</span><br><span class="line">  return segments[(hash &gt;&gt;&gt; segmentShift) &amp; segmentMask];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ConcurrentHashMap的get操作"><a href="#ConcurrentHashMap的get操作" class="headerlink" title="ConcurrentHashMap的get操作"></a>ConcurrentHashMap的get操作</h2><p>Segment的get操作实现非常简单和高效。先经过一次再哈希，然后使用这个哈希值通过哈希运算定位到segment，再通过哈希算法定位到元素，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public V get(Object key) &#123;</span><br><span class="line">  int hash = hash(key.hashCode());</span><br><span class="line">  return segmentFor(hash).get(key, hash);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>get操作的高效之处在于整个get过程不需要加锁，除非读到的值是空的才会加锁重读，我们知道HashTable容器的get方法是需要加锁的，那么ConcurrentHashMap的get操作是如何做到不加锁的呢？原因是它的get方法里将要使用的共享变量都定义成volatile，如用于统计当前Segement大小的count字段和用于存储值的HashEntry的value。定义成volatile的变量，能够在线程之间保持可见性，能够被多线程同时读，并且保证不会读到过期的值，但是只能被单线程写（有一种情况可以被多线程写，就是写入的值不依赖于原值），在get操作里只需要读不需要写共享变量count和value，所以可以不用加锁。之所以不会读到过期的值，是根据java内存模型的happen before原则，对volatile字段的写入操作先于读操作，即使两个线程同时修改和获取volatile变量，get操作也能拿到最新的值，这是用volatile替换锁的经典应用场景。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">transient volatile int count;</span><br><span class="line">volatile V value;</span><br></pre></td></tr></table></figure>
+<p>在定位元素的代码里我们可以发现定位HashEntry和定位Segment的哈希算法虽然一样，都与数组的长度减去一相与，但是相与的值不一样，定位Segment使用的是元素的hashcode通过再哈希后得到的值的高位，而定位HashEntry直接使用的是再哈希后的值。其目的是避免两次哈希后的值一样，导致元素虽然在Segment里散列开了，但是却没有在HashEntry里散列开。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hash &gt;&gt;&gt; segmentShift) &amp; segmentMask//定位Segment所使用的hash算法</span><br><span class="line">int index = hash &amp; (tab.length - 1);// 定位HashEntry所使用的hash算法</span><br></pre></td></tr></table></figure>
+
+<h2 id="ConcurrentHashMap的Put操作"><a href="#ConcurrentHashMap的Put操作" class="headerlink" title="ConcurrentHashMap的Put操作"></a>ConcurrentHashMap的Put操作</h2><p>由于put方法里需要对共享变量进行写入操作，所以为了线程安全，在操作共享变量时必须得加锁。Put方法首先定位到Segment，然后在Segment里进行插入操作。插入操作需要经历两个步骤，第一步判断是否需要对Segment里的HashEntry数组进行扩容，第二步定位添加元素的位置然后放在HashEntry数组里。</p>
+<p><strong>是否需要扩容</strong>。在插入元素前会先判断Segment里的HashEntry数组是否超过容量（threshold），如果超过阀值，数组进行扩容。值得一提的是，Segment的扩容判断比HashMap更恰当，因为HashMap是在插入元素后判断元素是否已经到达容量的，如果到达了就进行扩容，但是很有可能扩容之后没有新元素插入，这时HashMap就进行了一次无效的扩容。</p>
+<p><strong>如何扩容</strong>。扩容的时候首先会创建一个两倍于原容量的数组，然后将原数组里的元素进行再hash后插入到新的数组里。为了高效ConcurrentHashMap不会对整个容器进行扩容，而只对某个segment进行扩容。</p>
+<h2 id="ConcurrentHashMap的size操作"><a href="#ConcurrentHashMap的size操作" class="headerlink" title="ConcurrentHashMap的size操作"></a>ConcurrentHashMap的size操作</h2><p>如果我们要统计整个ConcurrentHashMap里元素的大小，就必须统计所有Segment里元素的大小后求和。Segment里的全局变量count是一个volatile变量，那么在多线程场景下，我们是不是直接把所有Segment的count相加就可以得到整个ConcurrentHashMap大小了呢？不是的，虽然相加时可以获取每个Segment的count的最新值，但是拿到之后可能累加前使用的count发生了变化，那么统计结果就不准了。所以最安全的做法，是在统计size的时候把所有Segment的put，remove和clean方法全部锁住，但是这种做法显然非常低效。</p>
+<p>因为在累加count操作过程中，之前累加过的count发生变化的几率非常小，所以ConcurrentHashMap的做法是先尝试2次通过不锁住Segment的方式来统计各个Segment大小，如果统计的过程中，容器的count发生了变化，则再采用加锁的方式来统计所有Segment的大小。</p>
+<p>那么ConcurrentHashMap是如何判断在统计的时候容器是否发生了变化呢？使用modCount变量，在put , remove和clean方法里操作元素前都会将变量modCount进行加1，那么在统计size前后比较modCount是否发生变化，从而得知容器的大小是否发生变化。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+              <a href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag"># 并发</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-3.Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%88%86%E6%9E%90%E5%92%8C%E4%BD%BF%E7%94%A8/" rel="prev" title="Java-聊聊并发-3.Java线程池的分析和使用">
+      <i class="fa fa-chevron-left"></i> Java-聊聊并发-3.Java线程池的分析和使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-5.%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" rel="next" title="Java-聊聊并发-Java-聊聊并发-5.原子操作的实现原理">
+      Java-聊聊并发-Java-聊聊并发-5.原子操作的实现原理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AF%E8%AF%AD%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">术语定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E4%B8%8D%E5%AE%89%E5%85%A8%E7%9A%84HashMap"><span class="nav-number">2.</span> <span class="nav-text">线程不安全的HashMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%88%E7%8E%87%E4%BD%8E%E4%B8%8B%E7%9A%84HashTable%E5%AE%B9%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">效率低下的HashTable容器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentHashMap%E7%9A%84%E9%94%81%E5%88%86%E6%AE%B5%E6%8A%80%E6%9C%AF"><span class="nav-number">4.</span> <span class="nav-text">ConcurrentHashMap的锁分段技术</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentHashMap%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">5.</span> <span class="nav-text">ConcurrentHashMap的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentHashMap%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">6.</span> <span class="nav-text">ConcurrentHashMap的初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%BD%8DSegment"><span class="nav-number">6.1.</span> <span class="nav-text">定位Segment</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentHashMap%E7%9A%84get%E6%93%8D%E4%BD%9C"><span class="nav-number">7.</span> <span class="nav-text">ConcurrentHashMap的get操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentHashMap%E7%9A%84Put%E6%93%8D%E4%BD%9C"><span class="nav-number">8.</span> <span class="nav-text">ConcurrentHashMap的Put操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentHashMap%E7%9A%84size%E6%93%8D%E4%BD%9C"><span class="nav-number">9.</span> <span class="nav-text">ConcurrentHashMap的size操作</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'e574820325669049fc2f7dbdd9f7b7d8',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

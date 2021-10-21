@@ -263,7 +263,7 @@
 </ul>
 </li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton  implements Serializable,Cloneable&#123;</span><br><span class="line">    private static final long serialVersionUID = 6125990676610180062L;</span><br><span class="line">    private static Singleton singleton;</span><br><span class="line">    private static boolean isFristCreate = true;//默认是第一次创建</span><br><span class="line">    </span><br><span class="line">    private Singleton()&#123;</span><br><span class="line">            if (isFristCreate) &#123;</span><br><span class="line">                synchronized (Singleton.class) &#123;　　　　　　　　　　　　if (isFristCreate) &#123;　　　　　　　　　　　　　　isFristCreate = false;　　　　　　　　　　　　&#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                throw new RuntimeException(&quot;已然被实例化一次，不能在实例化&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void doAction()&#123;</span><br><span class="line">        //TODO 实现你需要做的事</span><br><span class="line">    &#125;</span><br><span class="line">    public  static Singleton getInstance()&#123;</span><br><span class="line">        if (singleton == null) &#123;</span><br><span class="line">            synchronized (Singleton.class) &#123;</span><br><span class="line">                if (singleton == null) &#123;</span><br><span class="line">                    singleton = new Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    @Override</span><br><span class="line">    protected Singleton clone() throws CloneNotSupportedException &#123;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    private Object readResolve() &#123;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">public class Singleton  implements Serializable,Cloneable&#123;</span><br><span class="line">    private static final long serialVersionUID = 6125990676610180062L;</span><br><span class="line">    private static Singleton singleton;</span><br><span class="line">    private static boolean isFristCreate = true;//默认是第一次创建</span><br><span class="line">    </span><br><span class="line">    private Singleton() &#123;</span><br><span class="line">            if (isFristCreate) &#123;</span><br><span class="line">                synchronized (Singleton.class) &#123;</span><br><span class="line">                    if (isFristCreate) &#123;</span><br><span class="line">                        sFristCreate = false;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                throw new RuntimeException(&quot;已然被实例化一次，不能在实例化&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    public void doAction()&#123;</span><br><span class="line">        //TODO 实现你需要做的事</span><br><span class="line">    &#125;</span><br><span class="line">    public static Singleton getInstance()&#123;</span><br><span class="line">        if (singleton == null) &#123;</span><br><span class="line">            synchronized (Singleton.class) &#123;</span><br><span class="line">                if (singleton == null) &#123;</span><br><span class="line">                    singleton = new Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    @Override</span><br><span class="line">    protected Singleton clone() throws CloneNotSupportedException &#123;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    private Object readResolve() &#123;</span><br><span class="line">        return singleton;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>测试用例：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public class DestroySingleton &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //通过getInstance()获取</span><br><span class="line">        Singleton singleton = Singleton.getInstance();</span><br><span class="line">        System.out.println(&quot;singleton的hashCode:&quot;+singleton.hashCode());</span><br><span class="line">        //通过克隆获取</span><br><span class="line">        Singleton clob = (Singleton) Singleton.getInstance().clone();</span><br><span class="line">        System.out.println(&quot;clob的hashCode:&quot;+clob.hashCode());</span><br><span class="line">        //通过序列化，反序列化获取</span><br><span class="line">        ByteArrayOutputStream bos = new ByteArrayOutputStream();</span><br><span class="line">        ObjectOutputStream oos = new ObjectOutputStream(bos);</span><br><span class="line">        oos.writeObject(Singleton.getInstance());</span><br><span class="line">        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());</span><br><span class="line">        ObjectInputStream ois = new ObjectInputStream(bis);</span><br><span class="line">        Singleton serialize = (Singleton) ois.readObject();</span><br><span class="line">        if (ois != null)    ois.close();</span><br><span class="line">        if (bis != null) bis.close();</span><br><span class="line">        if (oos != null) oos.close();</span><br><span class="line">        if (bos != null) bos.close();</span><br><span class="line">        System.out.println(&quot;serialize的hashCode:&quot;+serialize.hashCode());</span><br><span class="line">        //通过反射获取</span><br><span class="line">        Constructor&lt;Singleton&gt; constructor = Singleton.class.getDeclaredConstructor();</span><br><span class="line">        constructor.setAccessible(true);</span><br><span class="line">        Singleton reflex = constructor.newInstance();</span><br><span class="line">        System.out.println(&quot;reflex的hashCode:&quot;+reflex.hashCode());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -399,7 +399,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -413,7 +413,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/" class="post-title-link" itemprop="url">Java-API-容器-HashMap.md</a>
+            <a href="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/" class="post-title-link" itemprop="url">Java-API-容器-HashMap.md</a>
         </h2>
 
         <div class="post-meta">
@@ -452,14 +452,14 @@
 <li>jdk1.7 的 HashMap 是用数组+链表实现的</li>
 <li>jdk1.8 的 HashMap 是用数组+链表+红黑树实现的</li>
 </ol>
-<p><img src="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/1.png" alt="1"></p>
+<p><img src="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/1.png" alt="1"></p>
 <p>HashMap 的主干是一个数组，假设我们有 3 个键值对 dnf:1，cf:2，lol:3，每次放的时候会根据 <code>key.hash % table.length</code>（对象的 hashcode 进行一些操作后对数组的长度取余）确定这个键值对应该放在数组的哪个位位置</p>
-<p><code>1 = indexFor(dnf)</code>，我们将键值对放在数组下标为 1 的位置<br><img src="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/2.png" alt="2"></p>
-<p><code>3 = indexFor(cf)</code><br><img src="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/3.png" alt="3"></p>
+<p><code>1 = indexFor(dnf)</code>，我们将键值对放在数组下标为 1 的位置<br><img src="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/2.png" alt="2"></p>
+<p><code>3 = indexFor(cf)</code><br><img src="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/3.png" alt="3"></p>
 <p><code>1 = indexFor(lol)</code>，这时发现数组下标为 1 的位置已经有值了，我们把 lol:3 放到链表的第一位，将原先的 dnf:1 用链表的形式放到 lol 键值对的下面</p>
 <ul>
 <li>jdk1.7 是头插法</li>
-<li>jdk1.8 是尾插法<br><img src="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/4.png" alt="4"></li>
+<li>jdk1.8 是尾插法<br><img src="/2021/05/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap/4.png" alt="4"></li>
 </ul>
 <p>在获取 key 为 dnf 的键值对时，<code>1=hash(dnf)</code>，得到这个键值对在数组下标为1的位置，dnf 和 lol 不相等，和下一个元素比较，相等返回。set 和 get 的过程就是这么简单。先定位到槽的位置（即数组中的位置），再遍历链表找到相同的元素。</p>
 <p>由上图可以看出，HashMap 在发生 hash 冲突的时候用的是链地址法，解决 hash 冲突并不只有这一种方法，常见的有如下四种方法：</p>
@@ -648,7 +648,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-map/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-map/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -662,7 +662,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/05/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-map/" class="post-title-link" itemprop="url">Java-API-容器-map.md</a>
+            <a href="/2021/05/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-map/" class="post-title-link" itemprop="url">Java-API-容器-map.md</a>
         </h2>
 
         <div class="post-meta">
@@ -726,7 +726,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-list/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-list/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -740,7 +740,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/05/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-list/" class="post-title-link" itemprop="url">Java-API-容器-list.md</a>
+            <a href="/2021/05/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-list/" class="post-title-link" itemprop="url">Java-API-容器-list.md</a>
         </h2>
 
         <div class="post-meta">
@@ -797,7 +797,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E5%85%B6%E4%BB%96/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -811,7 +811,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E5%85%B6%E4%BB%96/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" class="post-title-link" itemprop="url">布隆过滤器.md</a>
+            <a href="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" class="post-title-link" itemprop="url">数据结构-布隆过滤器.md</a>
         </h2>
 
         <div class="post-meta">
@@ -852,11 +852,11 @@
 </blockquote>
 <h2 id="什么是布隆过滤器"><a href="#什么是布隆过滤器" class="headerlink" title="什么是布隆过滤器"></a>什么是布隆过滤器</h2><p>本质上布隆过滤器是一种数据结构，比较巧妙的概率型数据结构（probabilistic data structure），特点是高效地插入和查询，可以用来告诉你 “<strong>某样东西一定不存在或者可能存在</strong>”。</p>
 <p>相比于传统的 List、Set、Map 等数据结构，它更高效、占用空间更少，但是缺点是其返回的结果是概率性的，而不是确切的。</p>
-<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><h3 id="HashMap-的问题"><a href="#HashMap-的问题" class="headerlink" title="HashMap 的问题"></a>HashMap 的问题</h3><p>讲述布隆过滤器的原理之前，我们先思考一下，通常你判断某个元素是否存在用的是什么？应该蛮多人回答 HashMap 吧，确实可以将值映射到 HashMap 的 Key，然后可以在 O(1) 的时间复杂度内返回结果，效率奇高。但是 HashMap 的实现也有缺点，例如存储容量占比高，考虑到负载因子的存在，通常空间是不能被用满的，而一旦你的值很多例如上亿的时候，那 HashMap 占据的内存大小就变得很可观了。</p>
+<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><h3 id="HashMap-的问题"><a href="#HashMap-的问题" class="headerlink" title="HashMap 的问题"></a>HashMap 的问题</h3><p>讲述布隆过滤器的原理之前，我们先思考一下，通常你判断某个元素是否存在用的是什么？应该蛮多人回答 HashMap 吧，确实可以将值映射到 HashMap 的 Key，然后可以在 $O(1)$ 的时间复杂度内返回结果，效率奇高。但是 HashMap 的实现也有缺点，例如存储容量占比高，考虑到负载因子的存在，通常空间是不能被用满的，而一旦你的值很多例如上亿的时候，那 HashMap 占据的内存大小就变得很可观了。</p>
 <p>还比如说你的数据集存储在远程服务器上，本地服务接受输入，而数据集非常大不可能一次性读进内存构建 HashMap 的时候，也会存在问题。</p>
-<h3 id="布隆过滤器数据结构"><a href="#布隆过滤器数据结构" class="headerlink" title="布隆过滤器数据结构"></a>布隆过滤器数据结构</h3><p>布隆过滤器是一个 bit 向量或者说 bit 数组，长这样：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E5%85%B6%E4%BB%96/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/1.jpg" alt="1"></p>
-<p>如果我们要映射一个值到布隆过滤器中，我们需要使用多个不同的哈希函数生成多个哈希值，并对每个生成的哈希值指向的 bit 位置 1，例如针对值 “baidu” 和三个不同的哈希函数分别生成了哈希值 1、4、7，则上图转变为：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E5%85%B6%E4%BB%96/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/2.jpg" alt="2"></p>
-<p>Ok，我们现在再存一个值 “tencent”，如果哈希函数返回 3、4、8 的话，图继续变为：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E5%85%B6%E4%BB%96/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/3.jpg" alt="3"></p>
+<h3 id="布隆过滤器数据结构"><a href="#布隆过滤器数据结构" class="headerlink" title="布隆过滤器数据结构"></a>布隆过滤器数据结构</h3><p>布隆过滤器是一个 bit 向量或者说 bit 数组，长这样：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/1.jpg" alt="1"></p>
+<p>如果我们要映射一个值到布隆过滤器中，我们需要使用多个不同的哈希函数生成多个哈希值，并对每个生成的哈希值指向的 bit 位置 1，例如针对值 “baidu” 和三个不同的哈希函数分别生成了哈希值 1、4、7，则上图转变为：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/2.jpg" alt="2"></p>
+<p>Ok，我们现在再存一个值 “tencent”，如果哈希函数返回 3、4、8 的话，图继续变为：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/3.jpg" alt="3"></p>
 <p>值得注意的是，4 这个 bit 位由于两个值的哈希函数都返回了这个 bit 位，因此它被覆盖了。现在我们如果想查询 “dianping” 这个值是否存在，哈希函数返回了 1、5、8三个值，结果我们发现 5 这个 bit 位上的值为 0，说明没有任何一个值映射到这个 bit 位上，因此我们可以很确定地说 “dianping” 这个值不存在。而当我们需要查询 “baidu” 这个值是否存在的话，那么哈希函数必然会返回 1、4、7，然后我们检查发现这三个 bit 位上的值均为 1，那么我们可以说 “baidu” 存在了么？答案是不可以，只能是 “baidu” 这个值可能存在。</p>
 <p>这是为什么呢？答案跟简单，因为随着增加的值越来越多，被置为 1 的 bit 位也会越来越多，这样某个值 “taobao” 即使没有被存储过，但是万一哈希函数返回的三个 bit 位都被其他值置位了 1 ，那么程序还是会判断 “taobao” 这个值存在。</p>
 <h2 id="支持删除么"><a href="#支持删除么" class="headerlink" title="支持删除么"></a>支持删除么</h2><p>感谢评论区提醒，传统的布隆过滤器并不支持删除操作。但是名为 Counting Bloom filter 的变种可以用来测试元素计数个数是否绝对小于某个阈值，它支持元素删除。可以参考文章 <a href="%5Bhttps://link%5D(https://link.zhihu.com/?target=https://cloud.tencent.com/developer/article/1136056)">Counting Bloom Filter 的原理和实现</a></p>
@@ -864,9 +864,9 @@
 <p>注：【首先需要判断一定存在，才能进行删除】</p>
 </blockquote>
 <h2 id="如何选择哈希函数个数和布隆过滤器长度"><a href="#如何选择哈希函数个数和布隆过滤器长度" class="headerlink" title="如何选择哈希函数个数和布隆过滤器长度"></a>如何选择哈希函数个数和布隆过滤器长度</h2><p>很显然，过小的布隆过滤器很快所有的 bit 位均为 1，那么查询任何值都会返回“可能存在”，起不到过滤的目的了。布隆过滤器的长度会直接影响误报率，布隆过滤器越长其误报率越小。</p>
-<p>另外，哈希函数的个数也需要权衡，个数越多则布隆过滤器 bit 位置位 1 的速度越快，且布隆过滤器的效率越低；但是如果太少的话，那我们的误报率会变高。<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E5%85%B6%E4%BB%96/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/4.jpg" alt="4"></p>
+<p>另外，哈希函数的个数也需要权衡，个数越多则布隆过滤器 bit 位置位 1 的速度越快，且布隆过滤器的效率越低；但是如果太少的话，那我们的误报率会变高。<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/4.jpg" alt="4"></p>
 <p>k 为哈希函数个数，m 为布隆过滤器长度，n 为插入的元素个数，p 为误报率</p>
-<p>如何选择适合业务的 k 和 m 值呢，这里直接贴一个公式：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E5%85%B6%E4%BB%96/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/5.jpg" alt="5"></p>
+<p>如何选择适合业务的 k 和 m 值呢，这里直接贴一个公式：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/5.jpg" alt="5"></p>
 <p>如何推导这个公式这里只是提一句，因为对于使用来说并没有太大的意义，你让一个高中生来推会推得很快。k 次哈希函数某一 bit 位未被置为 1 的概率为：</p>
 <p>$\left(1-\frac{1}{m}\right)^{k}$</p>
 <p>插入n个元素后依旧为 0 的概率和为 1 的概率分别是：</p>
@@ -876,7 +876,7 @@
 <h2 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h2><p>常见的适用常见有，利用布隆过滤器减少磁盘 IO 或者网络请求，因为一旦一个值必定不存在的话，我们可以不用进行后续昂贵的查询请求。</p>
 <p>另外，既然你使用布隆过滤器来加速查找和判断是否存在，那么性能很低的哈希函数不是个好选择，推荐 MurmurHash、Fnv 这些。</p>
 <h3 id="大Value拆分"><a href="#大Value拆分" class="headerlink" title="大Value拆分"></a>大Value拆分</h3><p>Redis 因其支持 setbit 和 getbit 操作，且纯内存性能高等特点，因此天然就可以作为布隆过滤器来使用。但是布隆过滤器的不当使用极易产生大 Value，增加 Redis 阻塞风险，因此生成环境中建议对体积庞大的布隆过滤器进行拆分。</p>
-<p>拆分的形式方法多种多样，但是本质是不要将 Hash(Key) 之后的请求分散在多个节点的多个小 bitmap 上，而是应该拆分成多个小 bitmap 之后，对一个 Key 的所有哈希函数都落在这一个小 bitmap 上。</p>
+<p>拆分的形式方法多种多样，但是本质是不要将 <code>Hash(Key)</code> 之后的请求分散在多个节点的多个小 bitmap 上，而是应该拆分成多个小 bitmap 之后，对一个 Key 的所有哈希函数都落在这一个小 bitmap 上。</p>
 
       
     </div>
@@ -991,7 +991,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/03/24/%E5%B7%A5%E7%A8%8B/%E9%AB%98%E5%B9%B6%E5%8F%91/%E9%AB%98%E5%B9%B6%E5%8F%91-%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8B%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%B9%82%E7%AD%89%E6%80%A7/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/03/24/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E9%AB%98%E5%B9%B6%E5%8F%91-%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8B%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%B9%82%E7%AD%89%E6%80%A7/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1005,7 +1005,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/03/24/%E5%B7%A5%E7%A8%8B/%E9%AB%98%E5%B9%B6%E5%8F%91/%E9%AB%98%E5%B9%B6%E5%8F%91-%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8B%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%B9%82%E7%AD%89%E6%80%A7/" class="post-title-link" itemprop="url">高并发-高并发下如何保证接口的幂等性.md</a>
+            <a href="/2021/03/24/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E9%AB%98%E5%B9%B6%E5%8F%91-%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8B%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%B9%82%E7%AD%89%E6%80%A7/" class="post-title-link" itemprop="url">高并发-高并发下如何保证接口的幂等性.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1077,7 +1077,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/02/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E5%A4%9A%E4%B8%AA%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E5%AE%8C%E6%AF%95%E5%90%8E%EF%BC%8C%E6%89%8D%E6%89%A7%E8%A1%8C%E5%8F%A6%E4%B8%80%E4%B8%AA%E7%BA%BF%E7%A8%8B/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/02/12/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E5%A4%9A%E4%B8%AA%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E5%AE%8C%E6%AF%95%E5%90%8E%EF%BC%8C%E6%89%8D%E6%89%A7%E8%A1%8C%E5%8F%A6%E4%B8%80%E4%B8%AA%E7%BA%BF%E7%A8%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1091,7 +1091,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/02/12/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E5%A4%9A%E4%B8%AA%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E5%AE%8C%E6%AF%95%E5%90%8E%EF%BC%8C%E6%89%8D%E6%89%A7%E8%A1%8C%E5%8F%A6%E4%B8%80%E4%B8%AA%E7%BA%BF%E7%A8%8B/" class="post-title-link" itemprop="url">Java-多线程-多个线程执行完毕后，才执行另一个线程.md</a>
+            <a href="/2021/02/12/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E5%A4%9A%E4%B8%AA%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E5%AE%8C%E6%AF%95%E5%90%8E%EF%BC%8C%E6%89%8D%E6%89%A7%E8%A1%8C%E5%8F%A6%E4%B8%80%E4%B8%AA%E7%BA%BF%E7%A8%8B/" class="post-title-link" itemprop="url">Java-多线程-多个线程执行完毕后，才执行另一个线程.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1155,7 +1155,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/02/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1169,7 +1169,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/" class="post-title-link" itemprop="url">Java-多线程-线程状态转换图.md</a>
+            <a href="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/" class="post-title-link" itemprop="url">Java-多线程-线程状态转换图.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1203,7 +1203,7 @@
 
       
           <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/95242525">https://blog.csdn.net/zzti_erlie/article/details/95242525</a></p>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>简易的线程状态如下图<br><img src="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/1.png" alt="1"></p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>简易的线程状态如下图<br><img src="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/1.png" alt="1"></p>
 <p>Java Thread线程内部有一个枚举内部类State，定义了Java语言线程状态的枚举值</p>
 <ul>
 <li>NEW（初始化状态）</li>
@@ -1232,7 +1232,7 @@
 <li>TIMED_WAITING（等待阻塞）：执行 Object.wait(long)，Thread.sleep(long) 等</li>
 </ul>
 <p><strong>DEAD（终止状态）：线程执行完毕</strong></p>
-<p>最后将各种方法补充到线程状态图上<br><img src="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/2.png" alt="2"></p>
+<p>最后将各种方法补充到线程状态图上<br><img src="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/2.png" alt="2"></p>
 
       
     </div>
@@ -1251,7 +1251,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1319,20 +1319,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

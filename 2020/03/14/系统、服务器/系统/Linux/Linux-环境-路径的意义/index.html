@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&#x2F;boot引导程序，内核等存放的目录。 这个目录，包括了在引导过程中所必需的文件，引导程序的相关文件（例如 grub、lilo 以及相应的配置文件以及 Linux 操作系统内核相关文件（例如 vmlinuz 等一般都存放在这里。在最开始的启动阶段，通过引导程序将内核加载到内存，完成内核的启动（这个时候，虚拟文件系统还不存在，加载的内核虽然是从硬盘读取的，但是没经过 Linux 的虚拟文件系统，这是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux-环境-路径的意义">
+<meta property="og:url" content="https://wetts.github.io/2020/03/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E7%8E%AF%E5%A2%83-%E8%B7%AF%E5%BE%84%E7%9A%84%E6%84%8F%E4%B9%89/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="&#x2F;boot引导程序，内核等存放的目录。 这个目录，包括了在引导过程中所必需的文件，引导程序的相关文件（例如 grub、lilo 以及相应的配置文件以及 Linux 操作系统内核相关文件（例如 vmlinuz 等一般都存放在这里。在最开始的启动阶段，通过引导程序将内核加载到内存，完成内核的启动（这个时候，虚拟文件系统还不存在，加载的内核虽然是从硬盘读取的，但是没经过 Linux 的虚拟文件系统，这是">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-03-14T08:33:30.000Z">
+<meta property="article:modified_time" content="2020-03-14T08:57:46.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2020/03/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E7%8E%AF%E5%A2%83-%E8%B7%AF%E5%BE%84%E7%9A%84%E6%84%8F%E4%B9%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Linux-环境-路径的意义 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E7%8E%AF%E5%A2%83-%E8%B7%AF%E5%BE%84%E7%9A%84%E6%84%8F%E4%B9%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux-环境-路径的意义
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-14 16:33:30" itemprop="dateCreated datePublished" datetime="2020-03-14T16:33:30+08:00">2020-03-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="boot"><a href="#boot" class="headerlink" title="/boot"></a>/boot</h3><p>引导程序，内核等存放的目录。</p>
+<p>这个目录，包括了在引导过程中所必需的文件，引导程序的相关文件（例如 grub、lilo 以及相应的配置文件以及 Linux 操作系统内核相关文件（例如 vmlinuz 等一般都存放在这里。在最开始的启动阶段，通过引导程序将内核加载到内存，完成内核的启动（这个时候，虚拟文件系统还不存在，加载的内核虽然是从硬盘读取的，但是没经过 Linux 的虚拟文件系统，这是比较底层的东西来实现的。然后内核自己创建好虚拟文件系统，并且从虚拟文件系统的其他子目录中（例如 /sbin 和 /etc 加载需要在开机启动的其他程序或者服务或者特定的动作（部分可以由用户自己在相应的目录中修改相应的文件来配制。如果我们的机器中包含多个操作系统，那么可以通过修改这个目录中的某个配置文件（例如 grub.conf 来调整启动的默认操作系统，系统启动的择菜单，以及启动延迟等参数）。</p>
+<h3 id="sbin"><a href="#sbin" class="headerlink" title="/sbin"></a>/sbin</h3><p>超级用户可以使用的命令的存放目录。</p>
+<p>存放大多涉及系统管理的命令（例如引导系统的 init 程序，是超级权限用户 root 的可执行命令存放地，普通用户无权限执行这个目录下的命令（但是时普通用户也可能会用到。这个目录和 /usr/sbin; /usr/X11R6/sbin 或 /usr/local/sbin 等目录是相似的，我们要记住，凡是目录 sbin 中包含的都是 root 权限才能执行的，这样就行了。后面会具体区分）。</p>
+<h3 id="bin"><a href="#bin" class="headerlink" title="/bin"></a>/bin</h3><p>普通用户可以使用的命令的存放目录。</p>
+<p>系统所需要的那些命令位于此目录，比如 ls、cp、mkdir 等命令；类似的目录还 /usr/bin，/usr/local/bin 等等。这个目录中的文件都是可执行的、普通用户都可以使用的命令。作为基础系统所需要的最基础的命令就是放在这里。</p>
+<h3 id="lib"><a href="#lib" class="headerlink" title="/lib"></a>/lib</h3><p>根目录下的所程序的共享库目录。</p>
+<p>此目录下包含系统引导和在根用户执行命令时候所必需用到的共享库。做个不太好但是比较形象的比喻，点类似于 Windows 上面的 system32 目录。理说，这里存放的文件应该是 /bin 目录下程序所需要的库文件的存放地，也不排除一些例外的情况。类似的目录还 /usr/lib，/usr/local/lib 等等。</p>
+<h3 id="dev"><a href="#dev" class="headerlink" title="/dev"></a>/dev</h3><p>设备文件目录。</p>
+<p>在 Linux 中设备都是以文件形式出现，这里的设备可以是硬盘，键盘，鼠标，网卡，终端，等设备，通过访问这些文件可以访问到相应的设备。设备文件可以使用 mknod 命令来创建，具体参见相应的命令；而为了将对这些设备文件的访问转化为对设备的访问，需要向相应的设备提供设备驱动模块（一般将设备驱动编译之后，生成的结果是一个 *.ko 类型的二进制文件），在内核启动之后，再通过 insmod 等命令加载相应的设备驱动之后，我们就可以通过设备文件来访问设备了。一般来说，想要 Linux 系统支持某个设备，只要个东西：相应的硬件设备，支持硬件的驱动模块，以及相应的设备文件。</p>
+<h3 id="home"><a href="#home" class="headerlink" title="/home"></a>/home</h3><p>普通用户的家目录（$HOME 目录）。</p>
+<p>在 Linux 机器上，用户主目录通常直接或间接地置在此目录下。其结构通常由本地机的管理员来决定。通常而言，系统的每个用户都自己的家目录，目录以用户名作为名字存放在 /home 下面（例如 quietheart 用户，其家目录的名字为 /home/quietheart。该目录中保存了绝大多数的用户文件（用户自己的配置文件，定制文件，文档，数据等），root 用户除外（参见后面的 /root 目录。由于这个目录包含了用户实际的数据，通常系统管理员为这个目录单独挂载一个独立的磁盘分区，这样这个目录的文件系统格式就可能和其他目录不一样了（尽管表面上看，这个目录还是属于根目录的一棵子树上），有利于数据的维护。</p>
+<h3 id="root"><a href="#root" class="headerlink" title="/root"></a>/root</h3><p>用户 root 的 $HOME 目录。</p>
+<p>系统管理员（就是 root 用户或超级用户）的主目录比较特殊，不存放在 /home 中，而是直接放在 /root 目录下了。</p>
+<h3 id="etc"><a href="#etc" class="headerlink" title="/etc"></a>/etc</h3><p>全局的配置文件存放目录。</p>
+<p>系统和程序一般都可以通过修改相应的配置文件，来进行配置。例如，要配置系统开机的时候启动那些程序，配置某个程序启动的时候显示什么样的风格等等。通常这些配置文件都集中存放在 /etc 目录中，所以想要配置什么东西的话，可以在 /etc 下面寻找我们可能需要修改的文件。一些大型套件，如 X11，在 /etc 下它们自己的子目录。系统配置文件可以放在这里或在 /usr/etc。 不过所程序总是在 /etc 目录下查找所需的配置文件，你也可以将这些文件链接到目录 /usr/etc。另外，还一个需要注意的常见现象就是，当某个程序在某个用户下运行的时候，可能会在该用户的家目录中生成一个配置文件（一般这个文件最开始就是 /etc 下相应配置文件的拷贝），存放相应于“当前用户”的配置，这样当前用户可以通过配置这个家目录的配置文件，来改变程序的行为，并且这个行为只是该用户特定的。原因就是：一般来说一个程序启动，如果需要读取一些配置文件的话，它会首先读取当前用户家目录的配置文件，如果存在就使用；如果不存在它就到 /etc 下读取全局的配置文件进而启动程序。就是这个配置文件不自动生成，我们手动在自己的家目录中创建一个文件的话，也有许多程序会首先读取到这个家目录的文件并且以它的配置作为启动的选项（例如我们可以在家目录中创建 vim 程序的配置文件 .vimrc，来配置自己的 vim 程序）。</p>
+<h3 id="usr"><a href="#usr" class="headerlink" title="/usr"></a>/usr</h3><p>这个目录中包含了命令库文件和在通常操作中不会修改的文件。</p>
+<p>这个目录对于系统来说也是一个非常重要的目录，其地位类似 Windows 上面的”Program Files”目录。安装程序的时候，默认就是安装在此文件内部某个子文件夹内。输入命令后系统默认执行 /usr/bin 下的程序（当然，前提是这个目录的路径已经被添加到了系统的环境变量中）。此目录通常也会挂载一个独立的磁盘分区，它应保存共享只读类文件，这样它可以被运行 Linux 的不同主机挂载。</p>
+<h3 id="usr-lib"><a href="#usr-lib" class="headerlink" title="/usr/lib"></a>/usr/lib</h3><p>目标库文件，包括动态连接库加上一些通常不是直接调用的可执行文件的存放位置。</p>
+<p>这个目录功能类似 /lib 目录，按理说，这里存放的文件应该是 /bin 目录下程序所需要的库文件的存放地，也不排除一些例外的情况。</p>
+<h3 id="usr-bin"><a href="#usr-bin" class="headerlink" title="/usr/bin"></a>/usr/bin</h3><p>一般使用者使用并且不是系统自检等所必需可执行文件的目录。</p>
+<p>此目录相当于根文件系统下的对应目录（/bin），非启动系统，非修复系统以及非本地安装的程序一般都放在此目录下。</p>
+<h3 id="usr-sbin"><a href="#usr-sbin" class="headerlink" title="/usr/sbin"></a>/usr/sbin</h3><p>管理员使用的非系统必须的可执行文件存放目录。</p>
+<p>此目录相当于根文件系统下的对应目录（/sbin），保存系统管理程序的二进制文件，并且这些文件不是系统启动或文件系统挂载 /usr 目录或修复系统所必需的。</p>
+<h3 id="usr-share"><a href="#usr-share" class="headerlink" title="/usr/share"></a>/usr/share</h3><p>存放共享文件的目录。</p>
+<p>在此目录下不同的子目录中保存了同一个操作系统在不同构架下工作时特定应用程序的共享数据（例如程序文档信息）。使用者可以找到通常放在 /usr/doc 或 /usr/lib 或 /usr/man 目录下的这些类似数据。</p>
+<h3 id="usr-include"><a href="#usr-include" class="headerlink" title="/usr/include"></a>/usr/include</h3><p>C 程序语言编译使用的头文件。</p>
+<p>linux 下开发和编译应用程序所需要的头文件一般都存放在这里，通过头文件来使用某些库函数。默认来说这个路径被添加到了环境变量中，这样编译开发程序的时候编译器会自动搜索这个路径，从中找到你的程序中可能包含的头文件。</p>
+<h3 id="usr-local"><a href="#usr-local" class="headerlink" title="/usr/local"></a>/usr/local</h3><p>安装本地程序的一般默认路径。</p>
+<p>当我们下载一个程序源代码，编译并且安装的时候，如果不特别指定安装的程序路径，那么默认会将程序相关的文件安装到这个目录的对应目录下。例如，安装的程序可执行文件被安装（安装实质就是复制到了 /usr/local/bin 下面，此程序可执行文件所需要依赖的库文件被安装到了/usr/local/lib目录下），被安装的软件如果是某个开发库（例如 Qt，Gtk 等）那么相应的头文件可能就被安装到了 /usr/local/include 中等等。也就是说，这个目录存放的内容，一般都是我们后来自己安装的软件的默认路径，如果择了这个默认路径作为软件的安装路径，被安装的软件的所文件都限制在这个目录中，其中的子目录就相应于根目录的子目录。</p>
+<h3 id="proc"><a href="#proc" class="headerlink" title="/proc"></a>/proc</h3><p>特殊文件目录。</p>
+<p>这个目录采用一种特殊的文件系统格式（proc 格式，内核支持这种格式。其中包含了全部虚拟文件。它们并不保存在磁盘中，也不占据磁盘空间（尽管命令 ls -c 会显示它们的大小）。当您查看它们时，您实际上看到的是内存里的信息，这些文件助于我们了解系统内部信息。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">├1/ 关于进程1的信息目录。每个进程在/proc 下一个名为其进程号的目录。</span><br><span class="line">├cpuinfo 处理器信息，如类型、制造商、型号和性能。</span><br><span class="line">├devices 当前运行的核心配置的设备驱动的列表。</span><br><span class="line">├dma 显示当前使用的DMA通道。</span><br><span class="line">├filesystems 核心配置的文件系统。</span><br><span class="line">├interrupts 显示使用的中断，and how many of each there have been.</span><br><span class="line">├ioports 当前使用的I/O端口。</span><br><span class="line">├kcore 系统物理内存映象。与物理内存大小一样，但实际不占这么多内存；</span><br><span class="line">├kmsg 核心输出的消息。也被送到syslog 。</span><br><span class="line">├ksyms 核心符号表。</span><br><span class="line">├loadavg 系统”平均负载”；3个没意义的指示器指出系统当前的工作量。</span><br><span class="line">├meminfo 存储器使用信息，包括物理内存和swap。</span><br><span class="line">├modules 当前加载了哪些核心模块。</span><br><span class="line">├net 网络协议状态信息。</span><br><span class="line">├self 到查看/proc 的程序的进程目录的符号连接。</span><br><span class="line">├stat 系统的不同状态</span><br><span class="line">├uptime 系统启动的时间长度。</span><br><span class="line">└version 核心版本。</span><br></pre></td></tr></table></figure>
+
+<h3 id="opt"><a href="#opt" class="headerlink" title="/opt"></a>/opt</h3><p>可择的文件目录。</p>
+<p>这个目录表示的是可择的意思，些自定义软件包或者第方工具，就可以安装在这里。比如在 Fedora Core 5.0 中，OpenOffice 就是安装在这里。些我们自己编译的软件包，就可以安装在这个目录中；通过源码包安装的软件，可以把它们的安装路径设置成 /opt 这样来安装。这个目录的作用一点类似 /usr/local。</p>
+<h3 id="mnt"><a href="#mnt" class="headerlink" title="/mnt"></a>/mnt</h3><p>临时挂载目录。</p>
+<p>这个目录一般是用于存放挂载储存设备的挂载目录的，比如磁盘，光驱，网络文件系统等，当我们需要挂载某个磁盘设备的时候，可以把磁盘设备挂载到这个目录上去，这样我们可以直接通过访问这个目录来访问那个磁盘了。一般来说，我们最好在 /mnt 目录下面多建立几个子目录，挂载的时候挂载到这些子目录上面，因为通常我们可能不仅仅是挂载一个设备吧。</p>
+<h3 id="media"><a href="#media" class="headerlink" title="/media"></a>/media</h3><p>挂载的媒体设备目录。</p>
+<p>挂载的媒体设备目录，一般外部设备挂载到这里，例如 cdrom 等。比如我们插入一个 U 盘，我们一般会发现，Linux 自动在这个目录下建立一个 disk 目录，然后把U盘挂载到这个 disk 目录上，通过访问这个 disk 来访问 U 盘。</p>
+<h3 id="var"><a href="#var" class="headerlink" title="/var"></a>/var</h3><p>内容经常变化的目录。</p>
+<p>此目录下文件的大小可能会改变，如缓冲文件，日志文件，缓存文件，等一般都存放在这里。</p>
+<h3 id="tmp"><a href="#tmp" class="headerlink" title="/tmp"></a>/tmp</h3><p>临时文件目录。</p>
+<p>该目录存放系统中的一些临时文件，文件可能会被系统自动清空。系统直接把 tmpfs 类型的文件系统挂载到这个目录上，tmpfs 文件系统由 Linux 内核支持，在这个文件系统中的数据，实际上是内存中的，由于内存的数据断电易失，当系统重新启动的时候我们就会发现这个目录被清空了。</p>
+<h3 id="lost-found"><a href="#lost-found" class="headerlink" title="/lost+found"></a>/lost+found</h3><p>恢复文件存放的位置。</p>
+<p>当系统崩溃的时候，在系统修复过程中需要恢复的文件，可能就会在这里被找到了，这个目录一般为空。</p>
+<p>另外，有些目录初学者容易混淆，这里简单区分一下：</p>
+<p>/bin，/sbin 与 /usr/bin，/usr/sbin：</p>
+<ul>
+<li>/bin：一般存放对于用户和系统来说“必须”的程序（二进制文件）。</li>
+<li>/sbin：一般存放用于系统管理的“必需”的程序（二进制文件），一般普通用户不会使用，根用户使用。</li>
+<li>/usr/bin：一般存放的只是对用户和系统来说“不是必需的”程序（二进制文件）。</li>
+<li>/usr/sbin：一般存放用于系统管理的系统管理的不是必需的程序（二进制文件）。</li>
+</ul>
+<p>/lib 与 /usr/lib（/lib 和 /usr/lib 的区别类似 /bin，/sbin 与 /usr/bin，/usr/sbin）：</p>
+<ul>
+<li>/lib：一般存放对于用户和系统来说“必须”的库（二进制文件）。</li>
+<li>/usr/lib：一般存放的只是对用户和系统来说“不是必需的”库（二进制文件）。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/VM/VM-%E4%B8%89%E7%A7%8D%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" rel="prev" title="VM-三种网络模式">
+      <i class="fa fa-chevron-left"></i> VM-三种网络模式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E5%91%BD%E4%BB%A4-%E4%BA%A4%E4%BA%92%E5%BC%8F_%E9%9D%9E%E4%BA%A4%E4%BA%92%E5%BC%8F_%E7%99%BB%E5%BD%95%E5%BC%8F_%E9%9D%9E%E7%99%BB%E5%BD%95%E5%BC%8F/" rel="next" title="Linux-命令-交互式_非交互式_登录式_非登录式.md">
+      Linux-命令-交互式_非交互式_登录式_非登录式.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#boot"><span class="nav-number">1.</span> <span class="nav-text">&#x2F;boot</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sbin"><span class="nav-number">2.</span> <span class="nav-text">&#x2F;sbin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bin"><span class="nav-number">3.</span> <span class="nav-text">&#x2F;bin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lib"><span class="nav-number">4.</span> <span class="nav-text">&#x2F;lib</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dev"><span class="nav-number">5.</span> <span class="nav-text">&#x2F;dev</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#home"><span class="nav-number">6.</span> <span class="nav-text">&#x2F;home</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#root"><span class="nav-number">7.</span> <span class="nav-text">&#x2F;root</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#etc"><span class="nav-number">8.</span> <span class="nav-text">&#x2F;etc</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#usr"><span class="nav-number">9.</span> <span class="nav-text">&#x2F;usr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#usr-lib"><span class="nav-number">10.</span> <span class="nav-text">&#x2F;usr&#x2F;lib</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#usr-bin"><span class="nav-number">11.</span> <span class="nav-text">&#x2F;usr&#x2F;bin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#usr-sbin"><span class="nav-number">12.</span> <span class="nav-text">&#x2F;usr&#x2F;sbin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#usr-share"><span class="nav-number">13.</span> <span class="nav-text">&#x2F;usr&#x2F;share</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#usr-include"><span class="nav-number">14.</span> <span class="nav-text">&#x2F;usr&#x2F;include</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#usr-local"><span class="nav-number">15.</span> <span class="nav-text">&#x2F;usr&#x2F;local</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#proc"><span class="nav-number">16.</span> <span class="nav-text">&#x2F;proc</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#opt"><span class="nav-number">17.</span> <span class="nav-text">&#x2F;opt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mnt"><span class="nav-number">18.</span> <span class="nav-text">&#x2F;mnt</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#media"><span class="nav-number">19.</span> <span class="nav-text">&#x2F;media</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#var"><span class="nav-number">20.</span> <span class="nav-text">&#x2F;var</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tmp"><span class="nav-number">21.</span> <span class="nav-text">&#x2F;tmp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lost-found"><span class="nav-number">22.</span> <span class="nav-text">&#x2F;lost+found</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '8f6632756c75d06d38e98466f9366b19',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

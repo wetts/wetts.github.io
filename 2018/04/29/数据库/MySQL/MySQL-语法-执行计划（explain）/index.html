@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://wetts.github.io/2018/04/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%EF%BC%88explain%EF%BC%89/1.png">
 <meta property="og:image" content="https://wetts.github.io/2018/04/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%EF%BC%88explain%EF%BC%89/2.png">
 <meta property="article:published_time" content="2018-04-29T06:27:07.000Z">
-<meta property="article:modified_time" content="2021-07-11T06:53:17.692Z">
+<meta property="article:modified_time" content="2021-10-14T07:32:32.835Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="面试">
 <meta property="article:tag" content="MySQL">
@@ -260,7 +260,7 @@
 <li>key: 表示实际使用的索引</li>
 <li>key_len: 索引字段的长度</li>
 <li>ref: 列与索引的比较</li>
-<li>rows: 扫描出的行数(估算的行数)</li>
+<li>rows: 扫描出的行数（估算的行数）</li>
 <li>filtered: 按表条件过滤的行百分比</li>
 <li>Extra: 执行情况的描述和说明</li>
 </ul>
@@ -275,15 +275,15 @@
 <p><img src="/2018/04/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92%EF%BC%88explain%EF%BC%89/2.png" alt="2"></p>
 <h3 id="select-type"><a href="#select-type" class="headerlink" title="select_type"></a>select_type</h3><p>示查询中每个 select 子句的类型</p>
 <ul>
-<li>SIMPLE(简单SELECT，不使用UNION或子查询等)</li>
-<li>PRIMARY(子查询中最外层查询，查询中若包含任何复杂的子部分，最外层的select被标记为PRIMARY)</li>
-<li>UNION(UNION中的第二个或后面的SELECT语句)</li>
-<li>DEPENDENT UNION(UNION中的第二个或后面的SELECT语句，取决于外面的查询)</li>
-<li>UNION RESULT(UNION的结果，union语句中第二个select开始后面所有select)</li>
-<li>SUBQUERY(子查询中的第一个SELECT，结果不依赖于外部查询)</li>
-<li>DEPENDENT SUBQUERY(子查询中的第一个SELECT，依赖于外部查询)</li>
-<li>DERIVED(派生表的SELECT, FROM子句的子查询)</li>
-<li>UNCACHEABLE SUBQUERY(一个子查询的结果不能被缓存，必须重新评估外链接的第一行)</li>
+<li>SIMPLE（简单 SELECT，不使用 UNION 或子查询等）</li>
+<li>PRIMARY（子查询中最外层查询，查询中若包含任何复杂的子部分，最外层的 select 被标记为 PRIMARY）</li>
+<li>UNION（UNION 中的第二个或后面的 SELECT 语句）</li>
+<li>DEPENDENT UNION（UNION 中的第二个或后面的 SELECT 语句，取决于外面的查询）</li>
+<li>UNION RESULT（UNION 的结果，union 语句中第二个 select 开始后面所有 select）</li>
+<li>SUBQUERY（子查询中的第一个 SELECT，结果不依赖于外部查询）</li>
+<li>DEPENDENT SUBQUERY（子查询中的第一个 SELECT，依赖于外部查询）</li>
+<li>DERIVED（派生表的 SELECT, FROM 子句的子查询）</li>
+<li>UNCACHEABLE SUBQUERY（一个子查询的结果不能被缓存，必须重新评估外链接的第一行）</li>
 </ul>
 <h3 id="table"><a href="#table" class="headerlink" title="table"></a>table</h3><p>显示这一步所访问数据库中表名称（显示这一行的数据是关于哪张表的），有时不是真实的表名字，可能是简称，例如上面的 e、d，也可能是第几步执行的结果的简称</p>
 <h3 id="type"><a href="#type" class="headerlink" title="type"></a>type</h3><p>对表访问方式，表示 MySQL 在表中找到所需行的方式，又称“访问类型”。</p>
@@ -293,9 +293,9 @@
 <li>index: Full Index Scan，index 与 ALL 区别为 index 类型只遍历索引树</li>
 <li>range: 只检索给定范围的行，使用一个索引来选择行</li>
 <li>ref: 表示上述表的连接匹配条件，即哪些列或常量被用于查找索引列上的值</li>
-<li>eq_ref: 类似ref，区别就在使用的索引是唯一索引，对于每个索引键值，表中只有一条记录匹配，简单来说，就是多表连接中使用primary key或者 unique key作为关联条件</li>
-<li>const、system: 当MySQL对查询某部分进行优化，并转换为一个常量时，使用这些类型访问。如将主键置于where列表中，MySQL就能将该查询转换为一个常量，system是const类型的特例，当查询的表只有一行的情况下，使用system</li>
-<li>NULL: MySQL在优化过程中分解语句，执行时甚至不用访问表或索引，例如从一个索引列里选取最小值可以通过单独索引查找完成。</li>
+<li>eq_ref: 类似ref，区别就在使用的索引是唯一索引，对于每个索引键值，表中只有一条记录匹配，简单来说，就是多表连接中使用 primary key 或者 unique key 作为关联条件</li>
+<li>const、system: 当 MySQL 对查询某部分进行优化，并转换为一个常量时，使用这些类型访问。如将主键置于 where 列表中，MySQL 就能将该查询转换为一个常量，system 是 const 类型的特例，当查询的表只有一行的情况下，使用system</li>
+<li>NULL: MySQL 在优化过程中分解语句，执行时甚至不用访问表或索引，例如从一个索引列里选取最小值可以通过单独索引查找完成。</li>
 </ul>
 <h3 id="possible-keys"><a href="#possible-keys" class="headerlink" title="possible_keys"></a>possible_keys</h3><p>指出 MySQL 能使用哪个索引在表中找到记录，查询涉及到的字段上若存在索引，则该索引将被列出，但不一定被查询使用（该查询可以利用的索引，如果没有任何索引显示 null）</p>
 <p>该列完全独立于 EXPLAIN 输出所示的表的次序。这意味着在 possible_keys 中的某些键实际上不能按生成的表次序使用。</p>
@@ -308,20 +308,20 @@
 <h3 id="rows"><a href="#rows" class="headerlink" title="rows"></a>rows</h3><p>估算出结果集行数，表示 MySQL 根据表统计信息及索引选用情况，估算的找到所需的记录所需要读取的行数</p>
 <h3 id="Extra"><a href="#Extra" class="headerlink" title="Extra"></a>Extra</h3><p>该列包含 MySQL 解决查询的详细信息,有以下几种情况：</p>
 <ul>
-<li>Using where: 不用读取表中所有信息，仅通过索引就可以获取所需数据，这发生在对表的全部的请求列都是同一个索引的部分的时候，表示mysql服务器将在存储引擎检索行后再进行过滤</li>
-<li>Using temporary：表示MySQL需要使用临时表来存储结果集，常见于排序和分组查询，常见 group by ; order by</li>
-<li>Using filesort：当Query中包含 order by 操作，而且无法利用索引完成的排序操作称为“文件排序”<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 测试Extra的filesort</span><br><span class="line">explain select * from emp order by name;</span><br></pre></td></tr></table></figure></li>
+<li>Using where: 不用读取表中所有信息，仅通过索引就可以获取所需数据，这发生在对表的全部的请求列都是同一个索引的部分的时候，表示 MySQL 服务器将在存储引擎检索行后再进行过滤</li>
+<li>Using temporary：表示 MySQL 需要使用临时表来存储结果集，常见于排序和分组查询，常见 group by ; order by</li>
+<li>Using filesort：当 Query 中包含 order by 操作，而且无法利用索引完成的排序操作称为“文件排序”<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-- 测试 Extra 的 filesort</span><br><span class="line">explain select * from emp order by name;</span><br></pre></td></tr></table></figure></li>
 <li>Using join buffer：改值强调了在获取连接条件时没有使用索引，并且需要连接缓冲区来存储中间结果。如果出现了这个值，那应该注意，根据查询的具体情况可能需要添加索引来改进能。</li>
 <li>Impossible where：这个值强调了where语句会导致没有符合条件的行（通过收集统计信息不可能存在结果）。</li>
 <li>Select tables optimized away：这个值意味着仅通过使用索引，优化器可能仅从聚合函数结果中返回一行</li>
-<li>No tables used：Query语句中使用from dual 或不含任何from子句<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-- explain select now() from dual;</span><br></pre></td></tr></table></figure></li>
+<li>No tables used：Query语句中使用 from dual 或不含任何 from 子句<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-- explain select now() from dual;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><ul>
-<li>EXPLAIN不会告诉你关于触发器、存储过程的信息或用户自定义函数对查询的影响情况</li>
-<li>EXPLAIN不考虑各种Cache</li>
-<li>EXPLAIN不能显示MySQL在执行查询时所作的优化工作</li>
+<li>EXPLAIN 不会告诉你关于触发器、存储过程的信息或用户自定义函数对查询的影响情况</li>
+<li>EXPLAIN 不考虑各种 Cache</li>
+<li>EXPLAIN 不能显示 MySQL 在执行查询时所作的优化工作</li>
 <li>部分统计信息是估算的，并非精确值</li>
-<li>EXPALIN只能解释SELECT操作，其他操作要重写为SELECT后查看执行计划。</li>
+<li>EXPALIN 只能解释 SELECT 操作，其他操作要重写为 SELECT 后查看执行计划。</li>
 </ul>
 
     </div>
@@ -347,7 +347,7 @@
       <i class="fa fa-chevron-left"></i> Redis-原理-Pipeline与事务.md
     </a></div>
       <div class="post-nav-item">
-    <a href="/2018/06/03/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81-synchronized%E5%8E%9F%E7%90%86/" rel="next" title="Java-锁-synchronized原理.md">
+    <a href="/2018/06/03/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E9%94%81-synchronized%E5%8E%9F%E7%90%86/" rel="next" title="Java-锁-synchronized原理.md">
       Java-锁-synchronized原理.md <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -425,20 +425,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

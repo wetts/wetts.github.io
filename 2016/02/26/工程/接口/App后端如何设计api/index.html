@@ -20,17 +20,17 @@
     var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;newjueqi&#x2F;article&#x2F;details&#x2F;44037011 app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。 什么是api？ 这个问题在以前发表的文章“7.app和app后端的通讯”中其实">
+  <meta name="description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;newjueqi&#x2F;article&#x2F;details&#x2F;44037011 app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。 什么是api？这个问题在以前发表的文章“7.app和app后端的通讯”中其实已">
 <meta property="og:type" content="article">
 <meta property="og:title" content="App后端如何设计api">
 <meta property="og:url" content="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/index.html">
 <meta property="og:site_name" content="Wetts&#39;s blog">
-<meta property="og:description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;newjueqi&#x2F;article&#x2F;details&#x2F;44037011 app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。 什么是api？ 这个问题在以前发表的文章“7.app和app后端的通讯”中其实">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;newjueqi&#x2F;article&#x2F;details&#x2F;44037011 app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。 什么是api？这个问题在以前发表的文章“7.app和app后端的通讯”中其实已">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%85%A5.png">
 <meta property="og:image" content="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%87%BA.png">
 <meta property="article:published_time" content="2016-02-26T05:56:32.000Z">
-<meta property="article:modified_time" content="2017-01-19T15:10:07.000Z">
+<meta property="article:modified_time" content="2021-09-01T16:15:11.902Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="接口设计">
 <meta name="twitter:card" content="summary">
@@ -243,21 +243,21 @@
       
         <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/newjueqi/article/details/44037011">http://blog.csdn.net/newjueqi/article/details/44037011</a></p>
 <p>app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。</p>
-<h2 id="什么是api？"><a href="#什么是api？" class="headerlink" title="什么是api？"></a>什么是api？</h2><p> 这个问题在以前发表的文章“7.app和app后端的通讯”中其实已经回答了，这里再重复一次。  </p>
-<p>相信大家都用过银行的柜员机(ATM)的查询余额，转帐，取款等操作。   </p>
-<p>当在柜员机取款的时候，我们输入要取款的金额，隔一会钱就出来了，如果因为有什么问题不能取款（例如超过取款金额的限制），屏幕上也会显示出错误的信息。   </p>
-<p>在整个过程中，我们只要输入金额，获得结果（取款成功或不成功），就行了，至于柜员机内部是怎么处理，我们不需要理会。   　　柜员机这种把内部的处理遮蔽的做法极大方便了我们的使用。   </p>
-<p>同样的，在后端，也只提供了一系列的功能给app使用，这系列的功能以api的形式提供。   </p>
-<p>api的定义：API（Application Programming Interface,应用程序编程接口）是一些预先定义的函数，目的是提供应用程序与开发人员基于某软件或硬件得以访问一组例程的能力，而又无需访问源码，或理解内部工作机制的细节。   </p>
-<p>当app调用api的时候，只需要明确下面３点:   </p>
+<h2 id="什么是api？"><a href="#什么是api？" class="headerlink" title="什么是api？"></a>什么是api？</h2><p>这个问题在以前发表的文章“7.app和app后端的通讯”中其实已经回答了，这里再重复一次。</p>
+<p>相信大家都用过银行的柜员机(ATM)的查询余额，转帐，取款等操作。</p>
+<p>当在柜员机取款的时候，我们输入要取款的金额，隔一会钱就出来了，如果因为有什么问题不能取款（例如超过取款金额的限制），屏幕上也会显示出错误的信息。</p>
+<p>在整个过程中，我们只要输入金额，获得结果（取款成功或不成功），就行了，至于柜员机内部是怎么处理，我们不需要理会。　　柜员机这种把内部的处理遮蔽的做法极大方便了我们的使用。</p>
+<p>同样的，在后端，也只提供了一系列的功能给app使用，这系列的功能以api的形式提供。</p>
+<p>api的定义：API（Application Programming Interface,应用程序编程接口）是一些预先定义的函数，目的是提供应用程序与开发人员基于某软件或硬件得以访问一组例程的能力，而又无需访问源码，或理解内部工作机制的细节。</p>
+<p>当app调用api的时候，只需要明确下面３点:</p>
 <ol>
-<li>这个api是干啥的（柜员机例子中，是取款功能，还是查询余额,还是转账）   </li>
-<li>知道要输入什么（柜员机例子中，取款要输入金钱）   </li>
-<li>知道结果是什么（柜员机例子中，取款是成功还是失败）   </li>
+<li>这个api是干啥的（柜员机例子中，是取款功能，还是查询余额,还是转账）</li>
+<li>知道要输入什么（柜员机例子中，取款要输入金钱）</li>
+<li>知道结果是什么（柜员机例子中，取款是成功还是失败）</li>
 </ol>
-<p>至于api内部是怎么处理的，app根本无需理会。   </p>
-<p>从这里可看出，api能在最大程度遮蔽了app后端复杂性，极大提高了app前端的开发效率。 </p>
-<h2 id="api设计的8点"><a href="#api设计的8点" class="headerlink" title="api设计的8点"></a>api设计的8点</h2><p>### Restful设计原则  <br>Restful风格：RESTfu设计原则,它被Roy Felding提出（在他的”基于网络的软件架构“论文中第五章）。而REST的核心原则是将你的API拆分为逻辑上的资源。这些资源通过http被操作（GET ,POST,PUT,DELETE）。</p>
+<p>至于api内部是怎么处理的，app根本无需理会。</p>
+<p>从这里可看出，api能在最大程度遮蔽了app后端复杂性，极大提高了app前端的开发效率。</p>
+<h2 id="api设计的8点"><a href="#api设计的8点" class="headerlink" title="api设计的8点"></a>api设计的8点</h2><h3 id="Restful设计原则"><a href="#Restful设计原则" class="headerlink" title="Restful设计原则"></a>Restful设计原则</h3><p>Restful风格：RESTfu设计原则,它被Roy Felding提出（在他的”基于网络的软件架构“论文中第五章）。而REST的核心原则是将你的API拆分为逻辑上的资源。这些资源通过http被操作（GET ,POST,PUT,DELETE）。</p>
 <p>在实际的开发过程中发现，程序员由于在web端养成的习惯，api操作中通常就只有两种方式”POST””GET”。大家可看一下微博的api例子”statuses/destroy”，这个很明显是delete操作的api却是用post方式提交。不是完全遵守Restful风格的风格。</p>
 <p>这个设计原则最简单的应用就是根据object而不是页面来设计api。最开始的时候，app的一个页面需要什么数据，api就返回什么数据。结果随着app的UI不断改版，需要的数据不断变化，不停地修改api，最后当api的改动会影响以前的版本的时候，只能写一个新的api版本，最后弄得api中有很多V2,V3这样的标志，恶梦!</p>
 <p>后来在网站的重构过程中，就根据object来设计api，但根据object来设计，又有一个问题，一个大object可能包含很多小object，是一个api返回全部小object，还是分为多个api返回？根据业务和技术，带宽等仔细考虑吧。</p>
@@ -319,7 +319,7 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2016/02/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-@Autowired%E5%92%8C@Resource%E7%9A%84%E5%8C%BA%E5%88%AB/" rel="prev" title="Spring-注解-@Autowired和@Resource的区别">
+    <a href="/2016/02/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-@Autowired%E5%92%8C@Resource%E7%9A%84%E5%8C%BA%E5%88%AB/" rel="prev" title="Spring-注解-@Autowired和@Resource的区别">
       <i class="fa fa-chevron-left"></i> Spring-注解-@Autowired和@Resource的区别
     </a></div>
       <div class="post-nav-item">
@@ -385,7 +385,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFapi%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是api？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#api%E8%AE%BE%E8%AE%A1%E7%9A%848%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">api设计的8点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E7%9A%84%E5%91%BD%E5%90%8D"><span class="nav-number">2.1.</span> <span class="nav-text">api的命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E7%9A%84%E5%AE%89%E5%85%A8%E6%80%A7"><span class="nav-number">2.2.</span> <span class="nav-text">api的安全性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E8%BF%94%E5%9B%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">2.3.</span> <span class="nav-text">api返回数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BE%E7%89%87%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">2.4.</span> <span class="nav-text">图片的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E7%9A%84%E6%8F%90%E7%A4%BA%E4%BF%A1%E6%81%AF"><span class="nav-number">2.5.</span> <span class="nav-text">返回的提示信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%BA%BFapi%E6%B5%8B%E8%AF%95%E6%96%87%E6%A1%A3"><span class="nav-number">2.6.</span> <span class="nav-text">在线api测试文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8app%E5%90%AF%E5%8A%A8%E6%97%B6%EF%BC%8C%E8%B0%83%E7%94%A8%E4%B8%80%E4%B8%AA%E5%88%9D%E5%A7%8B%E5%8C%96api%E8%8E%B7%E5%8F%96%E5%BF%85%E8%A6%81%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="nav-number">2.7.</span> <span class="nav-text">在app启动时，调用一个初始化api获取必要的信息</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86api%E7%9A%84%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7"><span class="nav-number">3.</span> <span class="nav-text">如何处理api的版本升级</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFapi%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么是api？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#api%E8%AE%BE%E8%AE%A1%E7%9A%848%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">api设计的8点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Restful%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="nav-number">2.1.</span> <span class="nav-text">Restful设计原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E7%9A%84%E5%91%BD%E5%90%8D"><span class="nav-number">2.2.</span> <span class="nav-text">api的命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E7%9A%84%E5%AE%89%E5%85%A8%E6%80%A7"><span class="nav-number">2.3.</span> <span class="nav-text">api的安全性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#api%E8%BF%94%E5%9B%9E%E6%95%B0%E6%8D%AE"><span class="nav-number">2.4.</span> <span class="nav-text">api返回数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BE%E7%89%87%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">2.5.</span> <span class="nav-text">图片的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E7%9A%84%E6%8F%90%E7%A4%BA%E4%BF%A1%E6%81%AF"><span class="nav-number">2.6.</span> <span class="nav-text">返回的提示信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E7%BA%BFapi%E6%B5%8B%E8%AF%95%E6%96%87%E6%A1%A3"><span class="nav-number">2.7.</span> <span class="nav-text">在线api测试文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8app%E5%90%AF%E5%8A%A8%E6%97%B6%EF%BC%8C%E8%B0%83%E7%94%A8%E4%B8%80%E4%B8%AA%E5%88%9D%E5%A7%8B%E5%8C%96api%E8%8E%B7%E5%8F%96%E5%BF%85%E8%A6%81%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="nav-number">2.8.</span> <span class="nav-text">在app启动时，调用一个初始化api获取必要的信息</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86api%E7%9A%84%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7"><span class="nav-number">3.</span> <span class="nav-text">如何处理api的版本升级</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -401,20 +401,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

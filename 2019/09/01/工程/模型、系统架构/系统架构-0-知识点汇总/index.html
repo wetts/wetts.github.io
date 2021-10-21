@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="基本概念 康威定律 第一定律 Communication dictates the design. 组织沟通方式会通过系统设计表达出来   对于复杂的，需要协作完成的系统开发，沟通是必须要持续提升的问题。 每个团队由5-10人组成（沟通成本 &#x3D; n(n-1)&#x2F;2），在团队内部进行频繁的、细粒度的沟通。对于团队外部，定义好接口，契约，只进行粗粒度的沟通。这样可以降低沟通成本，同时也符合高内聚，低耦合">
+<meta property="og:type" content="article">
+<meta property="og:title" content="系统架构-0-知识点汇总.md">
+<meta property="og:url" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="基本概念 康威定律 第一定律 Communication dictates the design. 组织沟通方式会通过系统设计表达出来   对于复杂的，需要协作完成的系统开发，沟通是必须要持续提升的问题。 每个团队由5-10人组成（沟通成本 &#x3D; n(n-1)&#x2F;2），在团队内部进行频繁的、细粒度的沟通。对于团队外部，定义好接口，契约，只进行粗粒度的沟通。这样可以降低沟通成本，同时也符合高内聚，低耦合">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/SOA%E4%B8%8E%E5%BE%AE%E6%9C%8D%E5%8A%A1.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/DDD.jpg">
+<meta property="article:published_time" content="2019-09-01T07:15:42.000Z">
+<meta property="article:modified_time" content="2021-10-20T15:15:05.509Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="系统架构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/SOA%E4%B8%8E%E5%BE%AE%E6%9C%8D%E5%8A%A1.jpg">
+
+<link rel="canonical" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>系统架构-0-知识点汇总.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          系统架构-0-知识点汇总.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-01 15:15:42" itemprop="dateCreated datePublished" datetime="2019-09-01T15:15:42+08:00">2019-09-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">系统架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><ul>
+<li>康威定律<ul>
+<li>第一定律<ul>
+<li>Communication dictates the design.<ul>
+<li>组织沟通方式会通过系统设计表达出来</li>
+</ul>
+</li>
+<li>对于复杂的，需要协作完成的系统开发，沟通是必须要持续提升的问题。</li>
+<li>每个团队由5-10人组成（<code>沟通成本 = n(n-1)/2</code>），在团队内部进行频繁的、细粒度的沟通。对于团队外部，定义好接口，契约，只进行粗粒度的沟通。这样可以降低沟通成本，同时也符合高内聚，低耦合原则（代码和人员管理有些时候真是相通的）。</li>
+</ul>
+</li>
+<li>第二定律<ul>
+<li>There is never enough time to do something right, but there is always enough time to do it over.<ul>
+<li>时间再多一件事情也不可能做的完美，但总有时间做完一件事情</li>
+</ul>
+</li>
+<li>这就是我们在用 kanban 管理迭代时几乎都有一列是 BAU（Business As Usual），其中会包括一些日常修复的 Bug Story。敏捷开发中将迭代引入，做到持续交付，快速验证，迅速反馈，持续改进。</li>
+</ul>
+</li>
+<li>第三定律<ul>
+<li>There is a homomorphism from the linear graph of a system to the linear graph of its design organization.<ul>
+<li>线型系统和线型组织架构间有潜在的异质同态特性</li>
+</ul>
+</li>
+<li>大白话就是，你想要架构成为什么样，就将团队分成怎样的结构。比如前后端分离的团队，架构就是基于前后端分离。在基于微服务设计的团队里，一个很好的理念是自管理。团队内部对于自己所负责的模块高度负责，进行端对端的开发以及运维。</li>
+</ul>
+</li>
+<li>第四定律<ul>
+<li>The structures of large systems tend to disintegrate during development, qualitatively more so than with small systems.<ul>
+<li>大的系统组织总是比小系统更倾向于分解</li>
+</ul>
+</li>
+<li>合久必分，分久必合，团队以及架构都是在不断优化的。一个团队随着人员的增加，沟通以及管理成本一定会增加。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="项目架构"><a href="#项目架构" class="headerlink" title="项目架构"></a>项目架构</h2><ul>
+<li>单机架构<ul>
+<li>特征是整个开发围绕着数据库进行设计和开发。</li>
+<li>存在的问题<ul>
+<li>系统复杂：内部多个模块紧耦合，关联依赖复杂，牵一发而动全身。</li>
+<li>运维困难：变更或升级的影响分析困难，任何一个小修改都可能导致单体应用整体运行出现故障。</li>
+<li>无法扩展：无法拆分部署，出现性能瓶颈后往往只能够增加服务器或增加集群节点，但是 DB 问题难解决</li>
+</ul>
+</li>
+<li>三层式的集中式架构<ul>
+<li>采用面向对象的设计方法，业务逻辑分业务层、逻辑层、数据访问层，这种架构很容易某一层或者几层变得臃肿，扩展性较差， 另外摩尔定律失效， 单台机器性能有限。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>SOA<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/SOA%E4%B8%8E%E5%BE%AE%E6%9C%8D%E5%8A%A1.jpg" alt="SOA与微服务"></li>
+<li>提出 MicroService 概念的 Martin Fowler 说过，“我们应该把 SOA 看作微服务的超集”，也就是说微服务是 SOA 的子集。</li>
+<li>SOA 的探索大概始于 2000 年（概念产生可能更早一些），大家知道当初 ERP、CRM、OA 之类的信息系统都是一套套部署起来的，不同系统往往由不同的供应商分别开发的，技术差别也很大，各个系统孤零零的，企业于是有了应用集成和数据集成的需求，SOA 就出来了，各个系统对外提供粗粒度的服务供外部系统访问，所有的服务都集中在一个 ESB 上，曾经 SOA 和 SOA 治理是信息化领域的热门话题，然而这种集成方式开发代价大、通信效率低，且有单点故障的风险， 实际上在企业中并没有得到大规模应用。</li>
+<li>ESB<ul>
+<li>ESB 就是一根管道，用来连接各个服务节点。ESB的存在是为了集成基于不同协议的不同服务，ESB 做了消息的转化、解释以及路由的工作，以此来让不同的服务互联互通。</li>
+<li>从名称就能知道，它的概念借鉴了计算机组成原理中的通信模型——总线，所有需要和外部系统通信的系统，统统接入 ESB，岂不是完美地兼容了现有的互相隔离的异构系统，可以利用现有的系统构建一个全新的松耦合的异构的分布式系统。</li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>SOA、ESB、微服务的区别和关系</strong><ul>
+<li>SOA 是一种理念，它的主要特性–面向服务的分布式计算，服务间松散耦合，支持服务的封装，服务注册和自动发现，以服务契约方式定义服务交互方式。但是，SOA 并没有定义出具体的实现方式，目前有两套 SOA 理念的实现方式：中心化和去中心化，这两套架构并没有优劣之分，还是要针对企业的根本诉求。</li>
+<li>SOA 中心化的实现方式就是 ESB，ESB 的根本诉求是为了解决异构系统之间的连通性，通过协议转换、消息解析、消息路由把服务提供者的数据传送到服务消费者。所以，ESB 是中心化的，很重，有一定的逻辑，但它的确可以解决一些公用逻辑的问题。</li>
+<li>SOA 去中心化的实现方式的根本诉求是扩展性，实现方式就是微服务。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>微服务<ul>
+<li>实现应用之间的解耦，解决单体应用扩展性的问题。</li>
+<li>微服务存在的问题<ul>
+<li>业务或者微服务的边界界定</li>
+</ul>
+</li>
+<li>业务划分方式<ul>
+<li>领域驱动建模（DDD）<ul>
+<li>DDD 不是一种架构，而是一种架构方法论，目的就是将复杂问题领域简单化，帮助我们设计出清晰的领域和边界，可以很好的实现技术架构的演进。</li>
+<li>战略设计、战术设计<ul>
+<li>战略设计<ul>
+<li>在某个领域，核心围绕上下文的设计</li>
+<li>主要关注上下文的划分、上下文映射的设计、通用语言的定义</li>
+<li>问题空间、解决空间</li>
+</ul>
+</li>
+<li>战术设计<ul>
+<li>核心关注上下文中的实体建模，定义值对象、实体等，更偏向开发细节</li>
+<li>战术设计的术语<ul>
+<li>实体<ul>
+<li>实体是指描述了领域中唯一的且可持续变化的抽象模型，通常建模时，名词用于给概念命名，形容词用于描述这些概念，而动词则表示可以完成的操作</li>
+</ul>
+</li>
+<li>值对象<ul>
+<li>描述了领域中的一件东西，将不同的相关属性组合成了一个概念整体，当度量和描述改变时，可以用另外一个值对象予以替换，属性判等、固定不变</li>
+</ul>
+</li>
+<li>聚合<ul>
+<li>实体和值对象会形成聚合，每个聚合一般是在一个事物中操作，一般都有持久化操作。聚合中，根实体的生命周期决定了聚合整体的生命周期</li>
+</ul>
+</li>
+<li>工厂和仓库</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>领域服务、应用服务、实体行为<ul>
+<li>职能、原则<ul>
+<li>应用服务<ul>
+<li>编排领域服务</li>
+<li>暴露系统的全部功能</li>
+<li>安全验证、持久化处理</li>
+<li>轻量级、不处理业务逻辑</li>
+<li>跨模块协调</li>
+<li>DTO 转换、AOP、邮件短信、消息通知</li>
+</ul>
+</li>
+<li>实体行为<ul>
+<li>体现实体业务行为</li>
+<li>根实体：公开接口行为、保证不变条件</li>
+<li>负责协调实体和值对象按照完成业务逻辑</li>
+</ul>
+</li>
+<li>领域服务<ul>
+<li>组织业务逻辑（流程、策略、规则、完整性约束等）</li>
+<li>协调方案、非必要性</li>
+<li>协调领域对象的行为、无状态</li>
+<li>某个动作不适合放在聚合对象上时</li>
+<li>过度使用领域服务将导致贫血模型</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>特点<ul>
+<li>领域模型是对具有某个边界的领域的一个抽象，反映了领域内用户业务需求的本质；领域模型是有边界的，只反应了我们在领域内所关注的部分；</li>
+<li>领域模型只反映业务，和任何技术实现无关；领域模型不仅能反映领域中的一些实体概念，如货物，书本，应聘记录，地址，等；还能反映领域中的一些过程概念，如资金转账，等；</li>
+<li>领域模型确保了我们的软件的业务逻辑都在一个模型中，都在一个地方；这样对提高软件的可维护性，业务可理解性以及可重用性方面都有很好的帮助；</li>
+<li>领域模型能够帮助开发人员相对平滑地将领域知识转化为软件构造；</li>
+<li>领域模型贯穿软件分析、设计，以及开发的整个过程；领域专家、设计人员、开发人员通过领域模型进行交流，彼此共享知识与信息；因为大家面向的都是同一个模型，所以可以防止需求走样，可以让软件设计开发人员做出来的软件真正满足需求；</li>
+<li>要建立正确的领域模型并不简单，需要领域专家、设计、开发人员积极沟通共同努力，然后才能使大家对领域的认识不断深入，从而不断细化和完善领域模型；</li>
+<li>为了让领域模型看的见，我们需要用一些方法来表示它；图是表达领域模型最常用的方式，但不是唯一的表达方式，代码或文字描述也能表达领域模型；</li>
+<li>领域模型是整个软件的核心，是软件中最有价值和最具竞争力的部分；设计足够精良且符合业务需求的领域模型能够更快速的响应需求变化；</li>
+</ul>
+</li>
+<li>可以通过三步来确定领域模型和微服务边界<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B%E3%80%81%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/DDD.jpg" alt="DDD"></li>
+</ul>
+<ol>
+<li>在事件风暴中梳理业务过程中的用户操作、事件以及外部依赖关系等，根据这些要素梳理出领域实体等领域对象。</li>
+<li>根据领域实体之间的业务关联性，将业务紧密相关的实体进行组合形成聚合，同时确定聚合中的聚合根、值对象和实体。在这个图里，聚合之间的边界是第一层边界，它们在同一个微服务实例中运行，这个边界是逻辑边界，所以用虚线表示。</li>
+<li>根据业务及语义边界等因素，将一个或者多个聚合划定在一个限界上下文内，形成领域模型。在这个图里，限界上下文之间的边界是第二层边界，这一层边界可能就是未来微服务的边界，不同限界上下文内的领域逻辑被隔离在不同的微服务实例中运行，物理上相互隔离，所以是物理边界，边界之间用实线来表示。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>IaaS<ul>
+<li>基础设施即服务（IaaS：Infrastructure as a Service）</li>
+<li>把计算基础（服务器、网络技术、存储和数据中心空间）作为一项服务提供给客户。它也包括提供操作系统和虚拟化技术、来管理资源。消费者通过 Internet 可以从完善的计算机基础设施获得服务。</li>
+<li>优点：相对其他几种服务，它的自由度、灵活度非常的高。客户可以自行安装自己喜欢的操作系统、方便自己的数据集、需要的软件等。所以，一切东西可以自行部署。我的理解是有点像学生时代去机房上网。</li>
+<li>缺点：它的维护成本比较高。使用它会导致 CPU、内存等等计算资源浪费。相关的人力资源和时间资源也会被浪费。相当于把资源分割成一个一个个性化的虚拟的电脑，它们之间互相独立。“土地”就只有这么多，分完了就没有了。而对于用户来说，必须要自行下载操作系统等等繁琐的操作。对于云端和用户来说，各种资源其实都浪费了。</li>
+</ul>
+</li>
+<li>Paas<ul>
+<li>平台即服务（PaaS：Platform as a Service）</li>
+<li>PaaS 实际上是指将软件研发的平台作为一种服务，供应商提供超过基础设施的服务，一个作为软件开发和运行环境的整套解决方案，即以 SaaS 的模式提交给用户。因此，PaaS 也是 SaaS 模式的一种应用。但是，PaaS 的出现可以加快 SaaS 的发展，尤其是加快 SaaS 应用的开发速度。</li>
+<li>优点：减少的搭建各种平台的损耗，为云端和用户节省了资源。</li>
+<li>缺点：相对 IaaS 来说，PaaS 的自由度和灵活度比较低，不太适合专业性比较高的 IT 技术从业人员。相当于范围被限定，在特定的范围做一些事情。我的理解有点像 QQ 远程控制自己的电脑处理事情。</li>
+</ul>
+</li>
+<li>Saas<ul>
+<li>软件即服务（SaaS：Software as a Service）</li>
+<li>是一种交付模式，其中应用作为一项服务托管，通过 Internet 提供给用户；帮助客户更好地管理它们的 IT 项目和服务、确保它们 IT 应用的质量和性能，监控它们的在线业务。</li>
+<li>优点：方便快捷，资源利用可以非常优化。用户使用直接管理这些软件产生的数据就可以了。而使用的时候是模块化的，选择需要功能使用就行。多用户可以并行运行。</li>
+<li>缺点：软件多而且杂乱、安装复杂、使用复杂、运维复杂。用户如果不是批量采购的话购买价格昂贵。<h2 id="大数据"><a href="#大数据" class="headerlink" title="大数据"></a>大数据</h2></li>
+</ul>
+</li>
+<li>大数据的特征（4V 特征）<ul>
+<li>规模性（Volume）<ul>
+<li>随着信息化技术的高速发展，数据开始爆发性增长。大数据中的数据不再以几个 GB 或几个 TB 为单位来衡量，而是以 PB（1千个T）、EB（1百万个T）或 ZB（10亿个T）为计量单位。</li>
+</ul>
+</li>
+<li>高速性（Velocity）<ul>
+<li>这是大数据区分于传统数据挖掘最显著的特征。大数据与海量数据的重要区别在两方面：一方面，大数据的数据规模更大；另一方面，大数据对处理数据的响应速度有更严格的要求。实时分析而非批量分析，数据输入、处理与丢弃立刻见效，几乎无延迟。数据的增长速度和处理速度是大数据高速性的重要体现。</li>
+</ul>
+</li>
+<li>多样性（Variety）<ul>
+<li>多样性主要体现在数据来源多、数据类型多和数据之间关联性强这三个方面。</li>
+</ul>
+</li>
+<li>价值性（Value）<ul>
+<li>尽管企业拥有大量数据，但是发挥价值的仅是其中非常小的部分。大数据背后潜藏的价值巨大。由于大数据中有价值的数据所占比例很小，而大数据真正的价值体现在从大量不相关的各种类型的数据中。挖掘出对未来趋势与模式预测分析有价值的数据，并通过机器学习方法、人工智能方法或数据挖掘方法深度分析，并运用于农业、金融、医疗等各个领域，以期创造更大的价值。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84/" rel="tag"># 系统架构</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" rel="prev" title="计算机网络-0-知识点汇总.md">
+      <i class="fa fa-chevron-left"></i> 计算机网络-0-知识点汇总.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/09/04/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" rel="next" title="算法-0-知识点汇总.md">
+      算法-0-知识点汇总.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">项目架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE"><span class="nav-number">3.</span> <span class="nav-text">大数据</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '4fc02e73e9b0bce518249175a352ec9a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/12/06/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -202,807 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/" class="post-title-link" itemprop="url">App后端如何设计api</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-02-26 13:56:32" itemprop="dateCreated datePublished" datetime="2016-02-26T13:56:32+08:00">2016-02-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/newjueqi/article/details/44037011">http://blog.csdn.net/newjueqi/article/details/44037011</a></p>
-<p>app和后端的交互，一般都是通过后端提供的api实现。api的设计，估计很多刚进入app后端的小伙伴会一无头绪，不知道怎么入门。下面根据自己3年的app后端经验，总结出下几个api设计原则，给小伙伴参考。</p>
-<h2 id="什么是api？"><a href="#什么是api？" class="headerlink" title="什么是api？"></a>什么是api？</h2><p> 这个问题在以前发表的文章“7.app和app后端的通讯”中其实已经回答了，这里再重复一次。  </p>
-<p>相信大家都用过银行的柜员机(ATM)的查询余额，转帐，取款等操作。   </p>
-<p>当在柜员机取款的时候，我们输入要取款的金额，隔一会钱就出来了，如果因为有什么问题不能取款（例如超过取款金额的限制），屏幕上也会显示出错误的信息。   </p>
-<p>在整个过程中，我们只要输入金额，获得结果（取款成功或不成功），就行了，至于柜员机内部是怎么处理，我们不需要理会。   　　柜员机这种把内部的处理遮蔽的做法极大方便了我们的使用。   </p>
-<p>同样的，在后端，也只提供了一系列的功能给app使用，这系列的功能以api的形式提供。   </p>
-<p>api的定义：API（Application Programming Interface,应用程序编程接口）是一些预先定义的函数，目的是提供应用程序与开发人员基于某软件或硬件得以访问一组例程的能力，而又无需访问源码，或理解内部工作机制的细节。   </p>
-<p>当app调用api的时候，只需要明确下面３点:   </p>
-<ol>
-<li>这个api是干啥的（柜员机例子中，是取款功能，还是查询余额,还是转账）   </li>
-<li>知道要输入什么（柜员机例子中，取款要输入金钱）   </li>
-<li>知道结果是什么（柜员机例子中，取款是成功还是失败）   </li>
-</ol>
-<p>至于api内部是怎么处理的，app根本无需理会。   </p>
-<p>从这里可看出，api能在最大程度遮蔽了app后端复杂性，极大提高了app前端的开发效率。 </p>
-<h2 id="api设计的8点"><a href="#api设计的8点" class="headerlink" title="api设计的8点"></a>api设计的8点</h2><p>### Restful设计原则  <br>Restful风格：RESTfu设计原则,它被Roy Felding提出（在他的”基于网络的软件架构“论文中第五章）。而REST的核心原则是将你的API拆分为逻辑上的资源。这些资源通过http被操作（GET ,POST,PUT,DELETE）。</p>
-<p>在实际的开发过程中发现，程序员由于在web端养成的习惯，api操作中通常就只有两种方式”POST””GET”。大家可看一下微博的api例子”statuses/destroy”，这个很明显是delete操作的api却是用post方式提交。不是完全遵守Restful风格的风格。</p>
-<p>这个设计原则最简单的应用就是根据object而不是页面来设计api。最开始的时候，app的一个页面需要什么数据，api就返回什么数据。结果随着app的UI不断改版，需要的数据不断变化，不停地修改api，最后当api的改动会影响以前的版本的时候，只能写一个新的api版本，最后弄得api中有很多V2,V3这样的标志，恶梦!</p>
-<p>后来在网站的重构过程中，就根据object来设计api，但根据object来设计，又有一个问题，一个大object可能包含很多小object，是一个api返回全部小object，还是分为多个api返回？根据业务和技术，带宽等仔细考虑吧。</p>
-<h3 id="api的命名"><a href="#api的命名" class="headerlink" title="api的命名"></a>api的命名</h3><p>一看api名字就知道这个api是干啥。在创业团队中，一般就只有一两个人负责后台，当你要负责几十甚至上百个api，你就知道不能“望名知api”是个什么样的痛苦。</p>
-<p>api的命名，我是挺喜欢微博的命名风格，例如删除微博的api “statuses/destroy”，第一个是对象，第二个是对象的操作删除</p>
-<h3 id="api的安全性"><a href="#api的安全性" class="headerlink" title="api的安全性"></a>api的安全性</h3><p>这点会在以后的“怎么保证app通讯的安全性”一文中详细论述。</p>
-<h3 id="api返回数据"><a href="#api返回数据" class="headerlink" title="api返回数据"></a>api返回数据</h3><p>app客户端的语言 java 和object-c都是强类型语言，所以怎么处理空值显得特别重要，不合理的设计很容易造成app的闪退。</p>
-<p>从后台的角度来说，api中返回的数据中，正确值和空值的类型必须一样，举例，用户名的字段是“realname”: “xxx”,如果用户名为空，则应该返回“realname”: “”。如果返回值是一个array，空数据则返回一个空array，绝对禁止null值。</p>
-<p>对于客户端，必须用个全局的函数来处理所有api的返回数据，需要有一个机制：对于某个客户端需要数据，如果api中缺失，客户端自动补上并给予默认值。这个机制在我们的实践中大大减少了app的闪退。</p>
-<p>同时，在数据库设计的时候，一个合理的设计必须是所有字段都有默认值，不应该允许null值。null在大量的语言和数据库中，会带来无穷的问题。对于这个数据库设计原则，我以前不太明白，现在经历了一年的api设计后，终于懂得。</p>
-<p>如果客户端是php，还有一个问题，php中数组和字典都是array，但在java 和object-c中是不一样，这个问题一定要注意。</p>
-<h3 id="图片的处理"><a href="#图片的处理" class="headerlink" title="图片的处理"></a>图片的处理</h3><p>在不同版本的app中，各种不同尺寸的手机中，同一张图片显示的尺寸可能是不一样，如果每次都需要用返回原图，然后在客户端处理，则极大浪费网络资源。而如果是后台处理好图片才返回，则又是一个挑战，怎么有效保存和裁剪多种图片尺寸呢</p>
-<p>例如，一开始头像只需要返回60<em>60的尺寸，后来在新的版本需要返回70</em>70, 又出了一个新版本，需要返回80*80, 每次增加一个新的尺寸，怎么在数据库上记录下来。这个问题在一开始做api的时候没考虑，后来不得不用了一个极端的方法，没增加新的图片尺寸，就在数据库中增加一个新的字段，保存并生成新的图片尺寸，结果最后数据库的头像字段有”avatar”,”avatar_60_60”,”avatar_70_70”,”avatar_80_80”，这种极度恶虐的设计。</p>
-<p>最后，针对图片，我们才用了这样的策略：</p>
-<ol>
-<li>客户端本地缓存图片，只有没有合适的图片，才去服务器取。</li>
-<li>当客户端需要某种尺寸的图片，由客户端告诉服务端图片的尺寸，服务端动态生成并缓存起来。</li>
-</ol>
-<p>例如，客户端需要图片（<a target="_blank" rel="noopener" href="http://www.baidu.com/img/bdlogo.gif%EF%BC%89%E7%9A%8480*80%E7%9A%84%E5%B0%BA%E5%AF%B8%EF%BC%8C%E5%88%99%E5%9C%A8%E5%9B%BE%E7%89%87%E7%9A%84%E8%B7%AF%E5%BE%84%E5%8A%A0%E4%B8%8A%E5%AE%BD%E5%92%8C%E9%AB%98%E7%9A%84%E5%8F%82%E6%95%B0%EF%BC%88%E7%B1%BB%E4%BC%BC%E4%BA%8ECDN%E7%9A%84%E6%9C%BA%E5%88%B6%EF%BC%89">http://www.baidu.com/img/bdlogo.gif）的80*80的尺寸，则在图片的路径加上宽和高的参数（类似于CDN的机制）</a> <a target="_blank" rel="noopener" href="http://www.baidu.com/img/bdlogo.gif%EF%BC%9Fw=80&amp;h=80%EF%BC%8C">http://www.baidu.com/img/bdlogo.gif？w=80&amp;h=80，</a> 则服务器就生成80*80的尺寸并返回。</p>
-<p>采用了这样的图片处理机制，数据库中只要有一个字段保存原图就行了，其它尺寸就由客户端告诉服务端动态生成。以后无论什么尺寸的图片，数据库中都不需要记录，数据库只有原图就行了。</p>
-<p>注意，现在的文件云存储服务（例如七牛，又拍云）等都提供了这个文件的缩放功能，而且能加速文件的上传下载速度，极大提升了app的用户体验，强烈推荐使用。</p>
-<h3 id="返回的提示信息"><a href="#返回的提示信息" class="headerlink" title="返回的提示信息"></a>返回的提示信息</h3><p>最科学的情况，服务端只返回信息代码，具体的文字提示由客户端决定。</p>
-<p>如果文字信息是由服务端返回，则最起码要区分2种信息：提示用户的信息，提示客户端程序员的信息。这两者的区别：</p>
-<ol>
-<li>提示用户的信息是要在让客户知道的，提示客户端程序员的信息不需要让客户知道的。</li>
-<li>提示用户的信息文字很友好，客户不需要专业基础一看就知道是什么，提示客户端程序员的信息则很专业，例如告诉客户端少传了哪个参数？哪个参数有问题等等。</li>
-</ol>
-<h3 id="在线api测试文档"><a href="#在线api测试文档" class="headerlink" title="在线api测试文档"></a>在线api测试文档</h3><p>我们网站的api在线测试文档，是使用既是一份在线api文档，也是一个在线测试工具，极大方便沟通和测试。每次客户端程序员觉得某个api有什么问题，我们就是这个在线工具上讨论沟通的。客户端程序员最喜欢这个玩意了^-^。</p>
-<p>这个api在线测试文档，是使用了Swagger-UI搭建的。Swagger-UI简单而一目了然。它能够纯碎的基于html+javascript实现，只要稍微整合一下便能成为方便的API在线测试工具。项目的设计架构中一直提倡使用TDD（测试驱动）原则来开发，swagger-ui在这方面更是能提供很大帮助。</p>
-<p>下面是用Swagger-UI搭建的api文档中的一个api的例子，可看到，整个api的提交方式，作用，参数都非常清晰明了。</p>
-<p><img src="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%85%A5.png" alt="swagger输入"></p>
-<p>当按了“测试”，就以post方式调用这个api，返回的结果如下：</p>
-<p><img src="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/swagger%E8%BE%93%E5%87%BA.png" alt="swagger输出"></p>
-<p>所有的返回结果，一目了然，cool！！！</p>
-<p>api返回的数据，是以json格式返回的。用json格式，最省流量，而且几乎每种计算机语言都支持json格式。用xml的话，太耗费流量了，而且冗余数据多，不适合移动端。</p>
-<p>在”app后端”的qq群，有个app创始人使用了这个api在线测试文档后赞不决口，称赞虽然前期的搭建需要花一段时间，但极大提高了app前后端工作的效率。以后有小伙伴问相关的问题，他都强烈推荐这个Swagger-UI。</p>
-<h3 id="在app启动时，调用一个初始化api获取必要的信息"><a href="#在app启动时，调用一个初始化api获取必要的信息" class="headerlink" title="在app启动时，调用一个初始化api获取必要的信息"></a>在app启动时，调用一个初始化api获取必要的信息</h3><p>通过这个初始化api，获取一下必要的信息，例如，最新的app版本。当发现本地app的版本已经低于最新的app版本，可提示用户更新。当然了，这个提示版本更新的功能很多第三方sdk都提供。</p>
-<h2 id="如何处理api的版本升级"><a href="#如何处理api的版本升级" class="headerlink" title="如何处理api的版本升级"></a>如何处理api的版本升级</h2><p>当app做了大改版后，可能会出现一个问题，发现现在的api已经不适了，就考虑到api的升级，同时为了兼容已经发布的app，原来的api必须要保留。为了避免同一个app中调用不同版本的api，一般就会全部升级api的版本，例如:原来的是“test.com/v1/statuses/destroy”，升级为“test.com/v2/statuses/destroy”。</p>
-<p>在api的版本升级时，需要注意以下2点：</p>
-<ol>
-<li>v2版本的api的controller必须要继承v1版的controller，v2版本的api只重写需要改动的api。</li>
-<li>在线api测试文档中详细标明返回内容，已作对比，方便客户端人员的调试。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-@Autowired%E5%92%8C@Resource%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/02/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-@Autowired%E5%92%8C@Resource%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Spring-注解-@Autowired和@Resource的区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-02-26 11:26:41" itemprop="dateCreated datePublished" datetime="2016-02-26T11:26:41+08:00">2016-02-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ol>
-<li><p><code>@Autowired</code>与<code>@Resource</code>都可以用来装配bean。都可以写在字段上，或写在setter方法上。</p>
-</li>
-<li><p><code>@Autowired</code>默认按 <strong>类型</strong> 装配（这个注解是属业spring的），默认情况下必须要求依赖对象必须存在，如果要允许null值，可以设置它的required属性为false，如：<code>@Autowired(required=false)</code> ，如果我们想使用名称装配可以结合<code>@Qualifier</code>注解进行使用，如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@Autowired() @Qualifier(&quot;baseDao&quot;)    </span><br><span class="line">private BaseDao baseDao;</span><br></pre></td></tr></table></figure></li>
-<li><p><code>@Resource</code>是JDK1.6支持的注解，默认按照 <strong>名称</strong> 进行装配，名称可以通过name属性进行指定，如果没有指定name属性，当注解写在字段上时，默认取字段名，按照名称查找，如果注解写在setter方法上默认取属性名进行装配。当找不到与名称匹配的bean时才按照类型进行装配。但是需要注意的是，如果name属性一旦指定，就只会按照名称进行装配。</p>
-</li>
-<li><p><code>@Autowired</code>属于Spring的；<code>@Resource</code>为JSR-250标准的注释，属于J2EE的。</p>
-</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/19/%E8%AF%AD%E8%A8%80/web/CSS-%E5%AD%97%E4%BD%93%E5%A4%A7%E5%B0%8Frem,px,em/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/02/19/%E8%AF%AD%E8%A8%80/web/CSS-%E5%AD%97%E4%BD%93%E5%A4%A7%E5%B0%8Frem,px,em/" class="post-title-link" itemprop="url">CSS-字体大小rem,px,em</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-02-19 13:21:37" itemprop="dateCreated datePublished" datetime="2016-02-19T13:21:37+08:00">2016-02-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/CSS/" itemprop="url" rel="index"><span itemprop="name">CSS</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="PX为单位"><a href="#PX为单位" class="headerlink" title="PX为单位"></a>PX为单位</h2><p>在Web页面初期制作中，我们都是使用“px”来设置我们的文本，因为他比较稳定和精确。但是这种方法存在一个问题，当用户在浏览器中浏览我们制作的Web页面时，他改变了浏览器的字体大小，这时会使用我们的Web页面布局被打破。这样对于那些关心自己网站可用性的用户来说，就是一个大问题了。因此，这时就提出了使用“em”来定义Web页面的字体</p>
-<h2 id="Em为单位"><a href="#Em为单位" class="headerlink" title="Em为单位"></a>Em为单位</h2><p>这种技术需要一个参考点，一般都是以<body>的“font-size”为基准。比如说我们使用“1em”等于“10px”来改变默认值“1em=16px”，这样一来，我们设置字体大小相当于“14px”时，只需要将其值设置为“1.4em”。</body></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">body&#123; font-size:62.5%;&#125;  /*10/16*100%*/  </span><br><span class="line">.font1&#123; font-size:1.2em;&#125;  </span><br><span class="line">.font2&#123; font-size:12px;&#125;  </span><br></pre></td></tr></table></figure>
-
-<h2 id="Rem为单位"><a href="#Rem为单位" class="headerlink" title="Rem为单位"></a>Rem为单位</h2><p>CSS3的出现，他同时引进了一些新的单位，包括我们今天所说的rem。</p>
-<p>前面说了“em”是相对于其父元素来设置字体大小的，这样就会存在一个问题，进行任何元素设置，都有可能需要知道他父元素的大小，在我们多次使用时，就会带来无法预知的错误风险。而rem是相对于根元素<code>&lt;html&gt;</code></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">html&#123;font-size:62.5% ;&#125;  </span><br><span class="line">.fon1&#123; font-size:1.2rem;&#125;  </span><br><span class="line">.fon2&#123; font-size:12px;&#125;  </span><br></pre></td></tr></table></figure>
-<p>参考下图：</p>
-<p><img src="/2016/02/19/%E8%AF%AD%E8%A8%80/web/CSS-%E5%AD%97%E4%BD%93%E5%A4%A7%E5%B0%8Frem,px,em/Rem%E5%AF%B9%E7%85%A7%E8%A1%A8.png" alt="Rem对照表"></p>
-<p>但也想兼容IE下的效果，可你可考虑“px”和“rem”一起使用，用”px”来实现IE6-8下的效果，然后使用“Rem”来实现代浏览器的效果</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/01/27/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AE%BE%E7%BD%AE-%E8%AE%BE%E7%BD%AEIP%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/01/27/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AE%BE%E7%BD%AE-%E8%AE%BE%E7%BD%AEIP%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6/" class="post-title-link" itemprop="url">Oracle-设置-设置IP访问限制</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-01-27 16:36:03" itemprop="dateCreated datePublished" datetime="2016-01-27T16:36:03+08:00">2016-01-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>出于数据安全考虑，对Oracle数据库的IP做一些限制，只有固定的IP才能访问。</p>
-<ol>
-<li>修改<code>$JAVA_HOME/NETWORK/ADMIN/sqlnet.ora</code>文件</li>
-<li>增加以下内容（红色表示注释）：</li>
-</ol>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">  #开启ip限制功能 tcp.validnode_checking=yes #允许访问数据库的IP地址列表，多个IP地址使用逗号分开 tcp.invited_nodes=(192.168.1.110) #禁止访问数据库的IP地址列表，多个IP地址使用逗号分开 tcp.excluded_nodes=(192.168.1.111)</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>然后重启监听即可。</li>
-</ol>
-<p>注：</p>
-<ol>
-<li>第一行必需写，任何平台都可以，但是只适用于TCP/IP。</li>
-<li>第二行和第三行任写一行即可，如果tcp.invited_nodes与tcp.excluded_nodes都存在，以tcp.invited_nodes为主。</li>
-<li>不要禁止服务器本机的IP地址，否则通过lsnrctl将不能启动或停止监听，因为该过程监听程序会通过本机的IP访问监听器。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/01/22/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-ExecutorService%E7%9A%84submit%E4%B8%8Eexecute%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/01/22/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-ExecutorService%E7%9A%84submit%E4%B8%8Eexecute%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Java-API-ExecutorService的submit与execute区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-01-22 14:27:33" itemprop="dateCreated datePublished" datetime="2016-01-22T14:27:33+08:00">2016-01-22</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/cpf2016/article/details/50150205">http://blog.csdn.net/cpf2016/article/details/50150205</a></p>
-<h2 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h2><h3 id="可以接受的任务类型"><a href="#可以接受的任务类型" class="headerlink" title="可以接受的任务类型"></a>可以接受的任务类型</h3><ul>
-<li>execute只能接受Runnable类型的任务</li>
-<li>submit不管是Runnable还是Callable类型的任务都可以接受，但是Runnable返回值均为void，所以使用Future的get()获得的还是null</li>
-</ul>
-<h3 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h3><p>由Callable和Runnable的区别可知：</p>
-<ul>
-<li>execute没有返回值</li>
-<li>submit有返回值，所以需要返回值的时候必须使用submit</li>
-</ul>
-<h3 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h3><ul>
-<li>submit()能在返回的Future对象调用get()方法的时候再次抛出线程中的异常</li>
-<li>execute()会交由线程的UncaughtExceptionHandler去处理。</li>
-</ul>
-<h4 id="execute中抛出异常"><a href="#execute中抛出异常" class="headerlink" title="execute中抛出异常"></a>execute中抛出异常</h4><p>execute中的是Runnable接口的实现，所以只能使用try、catch来捕获CheckedException，通过实现UncaughtExceptionHande接口处理UncheckedException</p>
-<p>即和普通线程的处理方式完全一致</p>
-<h4 id="submit中抛出异常"><a href="#submit中抛出异常" class="headerlink" title="submit中抛出异常"></a>submit中抛出异常</h4><p>不管提交的是Runnable还是Callable类型的任务，如果不对返回值Future调用get()方法，都会吃掉异常</p>
-<p>先来看下Callable定义</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface Callable&lt;V&gt; &#123;  </span><br><span class="line">  V call() throws Exception;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>其中的call能够抛出Exception异常，所以不管是CheckedException还是UncheckedException，直接抛出即可</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">import java.util.concurrent.Callable;  </span><br><span class="line">import java.util.concurrent.ExecutionException;  </span><br><span class="line">import java.util.concurrent.ExecutorService;  </span><br><span class="line">import java.util.concurrent.Executors;  </span><br><span class="line">import java.util.concurrent.Future;  </span><br><span class="line"></span><br><span class="line">public class ThreadExceptionTest &#123;  </span><br><span class="line">    public static void main(String[] args) &#123;  </span><br><span class="line">        ExecutorService executor = Executors.newCachedThreadPool();  </span><br><span class="line"></span><br><span class="line">        Future&lt;Boolean&gt; future = executor.submit(new CallableTask());  </span><br><span class="line">        try &#123;  </span><br><span class="line">            future.get();  </span><br><span class="line">        &#125; catch (InterruptedException e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125; catch (ExecutionException e) &#123;  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line"></span><br><span class="line">        executor.shutdown();//必须不能忘，否则会一致卡在那里  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">class CallableTask implements Callable&lt;Boolean&gt;&#123;  </span><br><span class="line">    public Boolean call() throws Exception &#123;  </span><br><span class="line">//      InputStream in = new FileInputStream(new File(&quot;xx.pdf&quot;));  </span><br><span class="line">        int num = 3/0;  </span><br><span class="line">        return false;  </span><br><span class="line">    &#125;  </span><br><span class="line"></span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-<p>结果为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">java.util.concurrent.ExecutionException: java.lang.ArithmeticException: / by zero  </span><br><span class="line">    at java.util.concurrent.FutureTask$Sync.innerGet(FutureTask.java:222)  </span><br><span class="line">    at java.util.concurrent.FutureTask.get(FutureTask.java:83)  </span><br><span class="line">    at my.ThreadExceptionTest.main(ThreadExceptionTest.java:21)  </span><br><span class="line">Caused by: java.lang.ArithmeticException: / by zero  </span><br><span class="line">    at my.CallableTask.call(ThreadExceptionTest.java:57)  </span><br><span class="line">    at my.CallableTask.call(ThreadExceptionTest.java:1)  </span><br><span class="line">    at java.util.concurrent.FutureTask$Sync.innerRun(FutureTask.java:303)  </span><br><span class="line">    at java.util.concurrent.FutureTask.run(FutureTask.java:138)  </span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886)  </span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908)  </span><br><span class="line">    at java.lang.Thread.run(Thread.java:619)  </span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/01/22/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-CountDownLatch%E5%92%8CCyclicBarrier%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/01/22/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-CountDownLatch%E5%92%8CCyclicBarrier%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Java-API-CountDownLatch和CyclicBarrier的区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-01-22 11:24:29" itemprop="dateCreated datePublished" datetime="2016-01-22T11:24:29+08:00">2016-01-22</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://my.oschina.net/OutOfMemory/blog/157130">https://my.oschina.net/OutOfMemory/blog/157130</a></p>
-<p>在网上看到很多人对于CountDownLatch和CyclicBarrier的区别简单理解为CountDownLatch是一次性的，而CyclicBarrier在调用reset之后还可以继续使用。那如果只是这么简单的话，我觉得CyclicBarrier简单命名为ResetableCountDownLatch好了，显然不是的。 </p>
-<p>我的理解是，要从他们的设计目的去看这两个类。javadoc里面的描述是这样的。</p>
-<blockquote>
-<p>CountDownLatch: A synchronization aid that allows one or more threads to wait until a set of operations being performed in other threads completes.</p>
-</blockquote>
-<blockquote>
-<p>CyclicBarrier : A synchronization aid that allows a set of threads to all wait for each other to reach a common barrier point.</p>
-</blockquote>
-<p>可能是我的英语不够好吧， 我感觉从这个javadoc里面要准确理解他们的差异还是不容易的。 我的理解是</p>
-<ul>
-<li>CountDownLatch: 一个线程(或者多个)，等待另外N个线程完成某个事情之后才能执行。  </li>
-<li>CyclicBarrier: N个线程相互等待，任何一个线程完成之前，所有的线程都必须等待。</li>
-</ul>
-<p> 这样应该就清楚一点了，对于CountDownLatch来说，重点是那个“一个线程”, 是它在等待，而另外那N的线程在把“某个事情”做完之后可以继续等待，可以终止。而对于CyclicBarrier来说，重点是那N个线程，他们之间任何一个没有完成，所有的线程都必须等待。</p>
-<p>CountDownLatch 是计数器, 线程完成一个就记一个, 就像报数一样, 只不过是递减的. </p>
-<p>而CyclicBarrier更像一个水闸, 线程执行就想水流, 在水闸处都会堵住, 等到水满(线程到齐)了, 才开始泄流.</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/01/08/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%AE%89%E8%A3%85-Nginx/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/01/08/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%AE%89%E8%A3%85-Nginx/" class="post-title-link" itemprop="url">Linux-安装-Nginx</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-01-08 08:55:57" itemprop="dateCreated datePublished" datetime="2016-01-08T08:55:57+08:00">2016-01-08</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h4 id="1-gt-查看nginx相关信息"><a href="#1-gt-查看nginx相关信息" class="headerlink" title="1&gt; 查看nginx相关信息"></a>1&gt; 查看nginx相关信息</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum list | grep nginx</span><br></pre></td></tr></table></figure>
-
-<h4 id="2-gt-发现版本很低，于是追加-nginx-的-yum-仓库，创建一个文件-etc-yum-repos-d-nginx-repo，并将下面的内容复制进去"><a href="#2-gt-发现版本很低，于是追加-nginx-的-yum-仓库，创建一个文件-etc-yum-repos-d-nginx-repo，并将下面的内容复制进去" class="headerlink" title="2&gt; 发现版本很低，于是追加 nginx 的 yum 仓库，创建一个文件 /etc/yum.repos.d/nginx.repo，并将下面的内容复制进去"></a>2&gt; 发现版本很低，于是追加 nginx 的 yum 仓库，创建一个文件 /etc/yum.repos.d/nginx.repo，并将下面的内容复制进去</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[nginx]  </span><br><span class="line">name=nginx repo  </span><br><span class="line">baseurl=http://nginx.org/packages/centos/$releasever/$basearch/  </span><br><span class="line">gpgcheck=0  </span><br><span class="line">enabled=1</span><br></pre></td></tr></table></figure>
-
-<h4 id="3-gt"><a href="#3-gt" class="headerlink" title="3&gt;"></a>3&gt;</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install nginx -y</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/01/04/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-$sort/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/01/04/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-$sort/" class="post-title-link" itemprop="url">MongoDB-常用命令-$sort</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-01-04 18:26:37" itemprop="dateCreated datePublished" datetime="2016-01-04T18:26:37+08:00">2016-01-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://docs.mongodb.com/manual/reference/operator/update/sort/">https://docs.mongodb.com/manual/reference/operator/update/sort/</a></p>
-<h2 id="sort"><a href="#sort" class="headerlink" title="$sort"></a>$sort</h2><p>New in version 2.4.</p>
-<p>The $sort modifier orders the elements of an array during a $push operation.</p>
-<p>To use the $sort modifier, it must appear with the $each modifier. You can pass an empty array [] to the $each modifier such that only the $sort modifier has an effect.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  $push: &#123;</span><br><span class="line">     &lt;field&gt;: &#123;</span><br><span class="line">       $each: [ &lt;value1&gt;, &lt;value2&gt;, ... ],</span><br><span class="line">       $sort: &lt;sort specification&gt;</span><br><span class="line">     &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>For <sort specification>:</sort></p>
-<ul>
-<li>To sort array elements that are not documents, or if the array elements are documents, to sort by the whole documents, specify 1 for ascending or -1 for descending.</li>
-<li>If the array elements are documents, to sort by a field in the documents, specify a sort document with the field and the direction, i.e. { field: 1 } or { field: -1 }. Do not reference the containing array field in the sort specification (e.g. { “arrayField.field”: 1 } is incorrect).</li>
-</ul>
-<h3 id="Behavior"><a href="#Behavior" class="headerlink" title="Behavior"></a>Behavior</h3><p>Changed in version 2.6.</p>
-<p>The $sort modifier can sort array elements that are not documents. In previous versions, the $sort modifier required the array elements be documents.</p>
-<p>If the array elements are documents, the modifier can sort by either the whole document or by a specific field in the documents. In previous versions, the $sort modifier can only sort by a specific field in the documents.</p>
-<p>Trying to use the $sort modifier without the $each modifier results in an error. The $sort no longer requires the $slice modifier. For a list of modifiers available for $push, see Modifiers.</p>
-<h3 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h3><h4 id="Sort-Array-of-Documents-by-a-Field-in-the-Documents"><a href="#Sort-Array-of-Documents-by-a-Field-in-the-Documents" class="headerlink" title="Sort Array of Documents by a Field in the Documents"></a>Sort Array of Documents by a Field in the Documents</h4><p>A collection students contains the following document:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_id&quot;: 1,</span><br><span class="line">  &quot;quizzes&quot;: [</span><br><span class="line">    &#123; &quot;id&quot; : 1, &quot;score&quot; : 6 &#125;,</span><br><span class="line">    &#123; &quot;id&quot; : 2, &quot;score&quot; : 9 &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>The following update appends additional documents to the quizzes array and then sorts all the elements of the array by the ascending score field:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">db.students.update(</span><br><span class="line">   &#123; _id: 1 &#125;,</span><br><span class="line">   &#123;</span><br><span class="line">     $push: &#123;</span><br><span class="line">       quizzes: &#123;</span><br><span class="line">         $each: [ &#123; id: 3, score: 8 &#125;, &#123; id: 4, score: 7 &#125;, &#123; id: 5, score: 6 &#125; ],</span><br><span class="line">         $sort: &#123; score: 1 &#125;</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p><strong>The sort document refers directly to the field in the documents and does not reference the containing array field quizzes; i.e. { score: 1 } and not { “quizzes.score”: 1}</strong></p>
-<p>After the update, the array elements are in order of ascending score field.:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_id&quot; : 1,</span><br><span class="line">  &quot;quizzes&quot; : [</span><br><span class="line">     &#123; &quot;id&quot; : 1, &quot;score&quot; : 6 &#125;,</span><br><span class="line">     &#123; &quot;id&quot; : 5, &quot;score&quot; : 6 &#125;,</span><br><span class="line">     &#123; &quot;id&quot; : 4, &quot;score&quot; : 7 &#125;,</span><br><span class="line">     &#123; &quot;id&quot; : 3, &quot;score&quot; : 8 &#125;,</span><br><span class="line">     &#123; &quot;id&quot; : 2, &quot;score&quot; : 9 &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Sort-Array-Elements-That-Are-Not-Documents"><a href="#Sort-Array-Elements-That-Are-Not-Documents" class="headerlink" title="Sort Array Elements That Are Not Documents"></a>Sort Array Elements That Are Not Documents</h4><p>A collection students contains the following document:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : 2, &quot;tests&quot; : [  89,  70,  89,  50 ] &#125;</span><br></pre></td></tr></table></figure>
-
-<p>The following operation adds two more elements to the scores array and sorts the elements:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db.students.update(</span><br><span class="line">   &#123; _id: 2 &#125;,</span><br><span class="line">   &#123; $push: &#123; tests: &#123; $each: [ 40, 60 ], $sort: 1 &#125; &#125; &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>The updated document has the elements of the scores array in ascending order:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : 2, &quot;tests&quot; : [  40,  50,  60,  70,  89,  89 ] &#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Update-Array-Using-Sort-Only"><a href="#Update-Array-Using-Sort-Only" class="headerlink" title="Update Array Using Sort Only"></a>Update Array Using Sort Only</h4><p>A collection students contains the following document:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : 3, &quot;tests&quot; : [  89,  70,  100,  20 ] &#125;</span><br></pre></td></tr></table></figure>
-
-<p>To update the tests field to sort its elements in descending order, specify the { $sort: -1 } and specify an empty array [] for the $each modifier, as in the following:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db.students.update(</span><br><span class="line">   &#123; _id: 3 &#125;,</span><br><span class="line">   &#123; $push: &#123; tests: &#123; $each: [ ], $sort: -1 &#125; &#125; &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>The result of the operation is to update the scores field to sort its elements in descending order:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : 3, &quot;tests&quot; : [ 100,  89,  70,  20 ] &#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="Use-sort-with-Other-push-Modifiers"><a href="#Use-sort-with-Other-push-Modifiers" class="headerlink" title="Use $sort with Other $push Modifiers"></a>Use $sort with Other $push Modifiers</h4><p>A collection students has the following document:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   &quot;_id&quot; : 5,</span><br><span class="line">   &quot;quizzes&quot; : [</span><br><span class="line">      &#123; &quot;wk&quot;: 1, &quot;score&quot; : 10 &#125;,</span><br><span class="line">      &#123; &quot;wk&quot;: 2, &quot;score&quot; : 8 &#125;,</span><br><span class="line">      &#123; &quot;wk&quot;: 3, &quot;score&quot; : 5 &#125;,</span><br><span class="line">      &#123; &quot;wk&quot;: 4, &quot;score&quot; : 6 &#125;</span><br><span class="line">   ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>The following $push operation uses:</p>
-<ul>
-<li>the $each modifier to add multiple documents to the quizzes array,</li>
-<li>the $sort modifier to sort all the elements of the modified quizzes array by the score field in descending order, and</li>
-<li>the $slice modifier to keep only the first three sorted elements of the quizzes array.</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">db.students.update(</span><br><span class="line">   &#123; _id: 5 &#125;,</span><br><span class="line">   &#123;</span><br><span class="line">     $push: &#123;</span><br><span class="line">       quizzes: &#123;</span><br><span class="line">          $each: [ &#123; wk: 5, score: 8 &#125;, &#123; wk: 6, score: 7 &#125;, &#123; wk: 7, score: 6 &#125; ],</span><br><span class="line">          $sort: &#123; score: -1 &#125;,</span><br><span class="line">          $slice: 3</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>The result of the operation is keep only the three highest scoring quizzes:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_id&quot; : 5,</span><br><span class="line">  &quot;quizzes&quot; : [</span><br><span class="line">     &#123; &quot;wk&quot; : 1, &quot;score&quot; : 10 &#125;,</span><br><span class="line">     &#123; &quot;wk&quot; : 2, &quot;score&quot; : 8 &#125;,</span><br><span class="line">     &#123; &quot;wk&quot; : 5, &quot;score&quot; : 8 &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/12/15/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-MybatisGenerator/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/12/15/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-MybatisGenerator/" class="post-title-link" itemprop="url">Mybatis-代码生成-MybatisGenerator</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-12-15 15:32:34" itemprop="dateCreated datePublished" datetime="2015-12-15T15:32:34+08:00">2015-12-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="mybatis-自动生成代码"><a href="#mybatis-自动生成代码" class="headerlink" title="mybatis 自动生成代码"></a>mybatis 自动生成代码</h1><h2 id="在-“Command-line”-选项中输入“mybatis-generator-generate-e”"><a href="#在-“Command-line”-选项中输入“mybatis-generator-generate-e”" class="headerlink" title="在 “Command line” 选项中输入“mybatis-generator:generate -e”"></a>在 “Command line” 选项中输入“mybatis-generator:generate -e”</h2><blockquote>
-<p>这里加了“-e ”选项是为了让该插件输出详细信息，这样可以帮助我们定位问题。</p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/12/15/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-MybatisGenerator/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/12/06/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/12/06/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">Tomcat-内存设置详解</a>
+            <a href="/2015/12/06/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">Tomcat-内存设置详解</a>
         </h2>
 
         <div class="post-meta">
@@ -1108,10 +308,713 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/12/06/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E6%97%A5%E5%BF%97%E5%88%87%E5%89%B2%EF%BC%88logrotate%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/12/06/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E6%97%A5%E5%BF%97%E5%88%87%E5%89%B2%EF%BC%88logrotate%EF%BC%89/" class="post-title-link" itemprop="url">Tomcat-日志切割（logrotate）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-12-06 13:27:33" itemprop="dateCreated datePublished" datetime="2015-12-06T13:27:33+08:00">2015-12-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.linuxeye.com/428.html">https://blog.linuxeye.com/428.html</a></p>
+<p>logrotate是个强大的系统软件，它对日志文件有着一套完整的操作模式，譬如：转储、邮件和压缩等，并且默认logrotate加到cron（/etc/cron.daily/logrotate）作为每日任务执行。自动有了logrotate，我想不用再自己写日志切割脚本。</p>
+<p>如下对Tomcat日志catalina.out日志切割</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># ls -lh /usr/local/tomcat/logs/catalina.out</span><br><span class="line">-rw-r--r-- 1 www www 14M Aug 28 15:55 /usr/local/tomcat/logs/catalina.out</span><br></pre></td></tr></table></figure>
+<p>配置logrotate对catalina.out日志切割</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># cat /etc/logrotate.d/tomcat</span><br><span class="line">/usr/local/tomcat/logs/catalina.out &#123;</span><br><span class="line">daily</span><br><span class="line">rotate 5</span><br><span class="line">missingok</span><br><span class="line">dateext</span><br><span class="line">compress</span><br><span class="line">notifempty</span><br><span class="line">copytruncate</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>参数详解：</p>
+<ul>
+<li>daily    指定转储周期为每天</li>
+<li>rotate 5    指定日志文件删除之前转储的次数，0指没有备份，5指保留5个备份</li>
+<li>missingok    如果日志不存在则忽略该警告信息</li>
+<li>dateext    文件后缀是日期格式,也就是切割后文件是:xxx.log-20150828.gz</li>
+<li>compress    通过gzip压缩转储以后的日志（gzip -d xxx.gz解压）</li>
+<li>notifempty    如果是空文件的话，不转储</li>
+<li>copytruncate    用于还在打开中的日志文件，把当前日志备份并截断</li>
+</ul>
+<p>立即截断日志：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># logrotate --force /etc/logrotate.d/tomcat</span><br></pre></td></tr></table></figure>
+
+<p>效果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># ls -lh /usr/local/tomcat/logs/catalina.out*  </span><br><span class="line">-rw-r--r-- 1 www www    0 Aug 28 16:00 /usr/local/tomcat/logs/catalina.out  </span><br><span class="line">-rw-r--r-- 1 www www 1.1M Aug 28 16:00 /usr/local/tomcat/logs/catalina.out-20150828.gz  </span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC14%E7%AB%A0%20-%20Half-sync%EF%BC%8FHalf-async%EF%BC%88%E5%8D%8A%E5%90%8C%E6%AD%A5%EF%BC%8F%E5%8D%8A%E5%BC%82%E6%AD%A5%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC14%E7%AB%A0%20-%20Half-sync%EF%BC%8FHalf-async%EF%BC%88%E5%8D%8A%E5%90%8C%E6%AD%A5%EF%BC%8F%E5%8D%8A%E5%BC%82%E6%AD%A5%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第14章-Half-sync／Half-async（半同步／半异步）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-15 20:16:21" itemprop="dateCreated datePublished" datetime="2015-11-15T20:16:21+08:00">2015-11-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第十四章-Half-sync／Half-async（半同步／半异步）模式"><a href="#第十四章-Half-sync／Half-async（半同步／半异步）模式" class="headerlink" title="第十四章 Half-sync／Half-async（半同步／半异步）模式"></a>第十四章 Half-sync／Half-async（半同步／半异步）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>Half-sync/Half-async 模式集成了同步编程和异步编程的优势，它通过同步任务和异步任务的共同协作来完成一个计算，即保持了同步编程的简单性，又充分发挥异步编程在提高系统并发性方面的优势。该模式就如一个称职的管理者，知晓不同下属各自的优势和弱点，在指派任务的时候能够根据下属的优势和弱点扬长避短，并使各个下属相互协作，共同完成工作。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC14%E7%AB%A0%20-%20Half-sync%EF%BC%8FHalf-async%EF%BC%88%E5%8D%8A%E5%90%8C%E6%AD%A5%EF%BC%8F%E5%8D%8A%E5%BC%82%E6%AD%A5%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC13%E7%AB%A0%20-%20Pipeline%EF%BC%88%E6%B5%81%E6%B0%B4%E7%BA%BF%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC13%E7%AB%A0%20-%20Pipeline%EF%BC%88%E6%B5%81%E6%B0%B4%E7%BA%BF%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第13章-Pipeline（流水线）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-15 13:11:48" itemprop="dateCreated datePublished" datetime="2015-11-15T13:11:48+08:00">2015-11-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第十三章-Pipeline（流水线）模式"><a href="#第十三章-Pipeline（流水线）模式" class="headerlink" title="第十三章 Pipeline（流水线）模式"></a>第十三章 Pipeline（流水线）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>Pipeline 模式的核心思想是将一个任务处理分解为若干个处理阶段（Stage），其中每个处理阶段的输出作为下一个处理阶段的输入，并且各个处理阶段都有相应的工作者线程去执行相应的计算。因此，处理一批任务时，各个任务的各个处理阶段是并行（Parallel）的。通过并行计算，Pipeline 模式使应用程序能够充分利用多核 CPU 资源，提高其计算效率。</li>
+<li>假设有一批任务（T1、T2、T3、T4），其中每个任务的处理可分解为 3 个处理阶段。虽然，对于这一批任务中的某一个任务而言，其处理仍然是串行的，即完成一个任务的处理要一次执行各个处理阶段，但从整体任务上看，各个处理阶段的执行是并行的。比如，处理阶段 1 的工作者线程执行完任务 T1 相应的计算后，其处理结果会被提交给处理阶段 2 作为输入；当处理阶段 2 的工作者线程正在执行任务 T1 的相应的计算时，处理阶段 1 正在执行任务 T2 相应的计算，此时这两个处理阶段时并行的。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC13%E7%AB%A0%20-%20Pipeline%EF%BC%88%E6%B5%81%E6%B0%B4%E7%BA%BF%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC12%E7%AB%A0%20-%20Master-Slave%EF%BC%88%E4%B8%BB%E4%BB%86%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC12%E7%AB%A0%20-%20Master-Slave%EF%BC%88%E4%B8%BB%E4%BB%86%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第12章-Master-Slave（主仆）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-14 17:21:38" itemprop="dateCreated datePublished" datetime="2015-11-14T17:21:38+08:00">2015-11-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第十二章-Master-Slave（主仆）模式"><a href="#第十二章-Master-Slave（主仆）模式" class="headerlink" title="第十二章 Master-Slave（主仆）模式"></a>第十二章 Master-Slave（主仆）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>Master-Slave 模式是一个基于分而治之（Divide and conquer）思想的设计模式。其核心思想是将一个任务（原始任务）分解为若干个语义等同（Semantically-identical）的子任务，并由专门的工作者线程来并行执行这些子任务。原始任务的处理结果是通过整合各个子任务的处理结果而形成的。而这些与分而治之相关的处理细节对于原始任务的提交方来说又是不可见的，因此，Master-Slave 模式既提高计算效率，又实现了信息隐藏。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC12%E7%AB%A0%20-%20Master-Slave%EF%BC%88%E4%B8%BB%E4%BB%86%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC11%E7%AB%A0%20-%20Serial%20Thread%20Confinement%EF%BC%88%E4%B8%B2%E8%A1%8C%E7%BA%BF%E7%A8%8B%E5%B0%81%E9%97%AD%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC11%E7%AB%A0%20-%20Serial%20Thread%20Confinement%EF%BC%88%E4%B8%B2%E8%A1%8C%E7%BA%BF%E7%A8%8B%E5%B0%81%E9%97%AD%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第11章-Serial Thread Confinement（串行线程封闭）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-14 16:14:21" itemprop="dateCreated datePublished" datetime="2015-11-14T16:14:21+08:00">2015-11-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第十一章-Serial-Thread-Confinement（串行线程封闭）模式"><a href="#第十一章-Serial-Thread-Confinement（串行线程封闭）模式" class="headerlink" title="第十一章 Serial Thread Confinement（串行线程封闭）模式"></a>第十一章 Serial Thread Confinement（串行线程封闭）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>如果并发任务的执行涉及某个非线程安全对象，而我们又希望因此而引入锁，那么我们可以考虑使用 Serial Thread Confinement 模式。</li>
+<li>Serial Thread Confinement 模式的核心思想是通过将多个并发的任务存入队列实现任务的串行化，并为这些串行化的任务创建唯一的一个工作者线程进行处理。因此，这个唯一的工作者线程所访问的非线程安全对象由于只有一个线程访问它，对其的访问自然无需加锁，从而避免了锁的开销及由锁可能引发的问题。</li>
+<li>当然，如果我们对并发任务访问的非线程安全对象进行加锁，也能实现任务的串行化从而实现线程安全，另外 Serial Thread Confinement 模式串行化并发任务所使用的队列本身也会涉及锁。因此，Serial Thread Confinement 模式的本质是使用一个开销更小的锁（串行化并发任务时所用队列涉及的锁）去替代另一个可能的开销更大的锁（为保障并发任务所访问的非线程安全对象可能引入的锁）。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC11%E7%AB%A0%20-%20Serial%20Thread%20Confinement%EF%BC%88%E4%B8%B2%E8%A1%8C%E7%BA%BF%E7%A8%8B%E5%B0%81%E9%97%AD%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC10%E7%AB%A0%20-%20Thread%20Specific%20Storage%EF%BC%88%E7%BA%BF%E7%A8%8B%E7%89%B9%E6%9C%89%E5%AD%98%E5%82%A8%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC10%E7%AB%A0%20-%20Thread%20Specific%20Storage%EF%BC%88%E7%BA%BF%E7%A8%8B%E7%89%B9%E6%9C%89%E5%AD%98%E5%82%A8%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第10章-Thread Specific Storage（线程特有存储）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-14 13:42:34" itemprop="dateCreated datePublished" datetime="2015-11-14T13:42:34+08:00">2015-11-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第十章-Thread-Specific-Storage（线程特有存储）模式"><a href="#第十章-Thread-Specific-Storage（线程特有存储）模式" class="headerlink" title="第十章 Thread Specific Storage（线程特有存储）模式"></a>第十章 Thread Specific Storage（线程特有存储）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>多线程相关的问题如线程安全、死锁等归根究底是多线程共享变量导致的。有鉴于此，Thread Specific Storage 模式通过不共享变量实现了线程安全，并由此自然地避免了与锁的消耗及与之有关的问题。</li>
+<li>Java 1.2 引入的标准类库 java.lang.ThreadLocal 就相当于访问线程特有变量的逻辑统一入口点。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC10%E7%AB%A0%20-%20Thread%20Specific%20Storage%EF%BC%88%E7%BA%BF%E7%A8%8B%E7%89%B9%E6%9C%89%E5%AD%98%E5%82%A8%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC9%E7%AB%A0%20-%20Thread%20Pool%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC9%E7%AB%A0%20-%20Thread%20Pool%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第9章-Thread Pool（线程池）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-14 10:11:18" itemprop="dateCreated datePublished" datetime="2015-11-14T10:11:18+08:00">2015-11-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第九章-Thread-Pool（线程池）模式"><a href="#第九章-Thread-Pool（线程池）模式" class="headerlink" title="第九章 Thread Pool（线程池）模式"></a>第九章 Thread Pool（线程池）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>一个系统中的线程相对于其所要处理的任务而言，总是一种非常有限的资源。线程不仅在其执行任务时需要消耗 CPU 时间和内存等资源，线程对象（Thread 实例）本身以及线程所需的调用栈（Call Stack）也占用内存，并且 Java 中创建一个线程往往意味着 JVM 会创建相应的依赖于宿主机操作系统的本地线程（Native Thread）。因此，为每个或者每一批任务创建一个线程以对其进行执行，通常是一种奢侈而不现实的事情。比较常见的一种做法是复用一定量的线程，由这些线程去执行不断产生的任务。绝大多数的 Web 服务器就是采用这种方法。例如，Tomcat 服务器复用一定数量的线程用于处理其接收到的请求。</li>
+<li>Thread Pool 模式的核心思想是使用队列对待处理的任务进行缓存，并复用一定数量的工作者线程去取队列中的任务进行执行。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC9%E7%AB%A0%20-%20Thread%20Pool%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC8%E7%AB%A0%20-%20Active%20Object%EF%BC%88%E4%B8%BB%E5%8A%A8%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC8%E7%AB%A0%20-%20Active%20Object%EF%BC%88%E4%B8%BB%E5%8A%A8%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第8章-Active Object（主动对象）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-13 22:06:48" itemprop="dateCreated datePublished" datetime="2015-11-13T22:06:48+08:00">2015-11-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第八章-Active-Object（主动对象）模式"><a href="#第八章-Active-Object（主动对象）模式" class="headerlink" title="第八章 Active Object（主动对象）模式"></a>第八章 Active Object（主动对象）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>Active Object 模式是一种异步编程模式。它通过对方法的调用（Method Invocation）与方法的执行（Method Execution）进行解藕（Decoupling）来提高并发性。若以任务的概念来说，Active Object 模式的核心则是它允许任务的提交（相当于对异步方法的调用）和任务的执行（相当于异步方法的真正执行）分离。这有点类似于 System.gc() 这个方法：客户端代码调用完 gc() 后，一个进行垃圾回收的任务被提交，但此时 JVM 并不一定进行了垃圾回收，而可能是在 gc() 方法调用返回后的某段时间才开始执行任务——回收垃圾。我们知道，System.gc() 的调用方代码是运行在自己的线程上（通常是 main 线程派生的子线程），而 JVM 的垃圾回收这个动作则由专门的工作者线程（垃圾回收线程）来执行。换而言之，System.gc() 这个方法所代表的动作（其所定义的功能）的调用方和执行方是运行在不同的线程中的，从而提高了并发性。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC8%E7%AB%A0%20-%20Active%20Object%EF%BC%88%E4%B8%BB%E5%8A%A8%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC7%E7%AB%A0%20-%20Producer-Consumer%EF%BC%88%E7%94%9F%E4%BA%A7%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC7%E7%AB%A0%20-%20Producer-Consumer%EF%BC%88%E7%94%9F%E4%BA%A7%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第7章-Producer-Consumer（生产者-消费者）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-13 20:13:54" itemprop="dateCreated datePublished" datetime="2015-11-13T20:13:54+08:00">2015-11-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第七章-Producer-Consumer（生产者-消费者）模式"><a href="#第七章-Producer-Consumer（生产者-消费者）模式" class="headerlink" title="第七章 Producer-Consumer（生产者-消费者）模式"></a>第七章 Producer-Consumer（生产者-消费者）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>数据的提供方可形象地称为数据的生产者，它“生产”了数据，而数据的加工方则相应地被称为消费者，它“消费”了数据。</li>
+<li>实际上，生产者“生产”数据的速率和消费者“消费”数据的速率往往是不均衡的。为了避免数据的生产者和消费者中处理速率快的一方需要等待处理速率慢的一方，Producer-Consumer 模式通过在数据的生产者和消费者之间引入一个通道（Channel，暂时可以将其简单地理解为一个队列）对两者进行解藕（Decoupling）：生产者将其“生产”的数据放入通道，消费者从相应通道中取出数据进行“消费”，生产者和消费者各自运行在各自的线程中，从而使双方处理速率互不影响。</li>
+<li>Producer-Consumer 模式可以看成设计模式的设计模式。许多模式都可以看成 Producer-Consumer 模式的一个实例。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC7%E7%AB%A0%20-%20Producer-Consumer%EF%BC%88%E7%94%9F%E4%BA%A7%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/46/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/46/">46</a><span class="page-number current">47</span><a class="page-number" href="/page/48/">48</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/48/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/46/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/46/">46</a><span class="page-number current">47</span><a class="page-number" href="/page/48/">48</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/48/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1179,20 +1082,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

@@ -20,18 +20,18 @@
     var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="rollup 是根据维度在数据结果集中进行的聚合操作。 假设用户需要对N个唯独进行聚合查询操作，普通的group by语句需要N个查询和N次group by操作。 而rollup的有点是一次可以去的N次group by的结果，这样可以提高查询效率，同时大大减少网络的传输流量。 (注，此表的表结构和数据与格式化聚合表formatting一致) 1234567891011121314151617CRE">
+  <meta name="description" content="rolluprollup 是根据维度在数据结果集中进行的聚合操作。 假设用户需要对 N 个唯独进行聚合查询操作，普通的 group by 语句需要 N 个查询和 N 次 group by 操作。 而 rollup 的有点是一次可以去的 N 次 group by 的结果，这样可以提高查询效率，同时大大减少网络的传输流量。 （注，此表的表结构和数据与格式化聚合表 formatting 一致） 1234">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL-语法-ROLLUP和CUBE.md">
 <meta property="og:url" content="https://wetts.github.io/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/index.html">
 <meta property="og:site_name" content="Wetts&#39;s blog">
-<meta property="og:description" content="rollup 是根据维度在数据结果集中进行的聚合操作。 假设用户需要对N个唯独进行聚合查询操作，普通的group by语句需要N个查询和N次group by操作。 而rollup的有点是一次可以去的N次group by的结果，这样可以提高查询效率，同时大大减少网络的传输流量。 (注，此表的表结构和数据与格式化聚合表formatting一致) 1234567891011121314151617CRE">
+<meta property="og:description" content="rolluprollup 是根据维度在数据结果集中进行的聚合操作。 假设用户需要对 N 个唯独进行聚合查询操作，普通的 group by 语句需要 N 个查询和 N 次 group by 操作。 而 rollup 的有点是一次可以去的 N 次 group by 的结果，这样可以提高查询效率，同时大大减少网络的传输流量。 （注，此表的表结构和数据与格式化聚合表 formatting 一致） 1234">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://wetts.github.io/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/1.png">
 <meta property="og:image" content="https://wetts.github.io/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/2.png">
 <meta property="og:image" content="https://wetts.github.io/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/3.png">
 <meta property="article:published_time" content="2016-07-13T08:16:21.000Z">
-<meta property="article:modified_time" content="2021-08-05T18:00:38.578Z">
+<meta property="article:modified_time" content="2021-10-14T07:52:53.087Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="MySQL">
 <meta property="article:tag" content="语法">
@@ -243,46 +243,46 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>rollup 是根据维度在数据结果集中进行的聚合操作。</p>
-<p>假设用户需要对N个唯独进行聚合查询操作，普通的group by语句需要N个查询和N次group by操作。</p>
-<p>而rollup的有点是一次可以去的N次group by的结果，这样可以提高查询效率，同时大大减少网络的传输流量。</p>
-<p>(注，此表的表结构和数据与格式化聚合表formatting一致)</p>
+        <h3 id="rollup"><a href="#rollup" class="headerlink" title="rollup"></a>rollup</h3><p>rollup 是根据维度在数据结果集中进行的聚合操作。</p>
+<p>假设用户需要对 N 个唯独进行聚合查询操作，普通的 group by 语句需要 N 个查询和 N 次 group by 操作。</p>
+<p>而 rollup 的有点是一次可以去的 N 次 group by 的结果，这样可以提高查询效率，同时大大减少网络的传输流量。</p>
+<p>（注，此表的表结构和数据与格式化聚合表 formatting 一致）</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE rollup(</span><br><span class="line">  orderid int NOT NULL,</span><br><span class="line">  orderdate date NOT NULL,</span><br><span class="line">  empid int NOT NULL,</span><br><span class="line">  custid varchar(10) NOT NULL,</span><br><span class="line">  qty int NOT NULL,</span><br><span class="line">  PRIMARY KEY(orderid,orderdate));</span><br><span class="line"></span><br><span class="line">INSERT INTO rollup SELECT 1,&#x27;2010-01-02&#x27;,3,&#x27;A&#x27;,10;</span><br><span class="line">INSERT INTO rollup SELECT 2,&#x27;2010-04-02&#x27;,2,&#x27;B&#x27;,20;</span><br><span class="line">INSERT INTO rollup SELECT 3,&#x27;2010-05-02&#x27;,1,&#x27;A&#x27;,30;</span><br><span class="line">INSERT INTO rollup SELECT 4,&#x27;2010-07-02&#x27;,3,&#x27;D&#x27;,40;</span><br><span class="line">INSERT INTO rollup SELECT 5,&#x27;2011-01-02&#x27;,4,&#x27;A&#x27;,20;</span><br><span class="line">INSERT INTO rollup SELECT 6,&#x27;2011-01-02&#x27;,3,&#x27;B&#x27;,30;</span><br><span class="line">INSERT INTO rollup SELECT 7,&#x27;2011-01-02&#x27;,1,&#x27;C&#x27;,40;</span><br><span class="line">INSERT INTO rollup SELECT 8,&#x27;2009-01-02&#x27;,2,&#x27;A&#x27;,10;</span><br><span class="line">INSERT INTO rollup SELECT 9,&#x27;2009-01-02&#x27;,3,&#x27;B&#x27;,20;</span><br></pre></td></tr></table></figure>
 <p>首先做一个简单的一维聚合</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT YEAR(orderdate) year, SUM(qty) sum </span><br><span class="line">FROM rollup</span><br><span class="line">GROUP BY YEAR(orderdate)</span><br><span class="line">WITH ROLLUP;</span><br></pre></td></tr></table></figure>
 <p>结果为</p>
 <p><img src="/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/1.png" alt="1"></p>
-<p>和普通的group by差别不大，只是多了一个(null,220)，表示对所有的year再做一次聚合，即订单数量总和。</p>
-<p>对单个唯独进行rollup操作只是可以在最后得到聚合的数据，对比group by语句并没有非常大的优势。</p>
-<p>对多个维度进行rollup才能体现出rollup的优势：</p>
-<p>(对3列进行层次的维度操作)</p>
+<p>和普通的 group by 差别不大，只是多了一个 <code>(null,220)</code>，表示对所有的 year 再做一次聚合，即订单数量总和。</p>
+<p>对单个唯独进行 rollup 操作只是可以在最后得到聚合的数据，对比 group by 语句并没有非常大的优势。</p>
+<p>对多个维度进行 rollup 才能体现出 rollup 的优势：</p>
+<p>（对 3 列进行层次的维度操作）</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT empid, custid, YEAR(orderdate) year, SUM(qty) sum</span><br><span class="line">FROM rollup</span><br><span class="line">GROUP BY empid,custid,YEAR(orderdate)</span><br><span class="line">WITH ROLLUP;</span><br></pre></td></tr></table></figure>
 <p>结果为</p>
 <p><img src="/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/2.png" alt="2"></p>
-<p>其中(null,null,null)表示最后的聚合</p>
-<p>(empid,custid,year)表示对这3列进行分组的聚合结果</p>
-<p>(empid,custid,null)表示对(empid,custid)两列进行分组的聚合结果</p>
-<p>(empid,null,null)表示仅对(empid)一列进行分组的聚合结果</p>
+<p>其中 <code>(null,null,null)</code> 表示最后的聚合</p>
+<p><code>(empid,custid,year)</code> 表示对这 3 列进行分组的聚合结果</p>
+<p><code>(empid,custid,null)</code> 表示对 <code>(empid,custid)</code> 两列进行分组的聚合结果</p>
+<p><code>(empid,null,null)</code> 表示仅对 <code>(empid)</code> 一列进行分组的聚合结果</p>
 <p>所以上述语句等同于（但未排序）</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SELECT empid, custid, YEAR(orderdate) YEAR, SUM(qty) sum FROM rollup</span><br><span class="line">GROUP BY empid, custid, YEAR(orderdate)</span><br><span class="line">UNION</span><br><span class="line">SELECT empid, custid, NULL, SUM(qty) sum FROM rollup</span><br><span class="line">GROUP BY empid, custid</span><br><span class="line">UNION</span><br><span class="line">SELECT empid, NULL, NULL, SUM(qty) sum FROM rollup</span><br><span class="line">GROUP BY empid</span><br><span class="line">UNION</span><br><span class="line">SELECT NULL, NULL, NULL, SUM(qty) sum FROM rollup</span><br></pre></td></tr></table></figure>
 <p>虽然两者得到相同的结果，但是执行计划却不同</p>
-<p>rollup只需要一次表扫描操作就能得到全部结果，因此查询效率在此得到了极大的提升。</p>
-<p>P.S.在使用rollup需要注意以下几方面</p>
+<p>rollup 只需要一次表扫描操作就能得到全部结果，因此查询效率在此得到了极大的提升。</p>
+<p>P.S.在使用 rollup 需要注意以下几方面</p>
 <ol>
-<li>ORDER BY不能在rollup中使用，两者为互斥关键字，如果使用，会抛出以下错误：Error Code:1221. Incorrect usage of CUBE/ROLLUP and ORDER BY</li>
-<li>可以使用LIMIT，但是因为不能使用order by，所以阅读性下降，故大多数情况下无实际意义。</li>
-<li>如果分组的列包含NULL值，那么rollup的结果可能不正确</li>
+<li>ORDER BY 不能在 rollup 中使用，两者为互斥关键字，如果使用，会抛出以下错误：Error Code:1221. Incorrect usage of CUBE/ROLLUP and ORDER BY</li>
+<li>可以使用 LIMIT，但是因为不能使用 order by，所以阅读性下降，故大多数情况下无实际意义。</li>
+<li>如果分组的列包含 NULL 值，那么 rollup 的结果可能不正确</li>
 </ol>
-<p>  因为在rollup中进行的分组统计时，null具有特殊意义</p>
-<p>  因此在进行rollup时可以先将null转换成一个不可能存在的值，或者没有特别含义的值，比如：<code> IFNULL(xxx,0) </code></p>
-<p>###【关于cube】<br>rollup是cube的一种特殊情况，和rollup一样，cube也是一种对数据的聚合操作</p>
-<p>但是rollup只在层次上对数据进行聚合，而cube对所有的维度进行聚合</p>
-<p>具有N个维度的列，cube需要2的N次方次分组操作，而rollup只需要N次分组操作</p>
-<p>在mysql 5.6.17版本中，只定义了cube，但是不支持cube操作：</p>
+<p>因为在 rollup 中进行的分组统计时，null 具有特殊意义</p>
+<p>因此在进行 rollup 时可以先将 null 转换成一个不可能存在的值，或者没有特别含义的值，比如：<code>IFNULL(xxx,0)</code></p>
+<h3 id="cube"><a href="#cube" class="headerlink" title="cube"></a>cube</h3><p>rollup 是 cube 的一种特殊情况，和 rollup 一样，cube 也是一种对数据的聚合操作</p>
+<p>但是 rollup 只在层次上对数据进行聚合，而 cube 对所有的维度进行聚合</p>
+<p>具有 N 个维度的列，cube 需要 2 的 N 次方次分组操作，而 rollup 只需要 N 次分组操作</p>
+<p>在 mysql 5.6.17 版本中，只定义了 cube，但是不支持 cube 操作：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT empid, custid, YEAR(orderdate), SUM(qty)</span><br><span class="line">FROM rollup</span><br><span class="line">GROUP BY empid, custid, YEAR(orderdate)</span><br><span class="line">WITH CUBE;</span><br></pre></td></tr></table></figure>
-<p>上述SQL语句会报错：</p>
+<p>上述 SQL 语句会报错：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-- ERROR 1235 (42000): This version of MySQL doesn&#x27;t yet support &#x27;CUBE&#x27;</span><br></pre></td></tr></table></figure>
-<p>可以通过rollup来模拟cube：</p>
+<p>可以通过 rollup 来模拟 cube：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">SELECT </span><br><span class="line">    empid, custid, YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY empid, custid, YEAR(orderdate)</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid, custid, YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY empid, YEAR(orderdate), custid</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid, custid, YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY custid, YEAR(orderdate),empid</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid, custid, YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY custid, empid, YEAR(orderdate)</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid,custid,YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY YEAR(orderdate), empid, custid</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid,custid,YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY YEAR(orderdate), custid, empid </span><br><span class="line">WITH ROLLUP;</span><br></pre></td></tr></table></figure>
 <p>产生的最终结果为：</p>
 <p><img src="/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/3.png" alt="3"></p>
@@ -305,7 +305,7 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2016/07/03/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%BF%AB%E6%8D%B7%E9%94%AE/" rel="prev" title="Mac-快捷键">
+    <a href="/2016/07/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%BF%AB%E6%8D%B7%E9%94%AE/" rel="prev" title="Mac-快捷键">
       <i class="fa fa-chevron-left"></i> Mac-快捷键
     </a></div>
       <div class="post-nav-item">
@@ -371,6 +371,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#rollup"><span class="nav-number">1.</span> <span class="nav-text">rollup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cube"><span class="nav-number">2.</span> <span class="nav-text">cube</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -386,20 +387,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：http:&#x2F;&#x2F;ifeve.com&#x2F;concurrentlinkedqueue&#x2F; 引言在并发编程中我们有时候需要使用线程安全的队列。如果我们要实现一个线程安全的队列有两种实现方式一种是使用阻塞算法，另一种是使用非阻塞算法。使用阻塞算法的队列可以用一个锁（入队和出队用同一把锁）或两个锁（入队和出队用不同的锁）等方式来实现，而非阻塞的实现方式则可以使用循环CAS的方式来实现，本文让我们一起来研究下">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java-聊聊并发-6.ConcurrentLinkedQueue的实现原理分析">
+<meta property="og:url" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;ifeve.com&#x2F;concurrentlinkedqueue&#x2F; 引言在并发编程中我们有时候需要使用线程安全的队列。如果我们要实现一个线程安全的队列有两种实现方式一种是使用阻塞算法，另一种是使用非阻塞算法。使用阻塞算法的队列可以用一个锁（入队和出队用同一把锁）或两个锁（入队和出队用不同的锁）等方式来实现，而非阻塞的实现方式则可以使用循环CAS的方式来实现，本文让我们一起来研究下">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/ConcurrentLinkedQueue%E7%B1%BB%E5%9B%BE.png">
+<meta property="og:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/ConcurrentLinekedQueue%E9%98%9F%E5%88%97%E5%85%A5%E9%98%9F%E7%BB%93%E6%9E%84%E5%8F%98%E5%8C%96%E5%9B%BE.png">
+<meta property="og:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/%E5%87%BA%E9%98%9F%E5%88%97.png">
+<meta property="article:published_time" content="2016-12-19T09:46:13.000Z">
+<meta property="article:modified_time" content="2017-03-11T03:12:50.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="并发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/ConcurrentLinkedQueue%E7%B1%BB%E5%9B%BE.png">
+
+<link rel="canonical" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java-聊聊并发-6.ConcurrentLinkedQueue的实现原理分析 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java-聊聊并发-6.ConcurrentLinkedQueue的实现原理分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-19 17:46:13" itemprop="dateCreated datePublished" datetime="2016-12-19T17:46:13+08:00">2016-12-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/concurrentlinkedqueue/">http://ifeve.com/concurrentlinkedqueue/</a></p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在并发编程中我们有时候需要使用线程安全的队列。如果我们要实现一个线程安全的队列有两种实现方式一种是使用阻塞算法，另一种是使用非阻塞算法。使用阻塞算法的队列可以用一个锁（入队和出队用同一把锁）或两个锁（入队和出队用不同的锁）等方式来实现，而非阻塞的实现方式则可以使用循环CAS的方式来实现，本文让我们一起来研究下Doug Lea是如何使用非阻塞的方式来实现线程安全队列ConcurrentLinkedQueue的，相信从大师身上我们能学到不少并发编程的技巧。</p>
+<h2 id="ConcurrentLinkedQueue的介绍"><a href="#ConcurrentLinkedQueue的介绍" class="headerlink" title="ConcurrentLinkedQueue的介绍"></a>ConcurrentLinkedQueue的介绍</h2><p>ConcurrentLinkedQueue是一个基于链接节点的无界线程安全队列，它采用先进先出的规则对节点进行排序，当我们添加一个元素的时候，它会添加到队列的尾部，当我们获取一个元素时，它会返回队列头部的元素。它采用了“wait－free”算法来实现，该算法在Michael &amp; Scott算法上进行了一些修改, Michael &amp; Scott算法的详细信息可以参见参考资料一。</p>
+<h2 id="ConcurrentLinkedQueue的结构"><a href="#ConcurrentLinkedQueue的结构" class="headerlink" title="ConcurrentLinkedQueue的结构"></a>ConcurrentLinkedQueue的结构</h2><p>我们通过ConcurrentLinkedQueue的类图来分析一下它的结构。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/ConcurrentLinkedQueue%E7%B1%BB%E5%9B%BE.png" alt="ConcurrentLinkedQueue类图.png"></p>
+<p>ConcurrentLinkedQueue由head节点和tair节点组成，每个节点（Node）由节点元素（item）和指向下一个节点的引用(next)组成，节点与节点之间就是通过这个next关联起来，从而组成一张链表结构的队列。默认情况下head节点存储的元素为空，tair节点等于head节点。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private transient volatile Node&lt;e&gt; tail = head;</span><br></pre></td></tr></table></figure>
+
+<h2 id="入队列"><a href="#入队列" class="headerlink" title="入队列"></a>入队列</h2><p><strong>入队列就是将入队节点添加到队列的尾部</strong>。为了方便理解入队时队列的变化，以及head节点和tair节点的变化，每添加一个节点我就做了一个队列的快照图。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/ConcurrentLinekedQueue%E9%98%9F%E5%88%97%E5%85%A5%E9%98%9F%E7%BB%93%E6%9E%84%E5%8F%98%E5%8C%96%E5%9B%BE.png" alt="ConcurrentLinekedQueue队列入队结构变化图"></p>
+<ol>
+<li>第一步添加元素1。队列更新head节点的next节点为元素1节点。又因为tail节点默认情况下等于head节点，所以它们的next节点都指向元素1节点。</li>
+<li>第二步添加元素2。队列首先设置元素1节点的next节点为元素2节点，然后更新tail节点指向元素2节点。</li>
+<li>第三步添加元素3，设置tail节点的next节点为元素3节点。</li>
+<li>第四步添加元素4，设置元素3的next节点为元素4节点，然后将tail节点指向元素4节点。</li>
+</ol>
+<p>通过debug入队过程并观察head节点和tail节点的变化，发现入队主要做两件事情，第一是将入队节点设置成当前队列尾节点的下一个节点。第二是更新tail节点，如果tail节点的next节点不为空，则将入队节点设置成tail节点，如果tail节点的next节点为空，则将入队节点设置成tail的next节点，所以tail节点不总是尾节点，理解这一点对于我们研究源码会非常有帮助。</p>
+<p>上面的分析让我们从单线程入队的角度来理解入队过程，但是多个线程同时进行入队情况就变得更加复杂，因为可能会出现其他线程插队的情况。如果有一个线程正在入队，那么它必须先获取尾节点，然后设置尾节点的下一个节点为入队节点，但这时可能有另外一个线程插队了，那么队列的尾节点就会发生变化，这时当前线程要暂停入队操作，然后重新获取尾节点。让我们再通过源码来详细分析下它是如何使用CAS算法来入队的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">public boolean offer(E e) &#123;</span><br><span class="line"></span><br><span class="line">    if (e == null) throw new NullPointerException();</span><br><span class="line"></span><br><span class="line">    //入队前，创建一个入队节点</span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; n = new Node&lt;/e&gt;&lt;e&gt;(e);</span><br><span class="line">    retry:</span><br><span class="line"></span><br><span class="line">    //死循环，入队不成功反复入队。</span><br><span class="line">    for (;;) &#123;</span><br><span class="line">        //创建一个指向tail节点的引用</span><br><span class="line">        Node&lt;/e&gt;&lt;e&gt; t = tail;</span><br><span class="line">        //p用来表示队列的尾节点，默认情况下等于tail节点。</span><br><span class="line">        Node&lt;/e&gt;&lt;e&gt; p = t;</span><br><span class="line"></span><br><span class="line">        for (int hops = 0; ; hops++) &#123;</span><br><span class="line">        //获得p节点的下一个节点。</span><br><span class="line">            Node&lt;/e&gt;&lt;e&gt; next = succ(p);</span><br><span class="line"></span><br><span class="line">            //next节点不为空，说明p不是尾节点，需要更新p后在将它指向next节点</span><br><span class="line">            if (next != null) &#123;</span><br><span class="line">                //循环了两次及其以上，并且当前节点还是不等于尾节点</span><br><span class="line">                if (hops &gt; HOPS &amp;&amp; t != tail)</span><br><span class="line">                    continue retry;</span><br><span class="line"></span><br><span class="line">                p = next;</span><br><span class="line">            &#125;</span><br><span class="line">            //如果p是尾节点，则设置p节点的next节点为入队节点。</span><br><span class="line">            else if (p.casNext(null, n)) &#123;</span><br><span class="line">              //如果tail节点有大于等于1个next节点，则将入队节点设置成tair节点，更新失败了也没关系，因为失败了表示有其他线程成功更新了tair节点。</span><br><span class="line"></span><br><span class="line">                if (hops &gt;= HOPS)</span><br><span class="line">                    casTail(t, n); // 更新tail节点，允许失败</span><br><span class="line"></span><br><span class="line">                return true;</span><br><span class="line">            &#125;</span><br><span class="line">            // p有next节点,表示p的next节点是尾节点，则重新设置p节点</span><br><span class="line">            else &#123;</span><br><span class="line">                p = succ(p);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>从源代码角度来看整个入队过程主要做二件事情</strong>。第一是定位出尾节点，第二是使用CAS算法能将入队节点设置成尾节点的next节点，如不成功则重试。</p>
+<p><strong>第一步定位尾节点</strong>。tail节点并不总是尾节点，所以每次入队都必须先通过tail节点来找到尾节点，尾节点可能就是tail节点，也可能是tail节点的next节点。代码中循环体中的第一个if就是判断tail是否有next节点，有则表示next节点可能是尾节点。获取tail节点的next节点需要注意的是p节点等于p的next节点的情况，只有一种可能就是p节点和p的next节点都等于空，表示这个队列刚初始化，正准备添加第一次节点，所以需要返回head节点。获取p节点的next节点代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">final Node&lt;/e&gt;&lt;e&gt; succ(Node&lt;/e&gt;&lt;e&gt; p) &#123;</span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; next = p.getNext();</span><br><span class="line">    return (p == next) ? head : next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>第二步设置入队节点为尾节点</strong>。p.casNext(null, n)方法用于将入队节点设置为当前队列尾节点的next节点，p如果是null表示p是当前队列的尾节点，如果不为null表示有其他线程更新了尾节点，则需要重新获取当前队列的尾节点。</p>
+<p><strong>hops的设计意图</strong>。上面分析过对于先进先出的队列入队所要做的事情就是将入队节点设置成尾节点，doug lea写的代码和逻辑还是稍微有点复杂。那么我用以下方式来实现行不行？</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public boolean offer(E e) &#123;</span><br><span class="line"></span><br><span class="line">    if (e == null)</span><br><span class="line">        throw new NullPointerException();</span><br><span class="line"></span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; n = new Node&lt;/e&gt;&lt;e&gt;(e);</span><br><span class="line"></span><br><span class="line">    for (;;) &#123;</span><br><span class="line">        Node&lt;/e&gt;&lt;e&gt; t = tail;</span><br><span class="line"></span><br><span class="line">        if (t.casNext(null, n) &amp;&amp; casTail(t, n)) &#123;</span><br><span class="line">            return true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>让tail节点永远作为队列的尾节点，这样实现代码量非常少，而且逻辑非常清楚和易懂。但是这么做有个缺点就是每次都需要使用循环CAS更新tail节点。如果能减少CAS更新tail节点的次数，就能提高入队的效率，所以doug lea使用hops变量来控制并减少tail节点的更新频率，并不是每次节点入队后都将 tail节点更新成尾节点，而是当 tail节点和尾节点的距离大于等于常量HOPS的值（默认等于1）时才更新tail节点，tail和尾节点的距离越长使用CAS更新tail节点的次数就会越少，但是距离越长带来的负面效果就是每次入队时定位尾节点的时间就越长，因为循环体需要多循环一次来定位出尾节点，但是这样仍然能提高入队的效率，因为从本质上来看它通过增加对volatile变量的读操作来减少了对volatile变量的写操作，而对volatile变量的写操作开销要远远大于读操作，所以入队效率会有所提升。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">private static final int HOPS = 1;</span><br></pre></td></tr></table></figure>
+<p>还有一点需要注意的是入队方法永远返回true，所以不要通过返回值判断入队是否成功。</p>
+<h2 id="出队列"><a href="#出队列" class="headerlink" title="出队列"></a>出队列</h2><p>出队列的就是从队列里返回一个节点元素，并清空该节点对元素的引用。让我们通过每个节点出队的快照来观察下head节点的变化。</p>
+<p><img src="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-6.ConcurrentLinkedQueue%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/%E5%87%BA%E9%98%9F%E5%88%97.png" alt="出队列"></p>
+<p>从上图可知，并不是每次出队时都更新head节点，当head节点里有元素时，直接弹出head节点里的元素，而不会更新head节点。只有当head节点里没有元素时，出队操作才会更新head节点。这种做法也是通过hops变量来减少使用CAS更新head节点的消耗，从而提高出队效率。让我们再通过源码来深入分析下出队过程。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">public E poll() &#123;</span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; h = head;</span><br><span class="line">    // p表示头节点，需要出队的节点</span><br><span class="line">    Node&lt;/e&gt;&lt;e&gt; p = h;</span><br><span class="line"></span><br><span class="line">    for (int hops = 0;; hops++) &#123;</span><br><span class="line">        // 获取p节点的元素</span><br><span class="line">        E item = p.getItem();</span><br><span class="line">        // 如果p节点的元素不为空，使用CAS设置p节点引用的元素为null,如果成功则返回p节点的元素。</span><br><span class="line">        if (item != null &amp;&amp; p.casItem(item, null)) &#123;</span><br><span class="line">            if (hops &gt;= HOPS) &#123;</span><br><span class="line">                //将p节点下一个节点设置成head节点</span><br><span class="line">                Node&lt;/e&gt;&lt;e&gt; q = p.getNext();</span><br><span class="line">                updateHead(h, (q != null) ? q : p);</span><br><span class="line">            &#125;</span><br><span class="line">            return item;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 如果头节点的元素为空或头节点发生了变化，这说明头节点已经被另外一个线程修改了。那么获取p节点的下一个节点</span><br><span class="line">        Node&lt;/e&gt;&lt;e&gt; next = succ(p);</span><br><span class="line">        // 如果p的下一个节点也为空，说明这个队列已经空了</span><br><span class="line">        if (next == null) &#123;</span><br><span class="line">            // 更新头节点。</span><br><span class="line">            updateHead(h, p);</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // 如果下一个元素不为空，则将头节点的下一个节点设置成头节点</span><br><span class="line">        p = next;</span><br><span class="line">    &#125;</span><br><span class="line">    return null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先获取头节点的元素，然后判断头节点元素是否为空，如果为空，表示另外一个线程已经进行了一次出队操作将该节点的元素取走，如果不为空，则使用CAS的方式将头节点的引用设置成null，如果CAS成功，则直接返回头节点的元素，如果不成功，表示另外一个线程已经进行了一次出队操作更新了head节点，导致元素发生了变化，需要重新获取头节点。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+              <a href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag"># 并发</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-5.%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" rel="prev" title="Java-聊聊并发-Java-聊聊并发-5.原子操作的实现原理">
+      <i class="fa fa-chevron-left"></i> Java-聊聊并发-Java-聊聊并发-5.原子操作的实现原理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/12/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%B9%B6%E5%8F%91-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91/Java-%E8%81%8A%E8%81%8A%E5%B9%B6%E5%8F%91-7.Java%E4%B8%AD%E7%9A%84%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97/" rel="next" title="Java-聊聊并发-7.Java中的阻塞队列">
+      Java-聊聊并发-7.Java中的阻塞队列 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentLinkedQueue%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">ConcurrentLinkedQueue的介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentLinkedQueue%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">ConcurrentLinkedQueue的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A5%E9%98%9F%E5%88%97"><span class="nav-number">4.</span> <span class="nav-text">入队列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BA%E9%98%9F%E5%88%97"><span class="nav-number">5.</span> <span class="nav-text">出队列</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'b0ea6a59d6673f456d70694f162cd61a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

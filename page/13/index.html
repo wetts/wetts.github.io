@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/TCP%E3%80%81UDP%E7%BB%91%E5%AE%9A%E5%90%8C%E4%B8%80%E7%AB%AF%E5%8F%A3%E9%80%9A%E4%BF%A1%E7%9A%84%E8%A7%A3%E9%87%8A/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -202,7 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/07/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/TCP%E3%80%81UDP%E7%BB%91%E5%AE%9A%E5%90%8C%E4%B8%80%E7%AB%AF%E5%8F%A3%E9%80%9A%E4%BF%A1%E7%9A%84%E8%A7%A3%E9%87%8A/" class="post-title-link" itemprop="url">TCP、UDP绑定同一端口通信的解释</a>
+            <a href="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" class="post-title-link" itemprop="url">Java-框架、相关技术-0-知识点汇总</a>
         </h2>
 
         <div class="post-meta">
@@ -212,7 +212,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-07-05 16:24:22" itemprop="dateCreated datePublished" datetime="2019-07-05T16:24:22+08:00">2019-07-05</time>
+              <time title="创建时间：2019-08-26 15:28:58" itemprop="dateCreated datePublished" datetime="2019-08-26T15:28:58+08:00">2019-08-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -220,7 +220,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/" itemprop="url" rel="index"><span itemprop="name">网络与通信</span></a>
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
                 </span>
             </span>
 
@@ -235,590 +235,660 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/MY0213/p/8798926.html">https://www.cnblogs.com/MY0213/p/8798926.html</a></p>
-<p>TCP、UDP可以绑定同一端口来进行通信：</p>
-<p>网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。 </p>
-<p>按照OSI七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP/IP协议提出了协议端口（protocol port，简称端口）的概念，用于标识通信的进程。 </p>
-<p>端口是一种抽象的软件结构（包括一些数据结构和I/O缓冲区）。应用程序（即进程）通过系统调用与某端口建立连接（binding）后，传输层传给该端口的数据都被相应进程所接收，相应进程发给传输层的数据都通过该端口输出。在TCP/IP协议的实现中，端口操作类似于一般的I/O操作，进程获取一个端口，相当于获取本地唯一的I/O文件，可以用一般的读写原语访问之。 </p>
-<p>类似于文件描述符，每个端口都拥有一个叫端口号（port number）的整数型标识符，用于区别不同端口。由于TCP/IP传输层的两个协议TCP和UDP是完全独立的两个软件模块，因此各自的端口号也相互独立，如TCP有一个255号端口，UDP也可以有一个255号端口，二者并不冲突。 </p>
-<p>端口号的分配是一个重要问题。有两种基本分配方式：第一种叫全局分配，这是一种集中控制方式，由一个公认的中央机构根据用户需要进行统一分配，并将结果公布于众。第二种是本地分配，又称动态连接，即进程需要访问传输层服务时，向本地操作系统提出申请，操作系统返回一个本地唯一的端口号，进程再通过合适的系统调用将自己与该端口号联系起来（绑扎）。TCP/IP端口号的分配中综合了上述两种方式。TCP/IP将端口号分为两部分，少量的作为保留端口，以全局方式分配给服务进程。因此，每一个标准服务器都拥有一个全局公认的端口（即周知口，well-known port），即使在不同机器上，其端口号也相同。剩余的为自由端口，以本地方式进行分配。TCP和UDP均规定，小于256的端口号才能作保留端口。</p>
-<p>再讨论一下，一个服务器监控一个端口，比如80端口，它为什么可以建立上成千上万的连接？</p>
-<p>首先， 一个TCP连接需要由四元组来形成，即(src_ip,src_port,dst_ip,dst_port)。当一个连接请求过来的时候，服务端调用accept函数，新生成一个socket，这个socket所占用的本地端口依然是80端口。由四元组就很容易分析到了，同一个(src_ip,src_port)，它所对应的(dst_ip,dst_port)可以无穷变化，这样就可以建立很多个客户端的请求了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/05/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%89%8D%E9%9D%A2%E5%8A%A0%E4%B8%8A'r'%E7%9A%84%E4%BD%9C%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/05/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%89%8D%E9%9D%A2%E5%8A%A0%E4%B8%8A'r'%E7%9A%84%E4%BD%9C%E7%94%A8/" class="post-title-link" itemprop="url">Python字符串前面加上'r'的作用</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-05 11:15:44" itemprop="dateCreated datePublished" datetime="2019-07-05T11:15:44+08:00">2019-07-05</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在 Python 的 string 前面加上 <code>r</code>， 是为了告诉编译器这个 string 是个 raw string，不要转义。</p>
-<p>例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">s=r&#x27;\tt&#x27;</span><br><span class="line">print(s)</span><br><span class="line">Output:</span><br><span class="line">&#x27;\tt&#x27;</span><br><span class="line"> </span><br><span class="line">s=&#x27;\tt&#x27;</span><br><span class="line">print(s)</span><br><span class="line">Output:</span><br><span class="line">&#x27;        t&#x27;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python-dict%E5%92%8Clist%E5%AF%B9%E6%AF%94/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python-dict%E5%92%8Clist%E5%AF%B9%E6%AF%94/" class="post-title-link" itemprop="url">Python-dict和list对比</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-04 16:29:48" itemprop="dateCreated datePublished" datetime="2019-07-04T16:29:48+08:00">2019-07-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>和 list 比较，dict 有以下几个特点：</p>
-<ol>
-<li>查找和插入的速度极快，不会随着key的增加而变慢；</li>
-<li>需要占用大量的内存，内存浪费多。</li>
-</ol>
-<p>而 list 相反：</p>
-<ol>
-<li>查找和插入的时间随着元素的增加而增加；</li>
-<li>占用空间小，浪费内存很少。</li>
-</ol>
-<p>所以，dict 是用空间来换取时间的一种方法。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%A8%A1%E5%9D%97/Python%E4%B8%AD%E7%9A%84types%E6%A8%A1%E5%9D%97%E7%9A%84%E5%87%BD%E6%95%B0%E5%B8%B8%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%A8%A1%E5%9D%97/Python%E4%B8%AD%E7%9A%84types%E6%A8%A1%E5%9D%97%E7%9A%84%E5%87%BD%E6%95%B0%E5%B8%B8%E9%87%8F/" class="post-title-link" itemprop="url">Python中的types模块的函数常量</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-04 11:49:55" itemprop="dateCreated datePublished" datetime="2019-07-04T11:49:55+08:00">2019-07-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>types模块中提供了四个常量</p>
+          <h2 id="框架"><a href="#框架" class="headerlink" title="框架"></a>框架</h2><h3 id="Spring"><a href="#Spring" class="headerlink" title="Spring"></a>Spring</h3><h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li>控制反转（IOC）<ul>
+<li>注入方式<ul>
+<li>构造器注入</li>
+<li>setter 注入方式</li>
+<li>注解注入</li>
+<li>接口注入</li>
+</ul>
+</li>
+<li>循环依赖<ul>
+<li>singletonObjects：第一级缓存，里面放置的是实例化好的单例对象；</li>
+<li>earlySingletonObjects：第二级缓存，里面存放的是提前曝光的单例对象；</li>
+<li>singletonFactories：第三级缓存，里面存放的是要被实例化的对象的对象工厂</li>
+<li>注入步骤<ul>
+<li>创建 bean 的时候 Spring 首先从一级缓存 singletonObjects 中获取。</li>
+<li>如果获取不到，并且对象正在创建中，就再从二级缓存 earlySingletonObjects 中获取。</li>
+<li>如果还是获取不到就从三级缓存 singletonFactories 中取。（Bean 调用构造函数进行实例化后，即使属性还未填充，就可以通过三级缓存向外提前暴露依赖的引用值（提前曝光），根据对象引用能定位到堆中的对象，其原理是基于 Java的 引用传递），取到后从三级缓存移动到了二级缓存完全初始化之后将自己放入到一级缓存中供其他使用。</li>
+</ul>
+</li>
+<li>因为加入 singletonFactories 三级缓存的前提是执行了构造器，所以构造器的循环依赖没法解决。<ul>
+<li>构造器循环依赖解决办法<ul>
+<li>在构造函数中使用 @Lazy 注解延迟加载。在注入依赖时，先注入代理对象，当首次使用时再创建对象。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>面向切面编程（AOP）<ul>
+<li>名词<ul>
+<li>切面（Aspect）：切面是通知和切点的结合。通知和切点共同定义了切面的全部内容。 在 Spring AOP 中，切面可以使用通用类（基于模式的风格） 或者在普通类中以 @AspectJ 注解来实现。</li>
+<li>连接点（Join point）：指方法，在 Spring AOP 中，一个连接点总是代表一个方法的执行。应用可能有数以千计的时机应用通知。这些时机被称为连接点。连接点是在应用执行过程中能够插入切面的一个点。这个点可以是调用方法时、抛出异常时、甚至修改一个字段时。切面代码可以利用这些点插入到应用的正常流程之中，并添加新的行为。<ul>
+<li><strong>Spring 只支持方法级别的连接点</strong><ul>
+<li>因为 Spring 基于动态代理，所以 Spring 只支持方法连接点。Spring 缺少对字段连接点的支持，而且它不支持构造器连接点。方法之外的连接点拦截功能，我们可以利用 Aspect 来补充。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通知（Advice）：在 AOP 术语中，切面的工作被称为通知。<ul>
+<li>5 种类型的通知<ul>
+<li>前置通知（Before）：在目标方法被调用之前调用通知功能；</li>
+<li>后置通知（After）：在目标方法完成之后调用通知，此时不会关心方法的输出是什么；</li>
+<li>返回通知（After-returning）：在目标方法成功执行之后调用通知；</li>
+<li>异常通知（After-throwing）：在目标方法抛出异常后调用通知；</li>
+<li>环绕通知（Around）：通知包裹了被通知的方法，在被通知的方法调用之前和调用之后执行自定义的行为。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>切入点（Pointcut）：切点的定义会匹配通知所要织入的一个或多个连接点。我们通常使用明确的类和方法名称，或是利用正则表达式定义所匹配的类和方法名称来指定这些切点。</li>
+<li>引入（Introduction）：引入允许我们向现有类添加新方法或属性。</li>
+<li>目标对象（Target Object）：被一个或者多个切面（aspect）所通知（advise）的对象。它通常是一个代理对象。也有人把它叫做被通知（adviced）对象。 既然 Spring AOP 是通过运行时代理实现的，这个对象永远是一个被代理（proxied）对象。</li>
+<li>织入（Weaving）：织入是把切面应用到目标对象并创建新的代理对象的过程。在目标对象的生命周期里有多少个点可以进行织入<ul>
+<li>编译期：切面在目标类编译时被织入。AspectJ 的织入编译器是以这种方式织入切面的。</li>
+<li>类加载期：切面在目标类加载到 JVM 时被织入。需要特殊的类加载器，它可以在目标类被引入应用之前增强该目标类的字节码。AspectJ5 的加载时织入就支持以这种方式织入切面。</li>
+<li>运行期：切面在应用运行的某个时刻被织入。一般情况下，在织入切面时，AOP 容器会为目标对象动态地创建一个代理对象。SpringAOP 就是以这种方式织入切面。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通过动态代理方式实现<ul>
+<li>JDK 动态代理<ul>
+<li>实现原理<ul>
+<li>通过实现 InvocationHandlet 接口创建自己的调用处理器；</li>
+<li>通过为 Proxy 类指定 ClassLoader 对象和一组 interface 来创建动态代理；</li>
+<li>通过反射机制获取动态代理类的构造函数，其唯一参数类型就是调用处理器接口类型；</li>
+<li>通过构造函数创建动态代理类实例，构造时调用处理器对象作为参数参入；</li>
+</ul>
+</li>
+<li>是面向接口的代理模式，如果被代理目标没有接口那么 Spring 也无能为力，Spring 通过 Java 的反射机制生产被代理接口的新的匿名实现类，重写了其中 AOP 的增强方法。</li>
+</ul>
+</li>
+<li>CGLib 动态代理<ul>
+<li>Spring 在运行期间通过 CGlib 继承要被动态代理的类，重写父类的方法，实现 AOP 面向切面编程呢。CGLib 动态代理是通过字节码底层继承要代理类来实现（如果被代理类被 final 关键字所修饰，那么会失败）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>配置 AOP 执行顺序<ul>
+<li>通过实现 org.springframework.core.Ordered 接口</li>
+<li>通过 <code>@Order()</code> 注解</li>
+<li>通过配置文件配置</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Spring-容器"><a href="#Spring-容器" class="headerlink" title="Spring 容器"></a>Spring 容器</h4><ul>
+<li><p>基础组件</p>
 <ul>
-<li>types.FunctionType：函数</li>
-<li>types.BuiltinFunctionType：内建函数</li>
-<li>types.LambdaType：匿名函数</li>
-<li>types.GeneratorType：生成器类型</li>
+<li><p>BeanFactory</p>
+<ul>
+<li>Spring 底层容器，定义了最基本的容器功能</li>
+<li>BeanFactory 位于整个容器类体系结构的顶端，其基本实现类为 DefaultListableBeanFactory。之所以称其为核心容器，是因为该类容器实现 IOC 的核心功能：比如配置文件的加载解析，Bean 依赖的注入以及生命周期的管理等。BeanFactory 作为 Spring 框架的基础设施，面向 Spring 框架本身，一般不会被用户直接使用。</li>
 </ul>
+</li>
+<li><p>ApplicationContext</p>
+<ul>
+<li><p>扩展于 BeanFactory，拥有更丰富的功能。例如：添加事件发布机制、父子级容器，一般都是直接使用 ApplicationContext。</p>
+</li>
+<li><p>通常译为应用上下文，不过称其为应用容器可能更形象些。它在 BeanFactory 提供的核心 IOC 功能之上作了扩展。通常 ApplicationContext 的实现类内部都持有一个 BeanFactory 的实例，IOC 容器的核心功能会交由它去完成。而 ApplicationContext 本身，则专注于在应用层对 BeanFactory 作扩展，比如提供对国际化的支持，支持框架级的事件监听机制以及增加了很多对应用环境的适配等。ApplicationContext 面向的是使用 Spring 框架的开发者。开发中经常使用的 ClassPathXmlApplicationContext 就是典型的 Spring 的应用容器，也是要进行解读的 IOC 容器。</p>
+</li>
+<li><p>相关类</p>
+<ul>
+<li><p>AbstractApplicationContext</p>
+<ul>
+<li><p>ApplicationContext 接口的抽象实现类，能够自动检测并注册各种后置处理器（PostProcessor）和事件监听器（Listener），以模板方法模式定义了一些容器的通用方法，比如启动容器的真正方法 <code>refresh()</code> 就是在该类中定义的。</p>
+</li>
+<li><p><code>refresh()</code> 方法</p>
+<ul>
+<li><p>```<br>@Override<br>public void refresh() throws BeansException, IllegalStateException {<br>  synchronized (this.startupShutdownMonitor) {</p>
+<pre><code>  // Prepare this context for refreshing.
+  // 准备，记录容器的启动时间 startupDate，标记容器为激活，初始化上下文环境如文件路径信息，验证必填属性是否填写
+  prepareRefresh();
 
-      
-    </div>
+  // Tell the subclass to refresh the internal bean factory.
+  // 这步比较重要（解析），告诉子类去刷新 bean 工厂，这步完成后配置文件就解析成一个个 bean 定义，注册到 BeanFactory（但是未被初始化，仅将信息写到了 beanDefination 的 map 中）
+  ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+  // Prepare the bean factory for use in this context.
+  // 设置 beanFactory 类加载器，添加多个 beanPostProcesser
+  prepareBeanFactory(beanFactory);
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/03/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84Iterable%E5%92%8CIterator/">
+  try &#123;
+    // Allows post-processing of the bean factory in context subclasses.
+    // 允许子类上下文中对 beanFactory 做后期处理
+    postProcessBeanFactory(beanFactory);
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
+    // Invoke factory processors registered as beans in the context.
+    // 调用 BeanFactoryPostProcessor 各个实现类的方法
+    invokeBeanFactoryPostProcessors(beanFactory);
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/03/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84Iterable%E5%92%8CIterator/" class="post-title-link" itemprop="url">Python中的Iterable和Iterator</a>
-        </h2>
+    // Register bean processors that intercept bean creation.
+    // 注册 BeanPostProcessor 的实现类，注意看和 BeanFactoryPostProcessor 的区别
+    // 此接口两个方法: postProcessBeforeInitialization 和 postProcessAfterInitialization
+    // 两个方法分别在 Bean 初始化之前和初始化之后得到执行。注意，到这里 Bean 还没初始化
+    registerBeanPostProcessors(beanFactory);
 
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
+    // Initialize message source for this context.
+    //初始化 ApplicationContext 的 MessageSource
+    initMessageSource();
 
-              <time title="创建时间：2019-07-03 14:44:20" itemprop="dateCreated datePublished" datetime="2019-07-03T14:44:20+08:00">2019-07-03</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
+    // Initialize event multicaster for this context.
+    // 初始化 ApplicationContext 事件广播器
+    initApplicationEventMulticaster();
 
-          
+    // Initialize other special beans in specific context subclasses.
+    // 初始化子类特殊 bean（钩子方法）
+    onRefresh();
 
-        </div>
-      </header>
+    // Check for listener beans and register them.
+    // 注册事件监听器
+    registerListeners();
 
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
+    // Instantiate all remaining (non-lazy-init) singletons.
+    // 初始化所有 singleton bean
+    finishBeanFactoryInitialization(beanFactory);
 
-      
-          <p>可使用for进行迭代的数据类型分为以下两种：</p>
+    // Last step: publish corresponding event.
+    // 广播事件，ApplicationContext 初始化完成
+    finishRefresh();
+  &#125;
+
+  catch (BeansException ex) &#123;
+    if (logger.isWarnEnabled()) &#123;
+        logger.warn(&quot;Exception encountered during context initialization - &quot; +
+              &quot;cancelling refresh attempt: &quot; + ex);
+    &#125;
+
+    // Destroy already created singletons to avoid dangling resources.
+    destroyBeans();
+
+    // Reset &#39;active&#39; flag.
+    cancelRefresh(ex);
+
+    // Propagate exception to caller.
+    throw ex;
+  &#125;
+
+  finally &#123;
+    // Reset common introspection caches in Spring&#39;s core, since we
+    // might not ever need metadata for singleton beans anymore...
+    resetCommonCaches();
+  &#125;
+</code></pre>
+<p>  }<br>}</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line">      - AbstractRefreshableApplicationContext</span><br><span class="line">        - 继承 AbstractApplicationContext 的抽象类。内部持有一个 DefaultListableBeanFactory 的实例，使得继承 AbstractRefreshableApplicationContext 的 Spring 的应用容器内部默认有一个 Spring 的核心容器，那么 Spring 容器的一些核心功能就可以委托给内部的核心容器去完成。</span><br><span class="line">        - AbstractRefreshableApplicationContext 在内部定义了创建、销毁以及刷新核心容器 BeanFactory 的方法。</span><br><span class="line">      - ClassPathXmlApplicationContext</span><br><span class="line">        - 最常用的 Spring 的应用容器之一。在启动时会加载类路径下的 xml 文件作为容器的配置信息。</span><br><span class="line">      - BeanFactoryPostProcessor</span><br><span class="line">        - 实现该接口，可以在 Spring 的 bean 创建之前，修改 bean 的定义属性。也就是说，Spring 允许 BeanFactoryPostProcessor 在容器实例化任何其它 bean 之前读取配置元数据，并可以根据需要进行修改，例如可以把 bean 的 scope 从 singleton 改为 prototype，也可以把 property 的值给修改掉。可以同时配置多个 BeanFactoryPostProcessor，并通过设置&#x27;order&#x27;属性来控制各个 BeanFactoryPostProcessor 的执行次序。</span><br><span class="line">        - BeanFactoryPostProcessor 是在 spring 容器加载了 bean 的定义文件之后，在 bean 实例化之前执行的。接口方法的入参是 ConfigurrableListableBeanFactory，使用该参数，可以获取到相关 bean 的定义信息。</span><br><span class="line">        - Spring 中，有内置的一些 BeanFactoryPostProcessor 实现类，常用的有：</span><br><span class="line">          - org.springframework.beans.factory.config.PropertyPlaceholderConfigurer</span><br><span class="line">          - org.springframework.beans.factory.config.PropertyOverrideConfigurer</span><br><span class="line">          - org.springframework.beans.factory.config.CustomEditorConfigurer：用来注册自定义的属性编辑器</span><br><span class="line">      - BeanPostProcessor</span><br><span class="line">        - BeanPostProcessor，可以在 Spring 容器实例化 bean 之后，在执行 bean 的初始化方法前后，添加一些自己的处理逻辑。</span><br><span class="line">        - 这里说的初始化方法，指的是下面两种：</span><br><span class="line">          - bean 实现了 InitializingBean 接口，对应的方法为 afterPropertiesSet</span><br><span class="line">          - 在 bean 定义的时候，通过 init-method 设置的方法</span><br><span class="line">        - BeanPostProcessor 是在 Spring 容器加载了 bean 的定义文件并且实例化 bean 之后执行的。BeanPostProcessor 的执行顺序是在 BeanFactoryPostProcessor 之后。</span><br><span class="line">        - Spring中，有内置的一些 BeanPostProcessor 实现类，例如：</span><br><span class="line">          - org.springframework.context.annotation.CommonAnnotationBeanPostProcessor：支持 @Resource 注解的注入</span><br><span class="line">          - org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor：支持 @Required 注解的注入</span><br><span class="line">          - org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor：支持 @Autowired 注解的注入</span><br><span class="line">          - org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor：支持 @PersistenceUnit 和 @PersistenceContext 注解的注入</span><br><span class="line">          - org.springframework.context.support.ApplicationContextAwareProcessor：用来为 bean 注入 ApplicationContext 等容器对象</span><br><span class="line">  - Resource</span><br><span class="line">    - bean 配置文件，一般为 xml 文件。可以理解为保存 bean 信息的文件。</span><br><span class="line">  - BeanDefinition</span><br><span class="line">    - BeanDefinition 定义了 bean 的基本信息，根据它来创造 bean。</span><br><span class="line">- 容器启动步骤</span><br><span class="line">  - ![Spring_容器启动的整个流程](Java-框架、相关技术-0-知识点汇总/Spring_容器启动的整个流程.png)</span><br><span class="line">  1. 资源定位：找到配置文件</span><br><span class="line">  2. BeanDefinition 载入和解析</span><br><span class="line">  3. BeanDefinition 注册</span><br><span class="line">  4. bean 的实例化和依赖注入</span><br><span class="line">- BeanFactory</span><br><span class="line">  - BeanFactory 定义的标准处理顺序</span><br><span class="line">    1. BeanNameAware&#x27;s setBeanName</span><br><span class="line">    2. BeanClassLoaderAware&#x27;s setBeanClassLoader</span><br><span class="line">    3. BeanFactoryAware&#x27;s setBeanFactory</span><br><span class="line">    4. ResourceLoaderAware&#x27;s setResourceLoader (only applicable when running in an application context)</span><br><span class="line">    5. ApplicationEventPublisherAware&#x27;s setApplicationEventPublisher (only applicable when running in an application context)</span><br><span class="line">    6. MessageSourceAware&#x27;s setMessageSource (only applicable when running in an application context)</span><br><span class="line">    7. ApplicationContextAware&#x27;s setApplicationContext (only applicable when running in an application context)</span><br><span class="line">    8. ServletContextAware&#x27;s setServletContext (only applicable when running in a web application context)</span><br><span class="line">    9. postProcessBeforeInitialization methods of BeanPostProcessors</span><br><span class="line">    10. InitializingBean&#x27;s afterPropertiesSet</span><br><span class="line">    11. a custom init-method definition</span><br><span class="line">    12. postProcessAfterInitialization methods of BeanPostProcessors</span><br><span class="line">    - 第 9 点和 12 点是通过 BeanPostProccessor 接口进行处理的</span><br><span class="line">    - 第 10 点是通过 InitializingBean 接口去实现的</span><br><span class="line">  - BeanFactory 关闭的处理顺序</span><br><span class="line">    1. DisposableBean&#x27;s destroy</span><br><span class="line">    2. a custom destroy-method definition</span><br><span class="line"></span><br><span class="line">#### Spring 事件监听机制</span><br><span class="line">- 说明</span><br><span class="line">  - 事件监听机制可以理解为是一种观察者模式，有数据发布者（事件源）和数据接受者（监听器）；</span><br><span class="line">  - 在 Java 中，事件对象都是继承 java.util.EventObject 对象，事件监听器都是 java.util.EventListener 实例；</span><br><span class="line">  - EventObject 对象不提供默认构造器，需要外部传递 source 参数，即用于记录并跟踪事件的来源；</span><br><span class="line">- Spring 事件</span><br><span class="line">  - Spring 事件对象为 ApplicationEvent，继承 EventObject</span><br><span class="line">  - Spring 事件监听器为 ApplicationListener，继承 EventListener</span><br><span class="line">- 实现 Spring 事件监听有两种方式：</span><br><span class="line">  - 面向接口编程，实现 ApplicationListener 接口；</span><br><span class="line">  - 基于注解驱动，@EventListener（Spring 自定义的注解）；</span><br><span class="line">- Spring 自带的监听器</span><br><span class="line">  - ContextLoaderListener</span><br><span class="line">    - 在启动 Web 容器时，自动装配 Spring applicationContext.xml 的配置信息。</span><br><span class="line">    - 因为它实现了 ServletContextListener 这个接口，在 web.xml 配置这个监听器，启动容器时，就会默认执行它实现的方法。在 ContextLoaderListener 中关联了 ContextLoader 这个类，所以整个加载配置过程由 ContextLoader 来完成。</span><br><span class="line">  - RequestContextListener</span><br><span class="line">    - Spring2.0 中新增了三个 web 作用域：request、session、global session，如果希望 web 容器中的某个 bean 具有新的作用域，除了在 bean 中配置相应的 scope 属性外，还需要在容器中进行额外的初始化配置。</span><br><span class="line"></span><br><span class="line">#### SpringMVC</span><br><span class="line">- MVC 模式代表 Model-View-Controller（模型-视图-控制器）模式。</span><br><span class="line">- 原理</span><br><span class="line">  - ![SpringMVC_请求处理的流程](Java-框架、相关技术-0-知识点汇总/SpringMVC_请求处理的流程.png)</span><br><span class="line">  - 执行流程</span><br><span class="line">    - 用户向服务器发送请求，请求会到 DispatcherServlet，DispatcherServlet 对请求 URL 进行解析，得到请求资源标识符（URI），然后根据该 URI，调用 HandlerMapping 获得该 Handler 配置的所有相关的对象（包括一个 Handler 处理器对象、多个 HandlerInterceptor 拦截器对象），最后以 HandlerExecutionChain 对象的形式返回。</span><br><span class="line">    - DispatcherServlet 根据获得的 Handler，选择一个合适的 HandlerAdapter。提取 Request 中的模型数据，填充 Handler 入参，开始执行 Handler（Controller）。 在填充 Handler 的入参过程中，根据你的配置，Spring 将帮你做一些额外的工作：</span><br><span class="line">      - HttpMessageConveter： 将请求消息（如 Json、xml 等数据）转换成一个对象，将对象转换为指定的响应信息</span><br><span class="line">      - 数据转换：对请求消息进行数据转换。如 String 转换成 Integer、Double 等</span><br><span class="line">      - 数据格式化：对请求消息进行数据格式化。 如将字符串转换成格式化数字或格式化日期等</span><br><span class="line">      - 数据验证： 验证数据的有效性（长度、格式等），验证结果存储到 BindingResult 或 Error 中</span><br><span class="line">    - Handler 执行完成后，向 DispatcherServlet 返回一个 ModelAndView 对象；根据返回的 ModelAndView，选择一个适合的 ViewResolver 返回给 DispatcherServlet；ViewResolver 结合 Model 和 View，来渲染视图，最后将渲染结果返回给客户端。</span><br><span class="line"></span><br><span class="line">#### 注解</span><br><span class="line">- 注入相关</span><br><span class="line">  - @Qualifier</span><br><span class="line">    - 用处：当一个接口有多个实现的时候，为了指名具体调用哪个类的实现。</span><br><span class="line">  - @Resource</span><br><span class="line">    - 可以通过 byName 和 byType 的方式注入，默认先按 byName 的方式进行匹配，如果匹配不到，再按 byType 的方式进行匹配。</span><br><span class="line">    - 由 JSR-250 提供</span><br><span class="line">  - @Autowired</span><br><span class="line">    - 按 byType 方式注入，如果按 byType 冲突或找不到的话可以用 @Qualifier 来找 byName</span><br><span class="line">    - 由 spring 提供</span><br><span class="line">  - @Inject</span><br><span class="line">    - 由 JSR-330 提供</span><br><span class="line">    - 注意</span><br><span class="line">      - 使用前需要导入 jar 包——javax.inject；</span><br><span class="line">      - 支持 @Primary 注解，而且因为没有精确匹配，@Primary 的优先级最高；</span><br><span class="line">      - 不支持 required=false，即不能注入 null，如果找不到组件肯定报错；</span><br><span class="line">      - 默认按照属性名跟 bean 的名称匹配查找，如果不存在，再按类型匹配查找。</span><br><span class="line"></span><br><span class="line">#### 事务</span><br><span class="line">- 事务传播机制</span><br><span class="line">  - PROPAGATION_REQUIRED：如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常⻅的选择。 </span><br><span class="line">  - PROPAGATION_SUPPORTS：支持当前事务，如果当前没有事务，就以非事务方式执行。 </span><br><span class="line">  - PROPAGATION_MANDATORY：使用当前的事务，如果当前没有事务，就抛出异常。 </span><br><span class="line">  - PROPAGATION_REQUIRES_NEW：新建事务，如果当前存在事务，把当前事务挂起。 </span><br><span class="line">  - PROPAGATION_NOT_SUPPORTED：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。</span><br><span class="line">  - PROPAGATION_NEVER：以非事务方式执行，如果当前存在事务，则抛出异常。 </span><br><span class="line">  - PROPAGATION_NESTED：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行。与 PROPAGATION_REQUIRED 类似的操作。</span><br><span class="line">- 事务原理</span><br><span class="line">  - Spring 在扫描 bean 的时候会扫描方法上是否包含 @Transactional 注解，如果包含，Spring 会为这个 bean 动态地生成一个子类（即代理类，proxy），代理类是继承原来那个 bean 的。此时，当这个有注解的方法被调用的时候，实际上是由代理类来调用的，代理类在调用之前就会启动 transaction。</span><br><span class="line">    - ```</span><br><span class="line">      @Service</span><br><span class="line">      class A&#123;</span><br><span class="line">          @Transactinal</span><br><span class="line">          method b()&#123;...&#125;</span><br><span class="line">          </span><br><span class="line">          method a()&#123;    //标记1</span><br><span class="line">              b();</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      </span><br><span class="line">      //Spring扫描注解后，创建了另外一个代理类，并为有注解的方法插入一个startTransaction()方法：</span><br><span class="line">      class proxy$A&#123;</span><br><span class="line">          A objectA = new A();</span><br><span class="line">          method b()&#123;    //标记2</span><br><span class="line">              startTransaction();</span><br><span class="line">              objectA.b();</span><br><span class="line">          &#125;</span><br><span class="line">      </span><br><span class="line">          method a()&#123;    //标记3</span><br><span class="line">              objectA.a();    //由于a()没有注解，所以不会启动transaction，而是直接调用A的实例的a()方法</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>@Transactional 注解事务不生效的情况</p>
+<ul>
+<li>数据库<ul>
+<li>事务生效的前提是你的数据源得支持事务，比如 mysql 的 MyISAM 引擎就不支持事务，而 Innodb 支持事务</li>
+</ul>
+</li>
+<li>类内部访问<ul>
+<li>在一个 Service 内部，事务方法之间的嵌套调用，普通方法和事务方法之间的嵌套调用，都不会开启新的事务。<ul>
+<li>非事务方法 A 调用事务方法 B，方法 B 事务不生效<ul>
+<li>因为 spring 采用动态代理机制来实现事务控制，而动态代理最终都是要调用原始对象的，而原始对象在去调用方法时，是不会再触发代理了</li>
+</ul>
+</li>
+<li>在事务方法 A 中调用另外一个事务方法 B，被调用方法 B 的事务没起作用<ul>
+<li>spring 是通过代理代管理事务的，当在第一个方法 insertUser1 内直接调用 insertUser2 的时候 ，insertUser2 上的事务是不会起作用的（也就是 insertUser2 是没有开启事务）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>私有方法<ul>
+<li>在私有方法上，添加 @Transactional 注解也不会生效，私有方法外部不能访问，所以只能内部访问，上面的 case 不生效，这个当然也不生效了</li>
+</ul>
+</li>
+<li>异常不匹配<ul>
+<li>@Transactional 注解默认处理运行时异常，即只有抛出运行时异常时，才会触发事务回滚，否则并不会如</li>
+</ul>
+</li>
+<li>多线程<ul>
+<li>在标记事务的方法内部，另起子线程执行 db 操作，此时事务同样不会生效</li>
+</ul>
+</li>
+<li>传播属性<ul>
+<li>几种传播方式是不走事务执行的</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Bean"><a href="#Bean" class="headerlink" title="Bean"></a>Bean</h4><ul>
+<li>Bean 的作用域<ul>
+<li>singleton : bean 在每个 Spring ioc 容器中只有一个实例。</li>
+<li>prototype：一个 bean 的定义可以有多个实例。</li>
+<li>request：每次 http 请求都会创建一个 bean，该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+<li>session：在一个 HTTP Session 中，一个 bean 定义对应一个实例。该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+<li>global-session：在一个全局的 HTTP Session 中，一个 bean 定义对应一个实例。该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+</ul>
+</li>
+<li>Bean 的生命周期<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Spring_bean%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg" alt="Spring_bean的生命周期"></li>
+</ul>
 <ol>
-<li>集合数据类型：如 dict、list、tuple、set、str 等；</li>
-<li>generator：包括生成器和 yield 的 generator function;</li>
+<li>Spring 启动，查找并加载需要被 Spring 管理的 Bean，进行 Bean 的实例化</li>
+<li>Bean 实例化后对将 Bean 的引入和值注入到 Bean 的属性中</li>
+<li>如果 Bean 实现了 BeanNameAware 接口的话，Spring 将 Bean 的 Id 传递给 setBeanName() 方法</li>
+<li>如果 Bean 实现了 BeanFactoryAware 接口的话，Spring 将调用 setBeanFactory() 方法，将 BeanFactory 容器实例传入</li>
+<li>如果 Bean 实现了 ApplicationContextAware 接口的话，Spring 将调用 Bean 的 setApplicationContext() 方法，将 Bean 所在应用上下文引用传入进来。</li>
+<li>如果 Bean 实现了 BeanPostProcessor 接口，Spring 就将调用他们的 postProcessBeforeInitialization() 方法。</li>
+<li>如果 Bean 实现了 InitializingBean 接口，Spring 将调用他们的 afterPropertiesSet() 方法。类似的，如果 Bean 使用 init-method 声明了初始化方法，该方法也会被调用</li>
+<li>如果 Bean 实现了 BeanPostProcessor 接口，Spring 就将调用他们的 postProcessAfterInitialization() 方法。</li>
+<li>此时，Bean 已经准备就绪，可以被应用程序使用了。他们将一直驻留在应用上下文中，直到应用上下文被销毁。</li>
+<li>如果 Bean 实现了 DisposableBean 接口，Spring 将调用它的 destory() 接口方法，同样，如果 Bean 使用了 destory-method 声明销毁方法，该方法也会被调用。</li>
 </ol>
-<p>Python 的 Iterator 对象表示的是一个数据流，Iterator 对象可以被 next() 函数调用并不断返回下一个数据，直到没有数据时抛出 StopIteration 错误。可以把这个数据流看做是一个有序序列，但我们却不能提前知道序列的长度，只能不断通过 next() 函数实现按需计算下一个数据，所以 Iterator 的计算是惰性的，只有在需要返回下一个数据时它才会计算。</p>
-<p>把 list、dict、str 等 Iterable 变成 Iterator 可以使用 iter() 函数。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/01/%E8%AF%AD%E8%A8%80/Python/%E6%8A%A5%E9%94%99/Python%E4%B8%ADIterable%E5%AF%B9%E8%B1%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/01/%E8%AF%AD%E8%A8%80/Python/%E6%8A%A5%E9%94%99/Python%E4%B8%ADIterable%E5%AF%B9%E8%B1%A1/" class="post-title-link" itemprop="url">Python中Iterable对象</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-01 16:31:12" itemprop="dateCreated datePublished" datetime="2019-07-01T16:31:12+08:00">2019-07-01</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/slrong/article/details/80306905">https://blog.csdn.net/slrong/article/details/80306905</a></p>
-<p>Python 中判断对象是否能迭代，导入 <code>from collections import Iterable</code> 报错。</p>
-<p>改为 <code>from collections.abc import Iterable</code> 就可以了。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">DeprecationWarning: Using or importing the ABCs from &#x27;collections&#x27; instead of from &#x27;collections.abc&#x27; is deprecated, and in 3.8 it will stop working</span><br><span class="line">  from collections import Iterable</span><br><span class="line">True</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/01/%E8%AF%AD%E8%A8%80/Python/%E5%87%BD%E6%95%B0/Python%E4%B8%ADrange()%E8%BF%94%E5%9B%9E%E7%9A%84%E7%B1%BB%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/01/%E8%AF%AD%E8%A8%80/Python/%E5%87%BD%E6%95%B0/Python%E4%B8%ADrange()%E8%BF%94%E5%9B%9E%E7%9A%84%E7%B1%BB%E5%9E%8B/" class="post-title-link" itemprop="url">Python中range()返回的类型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-01 15:59:32" itemprop="dateCreated datePublished" datetime="2019-07-01T15:59:32+08:00">2019-07-01</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/allenblogs/p/10344814.html">https://www.cnblogs.com/allenblogs/p/10344814.html</a></p>
-<p>注意，这里说的Python3里面的range函数，和Python2是不同的，返回的不是列表，是可迭代对象。</p>
-<p>在python3中，如果执行下面的语句<code>print(range(10))</code></p>
-<p>得到结果是<code>range(0,10)</code>，而不是期望的<code>[0,1,2,3,4,5,6,7,8,9]</code>。但是如果换一种方式<code>print(list(range(10)))</code></p>
-<p>得到的结果却是<code>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]</code></p>
-<p>那为什么会这样呢？其实在 Python3 中<code>range()</code>函数返回的对象很像一个列表，但是它确实不是一个列表，它只是在迭代的情况下返回指定索引的值，它并不会在内存中产生一个列表对象，官方解释说这样做是为了节约内存空间。通常我们称这种对象是可迭代的，或者是可迭代对象。</p>
-<p>这里就要引入另外一个叫迭代器的概念，迭代器可以从一个可迭代对象中连续获取指定索引的值，直到索引结束。比如<code>list()</code>函数，所以在上面的例子中，我们可以用<code>list()</code>这个迭代器将<code>range()</code>函数返回的对象变成一个列表。</p>
-<p>由此可以看出：<code>range()</code>函数返回的是一个可迭代对象（类型是对象），而不是列表类型；<code>list()</code>函数是对象迭代器，把对象转为一个列表，返回的变量类型为列表。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/01/%E5%B7%A5%E5%85%B7/VSCode/VSCode%E4%B8%ADCode-Runner%E8%BF%90%E8%A1%8CPython%E7%89%88%E6%9C%AC%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/01/%E5%B7%A5%E5%85%B7/VSCode/VSCode%E4%B8%ADCode-Runner%E8%BF%90%E8%A1%8CPython%E7%89%88%E6%9C%AC%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">VSCode中Code-Runner运行Python版本问题</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-01 13:36:37" itemprop="dateCreated datePublished" datetime="2019-07-01T13:36:37+08:00">2019-07-01</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/VSCode/" itemprop="url" rel="index"><span itemprop="name">VSCode</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>用 Code-Runner 运行 Python 程序时，默认使用 <code>python</code> 语句执行。如果电脑上有 Python2 和 Python3 两个版本，<code>Python</code> 语句是用 Python2 执行程序。</p>
-<p>需要修改 Code-Runner 配置指定用 Python3 执行。</p>
-<p>在 Settings 中搜索 Code Runner Configure，输入 <code>code-runner.executorMap</code>，按下图来修改配置。</p>
-<p><img src="/2019/07/01/%E5%B7%A5%E5%85%B7/VSCode/VSCode%E4%B8%ADCode-Runner%E8%BF%90%E8%A1%8CPython%E7%89%88%E6%9C%AC%E9%97%AE%E9%A2%98/1.png" alt="1"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/01/%E8%AF%AD%E8%A8%80/Python/Python%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/07/01/%E8%AF%AD%E8%A8%80/Python/Python%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" class="post-title-link" itemprop="url">Python注意事项</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-07-01 09:11:32" itemprop="dateCreated datePublished" datetime="2019-07-01T09:11:32+08:00">2019-07-01</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>定义默认参数要牢记一点：默认参数必须指向不变对象！</li>
-<li>在Python中定义函数，可以用必选参数、默认参数、可变参数、关键字参数和命名关键字参数，这5种参数都可以组合使用。但是请注意，参数定义的顺序必须是：必选参数、默认参数、可变参数、命名关键字参数和关键字参数。</li>
-<li>每一个包目录下面都会有一个__init__.py的文件，这个文件是必须存在的，否则，Python就把这个目录当成普通目录，而不是一个包。<code>__init__.py</code>可以是空文件，也可以有Python代码，因为__init__.py本身就是一个模块，而它的模块名就是mycompany。</li>
-<li>类型属于对象，而不是变量</li>
+</li>
+<li>获取 bean 流程<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Java_Spring_%E8%8E%B7%E5%8F%96bean%E6%B5%81%E7%A8%8B.JPG" alt="Java_Spring_获取bean流程"></li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>Spring 框架中的单例 bean 是线程安全的吗？</strong><ul>
+<li>不是，Spring 框架中的单例 bean 不是线程安全的。</li>
+<li>spring 中的 bean 默认是单例模式，spring 框架并没有对单例 bean 进行多线程的封装处理。</li>
+<li>实际上大部分时候 spring bean 无状态的（比如 dao 类），所有某种程度上来说 bean 也是安全的，但如果 bean 有状态的话（比如 view model 对象），那就要开发者自己去保证线程安全了，最简单的就是改变 bean 的作用域，把“singleton”变更为“prototype”，这样请求 bean 相当于 <code>new Bean()</code> 了，所以就可以保证线程安全了。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h4><ul>
+<li>application.yml 中的 MySQL 密码可以通过第三方包加密（jasypt）</li>
+</ul>
+<h4 id="相关问题"><a href="#相关问题" class="headerlink" title="相关问题"></a>相关问题</h4><ul>
+<li><strong>Spring 框架中都用到了哪些设计模式？</strong><ul>
+<li>工厂模式：BeanFactory 就是简单工厂模式的体现，用来创建对象的实例；</li>
+<li>单例模式：Bean 默认为单例模式。</li>
+<li>代理模式：Spring 的 AOP 功能用到了 JDK 的动态代理和 CGLIB 字节码生成技术；</li>
+<li>模板方法：用来解决代码重复的问题。比如：RestTemplate, JmsTemplate, JpaTemplate。</li>
+<li>观察者模式：定义对象键一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都会得到通知被制动更新，如 Spring 中 listener 的实现 ApplicationListener。</li>
+</ul>
+</li>
+<li><strong>Spring BeanFactory 与 FactoryBean 的区别</strong><ul>
+<li>BeanFactory<ul>
+<li>BeanFactory，以 Factory 结尾，表示它是一个工厂类（接口），用于管理 Bean 的一个工厂。在 Spring 中，BeanFactory 是 IOC 容器的核心接口，它的职责包括：实例化、定位、配置应用程序中的对象及建立这些对象间的依赖。</li>
+<li>Spring 为我们提供了许多易用的 BeanFactory 实现，XmlBeanFactory 就是常用的一个，该实现将以 XML 方式描述组成应用的对象及对象间的依赖关系。XmlBeanFactory 类将持有此 XML 配置元数据，并用它来构建一个完全可配置的系统或应用。</li>
+</ul>
+</li>
+<li>FactoryBean<ul>
+<li>以 Bean 结尾，表示它是一个 Bean，不同于普通 Bean 的是：它是实现了 <code>FactoryBean&lt;T&gt;</code> 接口的 Bean，根据该 Bean 的 ID 从 BeanFactory 中获取的实际上是 FactoryBean 的 <code>getObject()</code> 返回的对象，而不是 FactoryBean 本身，如果要获取F actoryBean 对象，请在 id 前面加一个 &amp; 符号来获取。</li>
+<li>例如自己实现一个 FactoryBean，功能：用来代理一个对象，对该对象的所有方法做一个拦截，在调用前后都输出一行 LOG，模仿 ProxyFactoryBean 的功能。</li>
+</ul>
+</li>
+<li>BeanFactory 是个 Factory，也就是 IOC 容器或对象工厂，FactoryBean 是个 Bean。在 Spring 中，所有的 Bean 都是由 BeanFactory（也就是 IOC 容器）来进行管理的。但对 FactoryBean 而言，这个 Bean 不是简单的 Bean，而是一个能生产或者修饰对象生成的工厂 Bean，它的实现与设计模式中的工厂模式和修饰器模式类似。</li>
+</ul>
+</li>
+<li><strong>如何指定 bean 的初始化顺序？</strong><ul>
+<li>构造方法依赖<ul>
+<li>是最简单也是最常见的使用姿势，但是在使用时，需要注意循环依赖等问题。</li>
+<li>bean 的注入方式之中，有一个就是通过构造方法来注入，借助这种方式，我们可以解决有优先级要求的 bean 之间的初始化顺序。</li>
+<li>虽然这种方式比较直观简单，但是有几个限制<ul>
+<li>需要有注入关系，如 CDemo2 通过构造方法注入到 CDemo1 中，如果需要指定两个没有注入关系的 bean 之间优先级，则不太合适（比如我希望某个 bean 在所有其他的 Bean 初始化之前执行）</li>
+<li>循环依赖问题，如过上面的 CDemo2 的构造方法有一个 CDemo1 参数，那么循环依赖产生，应用无法启动</li>
+</ul>
+</li>
+<li>另外一个需要注意的点是，在构造方法中，不应有复杂耗时的逻辑，会拖慢应用的启动时间</li>
+</ul>
+</li>
+<li>@DependOn 注解<ul>
+<li>这是一个专用于解决 bean 的依赖问题，当一个 bean 需要在另一个 bean 初始化之后再初始化时，可以使用这个注解</li>
+<li>在使用这个注解的时候，有一点需要特别注意，它能控制 bean 的实例化顺序，但是 bean 的初始化操作（如构造 bean 实例之后，调用 @PostConstruct 注解的初始化方法）顺序则不能保证<ul>
+<li>完整的 bean 创建，分成了两块顺序<ul>
+<li>实例化（调用构造方法）</li>
+<li>初始化（注入依赖属性，调用 @PostConstruct 方法）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BeanPostProcessor 扩展<ul>
+<li>非典型的使用方式，如非必要，请不要用这种方式来控制 bean 的加载顺序</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Spring 如何统计 bean 的数量？</strong><ul>
+<li>通过实现 BeanFactoryPostProcessor 接口，调用 ConfigurableListableBeanFactory 的 <code>getBeanDefinitionCount()</code> 方法。</li>
+</ul>
+</li>
+</ul>
+<h3 id="SpringBoot"><a href="#SpringBoot" class="headerlink" title="SpringBoot"></a>SpringBoot</h3><ul>
+<li>maven<ul>
+<li>spring-boot-starter-parent<ul>
+<li>通过这个作为 parent，可以继承其中定义的配置、各项依赖以及版本号</li>
+<li>在本项目中添加依赖时，可以省略版本号</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="MyBatis"><a href="#MyBatis" class="headerlink" title="MyBatis"></a>MyBatis</h3><ul>
+<li>介绍<ul>
+<li>MyBatis 是一款优秀的持久层框架，它支持定制化 SQL、存储过程以及高级映射。MyBatis 避免了几乎所有的 JDBC 代码和手动设置参数以及获取结果集。MyBatis 可以使用简单的 XML 或注解来配置和映射原生类型、接口和 Java 的 POJO（Plain Old Java Objects，普通老式 Java 对象）为数据库中的记录。</li>
+</ul>
+</li>
+<li>语法<ul>
+<li><code>#&#123;&#125;</code> 和 <code>$&#123;&#125;</code><ul>
+<li><code>#&#123;&#125;</code>：使用的是预编译，对应 JBDC 中的 PreparedStatement</li>
+<li><code>$&#123;&#125;</code>：不会修改或者转义字符换，直接输出变量值<ul>
+<li>会引发 SQL 注入问题</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>SqlSession<ul>
+<li>SqlSession 是 Mybatis 最重要的构建之一，可以简单的认为 Mybatis 一系列的配置目的是生成类似 JDBC 生成的 Connection 对象的 SqlSession 对象，这样才能与数据库开启“沟通”，通过 SqlSession 可以实现增删改查（当然现在更加推荐是使用 Mapper 接口形式）。</li>
+</ul>
+</li>
+<li>工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/MyBatis_%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="MyBatis_工作原理"></li>
+</ul>
+<ol>
+<li>读取 MyBatis 配置文件：mybatis-config.xml 为 MyBatis 的全局配置文件，配置了 MyBatis 的运行环境等信息，例如数据库连接信息。</li>
+<li>加载映射文件。映射文件即 SQL 映射文件，该文件中配置了操作数据库的 SQL 语句，需要在 MyBatis 配置文件 mybatis-config.xml 中加载。mybatis-config.xml 文件可以加载多个映射文件，每个文件对应数据库中的一张表。</li>
+<li>构造会话工厂：通过 MyBatis 的环境等配置信息构建会话工厂 SqlSessionFactory。</li>
+<li>创建会话对象：由会话工厂创建 SqlSession 对象，该对象中包含了执行 SQL 语句的所有方法。</li>
+<li>Executor 执行器：MyBatis 底层定义了一个 Executor 接口来操作数据库，它将根据 SqlSession 传递的参数动态地生成需要执行的 SQL 语句，同时负责查询缓存的维护。</li>
+<li>MappedStatement 对象：在 Executor 接口的执行方法中有一个 MappedStatement 类型的参数，该参数是对映射信息的封装，用于存储要映射的 SQL 语句的 id、参数等信息。</li>
+<li>输入参数映射：输入参数类型可以是 Map、List 等集合类型，也可以是基本数据类型和 POJO 类型。输入参数映射过程类似于 JDBC 对 preparedStatement 对象设置参数的过程。</li>
+<li>输出结果映射：输出结果类型可以是 Map、 List 等集合类型，也可以是基本数据类型和 POJO 类型。输出结果映射过程类似于 JDBC 对结果集的解析过程。</li>
+</ol>
+</li>
+<li>一级缓存与二级缓存<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/MyBatis_%E7%BC%93%E5%AD%98.jpg" alt="MyBatis_缓存"></li>
+<li>一级缓存<ul>
+<li>该级缓存默认开启，不能关闭；</li>
+<li>该级缓存为 SqlSession 级别的缓存，也称为本地缓存；</li>
+<li>以下 4 种情况将会导致该级缓存失效：<ul>
+<li>在不同 SqlSession 中查询数据；</li>
+<li>相同 SqlSession 中查询数据，但查询条件不同</li>
+<li>相同 SqlSession 中查询数据，但两次查询之间执行了增删改操作</li>
+<li>同 SqlSession 中查询数据，但第二次查询前，程序调用 SqlSession 对象 <code>clearCache()</code> 方法手动清除了一级缓存</li>
+</ul>
+</li>
+<li>原理<ul>
+<li>第一次发出一个查询 sql，sql 查询结果写入 sqlsession 的一级缓存中，缓存使用的数据结构是一个 map。<ul>
+<li>key：MapperID+offset+limit+Sql+所有的入参</li>
+<li>value：用户信息</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>二级缓存<ul>
+<li>该级缓存默认不开启，但如果使用二级缓存需要在每个 XML 映射文件中添加 <code>&lt;cache&gt;&lt;/cache&gt;</code> 以配置该级缓存（相应实体类要序列化）。二级缓存可以通过在全局配置文件配置 setting 标签来关闭该级缓存。<ul>
+<li>如果这样配置的话，很多其他的配置就会被默认进行，如：<ul>
+<li>映射文件所有的 select 语句会被缓存</li>
+<li>映射文件的所有的 insert、update 和 delete 语句会刷新缓存</li>
+<li>缓存会使用默认的 Least Recently Used（LRU，最近最少使用原则）的算法来回收缓存空间</li>
+<li>根据时间表，比如 No Flush Interval，（CNFI，没有刷新间隔），缓存不会以任何时间顺序来刷新</li>
+<li>缓存会存储列表集合或对象（无论查询方法返回什么）的 1024 个引用</li>
+<li>缓存会被视为是 read/write（可读/可写）的缓存，意味着对象检索不是共享的，而且可以很安全的被调用者修改，不干扰其他调用者或县城所作的潜在修改</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>该级缓存为 namespace 级别的缓存</li>
+<li>工作机制：通过 SqlSession 查询数据，这些数据将会放到当前会话的一级缓存中；如果当前会话关闭，则一级缓存中的数据会被保存到二级缓存中，此后新的 SqlSession 将从二级缓存中查找数据；</li>
+<li>select 标签的 useCache 属性用于设置是否使用二级缓存；insert、update、delete 或 select 标签均有 flushCache 属性，其中增删改默认true，即 sql 执行以后，会同时清空一级和二级缓存，查询默认 false。</li>
+<li>为了提高扩展性，MyBatis 定义了 Cache 缓存接口，可以通过实现该缓存接口自定义二级缓存</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Mybatis 的分页原理<ul>
+<li>Mybatis 使用 RowBounds 对象进行分页，它是针对 ResultSet 结果集执行的内存分页，而非物理分页，可以在 sql 内直接书写带有物理分页的参数来完成物理分页功能，也可以使用分页插件来完成物理分页。</li>
+<li>分页插件的原理就是使用 MyBatis 提供的插件接口，实现自定义插件，在插件的拦截方法内，拦截待执行的 SQL，然后根据设置的 dialect（方言），和设置的分页参数，重写 SQL，生成带有分页语句的 SQL，执行重写后的 SQL，从而实现分页。</li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>Mybatis 为什么出现？为什么不是直接使用 jdbc？</strong><ul>
+<li>JDBC 操作数据库的步骤<ul>
+<li>注册驱动；</li>
+<li>获取数据库连接；</li>
+<li>拼接sql语句，设置sql参数；</li>
+<li>执行sql语句；</li>
+<li>sql返回结果；</li>
+<li>执行语句和数据库连接；</li>
+</ul>
+</li>
+<li>直接用 JDBC 每次都要做大量的相同的操作，并且还要对执行 sql 语句过程中所出现的各种异常和资源释放进行处理，而真正涉及到业务功能的代码其实很少，这明显影响了效率。</li>
+<li>再有就是当你接收数据库返回的结果集的时候，需要赋值给程序中的实体，使用 JDBC 需要你手动写代码去遍历每一条记录赋值给对应的实体 list 集合中，使用 JDBC 意味着需要更多的代码来提取结果并将它们映射到对象实例中，</li>
+<li><strong>MyBatis 避免了几乎所有的 JDBC 代码和手动设置参数以及获取结果集。</strong></li>
+</ul>
+</li>
+<li><strong>通常一个 Xml 映射文件，都会写一个 Dao 接口与之对应，请问，这个 Dao 接口的工作原理是什么？Dao 接口里的方法，参数不同时，方法能重载吗？</strong><ul>
+<li>Dao 接口，就是人们常说的 Mapper 接口，接口的全限名，就是映射文件中的 namespace 的值，接口的方法名，就是映射文件中 MappedStatement 的 id 值，接口方法内的参数，就是传递给 sql 的参数。Mapper 接口是没有实现类的，当调用接口方法时，接口全限名+方法名拼接字符串作为 key 值，可唯一定位一个 MappedStatement，举例：com.mybatis3.mappers.StudentDao.findStudentById，可以唯一找到 namespace 为 com.mybatis3.mappers.StudentDao 下面 id = findStudentById 的 MappedStatement。在 Mybatis 中，每一个 <code>&lt;select&gt;</code>、<code>&lt;insert&gt;</code>、<code>&lt;update&gt;</code>、<code>&lt;delete&gt;</code>标签，都会被解析为一个 MappedStatement 对象。</li>
+<li>Dao 接口里的方法，是不能重载的，因为是全限名+方法名的保存和寻找策略。</li>
+<li>Dao 接口的工作原理是 JDK 动态代理，Mybatis 运行时会使用 JDK 动态代理为 Dao 接口生成代理 proxy 对象，代理对象 proxy 会拦截接口方法，转而执行 MappedStatement 所代表的 sql，然后将 sql 执行结果返回。</li>
+</ul>
+</li>
+<li><strong>简述 MyBatis 的插件运行原理，以及如何编写一个插件？</strong><ul>
+<li>Mybatis 仅可以编写针对 ParameterHandler、ResultSetHandler、StatementHandler、Executor 这 4 种接口的插件，Mybatis 使用 JDK  的动态代理，为需要拦截的接口生成代理对象以实现接口方法拦截功能，每当执行这 4 种接口对象的方法时，就会进入拦截方法，具体就是 InvocationHandler 的 <code>invoke()</code> 方法，当然，只会拦截那些你指定需要拦截的方法。实现 Mybatis 的 Interceptor 接口并复写 <code>intercept()</code> 方法，然后在给插件编写注解，指定要拦截哪一个接口的哪些方法即可，记住，还需要在配置文件中配置你编写的插件。<ul>
+<li>StatementHandler<ul>
+<li>StatementHandler 是数据库会话器，专门用来处理数据库会话的。StatementHandler 内运用了适配器模式和策略模式的思想</li>
+</ul>
+</li>
+<li>ResultSetHandler<ul>
+<li>ResultHandler 是一个结果处理器，StatementHandler 完成了查询之后，最终就是通过 ResultHandler 来实现结果集映射，ResultSetHandler 接口中只定义了3个方法用来处理结果。</li>
+<li>ResultHandler 也默认提供了一个实现类：DefaultResultSetHandler。一般我们平常用的最多的就是通过 handleResultSets 来实现结果集转换。</li>
+</ul>
+</li>
+<li>ParameterHandler<ul>
+<li>ParameterHandler 是一个参数处理器，主要是用来对预编译语句进行参数设置的，只有一个默认实现类 DefaultParameterHandler。</li>
+<li>ParameterHandler 中只定义了两个方法，一个获取参数，一个设置参数。</li>
+</ul>
+</li>
+<li>Executor<ul>
+<li>Executor 就是真正用来执行 Sql 语句的对象，我们调用 SqlSession 中的方法，最终实际上都是通过 Executor 来完成的。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="ShardingSphere-JDBC"><a href="#ShardingSphere-JDBC" class="headerlink" title="ShardingSphere-JDBC"></a>ShardingSphere-JDBC</h3><ul>
+<li>Apache ShardingSphere 是一套开源的分布式数据库解决方案组成的生态圈，它由 JDBC、Proxy 和 Sidecar（规划中）这 3 款既能够独立部署，又支持混合部署配合使用的产品组成。它们均提供标准化的数据水平扩展、分布式事务和分布式治理等功能，可适用于如 Java 同构、异构语言、云原生等各种多样化的应用场景。</li>
+</ul>
+<h3 id="Netty"><a href="#Netty" class="headerlink" title="Netty"></a>Netty</h3><ul>
+<li>介绍<ul>
+<li>Netty 是一个 基于 NIO 的 client-server（客户端服务器）框架，使用它可以快速简单地开发网络应用程序。</li>
+<li>它极大地简化并优化了 TCP 和 UDP 套接字服务器等网络编程，并且性能以及安全性等很多方面甚至都要更好。</li>
+<li>支持多种协议，如 FTP、SMTP、HTTP 以及各种二进制和基于文本的传统协议。</li>
+<li>很多开源项目比如我们常用的 Dubbo、RocketMQ、ElasticSearch、gRPC 等等都用到了 Netty。</li>
+</ul>
+</li>
+<li>本质：JBoss 做的一个 Jar 包</li>
+<li>目的：快速开发高性能、高可靠性的网络服务器和客户端程序</li>
+<li>优点<ul>
+<li>统一的 API，支持多种传输类型，阻塞和非阻塞的。</li>
+<li>简单而强大的线程模型。</li>
+<li>自带编解码器解决 TCP 粘包/拆包问题。</li>
+<li>自带各种协议栈。</li>
+<li>真正的无连接数据包套接字支持。</li>
+<li>比直接使用 Java 核心 API 有更高的吞吐量、更低的延迟、更低的资源消耗和更少的内存复制。</li>
+<li>安全性不错，有完整的 SSL/TLS 以及 StartTLS 支持。</li>
+<li>社区活跃</li>
+<li>成熟稳定，经历了大型项目的使用和考验，而且很多开源项目都使用到了 Netty， 比如我们经常接触的 Dubbo、RocketMQ 等等。</li>
+</ul>
+</li>
+<li>应用场景<ul>
+<li>作为 RPC 框架的网络通信工具<ul>
+<li>我们在分布式系统中，不同服务节点之间经常需要相互调用，这个时候就需要 RPC 框架了。不同服务节点之间的通信是如何做的呢？可以使用 Netty 来做。比如我调用另外一个节点的方法的话，至少是要让对方知道我调用的是哪个类中的哪个方法以及相关参数吧！</li>
+</ul>
+</li>
+<li>实现一个自己的 HTTP 服务器<ul>
+<li>通过 Netty 我们可以自己实现一个简单的 HTTP 服务器，这个大家应该不陌生。说到 HTTP 服务器的话，作为 Java 后端开发，我们一般使用 Tomcat 比较多。一个最基本的 HTTP 服务器可要以处理常见的 HTTP Method 的请求，比如 POST 请求、GET 请求等等。</li>
+</ul>
+</li>
+<li>实现一个即时通讯系统 <ul>
+<li>使用 Netty 我们可以实现一个可以聊天类似微信的即时通讯系统。</li>
+</ul>
+</li>
+<li>实现消息推送系统<ul>
+<li>市面上有很多消息推送系统都是基于 Netty 来做的。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>架构<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E6%9E%B6%E6%9E%84%E5%9B%BE.jpg" alt="Netty_架构图"><ul>
+<li>绿色的部分 Core 核心模块，包括零拷贝、API 库、可扩展的事件模型。</li>
+<li>橙色部分 Protocol Support 协议支持，包括 Http 协议、webSocket、SSL（安全套接字协议）、谷歌 Protobuf 协议、zlib/gzip 压缩与解压缩、Large File Transfer 大文件传输等等。</li>
+<li>红色的部分 Transport Services 传输服务，包括 Socket、Datagram、Http Tunnel 等等。</li>
+</ul>
+</li>
+<li>构成部分<ul>
+<li>Channel<ul>
+<li>NIO 基本结构，代表一个用于连接到实体如硬件设备、文件、网络套接字或程序组件，能否执行一个或多个不同的 I/O 操作的开放连接。</li>
+<li>比较常用的 Channel 接口实现类是 NioServerSocketChannel（服务端）和 NioSocketChannel（客户端），这两个 Channel 可以和 BIO 编程模型中的 ServerSocket 以及 Socket 两个概念对应上。Netty 的 Channel 接口所提供的 API，大大地降低了直接使用 Socket 类的复杂性。</li>
+</ul>
+</li>
+<li>Future<ul>
+<li>提供了另一种通知应用操作已经完成的方式，这个对象作为一个一步操作结果的占位符，他将在将来的某个时候完成并提交结果。</li>
+<li>Netty 提供自己的实现，ChannelFuture，用于执行异步操作时使用。每个 Netty 的 outbound I/O 操作都会返回一个 ChannelFuture，这样就不会阻塞，这便是 Netty 所谓的“自底向上的异步和事件驱动”。相关实现的步骤如下：<ol>
+<li>异步连接到远程对等节点，调用立即返回并提供 ChannelFuture；</li>
+<li>操作完成后通知注册一个 ChannelFutureListener；</li>
+<li>当 <code>operationComplete()</code> 调用时检查操作的状态；</li>
+<li>如果成功就创建一个 ByteBuf 来保存数据；</li>
+<li>异步发送数据到远程，再次返回 ChannelFuture；</li>
+<li>如果有一个错误则抛出 Throwable，描述错误原因。</li>
+</ol>
+</li>
+<li>相关类<ul>
+<li>ChannelFuture<ul>
+<li>Netty 是异步非阻塞的，所有的 I/O 操作都为异步的。</li>
+<li>因此，我们不能立刻得到操作是否执行成功，但是，你可以通过 ChannelFuture 接口的 <code>addListener()</code> 方法注册一个 ChannelFutureListener，当操作执行成功或者失败时，监听就会自动触发返回结果。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Event 和 Handle<ul>
+<li>Netty 使用不同的事件来通知我们更改的状态或操作的状态，这使我们能够根据发声的事件触发适当的行为。</li>
+<li>这些行为可能包括：日志、数据转换、流控制、应用程序逻辑，由于 Netty 是一个网络框架，事件很清晰的跟入栈或出出站数据流相关，因为一些事件可能触发的传入的数据或状态的变化包括：活动或非活动连接、数据的读取、用户事件、错误，出站事件是由于在未来操作将触发的一个动作，这些包括：打开或关闭一个连接到远程、写或冲刷数据到 socket。</li>
+<li>每个事件都可以分配给用户实现处理程序类的方法，这些范例可直接转换为应用程序构建块。</li>
+<li>Netty 的 ChannelHandler 是各种处理程序的基本抽象，每个处理器实例就是一个回调，用于执行各种事件的响应。</li>
+<li>相关类<ul>
+<li>ChannelHandler<ul>
+<li>ChannelHandler 是消息的具体处理器。他负责处理读写操作、客户端连接等事情。</li>
+</ul>
+</li>
+<li>ChannelPipeline<ul>
+<li>ChannelPipeline 为 ChannelHandler 的链，提供了一个容器并定义了用于沿着链传播入站和出站事件流的 API 。当 Channel 被创建时，它会被自动地分配到它专属的 ChannelPipeline。</li>
+<li>我们可以在 ChannelPipeline 上通过 <code>addLast()</code> 方法添加一个或者多个 ChannelHandler ，因为一个数据或者事件可能会被多个 Handler 处理。当一个 ChannelHandler 处理完之后就将数据交给下一个 ChannelHandler 。</li>
+</ul>
+</li>
+<li>EventLoop<ul>
+<li>EventLoop 定义了 Netty 的核心抽象，用于处理连接的生命周期中所发生的事件。</li>
+<li>EventLoop 的主要作用实际就是负责监听网络事件并调用事件处理器进行相关 I/O 操作的处理。</li>
+<li>Channel 为 Netty 网络操作（读写等操作）抽象类，EventLoop 负责处理注册到其上的 Channel 处理 I/O 操作，两者配合参与 I/O 操作。</li>
+</ul>
+</li>
+<li>EventLoopGroup<ul>
+<li>EventLoopGroup 包含多个 EventLoop（每一个 EventLoop 通常内部包含一个线程），上面我们已经说了 EventLoop 的主要作用实际就是负责监听网络事件并调用事件处理器进行相关 I/O 操作的处理。</li>
+<li>并且 EventLoop 处理的 I/O 事件都将在它专有的 Thread 上被处理，即 Thread 和 EventLoop 属于 1 : 1 的关系，从而保证线程安全。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>Bootstrap 和 ServerBootstrap<ul>
+<li>Bootstrap 是客户端的启动引导类/辅助类</li>
+<li>ServerBootstrap 客户端的启动引导类/辅助类</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 的线程模型<ul>
+<li>对于网络请求一般可以分为两个处理阶段，一是接收请求任务，二是处理网络请求。根据不同阶段处理方式分为以下几种线程模型：<ul>
+<li>串行化处理模型<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B_%E4%B8%B2%E8%A1%8C%E5%8C%96%E5%A4%84%E7%90%86%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型_串行化处理模型"></li>
+<li>这个模型中用一个线程来处理网络请求连接和任务处理，当 worker 接受到一个任务之后，就立刻进行处理，也就是说任务接受和任务处理是在同一个 worker 线程中进行的，没有进行区分。这样做存在一个很大的问题是，必须要等待某个 task 处理完成之后，才能接受处理下一个 task。</li>
+<li>因此可以把接收任务和处理任务两个阶段分开处理，一个线程接收任务，放入任务队列，另外的线程异步处理任务队列中的任务。</li>
+</ul>
+</li>
+<li>并行化处理模型<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B_%E5%B9%B6%E8%A1%8C%E5%8C%96%E5%A4%84%E7%90%86%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型_并行化处理模型"></li>
+<li>由于任务处理一般比较缓慢，会导致任务队列中任务积压长时间得不到处理，这时可以使用线程池来处理。可以通过为每个线程维护一个任务队列来改进这种模型。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 具体线程模型<ul>
+<li>Reactor 模式基于事件驱动，采用多路复用将事件分发给相应的 Handler 处理，非常适合处理海量 IO 的场景。</li>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型"></li>
+<li>每个 NioEventLoop 都绑定了一个 Selector，所以在 Netty 的线程模型中，是由多个 Selecotr 在监听 I/O 就绪事件。而 Channel 注册到 Selector。</li>
+<li>一个 Channel 绑定一个 NioEventLoop，相当于一个连接绑定一个线程，这个连接所有的 ChannelHandler 都是在一个线程中执行的，避免了多线程干扰。更重要的是 ChannelPipline 链表必须严格按照顺序执行的。单线程的设计能够保证 ChannelHandler 的顺序执行。</li>
+<li>一个 NioEventLoop 的 selector 可以被多个 Channel 注册，也就是说多个 Channel 共享一个 EventLoop。EventLoop 的 Selecctor 对这些 Channel 进行检查。</li>
+<li>相关问题<ul>
+<li><strong>如何理解 NioEventLoop 和 NioEventLoopGroup</strong><ul>
+<li>NioEventLoop 实际上就是工作线程，可以直接理解为一个线程。NioEventLoopGroup 是一个线程池，线程池中的线程就是 NioEventLoop。</li>
+<li>实际上 bossGroup 中有多个 NioEventLoop 线程，每个 NioEventLoop 绑定一个端口，也就是说，如果程序只需要监听 1 个端口的话，bossGroup 里面只需要有一个 NioEventLoop 线程就行了。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 工作原理<ul>
+<li>server 端工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_Server%E7%AB%AF%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="Netty_Server端工作原理"></li>
+</ul>
+</li>
+<li>client 端工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_Client%E7%AB%AF%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="Netty_Client端工作原理"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 的零拷贝<ul>
+<li>零复制（英语：Zero-copy；也译零拷贝）技术是指计算机执行操作时，CPU 不需要先将数据从某处内存复制到另一个特定区域。这种技术通常用于通过网络传输文件时节省 CPU 周期和内存带宽。</li>
+<li>在 OS 层面上的 Zero-copy 通常指避免在用户态（User-space）与内核态（Kernel-space）之间来回拷贝数据。而在 Netty 层面，零拷贝主要体现在对于数据操作的优化。</li>
+<li>Netty 中的零拷贝体现在以下几个方面：<ul>
+<li>使用 Netty 提供的 CompositeByteBuf 类, 可以将多个 ByteBuf 合并为一个逻辑上的 ByteBuf, 避免了各个 ByteBuf 之间的拷贝。</li>
+<li>ByteBuf 支持 slice 操作, 因此可以将 ByteBuf 分解为多个共享同一个存储区域的 ByteBuf, 避免了内存的拷贝。</li>
+<li>通过 FileRegion 包装的 FileChannel.tranferTo 实现文件传输, 可以直接将文件缓冲区的数据发送到目标 Channel, 避免了传统通过循环 write 方式导致的内存拷贝问题。</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
       
@@ -839,7 +909,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/06/04/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%A6%BB%E6%95%A3%E6%95%B0%E5%AD%A6%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8%EF%BC%88%E5%8E%9F%E4%B9%A6%E7%AC%AC7%E7%89%88%EF%BC%89/%E7%AC%AC1%E7%AB%A0-%E9%80%BB%E8%BE%91%E5%92%8C%E8%AF%81%E6%98%8E/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -853,7 +923,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2019/06/04/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%A6%BB%E6%95%A3%E6%95%B0%E5%AD%A6%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8%EF%BC%88%E5%8E%9F%E4%B9%A6%E7%AC%AC7%E7%89%88%EF%BC%89/%E7%AC%AC1%E7%AB%A0-%E9%80%BB%E8%BE%91%E5%92%8C%E8%AF%81%E6%98%8E/" class="post-title-link" itemprop="url">离散数学及其应用（原书第7版）-第1章-逻辑和证明</a>
+            <a href="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/" class="post-title-link" itemprop="url">统计学系方法-第5章-决策树</a>
         </h2>
 
         <div class="post-meta">
@@ -863,7 +933,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-06-04 15:00:35" itemprop="dateCreated datePublished" datetime="2019-06-04T15:00:35+08:00">2019-06-04</time>
+              <time title="创建时间：2019-08-24 18:37:12" itemprop="dateCreated datePublished" datetime="2019-08-24T18:37:12+08:00">2019-08-24</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -886,56 +956,825 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="命题逻辑"><a href="#命题逻辑" class="headerlink" title="命题逻辑"></a>命题逻辑</h3><h4 id="条件命题的真值表"><a href="#条件命题的真值表" class="headerlink" title="条件命题的真值表"></a>条件命题的真值表</h4><p>当 p 和 q 都为真，以及当 p 为假（与 q 的真值无关）时，语句 p-&gt;q 为真。</p>
-<h3 id="命题等价式"><a href="#命题等价式" class="headerlink" title="命题等价式"></a>命题等价式</h3><h4 id="条件命题的逻辑等价式"><a href="#条件命题的逻辑等价式" class="headerlink" title="条件命题的逻辑等价式"></a>条件命题的逻辑等价式</h4><ul>
-<li>p-&gt;q≡┐p∨q</li>
-<li>p-&gt;q≡┐q-&gt;┐p</li>
-<li>p∨q≡┐p-&gt;q</li>
-<li>p∧q≡┐(p-&gt;┐q)</li>
-<li>┐(p-&gt;q)≡p∧┐q</li>
-<li>(p-&gt;q)∧(p-&gt;r)≡p-&gt;(q∧r)</li>
-<li>(p-&gt;r)∧(q-&gt;r)≡(p∨q)-&gt;r</li>
-<li>(p-&gt;q)∨(p-&gt;r)≡p-&gt;(q∨r)</li>
-<li>(p-&gt;r)∨(q-&gt;r)≡(p∧q)-&gt;r</li>
-</ul>
-<h4 id="双条件命题的逻辑等价式"><a href="#双条件命题的逻辑等价式" class="headerlink" title="双条件命题的逻辑等价式"></a>双条件命题的逻辑等价式</h4><ul>
-<li>p&lt;-&gt;q≡(p-&gt;q)∧(q-&gt;p)</li>
-<li>p&lt;-&gt;q≡┐p&lt;-&gt;┐q</li>
-<li>p&lt;-&gt;q≡(p∧q)∨(┐p∧┐q)</li>
-<li>┐(p&lt;-&gt;q)≡p&lt;-&gt;┐q</li>
-</ul>
-<h3 id="谓词和量词"><a href="#谓词和量词" class="headerlink" title="谓词和量词"></a>谓词和量词</h3><h4 id="谓词"><a href="#谓词" class="headerlink" title="谓词"></a>谓词</h4><p>语句“x 大于3”有两个部分。第一部分即变量 x 是语句的主语。第二部分（__谓词__“大于3”）表明语句的主语居右的一个性质。我们可以用 <em>P(x)</em> 表示语句“x 大于3”，其中 P 表示谓词“大于3”，而 x 是变量。语句 <em>P(x)</em> 也可以说成是命题函数 P 在 x 的值。一旦给变量 x 赋一个值，语句 <em>p(x)</em> 就成为命题并具有真值。</p>
-<h4 id="量词"><a href="#量词" class="headerlink" title="量词"></a>量词</h4><p>量化表示在何种程度上谓词对于一定范围的个体成立。在自然语言中，所有、某些、许多、没有，以及少量这些词都可以用在量化上。这里我们集中讨论两类量化：全称量化，它告诉我们一个谓词在所考虑范围内对每一个体都为真；存在量化，它告诉我们一个谓词对所考虑范围内的一个或多个个体为真。</p>
-<h5 id="全称量词"><a href="#全称量词" class="headerlink" title="全称量词"></a>全称量词</h5><p>许多数学命题断言某一性质对于变量在某一特定域内的所有值均为真，这一特定域称为变量的 __论域__（dormain of discourse)（或 __全体域__（universe of discourse）），时常简称为 __域__（domain）。这些语句可以用全称量化表示。</p>
-<p>对特定论域而言 <em>P(x)</em> 的全称量化是这样一个命题：它断言 <em>P(x)</em> 对 x 在其论域汇总的所有值均为真。</p>
-<p>注意，论域规定了变量 x 所有可能取的值。当我们改变论域时，<em>P(x)</em> 的全称量化的意义也随之改变。在使用全称量化时必须指定论域，否则语句的 <strong>全称量化</strong> 就是无定义的。</p>
-<p><em>P(x)</em> 的 <strong>全称量化</strong> 是语句“<em>P(x)</em> 对 x 在其论域的所有值为真。”</p>
-<p>符号 <em>∀xP(x)</em> 表示 <em>P(x)</em> 的全称量化，其中 ∀ 称为 __全称量词__。命题 <em>VxP(x)</em> 读做“对所有 x，_P(x)_”或“对每个 x，_P(x)_”。一个使 <em>P(x)</em> 为假的个体称为 <em>∀xP(x)</em> 的 __反例__。</p>
-<p>通常，我们会做一个隐式的假设，即量词的论域均为非空的。注意如果论域为空，那么 <em>∀xP(x)</em> 对任何命题函数 <em>P(x)</em> 都为真，因为论域中没有单个 x 使 <em>P(x)</em> 为假。</p>
-<h5 id="存在量词"><a href="#存在量词" class="headerlink" title="存在量词"></a>存在量词</h5><p><em>P(x)</em> 的 <strong>存在量化</strong> 的命题“论域中存在一个个体 x 满足 _P(x)_。”</p>
-<p>我们用符号 <em>ョxP(X)</em> 表示 <em>P(x)</em> 的存在量化，其中 ョ 称为 __存在量词__。存在量化 <em>ョxP(X)</em> 可读做“有一个 x 满足 _P(x)_”、“至少有一个 x 满足 _P(x)”或“对某个 x，_P(x)”。</p>
-<p>通常，我们会做一个隐式的假设，即量词的论域均为非空的。如果论域为空，那么无论 <em>Q(x)</em> 是什么命题函数，当论域为空时论域中没有一个个体能使 <em>Q(x)</em> 为真，所以 <em>ョxP(X)</em> 为假。</p>
-<h5 id="唯一性量词"><a href="#唯一性量词" class="headerlink" title="唯一性量词"></a>唯一性量词</h5><p>对于我们能定义的不同量词的数量使没有限制的，如“恰好有 2 个”、“有不超过 3 个”、“至少有 100 个”等。所有其他量词中最常见的使 __唯一性量词__，用符号 ョ! 或 ョ<sub>1</sub>表示。_ョ!xP(x)_（或 _ョ<sub>1</sub>xP(x)_）这种表示法是指“存在一个唯一的 x 使得 <em>P(x)</em> 为真”。（其他表示唯一性量词的语句有“恰好存在一个”、“有且只有一个”）比如，_ョ!x(x-1=0)_，其中论域使实数集合，表示存在一个唯一的实数 x 使得 x-1=0。</p>
-<h4 id="约束论域的量词"><a href="#约束论域的量词" class="headerlink" title="约束论域的量词"></a>约束论域的量词</h4><p>∀x&lt;0(x<sup>2</sup>&gt;0)</p>
-<h4 id="涉及量词的逻辑等价式"><a href="#涉及量词的逻辑等价式" class="headerlink" title="涉及量词的逻辑等价式"></a>涉及量词的逻辑等价式</h4><p>∀x(P(x)∧Q(x))≡∀xP(x)∧∀xQ(x)</p>
-<h4 id="量化表达式的否定"><a href="#量化表达式的否定" class="headerlink" title="量化表达式的否定"></a>量化表达式的否定</h4><ul>
-<li>┐∀xP(x)≡ョx┐P(x)</li>
-<li>┐ョxQ(x)≡∀x┐Q(x)</li>
-</ul>
-<h3 id="嵌套量词"><a href="#嵌套量词" class="headerlink" title="嵌套量词"></a>嵌套量词</h3><h4 id="嵌套量词的顺序"><a href="#嵌套量词的顺序" class="headerlink" title="嵌套量词的顺序"></a>嵌套量词的顺序</h4><p>要注意的是，量词的顺序是很重要的，除非所有量词为全称量词或均为存在量词。</p>
-<h3 id="推理规则"><a href="#推理规则" class="headerlink" title="推理规则"></a>推理规则</h3><p>数学中的证明是建立数学命题真实性的有效论证。所谓的 __论证__（argument），是指一连串的饿命题并以结论为最后的命题。所谓 __有效性__（valid），是指结论或论证的最后一个命题必须根据论证过程前面的命题或 __前提__（premise）的真实性推出。也就是说，一个论证是有效的当且仅当不可能出现所有前提为真而结论为假的情况。</p>
-<h4 id="命题逻辑的有效论证"><a href="#命题逻辑的有效论证" class="headerlink" title="命题逻辑的有效论证"></a>命题逻辑的有效论证</h4><p>命题逻辑中的一个论证是一连串的命题。除了论证中最后一个命题外都叫做前提，最后那个命题叫做结论。一个论证是有效的，如果它的所有前提为真蕴含着结论为真。<br>命题逻辑中的论证形式是一连串涉及命题变元的复合命题。无论用什么特定命题来替换其中的命题变元，如果前提均为真时结论为真，则称该论证形式是有效的。</p>
-<h3 id="证明导论"><a href="#证明导论" class="headerlink" title="证明导论"></a>证明导论</h3><h4 id="专用术语"><a href="#专用术语" class="headerlink" title="专用术语"></a>专用术语</h4><p>正式地，一个 __定理__（theorem）是一个能够被证明是真的语句。在数学描述中，定理一词通常是用来专指那些被认为至少有些重要的语句。不太重要的定理有时称为 __命题__（定理也可以称为 __事实__（fact）或 __结论__（result））。一个定理可以是带一个或多个前提及一个结论的条件语句的全称量化式。当然，它也可以是其他类型的逻辑语句。我们用一个 __证明__（proof）来展示一个定理是真的。证明就是建立定理真实性的一个有效论证。证明中用到的语句可以包括 __公理__（axiom）（或 __假设__（postulate）），这些是我们假定为真的语句（例如，实数公理，以及平面几何的公理）、定理的前提（如果有的话）和以前已经被证明的定理。公理可以采用无须定义的原是属于来陈述，而在定理和证明中所用的所有其他属于都必须是有定义的。推理规则和其术语的定义一起用于从其他的断言推出结论，并绑定在证明中的每个步骤。实际上，一个证明的最后一步通常恰好是定理的结论。然而，为清晰可见，我们通常会重述定理的结论作为一个证明的最后步骤。<br>一个不太重要但有助于证明其结论的定理称为 __引理__（lemma）。当用一系列引理来进行复杂的证明时通常比较容易理解，其中每一个引理都被独立证明。__推论__（corollary）是从一个已经被证明的定理可以直接建立起来的定理。__猜想__（conjecture）是一个被提出认为是真的命题，通常是基于部分证据、启发式论证或者专家的直觉。当猜想的一个证明被发现时，猜想就变成了定理。</p>
-<h4 id="证明定理的方法"><a href="#证明定理的方法" class="headerlink" title="证明定理的方法"></a>证明定理的方法</h4><h5 id="直接证明法"><a href="#直接证明法" class="headerlink" title="直接证明法"></a>直接证明法</h5><p>条件语句 p-&gt;q 的 <strong>直接证明法</strong> 的构造：第一步假设 p 为真；第二步用推理规则构造，而第三步表明 q 必须也为真。</p>
-<h5 id="反证法"><a href="#反证法" class="headerlink" title="反证法"></a>反证法</h5><p>反证法利用了这样一个事实：条件语句 p-&gt;q 等价于它的逆否命题 ┐q-&gt;┐p。着意味着条件语句 p-&gt;q 的证明可以通过它的逆否命题 ┐q-&gt;┐p 为真来完成。</p>
-<h5 id="归谬证明法"><a href="#归谬证明法" class="headerlink" title="归谬证明法"></a>归谬证明法</h5><p>假设我们要证明命题 p 是真的。再假定我们能找到一个矛盾式 q 使得 ┐p-&gt;q 为真。因为 q 是假的，而 ┐p-&gt;q 是真的，所以我们能够得出结论 ┐p 为假，这意味着 p 为真。<br>因为无论 r 是什么，命题 r∧┐r 就是矛盾式，所以如果我们能够证明对某个命题 r，┐p-&gt;(r∧┐r) 为真，就能证明 p 是真的。这种类型的证明称为 __归谬证明法__（proof by contradiction）。由于归谬证明法不是直接证明结论，所以它是另一个种间接证明法。</p>
-<h5 id="等价证明法"><a href="#等价证明法" class="headerlink" title="等价证明法"></a>等价证明法</h5><h5 id="反例证明法"><a href="#反例证明法" class="headerlink" title="反例证明法"></a>反例证明法</h5><h5 id="穷举证明法"><a href="#穷举证明法" class="headerlink" title="穷举证明法"></a>穷举证明法</h5><h5 id="分情形证明法"><a href="#分情形证明法" class="headerlink" title="分情形证明法"></a>分情形证明法</h5><h4 id="存在性证明"><a href="#存在性证明" class="headerlink" title="存在性证明"></a>存在性证明</h4><p>ョxP(x) 这类命题的证明称为 __存在性证明__（existence proof）。有多种方式来证明这类定理。有时可以通过找出一个是的 P(a) 为真的元素 a（称为一个物证）来给出 ョxP(x) 的存在性证明。这样的存在性证明称为是 __构造性的__（constructive）。也可以给出一种 __非结构性的__（nonconstructive）存在性证明，即不是找出使 P(a) 为真的元素 a，而是以某种其他方式来证明 ョxP(x) 为真。</p>
-<h4 id="唯一性证明"><a href="#唯一性证明" class="headerlink" title="唯一性证明"></a>唯一性证明</h4><p>某些定理断言具有特定性质的元素唯一存在。换句话说，这些定理断言恰好只有一个元素具有这个性质。要证明这些语句，需要证明存在一个具有此性质的元素，以及没有其他元素具有此性质。__唯一性证明__（uniqueness proof）的两个部分如下：</p>
+          <p>决策树（decision tree）是一种基本的分类与回归方法。决策树模型呈树形结构，在分类问题中，表示基于特征对实例进行分类的过程。它可以认为是 if-then 规则的集合，也可以认为是定义在特征空间与类空间伤的条件概率分布。其主要优点是模型具有可读性，分类速度快。学习时，利用训练数据，根据损失函数最小化的原则简历决策树模型。预测时，对新的数据，利用决策树模型进行分类。决策树学习通常包括 3 个步骤：特征选择、决策树的生成和决策树的修剪。</p>
+<h2 id="决策树模型与学习"><a href="#决策树模型与学习" class="headerlink" title="决策树模型与学习"></a>决策树模型与学习</h2><h3 id="决策树模型"><a href="#决策树模型" class="headerlink" title="决策树模型"></a>决策树模型</h3><p>分类决策树模型是一种描述对实例进行分类的树形结构。决策树由结点（node）和有向边（directed edge）组成。结点有两种类型：内部结点（internal node）和叶结点（leaf node）。内部结点表示一个特征或属性，叶结点表示一个类。</p>
+<p>用决策树分类，从根结点开始，对实例的某一特征进行测试，根据测试结果，将实例分配到其子节点；这时，每一个子节点对应着该特征的一个取值。如此递归地对实例进行测试并分配，直至达到叶结点。最后将实例分到叶结点的类中。</p>
+<h3 id="决策树与-if-then-规则"><a href="#决策树与-if-then-规则" class="headerlink" title="决策树与 if-then 规则"></a>决策树与 if-then 规则</h3><p>可以将决策树看成一个 if-then 规则的集合。将决策树转换成 if-then 规则的过程是这样的：由决策树的根结点到叶结点的每一条路径构建一条规则；路径上内部结点的特征对应着规则的条件，而叶结点的类对应着规则的结论。决策树的路径或其对应的 if-then 规则集合具有一个重要的性质：互斥并且完备。这就是说，每一个实例都被一条路径或一条规则所覆盖，而且只被一条路径或一条规则所覆盖。这里所谓的覆盖是指实例的特征与路径上的特征一致或实例满足规则的条件。</p>
+<h3 id="决策树与条件概率分布"><a href="#决策树与条件概率分布" class="headerlink" title="决策树与条件概率分布"></a>决策树与条件概率分布</h3><p>决策树还表示给定特征条件下类的条件概率分布。这一条件概率分布定义在特征空间的一个划分（partition）上。将特征空间划分为互不相交的单元（cell）或区域（region），并在每个单元定义一个类的概率分布就构成了一个条件概率分布。决策树的一条路径对应于划分中的一个单元。决策树所表示的条件概率分布由各个单元给定条件下类的条件概率分布组成。假设 X 为表示特征的随机变量，Y 为表示类的随机变量，那么这个条件概率分布可以表示为 P(Y|X)。X 取值于给定划分下单元的集合，Y 取值于类的集合。各叶结点（单元）上的条件概率往往偏向某一个类，即属于某一类的概率较大。决策树分类时将该结点的实例强行分到条件概率的那一类去。</p>
+<h3 id="决策树学习"><a href="#决策树学习" class="headerlink" title="决策树学习"></a>决策树学习</h3><p>决策树学习本质上是从训练数据集中归纳出一组分类规则。与训练数据集不相矛盾的决策树（即能对训练数据进行正确分类的决策树）可能有多个，也可能一个也没有。我们需要的是一个与训练数据矛盾较小的决策树，同时具有较好的泛化能力。从另一个角度看，决策树学习是由训练数据集估计条件概率模型。基于特征空间划分的类的条件概率模型有无穷多个。我们选择的条件概率模型应该不仅对训练数据有很好的拟合，而且对位置数据有很好的预测。</p>
+<p>决策树学习用损失函数表示这一目标。决策树学习的损失函数通常是正则化的极大似然函数。决策树学习的策略是以损失函数为目标函数的最小化。</p>
+<p>决策树学习的算法通常是一个递归地选择最优特征，并根据该特征对训练数据进行分割，使得各个子数据集有一个最好的分类的过程。</p>
+<p>以上方法生成的决策树可能对训练数据有很好的分类能力，但对未知的测试数据却未必有很好的分类能力，即可能发生过拟合现象。我们需要对已生成的树自下而上进行剪枝，将树变得更简单，从而使它具有更好的泛化能力。</p>
+<p>如果特征数量很多，也可以在决策树学习开始的时候，对特征进行选择，只留下对训练数据有足够分类能力的特征。</p>
+<p>决策树学习算法包含特征选择、决策树的生成与决策树的剪枝过程。由于决策树表示一个条件概率分布，所以深浅不同的决策树对应着不同复杂度的概率模型。决策树的生成对应于模型的局部选择，决策树的剪枝对应于模型的全局选择。决策树的生成只考虑局部最优，相对地，决策树的剪枝则考虑全局最优。</p>
+<h2 id="特征选择"><a href="#特征选择" class="headerlink" title="特征选择"></a>特征选择</h2><h3 id="特征选择问题"><a href="#特征选择问题" class="headerlink" title="特征选择问题"></a>特征选择问题</h3><p>特征选择在于选取对训练数据具有分类能力的特征。这样可以提高决策树学习的效率。如果利用一个特征进行分类的结果与随机分类的结果没有很大差别，则称这个特征是没有分类能力的。经验上扔掉这样的特征对决策树学习的精度影响不大。通常特征选择的准则是信息增益或信息增益比。</p>
+<h3 id="信息增益"><a href="#信息增益" class="headerlink" title="信息增益"></a>信息增益</h3><p>在信息论与概率统计中，熵（entropy）是表示随机变量不确定性的度量。设 X 是一个取有限个值的离散随机变量，其概率分布为 P(X=xi)=pi，i=1,2,…,n，则随机变量 X 的熵的定义为 <img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E7%86%B5.png" alt="熵"> </p>
+<p>设有随机变量(X, Y)，其联合概率分布为 P(X=xi, Y=yj)=pij, i=1,2,…,n; j=1,2,…,m，条件熵 H(Y|X) 表示在已知随机变量 X 的条件下随机变量 Y 的不确定性。随机变量 X 给定的条件下随机变量 Y 的条件熵（conditional entropy）H(Y|X)，定义为 X 给定条件下 Y 的条件概率分布的熵对 X 的数学期望 <img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E6%9D%A1%E4%BB%B6%E7%86%B5.png" alt="条件熵">，这里，pi=P(X=xi), i=1,2,…,n</p>
+<p>当熵和条件熵中的概率由数据估计（特别是极大似然估计）得到时，所对应的熵与条件熵分别称为经验熵（empirical entropy）和经验条件熵（empirical conditional entropy）。此时如果有 0 概率，令 0log0=0。</p>
+<p>信息增益（information gain）表示得知特征 X 的信息而使得类 Y 的信息不确定性减少的程度。</p>
+<p><strong>信息增益：</strong> 特征 A 对训练数据集 D 的信息增益 g(D, A)，定义为集合 D 的经验熵 H(D) 与特征 A 给定条件下 D 的经验条件熵 H(D|A) 之差。即 <code>g(D, A) = H(D) - H(D|A)</code></p>
+<p>一般地，熵 H(Y) 与条件熵 H(Y|X) 之差称为互信息（mutual information）。决策树学习中的信息增益等价于训练数据集中类与特征的互信息。</p>
+<p>信息增益大的特征具有更强分类能力。</p>
+<p>根据信息增益准则的特征选择方法是：对训练数据集（或子集）D，计算其每个特征的信息增益，并比较它们的大小，选择信息增益最大的特征。</p>
+<p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%E7%AE%97%E6%B3%951.png" alt="信息增益算法1"><br><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%E7%AE%97%E6%B3%952.png" alt="信息增益算法2"> </p>
+<h3 id="信息增益比"><a href="#信息增益比" class="headerlink" title="信息增益比"></a>信息增益比</h3><p>以信息增益作为划分训练数据集的特征，存在偏向于选择取值较多的特征的问题。使用信息增益比（information gain ratio）可以对这一问题进行校正。</p>
+<p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%E6%AF%94.png" alt="信息增益比"> </p>
+<h2 id="决策树的生成"><a href="#决策树的生成" class="headerlink" title="决策树的生成"></a>决策树的生成</h2><h3 id="ID3-算法"><a href="#ID3-算法" class="headerlink" title="ID3 算法"></a>ID3 算法</h3><p>ID3 算法的核心是在决策树各个节点上应用信息增益准则选择特征，递归地构建决策树。具体方法是：从根结点（root node）开始，对结点计算所有可能的特征信息增益，选择信息增益最大的特征作为结点的特征，由该特征的不同取值建立子节点；再对子节点递归地调用以上方法，构建决策树；直到所有特征的信息增益均很小或没有特征可以选择为止。最后得到一个决策树。ID3 相当于用极大似然法进行概率模型的选择。</p>
+<p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/ID3.png" alt="ID3"><br><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/ID3-2.png" alt="ID3-2"> </p>
+<p>ID3 算法只有树的生成，所以该算法生成的树容易产生过拟合。</p>
+<h3 id="C4-5-的生成算法"><a href="#C4-5-的生成算法" class="headerlink" title="C4.5 的生成算法"></a>C4.5 的生成算法</h3><p>C4.5 算法与 ID3 算法相似，C4.5 算法对 ID3 算法进行了改进。C4.5 在生成的过程中，用信息增益比来选择特征。<br><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/C4.5%E7%94%9F%E6%88%90%E7%AE%97%E6%B3%95.png" alt="C4.5生成算法"> </p>
+<h2 id="决策树的剪枝"><a href="#决策树的剪枝" class="headerlink" title="决策树的剪枝"></a>决策树的剪枝</h2><p>决策树生成算法递归地产生决策树，直到不能继续下去为止。这样产生的树往往对训练数据的分类很准确，但对未知的测试数据的分类却没有那么准确，即出现过拟合现象。过拟合的原因在于学习时过多地考虑如何提高对训练数据的正确分类，从而构建出过于复杂的决策树。解决这个问题的办法是考虑决策树的复杂度，对已生成的决策树进行简化。</p>
+<p>在决策树学习中将已生成的树进行简化的过程称为剪枝（pruning）。具体地，剪枝从已生成的树上裁掉一些子树或叶结点，并将其根结点或父节点作为新的叶结点，从而简化分类树模型。</p>
+<p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E5%89%AA%E6%9E%9D%E7%AE%97%E6%B3%951.png" alt="剪枝算法1"><br><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E5%89%AA%E6%9E%9D%E7%AE%97%E6%B3%952.png" alt="剪枝算法2"> </p>
+<p>剪枝，就是当 α 确定时，选择损失函数最小的模型，即损失函数最小的子树。当 α 值确定时，子树越大，往往与训练数据的拟合越好，但是模型的复杂度就越高；相反，子树越小，模型的复杂度就越低，但是往往与训练数据的拟合不好。损失函数正好表示了对两者的平衡。</p>
+<p>可以看出，决策树生成只考虑了通过提高信息增益（或信息增益比）对训练数据进行更好的拟合。而决策树剪枝通过优化损失函数还考虑减小模型复杂度。决策树生成学习局部的模型，而决策树剪枝学习整体的模型。</p>
+<p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E6%A0%91%E7%9A%84%E5%89%AA%E6%9E%9D%E7%AE%97%E6%B3%951.png" alt="树的剪枝算法1"><br><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E6%A0%91%E7%9A%84%E5%89%AA%E6%9E%9D%E7%AE%97%E6%B3%952.png" alt="树的剪枝算法2"><br><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E6%A0%91%E7%9A%84%E5%89%AA%E6%9E%9D%E7%AE%97%E6%B3%953.png" alt="树的剪枝算法3"> </p>
+<h2 id="CART-算法"><a href="#CART-算法" class="headerlink" title="CART 算法"></a>CART 算法</h2><p>分类与回归树（classification and regression tree, CART）模型由 Breiman 等人在 1984年提出，是应用广泛的决策树学习方法。CART 同样由特征选择、树的生成及剪枝组成，即可以用于分类也可以用于回归。以下将用于分类与回归的树统称为决策树。</p>
+<p>CART 是在给定输入随机变量 X 条件下输出随机变量 Y 的条件概率分布的学习方法。CART 假设决策树是二叉树，内部结点特征的取值为“是”与“否”，左分支是取值为“是”的分支，右分支是取值为“否”的分支。这样的决策树等价于递归地二分每个特征，将输入空间即特征空间划分为有限个单元，并在这些单元上确定预测的概率分布，也就是在输入给定的条件下输出的条件概率分布。</p>
+<p>CART 算法由以下两步组成：</p>
+<ol>
+<li>决策树生成：基于训练数据集生成决策树，生成的决策树要尽量大；</li>
+<li>决策树剪枝：用验证数据集对已生成的树进行剪枝并选择最优子树，这时用损失函数最小作为剪枝的标准。</li>
+</ol>
+<h3 id="CART-生成"><a href="#CART-生成" class="headerlink" title="CART 生成"></a>CART 生成</h3><p>决策树的生成就是递归地构建二叉决策树的过程。对回归树用平方误差最小化准则，对分类树用基尼指数（Gini index）最小化准则，进行特征选择，生成二叉树。</p>
+<h4 id="回归树的生成"><a href="#回归树的生成" class="headerlink" title="回归树的生成"></a>回归树的生成</h4><p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E5%9B%9E%E5%BD%92%E6%A0%91%E7%94%9F%E6%88%90%E7%AE%97%E6%B3%95.png" alt="最小二乘回归树生成算法"> </p>
+<h4 id="分类树的生成"><a href="#分类树的生成" class="headerlink" title="分类树的生成"></a>分类树的生成</h4><p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E5%9F%BA%E5%B0%BC%E6%8C%87%E6%95%B01.png" alt="基尼指数1"><br><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/%E5%9F%BA%E5%B0%BC%E6%8C%87%E6%95%B02.png" alt="基尼指数2"> </p>
+<p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/CART%E7%94%9F%E6%88%90%E7%AE%97%E6%B3%951.png" alt="CART生成算法1"><br><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/CART%E7%94%9F%E6%88%90%E7%AE%97%E6%B3%952.png" alt="CART生成算法2"> </p>
+<h3 id="CART-剪枝"><a href="#CART-剪枝" class="headerlink" title="CART 剪枝"></a>CART 剪枝</h3><p>CART 剪枝算法从“完全生长”的决策树的底端剪去一些子树，使决策树变小（模型变简单），从而能够对未知数据有更准确的预测。CART 剪枝算法由两步组成：首先从生成算法产生的决策树 T0底端开始不断剪枝，直到 T0 的根结点，形成一个子树序列 {T0, T1,…Tn}；然后通过交叉验证法在独立的验证数据集上对子树序列进行测试，从中选择最优子树。</p>
+<p><img src="/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/CART%E5%89%AA%E6%9E%9D%E7%AE%97%E6%B3%95.png" alt="CART剪枝算法 "> </p>
+<hr>
+<h3 id="附西瓜书第4章-决策树部分内容"><a href="#附西瓜书第4章-决策树部分内容" class="headerlink" title="附西瓜书第4章-决策树部分内容"></a>附西瓜书第4章-决策树部分内容</h3><p>决策树的剪枝（pruning）的基本策略有“预剪枝”（prepruning）和“后剪枝”（postpruning）。预剪枝是指在决策树生成过程中，对每个结点在划分前先进行估计，若当前结点的划分不能带来决策树泛化性能提升，则停止划分并将当前结点标记为叶结点；后剪枝则是先从训练集生成一颗完整的决策树，然后自底向上地对非叶结点进行考察，若将该结点对应的子树替换为叶结点能带来决策树泛化性能提升，则将该子树替换为子节点。</p>
+<p>后剪枝决策树通常比预剪枝决策树保留了更多的分支。一般情况下，后剪枝决策树的欠拟合风险很小，泛化性能往往优于预剪枝决策树。但后剪枝过程是在生成完全决策树之后进行的，并且要自底向上地对树中的所有非叶结点进行逐一考察，因此其训练时间开销比未剪枝决策树和预剪枝决策树都要大得多。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/22/%E8%AF%AD%E8%A8%80/Python/API/numpy/Python-numpy-newaxis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/22/%E8%AF%AD%E8%A8%80/Python/API/numpy/Python-numpy-newaxis/" class="post-title-link" itemprop="url">Python-numpy-newaxis</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-22 20:33:12" itemprop="dateCreated datePublished" datetime="2019-08-22T20:33:12+08:00">2019-08-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/xtingjie/article/details/72510834">https://blog.csdn.net/xtingjie/article/details/72510834</a></p>
+<p>numpy中包含的newaxis可以给原数组增加一个维度</p>
+<p>np.newaxis放的位置不同，产生的新数组也不同</p>
+<p>一维数组</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">x</span><br><span class="line">Out[48]: array([4, 6, 6, 6, 5])</span><br><span class="line"></span><br><span class="line">x1 = x[np.newaxis, :]</span><br><span class="line"></span><br><span class="line">x1</span><br><span class="line">Out[50]: array([[4, 6, 6, 6, 5]])</span><br><span class="line"></span><br><span class="line">x2 = x[:, np.newaxis]</span><br><span class="line"></span><br><span class="line">x2</span><br><span class="line">Out[52]: </span><br><span class="line">array([[4],</span><br><span class="line">       [6],</span><br><span class="line">       [6],</span><br><span class="line">       [6],</span><br><span class="line">       [5]])</span><br></pre></td></tr></table></figure>
+<p>由以上代码可以看出，当把newaxis放在前面的时候</p>
+<p>以前的shape是5，现在变成了1×5，也就是前面的维数发生了变化，后面的维数发生了变化</p>
+<p>而把newaxis放后面的时候，输出的新数组的shape就是5×1，也就是后面增加了一个维数</p>
+<p>所以，newaxis放在第几个位置，就会在shape里面看到相应的位置增加了一个维数</p>
+<p>如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">x = np.random.randint(1, 8, size=(2, 3, 4))</span><br><span class="line">y = x[:, np.newaxis, :, :]</span><br><span class="line">z = x[:, :, np.newaxis, :]</span><br><span class="line"></span><br><span class="line">x.shape</span><br><span class="line">Out: (2, 3, 4)</span><br><span class="line"></span><br><span class="line">y.shape</span><br><span class="line">Out: (2, 1, 3, 4)</span><br><span class="line"></span><br><span class="line">z.shape</span><br><span class="line">Out: (2, 3, 1, 4)</span><br></pre></td></tr></table></figure>
+
+<h4 id="一般问题"><a href="#一般问题" class="headerlink" title="一般问题"></a>一般问题</h4><p>经常会遇到这样的问题，需要从数组中取出一部分的数据，也就是取出“一片”或者“一条”</p>
+<p>比如需要从二维数组里面抽取一列</p>
+<p>取出来之后维度却变成了一维</p>
+<p>假如我们需要将其还原为二维，就需要上面的方法了</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/22/%E8%AF%AD%E8%A8%80/Python/API/numpy/Python-numpy-%E7%B4%A2%E5%BC%95%E4%B8%8E%E5%88%87%E7%89%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/22/%E8%AF%AD%E8%A8%80/Python/API/numpy/Python-numpy-%E7%B4%A2%E5%BC%95%E4%B8%8E%E5%88%87%E7%89%87/" class="post-title-link" itemprop="url">Python-numpy-索引与切片</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-22 14:55:49" itemprop="dateCreated datePublished" datetime="2019-08-22T14:55:49+08:00">2019-08-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考：<a target="_blank" rel="noopener" href="https://www.numpy.org.cn/user_guide/numpy_basics/indexing.html">https://www.numpy.org.cn/user_guide/numpy_basics/indexing.html</a></p>
+<h3 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h3><h4 id="单个元素索引"><a href="#单个元素索引" class="headerlink" title="单个元素索引"></a>单个元素索引</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x = np.arange(10)</span><br><span class="line">&gt;&gt;&gt; x[2]</span><br><span class="line">2</span><br><span class="line">&gt;&gt;&gt; x[-2]</span><br><span class="line">8</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; x.shape = (2,5) # now x is 2-dimensional</span><br><span class="line">&gt;&gt;&gt; x[1,3]</span><br><span class="line">8</span><br><span class="line">&gt;&gt;&gt; x[1,-1]</span><br><span class="line">9</span><br><span class="line">&gt;&gt;&gt; x[0]</span><br><span class="line">array([0, 1, 2, 3, 4])</span><br></pre></td></tr></table></figure>
+<p>指定的每个索引都会选择与所选维度的其余部分相对应的数组。在上面的例子中，选择0表示长度为5的剩余维度未指定，并且返回的是具有该维度和大小的数组。必须注意的是，返回的数组不是原始数据的副本，而是指向与原始数组相同的内存值。在这种情况下，返回第一个位置（0）处的一维数组。因此，在返回的数组上使用单个索引会导致返回一个元素。那是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x[0][2]</span><br><span class="line">2</span><br></pre></td></tr></table></figure>
+<p>因此，请注意，<code>x[0, 2] = x[0][2]</code>， 但是第二种情况效率更低，因为一个新的临时数组在第一个索引后创建了，这个临时数组随后才被2这个数字索引。</p>
+<h4 id="其他索引选项"><a href="#其他索引选项" class="headerlink" title="其他索引选项"></a>其他索引选项</h4><p>可以对数组进行切片和步进，以提取具有相同数量维数的数组，但其大小与原始数据不同。切片和跨步的工作方式与对列表和元组完全相同，除此之外它们还可以应用于多个维度。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x = np.arange(10)</span><br><span class="line">&gt;&gt;&gt; x[2:5]</span><br><span class="line">array([2, 3, 4])</span><br><span class="line">&gt;&gt;&gt; x[:-7]</span><br><span class="line">array([0, 1, 2])</span><br><span class="line">&gt;&gt;&gt; x[1:7:2]</span><br><span class="line">array([1, 3, 5])</span><br><span class="line">&gt;&gt;&gt; y = np.arange(35).reshape(5,7)</span><br><span class="line">&gt;&gt;&gt; y[1:5:2,::3]</span><br><span class="line">array([[ 7, 10, 13],</span><br><span class="line">       [21, 24, 27]])</span><br></pre></td></tr></table></figure>
+<p>请注意，数组切片不会复制内部数组数据，但也会产生原始数据的新视图。</p>
+<h4 id="索引数组"><a href="#索引数组" class="headerlink" title="索引数组"></a>索引数组</h4><p>数组索引指的是使用方括号（[]）来索引数组值。有很多选项来索引，这使numpy索引很强大，但功能上的强大也带来一些复杂性和潜在的混乱。</p>
+<p>索引数组必须是整数类型。数组中的每个值指示数组中要使用哪个值来代替索引。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x = np.arange(10,1,-1)</span><br><span class="line">&gt;&gt;&gt; x</span><br><span class="line">array([10,  9,  8,  7,  6,  5,  4,  3,  2])</span><br><span class="line">&gt;&gt;&gt; x[np.array([3, 3, 1, 8])]</span><br><span class="line">array([7, 7, 9, 2])</span><br></pre></td></tr></table></figure>
+
+<p>索引值超出范围是错误的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x[np.array([3, 3, 20, 8])]</span><br><span class="line">&lt;type &#x27;exceptions.IndexError&#x27;&gt;: index 20 out of bounds 0&lt;=index&lt;9</span><br></pre></td></tr></table></figure>
+<p>一般来说，使用索引数组时返回的是与索引数组具有相同形状的数组，但是索引数组的类型和值。作为一个例子，我们可以使用多维索引数组来代替：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x[np.array([[1,1],[2,3]])]</span><br><span class="line">array([[9, 9],</span><br><span class="line">       [8, 7]])</span><br></pre></td></tr></table></figure>
+
+<h4 id="索引多维数组"><a href="#索引多维数组" class="headerlink" title="索引多维数组"></a>索引多维数组</h4><p>对多维数组进行索引时，情况会变得更加复杂，特别是对于多维索引数组。这些往往是更常用的用途，但它们是允许的，并且它们对于一些问题是有用的。我们将从最简单的多维情况开始：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; y = np.arange(35).reshape(5,7)</span><br><span class="line">&gt;&gt;&gt; y[np.array([0,2,4]), np.array([0,1,2])]</span><br><span class="line">array([ 0, 15, 30])</span><br></pre></td></tr></table></figure>
+<p>在这种情况下，如果索引数组具有匹配的形状，并且索引数组的每个维都有一个索引数组，则结果数组具有与索引数组相同的形状，并且这些值对应于每个索引集的索引在索引数组中的位置。在此示例中，两个索引数组的第一个索引值为0，因此结果数组的第一个值为<code>y[0, 0]</code>。下一个值是<code>y[2, 1]</code>，最后一个是<code>y[4, 2]</code>。</p>
+<p>广播机制允许索引数组与其他索引的标量组合。结果是标量值用于索引数组的所有对应值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; y[np.array([0,2,4]), 1]</span><br><span class="line">array([ 1, 15, 29])</span><br></pre></td></tr></table></figure>
+<p>跳到复杂性的下一个级别，可以只用索引数组部分索引数组。理解在这种情况下会发生什么需要一些思考。例如，如果我们只使用一个索引数组与y：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; y[np.array([0,2,4])]</span><br><span class="line">array([[ 0,  1,  2,  3,  4,  5,  6],</span><br><span class="line">       [14, 15, 16, 17, 18, 19, 20],</span><br><span class="line">       [28, 29, 30, 31, 32, 33, 34]])</span><br></pre></td></tr></table></figure>
+<p>什么结果是一个新的数组的结构，其中索引数组的每个值从被索引的数组中选择一行，并且结果数组具有结果形状（行的大小，数字索引元素）。</p>
+<p>这可能有用的一个示例是用于颜色查找表，我们想要将图像的值映射到RGB三元组中进行显示。查找表可能有一个形状（nlookup，3）。使用带有dtype = np.uint8（或任何整数类型，只要值与查找表的边界）形状（ny，nx）的图像索引这样一个数组将导致一个形状数组（ny，nx， 3）RGB值的三倍与每个像素位置相关联。</p>
+<p>通常，resulant数组的形状将是索引数组形状（或所有索引数组广播的形状）与索引数组中任何未使用的维（未索引的维）的形状的串联。</p>
+<h4 id="布尔值或掩码索引数组"><a href="#布尔值或掩码索引数组" class="headerlink" title="布尔值或掩码索引数组"></a>布尔值或掩码索引数组</h4><p>用作索引的布尔数组的处理方式完全不同于索引数组。布尔数组的形状必须与被索引数组的初始维相同。在最直接的情况下，布尔数组具有相同的形状：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; b = y&gt;20</span><br><span class="line">&gt;&gt;&gt; y[b]</span><br><span class="line">array([21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34])</span><br></pre></td></tr></table></figure>
+<p>与整数索引数组不同，在布尔情况下，结果是一维数组，其中包含索引数组中所有对应于布尔数组中所有真实元素的元素。索引数组中的元素始终以行优先（C样式）顺序进行迭代和返回。结果也与<code>y[np.nonzero(b)]</code>相同。与索引数组一样，返回的是数据的副本，而不是像切片一样获得的视图。</p>
+<p>如果y比b的维数更高，则结果将是多维的。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; b[:,5] # use a 1-D boolean whose first dim agrees with the first dim of y</span><br><span class="line">array([False, False, False,  True,  True], dtype=bool)</span><br><span class="line">&gt;&gt;&gt; y[b[:,5]]</span><br><span class="line">array([[21, 22, 23, 24, 25, 26, 27],</span><br><span class="line">       [28, 29, 30, 31, 32, 33, 34]])</span><br></pre></td></tr></table></figure>
+<p>这里第4行和第5行是从索引数组中选择出来的，并组合起来构成一个二维数组。</p>
+<p>一般来说，当布尔数组的维数小于被索引的数组时，这相当于<code>y[b, ...]</code></p>
+<h4 id="组合索引和切片"><a href="#组合索引和切片" class="headerlink" title="组合索引和切片"></a>组合索引和切片</h4><p>索引数组可以与切片组合。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; y[np.array([0,2,4]),1:3]</span><br><span class="line">array([[ 1,  2],</span><br><span class="line">       [15, 16],</span><br><span class="line">       [29, 30]])</span><br></pre></td></tr></table></figure>
+<p>实际上，切片被转换为索引数组<code>np.array([[1,2]])</code>（形状（1,2）），该数组与索引数组一起广播以产生形状的结果数组（3,2） 。</p>
+<p>同样，切片可以与广播布尔指数结合使用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; y[b[:,5],1:3]</span><br><span class="line">array([[22, 23],</span><br><span class="line">       [29, 30]])</span><br></pre></td></tr></table></figure>
+
+<h4 id="结构化索引工具"><a href="#结构化索引工具" class="headerlink" title="结构化索引工具"></a>结构化索引工具</h4><p>为了便于将数组形状与表达式和赋值相匹配，可以在数组索引中使用np.newaxis对象来添加大小为1的新维度。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; y.shape</span><br><span class="line">(5, 7)</span><br><span class="line">&gt;&gt;&gt; y[:,np.newaxis,:].shape</span><br><span class="line">(5, 1, 7)</span><br></pre></td></tr></table></figure>
+<p>请注意，数组中没有新元素，只是增加了维度。这可以很方便地以一种其他方式需要明确重塑操作的方式组合两个数组。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x = np.arange(5)</span><br><span class="line">&gt;&gt;&gt; x[:,np.newaxis] + x[np.newaxis,:]</span><br><span class="line">array([[0, 1, 2, 3, 4],</span><br><span class="line">       [1, 2, 3, 4, 5],</span><br><span class="line">       [2, 3, 4, 5, 6],</span><br><span class="line">       [3, 4, 5, 6, 7],</span><br><span class="line">       [4, 5, 6, 7, 8]])</span><br></pre></td></tr></table></figure>
+<p>省略号语法可以用于指示完整地选择任何剩余的未指定的维度。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; z = np.arange(81).reshape(3,3,3,3)</span><br><span class="line">&gt;&gt;&gt; z[1,...,2]</span><br><span class="line">array([[29, 32, 35],</span><br><span class="line">       [38, 41, 44],</span><br><span class="line">       [47, 50, 53]])</span><br></pre></td></tr></table></figure>
+<p>这相当于：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; z[1,:,:,2]</span><br><span class="line">array([[29, 32, 35],</span><br><span class="line">       [38, 41, 44],</span><br><span class="line">       [47, 50, 53]])</span><br></pre></td></tr></table></figure>
+
+<h4 id="给被索引的数组赋值"><a href="#给被索引的数组赋值" class="headerlink" title="给被索引的数组赋值"></a>给被索引的数组赋值</h4><p>如前所述，可以使用单个索引，切片以及索引和掩码数组来选择数组的子集。分配给索引数组的值必须是形状一致的（形状与索引产生的形状相同或相同）。例如，允许为切片分配一个常量：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x = np.arange(10)</span><br><span class="line">&gt;&gt;&gt; x[2:7] = 1</span><br></pre></td></tr></table></figure>
+<p>或者正确大小的数组：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x[2:7] = np.arange(5)</span><br></pre></td></tr></table></figure>
+<p>请注意，如果将较高类型分配给较低类型（在int类型中添加浮点数（floats））或甚至导致异常（将复数分配给int/float类型），分配可能会导致更改：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x[1] = 1.2</span><br><span class="line">&gt;&gt;&gt; x[1]</span><br><span class="line">1</span><br><span class="line">&gt;&gt;&gt; x[1] = 1.2j</span><br><span class="line">&lt;type &#x27;exceptions.TypeError&#x27;&gt;: can&#x27;t convert complex to long; use</span><br><span class="line">long(abs(z))</span><br></pre></td></tr></table></figure>
+<p>与一些引用（如数组和掩码索引）不同，赋值通常是对数组中的原始数据进行赋值的（事实上，没有其他意义了！）。但请注意，有些行为可能不会如人们所期望的那样行事。这个特殊的例子通常令人惊讶：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; x = np.arange(0, 50, 10)</span><br><span class="line">&gt;&gt;&gt; x</span><br><span class="line">array([ 0, 10, 20, 30, 40])</span><br><span class="line">&gt;&gt;&gt; x[np.array([1, 1, 3, 1])] += 1</span><br><span class="line">&gt;&gt;&gt; x</span><br><span class="line">array([ 0, 11, 20, 31, 40])</span><br></pre></td></tr></table></figure>
+<p>人们预计第一个地点会增加3。实际上，它只会增加1。原因是因为从原始数据（作为临时数据）中提取了一个新的数组，其中包含1,1,1,1,1,1的值，则将值1添加到临时数据中，然后将临时数据分配回原始数组。因此，<code>x[1]+1</code>处的数组值被分配给<code>x[1]</code>三次，而不是递增3次。</p>
+<h4 id="处理程序中可变数量的索引"><a href="#处理程序中可变数量的索引" class="headerlink" title="处理程序中可变数量的索引"></a>处理程序中可变数量的索引</h4><p>索引语法非常强大，但在处理可变数量的索引时受到限制。例如，如果你想编写一个可以处理各种维数参数的函数，而不必为每个可能维数编写特殊的代码，那又怎么办？如果向元组提供元组，则该元组将被解释为索引列表。例如（使用数组z的前一个定义）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; z = np.arange(81).reshape(3,3,3,3)</span><br><span class="line">&gt;&gt;&gt; indices = (1,1,1,1)</span><br><span class="line">&gt;&gt;&gt; z[indices]</span><br><span class="line">40</span><br></pre></td></tr></table></figure>
+<p>所以可以使用代码来构造任意数量的索引的元组，然后在索引中使用这些元组。</p>
+<p>切片可以通过在Python中使用slice()函数在程序中指定。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; indices = (1,1,1,slice(0,2)) # same as [1,1,1,0:2]</span><br><span class="line">&gt;&gt;&gt; z[indices]</span><br><span class="line">array([39, 40])</span><br></pre></td></tr></table></figure>
+<p>同样，省略号可以通过使用省略号对象的代码指定：</p>
+<p>````</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>indices = (1, Ellipsis, 1) # same as [1,…,1]<br>z[indices]<br>array([[28, 31, 34],<br>       [37, 40, 43],<br>       [46, 49, 52]])</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">由于这个原因，可以直接使用np.where()函数的输出作为索引，因为它总是返回索引数组的元组。</span><br><span class="line"></span><br><span class="line">由于元组的特殊处理，它们不会自动转换为列表。举个例子：</span><br></pre></td></tr></table></figure>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>z[[1,1,1,1]] # produces a large array<br>array([[[[27, 28, 29],<br>         [30, 31, 32], …<br>z[(1,1,1,1)] # returns a single value<br>40<br>```</p>
+</blockquote>
+</blockquote>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/" class="post-title-link" itemprop="url">统计学系方法-第4章-朴素贝叶斯法</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-21 21:03:44" itemprop="dateCreated datePublished" datetime="2019-08-21T21:03:44+08:00">2019-08-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>朴素贝叶斯（naive Bayes）法是基于贝叶斯定理与特征条件独立假设的分类方法。对于给定的训练数据集，首先基于特征条件独立假设学习输入/输出的联合概率分布；然后基于此模型，对给定的输入 x，利用贝叶斯定理求出后验概率的最大输出 y。</p>
+<h2 id="朴素贝叶斯法的学习与分类"><a href="#朴素贝叶斯法的学习与分类" class="headerlink" title="朴素贝叶斯法的学习与分类"></a>朴素贝叶斯法的学习与分类</h2><h3 id="基本方法"><a href="#基本方法" class="headerlink" title="基本方法"></a>基本方法</h3><p>朴素贝叶斯法对条件概率分布作了条件独立性的假设。由于这是一个较强的假设，朴素贝叶斯法也由此得名。具体地，条件独立性假设是 <img src="/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/%E6%9D%A1%E4%BB%B6%E7%8B%AC%E7%AB%8B%E5%81%87%E8%AE%BE.png" alt="条件独立假设"></p>
+<p>朴素贝叶斯法实际上学习到生成数据的机制，所以属于生成模型。条件独立假设等于是说用于分类的特征在类确定的条件下都是条件独立的。这一假设使朴素贝叶斯法变得简单，但有时会牺牲一定的分类准确率。</p>
+<p>后验概率计算根据贝叶斯定理进行：<img src="/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/%E5%90%8E%E9%AA%8C%E6%A6%82%E7%8E%87.png" alt="后验概率"></p>
+<h2 id="朴素贝叶斯法的参数估计"><a href="#朴素贝叶斯法的参数估计" class="headerlink" title="朴素贝叶斯法的参数估计"></a>朴素贝叶斯法的参数估计</h2><h3 id="极大似然估计"><a href="#极大似然估计" class="headerlink" title="极大似然估计"></a>极大似然估计</h3><p><img src="/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/%E6%9E%81%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1.png" alt="极大似然估计"></p>
+<h3 id="学习与分类算法"><a href="#学习与分类算法" class="headerlink" title="学习与分类算法"></a>学习与分类算法</h3><p>朴素贝叶斯算法（naive Bayes algorithm）<br><img src="/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E7%AE%97%E6%B3%95.png" alt="朴素贝叶斯算法"></p>
+<h3 id="贝叶斯估计"><a href="#贝叶斯估计" class="headerlink" title="贝叶斯估计"></a>贝叶斯估计</h3><p>用极大似然估计可能会出现所要估计的概率为 0 的情况。这时会影响到后验概率的计算结果，使分类产生偏差。解决这一问题的方法是采用贝叶斯估计。具体地，条件概率的贝叶斯估计是 <img src="/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/%E6%9D%A1%E4%BB%B6%E6%A6%82%E7%8E%87%E7%9A%84%E8%B4%9D%E5%8F%B6%E6%96%AF%E4%BC%B0%E8%AE%A1.png" alt="条件概率的贝叶斯估计"> 式中 λ&gt;=0。等价于在随机变量各个取值的频数上赋予一个正数 λ&gt;0。当 λ=0 时就是极大似然估计。常取 λ=1，这时称为拉普拉斯平滑（Laplace smoothing）。显然，对任何 l=1,2,…,K。有 <img src="/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E5%B9%B3%E6%BB%91.png" alt="拉普拉斯平滑">。同样，先验概率的贝叶斯估计是 <img src="/2019/08/21/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC4%E7%AB%A0-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95/%E5%85%88%E9%AA%8C%E6%A6%82%E7%8E%87%E7%9A%84%E8%B4%9D%E5%8F%B6%E6%96%AF%E4%BC%B0%E8%AE%A1.png" alt="先验概率的贝叶斯估计"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/19/%E6%95%B0%E5%AD%A6/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E6%95%B0%E7%90%86%E7%BB%9F%E8%AE%A1/A%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/19/%E6%95%B0%E5%AD%A6/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E6%95%B0%E7%90%86%E7%BB%9F%E8%AE%A1/A%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" class="post-title-link" itemprop="url">A基本概念</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-19 14:57:42" itemprop="dateCreated datePublished" datetime="2019-08-19T14:57:42+08:00">2019-08-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><p>中心极限定理：说明的是在一定条件下，大量独立随机变量的平均数是以正态分布为极限的。而大数定律只是揭示了大量随机变量的平均结果，但没有涉及到随机变量的分布的问题。</p>
+</li>
+<li><p>大数定律</p>
 <ul>
-<li>存在性：证明存在某个元素 x 具有期望的性质。</li>
-<li>唯一性：证明如果 y≠x，则 y 不具有期望的性质。</li>
+<li>伯努利大数定律：证明了在多次相同的条件的重复试验中，频率有越接近一稳定值的趋势。也告诉了我们当实验次数很大时，可以用事件发生的频率来代替事件的概率。</li>
+<li>辛钦大数定律：用算术平均值来近似实际真值是合理的，而在数理统计中，用算术平均值来估计数学期望就是根据此定律，这一定律使算术平均值的法则有了理论依据。</li>
+<li>切比雪夫大数定律：随着样本容量n的增加，样本平均数将接近于总体平均数。 从而为统计推断中依据样本平均数估计总体平均数提供了理论依据。 同分布，相较于伯努利大数定律和辛钦大数定律更具一般性。</li>
 </ul>
-<p>证明存在唯一元素 x 使得 P(x) 为真等同于证明语句 ョx(P(x)∧∀y(y≠x-&gt;┐P(y)))。</p>
+</li>
+<li><p>百分位数（percentile）：如果将一组数据从小到大排序，并计算相应的累计百分位，则某一百分位所对应数据的值就称为这一百分位的百分位数。可表示为：一组n个观测值按数值大小排列。如，处于p%位置的值称第p百分位数。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/" class="post-title-link" itemprop="url">统计学系方法-第3章-k近邻法</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-17 20:11:05" itemprop="dateCreated datePublished" datetime="2019-08-17T20:11:05+08:00">2019-08-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>k 近邻法（k-nearest neighbor, k-NN）是一种基本分类与回归方法。</p>
+<h2 id="k-近邻算法"><a href="#k-近邻算法" class="headerlink" title="k 近邻算法"></a>k 近邻算法</h2><p>k 近邻算法简单、直观：给定一个训练数据集，对新的输入实例，在训练数据集中找到与该实例最临近的 k 个 实例，这 k 个实例的多数属于某个类，就把该输入实例分为这个类。</p>
+<p><img src="/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/k%E8%BF%91%E9%82%BB%E6%B3%95.png" alt="k近邻法"></p>
+<p>k 近邻法的特殊情况是 k=1 的情形，称为最近邻算法。</p>
+<h2 id="k-近邻模型"><a href="#k-近邻模型" class="headerlink" title="k 近邻模型"></a>k 近邻模型</h2><p>k 近邻法使用的模型实际上对应于对特征空间的划分。模型由三个基本要素——距离度量、k 值的选择和分类决策规则决定。</p>
+<h3 id="距离度量"><a href="#距离度量" class="headerlink" title="距离度量"></a>距离度量</h3><p>特征空间中两个实例点的距离是两个实例点相似程度的反映。k 近邻模型的特征空间一般是 n 维实数向量空间 Rn。使用的距离是欧式距离，但也可以是其他距离。</p>
+<p><img src="/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/%E8%B7%9D%E7%A6%BB.png" alt="距离"></p>
+<h3 id="k-值的选择"><a href="#k-值的选择" class="headerlink" title="k 值的选择"></a>k 值的选择</h3><p>k 值的选择会对 k 近邻法的结果产生重大影响。</p>
+<p>如果选择较小的 k 值，就相当于用较小的领域中的训练实例进行预测，“学习”的近似误差（approximation error）会减小，只有输入实例较近的（相似的）训练实例才会对预测结果起作用。但缺点是“学习”的估计误差（estimation error）会增大，预测结果会对近邻的实例点非常敏感。如果近邻的实例点恰好是噪声，预测就会出错。换句话说，k 值的减小就意味着整体模型变得复杂，容易发生过拟合。</p>
+<p>如果选择较大的 k 值，就相当于用较大领域中的训练实例进行预测。其有点是可以减小学习的估计误差。但缺点是学习的近邻误差会增大。这时与输入实例较远的（不相似的）训练实例也会对预测起作用，使预测发生错误。k 值的增大就意味着整体的模型变得简单。</p>
+<p>在应用中，k 值一般取一个比较小的数值。通常采用交叉验证法来选取最优的 k 值。</p>
+<h3 id="分类决策规则"><a href="#分类决策规则" class="headerlink" title="分类决策规则"></a>分类决策规则</h3><p>k 近邻法的分类决策规则往往是多数表决，即由输入实例的 k 个近邻的训练实例中的多数类决定输入实例的类。</p>
+<h2 id="k-近邻法的实现：kd-树"><a href="#k-近邻法的实现：kd-树" class="headerlink" title="k 近邻法的实现：kd 树"></a>k 近邻法的实现：kd 树</h2><p>k 近邻法最简单的实现方法是线性扫描（linear scan）。这时计算输入实例与每一个训练实例的距离。当训练集很大时，计算非常耗时，这种方法是不可行的。</p>
+<p>为了提高 k 近邻搜索的效率，可以考虑使用特殊的结构存储训练数据，以减少计算距离的次数。</p>
+<h3 id="构造-kd-树"><a href="#构造-kd-树" class="headerlink" title="构造 kd 树"></a>构造 kd 树</h3><p>kd 树是一种对 k 维空间中的实例点进行存储以便对其进行快速检索的树形数据结构。kd 树是二叉树，表示对 k 维空间的一个划分（partition）。构造 kd 树相当于不断地用垂直于坐标轴的超平面将 k 维空间切分，构成一系列的 k 维超矩形区域。kd 树的每个结点对应于一个 k 维超矩形区域。</p>
+<p>构造 kd 树的方法如下：构造根结点，使根结点对应于 k 维空间中包含所有实例点的超矩形区域；通过下面的递归方法，不断地对 k 维空间进行切分，生成子节点。在超矩形区域（结点）上选择一个坐标轴和在此坐标轴上的一个切分点，确定一个超平面，这个超平面通过选定的切分点并垂直于选定的坐标轴，将当前超矩形区域切分为左右两个子区域（子节点）；这时，实例被分到两个子区域。这个过程直到子区域内没有实例时终止（终止时的结点为叶结点）。在此过程中，将实例保存在相应的结点上。</p>
+<p>通常，依次选择坐标轴对空间切分，选择训练实例点在选定坐标轴上的中位数（median）为切分点，这样得到的 kd 树是平衡的。注意，平衡的 kd 树搜索时的效率未必是最优的。</p>
+<p><img src="/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/%E6%9E%84%E9%80%A0kd%E6%A0%911.png" alt="构造kd树1"><br><img src="/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/%E6%9E%84%E9%80%A0kd%E6%A0%912.png" alt="构造kd树2"></p>
+<h3 id="搜索-kd-树"><a href="#搜索-kd-树" class="headerlink" title="搜索 kd 树"></a>搜索 kd 树</h3><p>给定一个目标点，搜索其最近邻。首选找到包含目标点的叶结点；然后从该叶结点出发，依次回退到父节点；不断查找与目标点最邻近的结点，当确定不可能存在更近的结点时终止。这样搜索就被限制在空间的局部区域上，效率大为提高。</p>
+<p>包含目标点的叶结点对应包含目标点的最小超矩形区域。依次叶结点的实例点作为当前最近点。目标点的最近邻一定在以目标点为中心并通过当前最近点的超球体的内部。然后返回当前结点的父节点，如果父节点的另一子节点的超矩形区域与超球体相交，那么在相交的区域内寻找与目标点更近的实例点。如果存在这样的点，将此点作为新的当前最近点。算法赚到更上一级的父节点，继续上述过程。如果父节点的另一子节点的超矩形区域与超球体不相交，或不存在比当前最近点更近的点，则停止搜索。</p>
+<p><img src="/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/%E6%9C%80%E8%BF%91%E9%82%BB%E6%90%9C%E7%B4%A21.png" alt="最近邻搜索1"><br><img src="/2019/08/17/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC3%E7%AB%A0-k%E8%BF%91%E9%82%BB%E6%B3%95/%E6%9C%80%E8%BF%91%E9%82%BB%E6%90%9C%E7%B4%A22.png" alt="最近邻搜索2">  </p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/" class="post-title-link" itemprop="url">Python-下划线</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-16 14:13:40" itemprop="dateCreated datePublished" datetime="2019-08-16T14:13:40+08:00">2019-08-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/36173202">https://zhuanlan.zhihu.com/p/36173202</a></p>
+<ul>
+<li>单前导下划线：<code>_var</code></li>
+<li>单末尾下划线：<code>var_</code></li>
+<li>双前导下划线：<code>__var</code></li>
+<li>双前导和末尾下划线：<code>__var__</code></li>
+<li>单下划线：<code>_</code></li>
+</ul>
+<h3 id="单前导下划线-var"><a href="#单前导下划线-var" class="headerlink" title="单前导下划线 _var"></a>单前导下划线 <code>_var</code></h3><p>下划线前缀的含义是告知其他程序员：以单个下划线开头的变量或方法仅供内部使用。 该约定在PEP 8中有定义。</p>
+<p>这不是Python强制规定的。 Python不像Java那样在“私有”和“公共”变量之间有很强的区别。</p>
+<p>看看下面的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">class Test:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.foo = 11</span><br><span class="line">       self._bar = 23</span><br></pre></td></tr></table></figure>
+<p>如果你实例化此类，并尝试访问在<code>__init__</code>构造函数中定义的foo和_bar属性，会发生什么情况？ 让我们来看看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t = Test()</span><br><span class="line">&gt;&gt;&gt; t.foo</span><br><span class="line">11</span><br><span class="line">&gt;&gt;&gt; t._bar</span><br><span class="line">23</span><br></pre></td></tr></table></figure>
+<p>你会看到_bar中的单个下划线并没有阻止我们“进入”类并访问该变量的值。</p>
+<p>这是因为Python中的单个下划线前缀仅仅是一个约定 - 至少相对于变量和方法名而言。</p>
+<p>但是，前导下划线的确会影响从模块中导入名称的方式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># This is my_module.py:</span><br><span class="line"></span><br><span class="line">def external_func():</span><br><span class="line">   return 23</span><br><span class="line"></span><br><span class="line">def _internal_func():</span><br><span class="line">   return 42</span><br></pre></td></tr></table></figure>
+<p>现在，如果使用通配符从模块中导入所有名称，则Python不会导入带有前导下划线的名称（除非模块定义了覆盖此行为的<code>__all__</code>列表）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; from my_module import *</span><br><span class="line">&gt;&gt;&gt; external_func()</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; _internal_func()</span><br><span class="line">NameError: &quot;name &#x27;_internal_func&#x27; is not defined&quot;</span><br></pre></td></tr></table></figure>
+<p>顺便说一下，应该避免通配符导入，因为它们使名称空间中存在哪些名称不清楚。 为了清楚起见，坚持常规导入更好。</p>
+<p>与通配符导入不同，常规导入不受前导单个下划线命名约定的影响：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; import my_module</span><br><span class="line">&gt;&gt;&gt; my_module.external_func()</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; my_module._internal_func()</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>我知道这一点可能有点令人困惑。 如果你遵循PEP 8推荐，避免通配符导入，那么你真正需要记住的只有这个：</p>
+<blockquote>
+<p>单个下划线是一个Python命名约定，表示这个名称是供内部使用的。 它通常不由Python解释器强制执行，仅仅作为一种对程序员的提示。</p>
+</blockquote>
+<h3 id="单末尾下划线-var"><a href="#单末尾下划线-var" class="headerlink" title="单末尾下划线 var_"></a>单末尾下划线 <code>var_</code></h3><p>有时候，一个变量的最合适的名称已经被一个关键字所占用。 因此，像class或def这样的名称不能用作Python中的变量名称。 在这种情况下，你可以附加一个下划线来解决命名冲突：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; def make_object(name, class):</span><br><span class="line">SyntaxError: &quot;invalid syntax&quot;</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; def make_object(name, class_):</span><br><span class="line">...    pass</span><br></pre></td></tr></table></figure>
+<p>总之，单个末尾下划线（后缀）是一个约定，用来避免与Python关键字产生命名冲突。 PEP 8解释了这个约定。</p>
+<h3 id="双前导下划线-var"><a href="#双前导下划线-var" class="headerlink" title="双前导下划线 __var"></a>双前导下划线 <code>__var</code></h3><p>双下划线前缀会导致Python解释器重写属性名称，以避免子类中的命名冲突。</p>
+<p>这也叫做名称修饰（name mangling） - 解释器更改变量的名称，以便在类被扩展的时候不容易产生冲突。</p>
+<p>我知道这听起来很抽象。 因此，我组合了一个小小的代码示例来予以说明：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Test:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.foo = 11</span><br><span class="line">       self._bar = 23</span><br><span class="line">       self.__baz = 23</span><br></pre></td></tr></table></figure>
+<p>让我们用内置的dir()函数来看看这个对象的属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t = Test()</span><br><span class="line">&gt;&gt;&gt; dir(t)</span><br><span class="line">[&#x27;_Test__baz&#x27;, &#x27;__class__&#x27;, &#x27;__delattr__&#x27;, &#x27;__dict__&#x27;, &#x27;__dir__&#x27;,</span><br><span class="line">&#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;, &#x27;__getattribute__&#x27;,</span><br><span class="line">&#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__init__&#x27;, &#x27;__le__&#x27;, &#x27;__lt__&#x27;, &#x27;__module__&#x27;,</span><br><span class="line">&#x27;__ne__&#x27;, &#x27;__new__&#x27;, &#x27;__reduce__&#x27;, &#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;,</span><br><span class="line">&#x27;__setattr__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__str__&#x27;, &#x27;__subclasshook__&#x27;,</span><br><span class="line">&#x27;__weakref__&#x27;, &#x27;_bar&#x27;, &#x27;foo&#x27;]</span><br></pre></td></tr></table></figure>
+<p>以上是这个对象属性的列表。 让我们来看看这个列表，并寻找我们的原始变量名称<code>foo</code>，<code>_bar</code>和<code>__baz</code> - 我保证你会注意到一些有趣的变化。</p>
+<ul>
+<li><code>self.foo</code>变量在属性列表中显示为未修改为<code>foo</code>。</li>
+<li><code>self._bar</code>的行为方式相同 - 它以<code>_bar</code>的形式显示在类上。 就像我之前说过的，在这种情况下，前导下划线仅仅是一个约定。 给程序员一个提示而已。</li>
+<li>然而，对于<code>self.__baz</code>而言，情况看起来有点不同。 当你在该列表中搜索<code>__baz</code>时，你会看不到有这个名字的变量。<br><code>__baz</code>出什么情况了？</li>
+</ul>
+<p>如果你仔细观察，你会看到此对象上有一个名为<code>_Test__baz</code>的属性。 这就是Python解释器所做的名称修饰。 它这样做是为了防止变量在子类中被重写。</p>
+<p>让我们创建另一个扩展Test类的类，并尝试重写构造函数中添加的现有属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class ExtendedTest(Test):</span><br><span class="line">   def __init__(self):</span><br><span class="line">       super().__init__()</span><br><span class="line">       self.foo = &#x27;overridden&#x27;</span><br><span class="line">       self._bar = &#x27;overridden&#x27;</span><br><span class="line">       self.__baz = &#x27;overridden&#x27;</span><br></pre></td></tr></table></figure>
+<p>现在，你认为<code>foo</code>，<code>_bar</code>和<code>__baz</code>的值会出现在这个ExtendedTest类的实例上吗？ 我们来看一看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2 = ExtendedTest()</span><br><span class="line">&gt;&gt;&gt; t2.foo</span><br><span class="line">&#x27;overridden&#x27;</span><br><span class="line">&gt;&gt;&gt; t2._bar</span><br><span class="line">&#x27;overridden&#x27;</span><br><span class="line">&gt;&gt;&gt; t2.__baz</span><br><span class="line">AttributeError: &quot;&#x27;ExtendedTest&#x27; object has no attribute &#x27;__baz&#x27;&quot;</span><br></pre></td></tr></table></figure>
+<p>等一下，当我们尝试查看<code>t2.__baz</code>的值时，为什么我们会得到AttributeError？ 名称修饰被再次触发了！ 事实证明，这个对象甚至没有<code>__baz</code>属性：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; dir(t2)</span><br><span class="line">[&#x27;_ExtendedTest__baz&#x27;, &#x27;_Test__baz&#x27;, &#x27;__class__&#x27;, &#x27;__delattr__&#x27;,</span><br><span class="line">&#x27;__dict__&#x27;, &#x27;__dir__&#x27;, &#x27;__doc__&#x27;, &#x27;__eq__&#x27;, &#x27;__format__&#x27;, &#x27;__ge__&#x27;,</span><br><span class="line">&#x27;__getattribute__&#x27;, &#x27;__gt__&#x27;, &#x27;__hash__&#x27;, &#x27;__init__&#x27;, &#x27;__le__&#x27;,</span><br><span class="line">&#x27;__lt__&#x27;, &#x27;__module__&#x27;, &#x27;__ne__&#x27;, &#x27;__new__&#x27;, &#x27;__reduce__&#x27;,</span><br><span class="line">&#x27;__reduce_ex__&#x27;, &#x27;__repr__&#x27;, &#x27;__setattr__&#x27;, &#x27;__sizeof__&#x27;, &#x27;__str__&#x27;,</span><br><span class="line">&#x27;__subclasshook__&#x27;, &#x27;__weakref__&#x27;, &#x27;_bar&#x27;, &#x27;foo&#x27;, &#x27;get_vars&#x27;]</span><br></pre></td></tr></table></figure>
+<p>正如你可以看到<code>__baz</code>变成<code>_ExtendedTest__baz</code>以防止意外修改：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2._ExtendedTest__baz</span><br><span class="line">&#x27;overridden&#x27;</span><br></pre></td></tr></table></figure>
+<p>但原来的<code>_Test__baz</code>还在：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; t2._Test__baz</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>双下划线名称修饰对程序员是完全透明的。 下面的例子证实了这一点：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class ManglingTest:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.__mangled = &#x27;hello&#x27;</span><br><span class="line"></span><br><span class="line">   def get_mangled(self):</span><br><span class="line">       return self.__mangled</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; ManglingTest().get_mangled()</span><br><span class="line">&#x27;hello&#x27;</span><br><span class="line">&gt;&gt;&gt; ManglingTest().__mangled</span><br><span class="line">AttributeError: &quot;&#x27;ManglingTest&#x27; object has no attribute &#x27;__mangled&#x27;&quot;</span><br></pre></td></tr></table></figure>
+<p>名称修饰是否也适用于方法名称？ 是的，也适用。名称修饰会影响在一个类的上下文中，以两个下划线字符（”dunders”）开头的所有名称：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class MangledMethod:</span><br><span class="line">   def __method(self):</span><br><span class="line">       return 42</span><br><span class="line"></span><br><span class="line">   def call_it(self):</span><br><span class="line">       return self.__method()</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; MangledMethod().__method()</span><br><span class="line">AttributeError: &quot;&#x27;MangledMethod&#x27; object has no attribute &#x27;__method&#x27;&quot;</span><br><span class="line">&gt;&gt;&gt; MangledMethod().call_it()</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>这是另一个也许令人惊讶的运用名称修饰的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">_MangledGlobal__mangled = 23</span><br><span class="line"></span><br><span class="line">class MangledGlobal:</span><br><span class="line">   def test(self):</span><br><span class="line">       return __mangled</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; MangledGlobal().test()</span><br><span class="line">23</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，我声明了一个名为<code>_MangledGlobal__mangled</code>的全局变量。然后我在名为MangledGlobal的类的上下文中访问变量。由于名称修饰，我能够在类的test()方法内，以<code>__mangled</code>来引用<code>_MangledGlobal__mangled</code>全局变量。</p>
+<p>Python解释器自动将名称<code>__mangled</code>扩展为<code>_MangledGlobal__mangled</code>，因为它以两个下划线字符开头。这表明名称修饰不是专门与类属性关联的。它适用于在类上下文中使用的两个下划线字符开头的任何名称。</p>
+<h3 id="双前导和双末尾下划线-var"><a href="#双前导和双末尾下划线-var" class="headerlink" title="双前导和双末尾下划线 __var__"></a>双前导和双末尾下划线 <code>__var__</code></h3><p>也许令人惊讶的是，如果一个名字同时以双下划线开始和结束，则不会应用名称修饰。 由双下划线前缀和后缀包围的变量不会被Python解释器修改：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class PrefixPostfixTest:</span><br><span class="line">   def __init__(self):</span><br><span class="line">       self.__bam__ = 42</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; PrefixPostfixTest().__bam__</span><br><span class="line">42</span><br></pre></td></tr></table></figure>
+<p>但是，Python保留了有双前导和双末尾下划线的名称，用于特殊用途。 这样的例子有，<code>__init__</code>对象构造函数，或<code>__call__</code> — 它使得一个对象可以被调用。</p>
+<p>这些dunder方法通常被称为神奇方法。</p>
+<p>最好避免在自己的程序中使用以双下划线（“dunders”）开头和结尾的名称，以避免与将来Python语言的变化产生冲突。</p>
+<h3 id="单下划线"><a href="#单下划线" class="headerlink" title="单下划线 _"></a>单下划线 <code>_</code></h3><p>按照习惯，有时候单个独立下划线是用作一个名字，来表示某个变量是临时的或无关紧要的。</p>
+<p>例如，在下面的循环中，我们不需要访问正在运行的索引，我们可以使用“_”来表示它只是一个临时值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; for _ in range(32):</span><br><span class="line">...    print(&#x27;Hello, World.&#x27;)</span><br></pre></td></tr></table></figure>
+<p>你也可以在拆分(unpacking)表达式中将单个下划线用作“不关心的”变量，以忽略特定的值。 同样，这个含义只是“依照约定”，并不会在Python解释器中触发特殊的行为。 单个下划线仅仅是一个有效的变量名称，会有这个用途而已。</p>
+<p>在下面的代码示例中，我将汽车元组拆分为单独的变量，但我只对颜色和里程值感兴趣。 但是，为了使拆分表达式成功运行，我需要将包含在元组中的所有值分配给变量。 在这种情况下，“_”作为占位符变量可以派上用场：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; car = (&#x27;red&#x27;, &#x27;auto&#x27;, 12, 3812.4)</span><br><span class="line">&gt;&gt;&gt; color, _, _, mileage = car</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; color</span><br><span class="line">&#x27;red&#x27;</span><br><span class="line">&gt;&gt;&gt; mileage</span><br><span class="line">3812.4</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">12</span><br></pre></td></tr></table></figure>
+<p>除了用作临时变量之外，“_”是大多数Python REPL中的一个特殊变量，它表示由解释器评估的最近一个表达式的结果。</p>
+<p>这样就很方便了，比如你可以在一个解释器会话中访问先前计算的结果，或者，你是在动态构建多个对象并与它们交互，无需事先给这些对象分配名字：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; 20 + 3</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">23</span><br><span class="line">&gt;&gt;&gt; print(_)</span><br><span class="line">23</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; list()</span><br><span class="line">[]</span><br><span class="line">&gt;&gt;&gt; _.append(1)</span><br><span class="line">&gt;&gt;&gt; _.append(2)</span><br><span class="line">&gt;&gt;&gt; _.append(3)</span><br><span class="line">&gt;&gt;&gt; _</span><br><span class="line">[1, 2, 3]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Python下划线命名模式-小结"><a href="#Python下划线命名模式-小结" class="headerlink" title="Python下划线命名模式 - 小结"></a>Python下划线命名模式 - 小结</h3><p><img src="/2019/08/16/%E8%AF%AD%E8%A8%80/Python/%E5%85%B6%E4%BB%96/Python-%E4%B8%8B%E5%88%92%E7%BA%BF/1.png" alt="1"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/" class="post-title-link" itemprop="url">统计学系方法-第2章-感知机</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-15 13:43:22" itemprop="dateCreated datePublished" datetime="2019-08-15T13:43:22+08:00">2019-08-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>感知机（perceptron）是二类分类的线性分类模型，其输入为实例的特征向量，输出为实例的类别，取 +1 和 -1 二值。感知机对应于输入空间（特征空间）中将实例划分为正负两类的分离超平面，属于判别模型。</p>
+<h2 id="感知机模型"><a href="#感知机模型" class="headerlink" title="感知机模型"></a>感知机模型</h2><p>由输入空间到输出空间的如下函数 <img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E6%84%9F%E7%9F%A5%E6%9C%BA%E6%A8%A1%E5%9E%8B.png" alt="感知机模型"> 称为感知机。其中，w 和 b 为感知机模型参数， w 叫作权值（weight）或权值向量（weight vector），b 叫作偏置（bias）。sign 是符号函数，即 <img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AC%A6%E5%8F%B7%E5%87%BD%E6%95%B0.png" alt="符号函数"></p>
+<h2 id="感知机学习策略"><a href="#感知机学习策略" class="headerlink" title="感知机学习策略"></a>感知机学习策略</h2><h3 id="数据集的线性可分性"><a href="#数据集的线性可分性" class="headerlink" title="数据集的线性可分性"></a>数据集的线性可分性</h3><p>如果存在某个超平面 S 能够将数据集的正实例点和负实例点完全正确地划分到超平面的两侧，则称数据集 T 为线性可分数据集（linearly separable data set）；否则，称数据集 T 线性不可分。</p>
+<h3 id="感知机学习策略-1"><a href="#感知机学习策略-1" class="headerlink" title="感知机学习策略"></a>感知机学习策略</h3><p>感知机的损失函数定义为 <img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0.png" alt="损失函数"> 其中 M 为误分类点的集合。这个损失函数就是感知机学习的经验风险函数。</p>
+<p>显然，损失函数 L(w, b) 是非负的。如果没有误分类点，损失函数值是 0.而且，误分类点越少，误分类点离超平面越近，损失函数值越小。</p>
+<p>感知机学习的策略是在假设空间中选取使损失函数式最小的模型参数 w 和 b，即感知机模型。</p>
+<h2 id="感知机学习算法"><a href="#感知机学习算法" class="headerlink" title="感知机学习算法"></a>感知机学习算法</h2><p>感知机学习问题转化为求解损失函数式的最优化问题，最优化的方法是随机梯度下降法。</p>
+<h3 id="感知机学习算法的原始形式"><a href="#感知机学习算法的原始形式" class="headerlink" title="感知机学习算法的原始形式"></a>感知机学习算法的原始形式</h3><p><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AE%97%E6%B3%95%E5%8E%9F%E5%A7%8B%E5%BD%A2%E5%BC%8F.png" alt="算法原始形式"></p>
+<p>这种学习算法直观上有如下解释：当一个实例点被误分类，即位于分离超平面的错误一侧时，则调整 w, b 的值，使分离超平面向该误分类点的一侧移动，以减小该误分离点与超平面间的距离，直至超平面越过该误分类点使其被正确分类。</p>
+<h3 id="算法的收敛性"><a href="#算法的收敛性" class="headerlink" title="算法的收敛性"></a>算法的收敛性</h3><p><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AE%97%E6%B3%95%E7%9A%84%E6%94%B6%E6%95%9B%E6%80%A7.png" alt="算法的收敛性"></p>
+<h3 id="感知机学习算法的对偶形式"><a href="#感知机学习算法的对偶形式" class="headerlink" title="感知机学习算法的对偶形式"></a>感知机学习算法的对偶形式</h3><p><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F%E7%9A%84%E6%80%9D%E8%B7%AF.png" alt="对偶形式的思路"></p>
+<p>实例点更新次数越多，意味着它距离分离超平面越近，也就越难正确分类（越容易分错，超平面一动不多就容易将这些点分错），换句话说，这样的实例对学习结果影响最大（在支持向量机中，这些点代表着支持向量）。</p>
+<p><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AE%97%E6%B3%95%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F1.png" alt="算法对偶形式1"><br><img src="/2019/08/15/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC2%E7%AB%A0-%E6%84%9F%E7%9F%A5%E6%9C%BA/%E7%AE%97%E6%B3%95%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F2.png" alt="算法对偶形式2"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/" class="post-title-link" itemprop="url">向量点乘（内积）和叉乘（外积、向量积）概念及几何意义解读</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-14 15:12:22" itemprop="dateCreated datePublished" datetime="2019-08-14T15:12:22+08:00">2019-08-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/dcrmg/article/details/52416832">https://blog.csdn.net/dcrmg/article/details/52416832</a></p>
+<p>向量是由n个实数组成的一个 n 行 1 列（n<em>1）或一个 1 行 n 列（1</em>n）的有序数组；</p>
+<p>向量的点乘,也叫向量的内积、数量积，对两个向量执行点乘运算，就是对这两个向量对应位一一相乘之后求和的操作，点乘的结果是一个标量。</p>
+<h2 id="点乘"><a href="#点乘" class="headerlink" title="点乘"></a>点乘</h2><h3 id="点乘公式"><a href="#点乘公式" class="headerlink" title="点乘公式"></a>点乘公式</h3><p>对于向量a和向量b：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%90%91%E9%87%8Fa.png" alt="向量a">  <img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%90%91%E9%87%8Fb.png" alt="向量b"></p>
+<p>a和b的点积公式为：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E7%82%B9%E4%B9%98%E5%85%AC%E5%BC%8F.png" alt="点乘公式"></p>
+<p>要求一维向量a和向量b的行列数相同。</p>
+<h3 id="点乘几何意义"><a href="#点乘几何意义" class="headerlink" title="点乘几何意义"></a>点乘几何意义</h3><p>点乘的几何意义是可以用来表征或计算两个向量之间的夹角，以及在b向量在a向量方向上的投影，有公式：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E7%82%B9%E4%B9%98%E5%A4%B9%E8%A7%92.png" alt="点乘夹角"></p>
+<p>推导过程如下，首先看一下向量组成：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E7%82%B9%E4%B9%98%E5%9B%BE.png" alt="点乘图"></p>
+<h2 id="叉乘"><a href="#叉乘" class="headerlink" title="叉乘"></a>叉乘</h2><h3 id="叉乘公式"><a href="#叉乘公式" class="headerlink" title="叉乘公式"></a>叉乘公式</h3><p>两个向量的叉乘，又叫向量积、外积、叉积，叉乘的运算结果是一个向量而不是一个标量。并且两个向量的叉积与这两个向量组成的坐标平面垂直。</p>
+<p>对于向量a和向量b：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%90%91%E9%87%8Fab.png" alt="向量ab"> </p>
+<p>a和b的叉乘公式为：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%8F%89%E4%B9%98%E5%85%AC%E5%BC%8F.png" alt="叉乘公式"> </p>
+<p>其中：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%9F%BA.png" alt="基"> </p>
+<h3 id="叉乘几何意义"><a href="#叉乘几何意义" class="headerlink" title="叉乘几何意义"></a>叉乘几何意义</h3><p>在三维几何中，向量a和向量b的叉乘结果是一个向量，更为熟知的叫法是法向量，该向量垂直于a和b向量构成的平面。</p>
+<p>在3D图像学中，叉乘的概念非常有用，可以通过两个向量的叉乘，生成第三个垂直于a，b的法向量，从而构建X、Y、Z坐标系。如下图所示：<img src="/2019/08/14/%E6%95%B0%E5%AD%A6/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E5%90%91%E9%87%8F%E7%82%B9%E4%B9%98%EF%BC%88%E5%86%85%E7%A7%AF%EF%BC%89%E5%92%8C%E5%8F%89%E4%B9%98%EF%BC%88%E5%A4%96%E7%A7%AF%E3%80%81%E5%90%91%E9%87%8F%E7%A7%AF%EF%BC%89%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%E8%A7%A3%E8%AF%BB/%E5%8F%89%E4%B9%98%E5%9B%BE.png" alt="叉乘图"> </p>
+<p>在二维空间中，叉乘还有另外一个几何意义就是：aXb等于由向量a和向量b构成的平行四边形的面积。</p>
 
       
     </div>
@@ -954,7 +1793,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/14/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/14/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1022,20 +1861,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

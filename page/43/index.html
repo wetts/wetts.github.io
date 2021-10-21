@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E5%91%BD%E4%BB%A4-configure%EF%BC%8Fmake%EF%BC%8Fmake%20install%E7%9A%84%E4%BD%9C%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -202,717 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/" class="post-title-link" itemprop="url">Redis-主从切换-sentinel（哨兵机制）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-26 19:01:27" itemprop="dateCreated datePublished" datetime="2016-06-26T19:01:27+08:00">2016-06-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/zhoujinyi/p/5569462.html">http://www.cnblogs.com/zhoujinyi/p/5569462.html</a></p>
-<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Redis-Sentinel是Redis官方推荐的高可用性(HA)解决方案，当用Redis做Master-slave的高可用方案时，假如master宕机了，Redis本身(包括它的很多客户端)都没有实现自动进行主备切换，而Redis-sentinel本身也是一个独立运行的进程，它能监控多个master-slave集群，发现master宕机后能进行自动切换。</p>
-<p>它的主要功能有以下几点</p>
-<ul>
-<li>不时地监控redis是否按照预期良好地运行;</li>
-<li>如果发现某个redis节点运行出现状况，能够通知另外一个进程(例如它的客户端);</li>
-<li>能够进行自动切换。当一个master节点不可用时，能够选举出master的多个slave(如果有超过一个slave的话)中的一个来作为新的master,其它的slave节点会将它所追随的master的地址改为被提升为master的slave的新地址。</li>
-</ul>
-<h2 id="Sentinel支持集群"><a href="#Sentinel支持集群" class="headerlink" title="Sentinel支持集群"></a>Sentinel支持集群</h2><p>很显然，只使用单个sentinel进程来监控redis集群是不可靠的，当sentinel进程宕掉后(sentinel本身也有单点问题，single-point-of-failure)整个集群系统将无法按照预期的方式运行。所以有必要将sentinel集群，这样有几个好处：</p>
-<ul>
-<li>即使有一些sentinel进程宕掉了，依然可以进行redis集群的主备切换；</li>
-<li>如果只有一个sentinel进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现redis集群的主备切换（单点问题）;</li>
-<li>如果有多个sentinel，redis的客户端可以随意地连接任意一个sentinel来获得关于redis集群中的信息。</li>
-</ul>
-<h2 id="运行Sentinel"><a href="#运行Sentinel" class="headerlink" title="运行Sentinel"></a>运行Sentinel</h2><p>运行sentinel有两种方式：</p>
-<h3 id="第一种"><a href="#第一种" class="headerlink" title="第一种"></a>第一种</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-sentinel /path/to/sentinel.conf</span><br></pre></td></tr></table></figure>
-<h3 id="第二种"><a href="#第二种" class="headerlink" title="第二种"></a>第二种</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server /path/to/sentinel.conf --sentinel</span><br></pre></td></tr></table></figure>
-<p>以上两种方式，都必须指定一个sentinel的配置文件sentinel.conf，如果不指定，将无法启动sentinel。sentinel默认监听26379端口，所以运行前必须确定该端口没有被别的进程占用。</p>
-<h2 id="Sentinel的配置"><a href="#Sentinel的配置" class="headerlink" title="Sentinel的配置"></a>Sentinel的配置</h2><p>Redis源码包中包含了一个sentinel.conf文件作为sentinel的配置文件，配置文件自带了关于各个配置项的解释。典型的配置项如下所示：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 60000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br><span class="line">sentinel parallel-syncs mymaster 1</span><br><span class="line"></span><br><span class="line">sentinel monitor resque 192.168.1.3 6380 4</span><br><span class="line">sentinel down-after-milliseconds resque 10000</span><br><span class="line">sentinel failover-timeout resque 180000</span><br><span class="line">sentinel parallel-syncs resque 5</span><br></pre></td></tr></table></figure>
-<p>上面的配置项配置了两个名字分别为mymaster和resque的master，配置文件只需要配置master的信息就好啦，不用配置slave的信息，因为slave能够被自动检测到(master节点会有关于slave的消息)。需要注意的是，配置文件在sentinel运行期间是会被动态修改的，例如当发生主备切换时候，配置文件中的master会被修改为另外一个slave。这样，之后sentinel如果重启时，就可以根据这个配置来恢复其之前所监控的redis集群的状态。</p>
-<p>接下来我们将一行一行地解释上面的配置项：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br></pre></td></tr></table></figure>
-<p>这一行代表sentinel监控的master的名字叫做mymaster,地址为127.0.0.1:6379，行尾最后的一个2代表什么意思呢？我们知道，网络是不可靠的，有时候一个sentinel会因为网络堵塞而误以为一个master redis已经死掉了，当sentinel集群式，解决这个问题的方法就变得很简单，只需要多个sentinel互相沟通来确认某个master是否真的死了，这个2代表，当集群中有2个sentinel认为master死了时，才能真正认为该master已经不可用了。（sentinel集群中各个sentinel也有互相通信，通过gossip协议）。</p>
-<p>除了第一行配置，我们发现剩下的配置都有一个统一的格式:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel &lt;option_name&gt; &lt;master_name&gt; &lt;option_value&gt;</span><br></pre></td></tr></table></figure>
-<p>接下来我们根据上面格式中的option_name一个一个来解释这些配置项：</p>
-<ul>
-<li><p>down-after-milliseconds</p>
-<p>sentinel会向master发送心跳PING来确认master是否存活，如果master在“一定时间范围”内不回应PONG 或者是回复了一个错误消息，那么这个sentinel会主观地(单方面地)认为这个master已经不可用了(subjectively down, 也简称为SDOWN)。而这个down-after-milliseconds就是用来指定这个“一定时间范围”的，单位是毫秒。</p>
-<p>  不过需要注意的是，这个时候sentinel并不会马上进行failover主备切换，这个sentinel还需要参考sentinel集群中其他sentinel的意见，如果超过某个数量的sentinel也主观地认为该master死了，那么这个master就会被客观地(注意哦，这次不是主观，是客观，与刚才的subjectively down相对，这次是objectively down，简称为ODOWN)认为已经死了。需要一起做出决定的sentinel数量在上一条配置中进行配置。</p>
-</li>
-<li><p>parallel-syncs</p>
-<p>在发生failover主备切换时，这个选项指定了最多可以有多少个slave同时对新的master进行同步，这个数字越小，完成failover所需的时间就越长，但是如果这个数字越大，就意味着越多的slave因为replication而不可用。可以通过将这个值设为 1 来保证每次只有一个slave处于不能处理命令请求的状态。</p>
-</li>
-</ul>
-<p>其他配置项在sentinel.conf中都有很详细的解释。</p>
-<p>所有的配置都可以在运行时用命令SENTINEL SET command动态修改。</p>
-<hr>
-<p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yswKnight/article/details/78158540">https://blog.csdn.net/yswKnight/article/details/78158540</a></p>
-<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="什么是哨兵机制"><a href="#什么是哨兵机制" class="headerlink" title="什么是哨兵机制?"></a>什么是哨兵机制?</h2><p>Redis的哨兵(sentinel) 系统用于管理多个 Redis 服务器,该系统执行以下三个任务:</p>
-<ol>
-<li>监控(Monitoring): 哨兵(sentinel) 会不断地检查你的Master和Slave是否运作正常。</li>
-<li>提醒(Notification):当被监控的某个 Redis出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。</li>
-<li>自动故障迁移(Automatic failover):当一个Master不能正常工作时，哨兵(sentinel) 会开始一次自动故障迁移操作,它会将失效Master的其中一个Slave升级为新的Master, 并让失效Master的其他Slave改为复制新的Master; 当客户端试图连接失效的Master时,集群也会向客户端返回新Master的地址,使得集群可以使用Master代替失效Master。</li>
-</ol>
-<p>哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程,这些进程使用流言协议(gossipprotocols)来接收关于Master是否下线的信息,并使用投票协议(agreement protocols)来决定是否执行自动故障迁移,以及选择哪个Slave作为新的Master。</p>
-<p>每个哨兵(sentinel) 会向其它哨兵(sentinel)、master、slave定时发送消息,以确认对方是否”活”着,如果发现对方在指定时间(可配置)内未回应,则暂时认为对方已挂(所谓的”主观认为宕机” Subjective Down,简称sdown).</p>
-<p>若“哨兵群”中的多数sentinel,都报告某一master没响应,系统才认为该master”彻底死亡”(即:客观上的真正down机,Objective Down,简称odown),通过一定的vote算法,从剩下的slave节点中,选一台提升为master,然后自动修改相关配置。</p>
-<p>虽然哨兵(sentinel) 释出为一个单独的可执行文件 redis-sentinel ,但实际上它只是一个运行在特殊模式下的 Redis 服务器，你可以在启动一个普通 Redis 服务器时通过给定 –sentinel 选项来启动哨兵(sentinel)。</p>
-<p>哨兵(sentinel) 的一些设计思路和zookeeper非常类似<br><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/1.png" alt="1"></p>
-<h2 id="哨兵模式的配置修改"><a href="#哨兵模式的配置修改" class="headerlink" title="哨兵模式的配置修改"></a>哨兵模式的配置修改</h2><p>实现步骤:</p>
-<ol>
-<li>拷贝到etc目录<ul>
-<li><code>cp sentinel.conf  /usr/local/redis/etc</code></li>
-</ul>
-</li>
-<li>修改sentinel.conf配置文件<ul>
-<li>sentinel monitor mymast  192.168.110.133 6379 1  #主节点 名称 IP 端口号 选举次数</li>
-<li><code>#配置主服务器的密码(如没设置密码，可以省略)</code></li>
-<li><code>sentinel auth-pass mymaster 123456</code></li>
-</ul>
-</li>
-<li>修改心跳检测 5000毫秒<ul>
-<li><code>sentinel down-after-milliseconds mymaster 5000</code></li>
-</ul>
-</li>
-<li>做多多少合格节点<ul>
-<li><code>sentinel parallel-syncs mymaster 2</code></li>
-</ul>
-</li>
-<li>启动哨兵模式<ul>
-<li><code>./redis-server /usr/local/redis/etc/sentinel.conf --sentinel &amp;</code></li>
-</ul>
-</li>
-<li>停止哨兵模式</li>
-</ol>
-<p>注意：</p>
-<ol>
-<li>当启动哨兵模式之后，如果你的master服务器宕机之后，哨兵自动会在从redis服务器里面 投票选举一个master主服务器出来；这个主服务器也可以进行读写操作！</li>
-<li>如果之前宕机的主服务器已经修好，可以正式运行了。那么这个服务器只能进行读的操作，会自动跟随由哨兵选举出来的新服务器！</li>
-<li>大家可以进入./redis-cli，输入info，查看你的状态信息；</li>
-</ol>
-<p><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/2.png" alt="2"></p>
-<h2 id="哨兵-Sentinel-总结"><a href="#哨兵-Sentinel-总结" class="headerlink" title="哨兵(Sentinel)总结"></a>哨兵(Sentinel)总结</h2><h3 id="Sentinel的作用："><a href="#Sentinel的作用：" class="headerlink" title="Sentinel的作用："></a>Sentinel的作用：</h3><ol>
-<li>Master 状态监测</li>
-<li>如果Master 异常，则会进行Master-slave 转换，将其中一个Slave作为Master，将之前的Master作为Slave </li>
-<li>Master-Slave切换后，master_redis.conf、slave_redis.conf和sentinel.conf的内容都会发生改变，即master_redis.conf中会多一行slaveof的配置，sentinel.conf的监控目标会随之调换 </li>
-</ol>
-<h3 id="Sentinel的工作方式"><a href="#Sentinel的工作方式" class="headerlink" title="Sentinel的工作方式:"></a>Sentinel的工作方式:</h3><ol>
-<li>每个Sentinel以每秒钟一次的频率向它所知的Master，Slave以及其他 Sentinel 实例发送一个 PING 命令。</li>
-<li>如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel 标记为主观下线。 </li>
-<li>如果一个Master被标记为主观下线，则正在监视这个Master的所有 Sentinel 要以每秒一次的频率确认Master的确进入了主观下线状态。 </li>
-<li>当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认Master的确进入了主观下线状态， 则Master会被标记为客观下线 。</li>
-<li>在一般情况下， 每个 Sentinel 会以每 10 秒一次的频率向它已知的所有Master，Slave发送 INFO 命令 。</li>
-<li>当Master被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次 。</li>
-<li>若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 </li>
-<li>若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Redis-主从配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-26 15:09:37" itemprop="dateCreated datePublished" datetime="2016-06-26T15:09:37+08:00">2016-06-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在从库的redis.conf中加入：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slaveof &lt;主机IP&gt; &lt;主库端口&gt;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%9C%BA%E6%99%AF-%E8%BF%90%E8%A1%8C%E4%B8%80%E6%AE%B5%E6%97%B6%E9%97%B4%E4%B9%8B%E5%90%8E%E5%BC%80%E5%90%AFaof/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%9C%BA%E6%99%AF-%E8%BF%90%E8%A1%8C%E4%B8%80%E6%AE%B5%E6%97%B6%E9%97%B4%E4%B9%8B%E5%90%8E%E5%BC%80%E5%90%AFaof/" class="post-title-link" itemprop="url">Redis-主从配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-26 15:09:37" itemprop="dateCreated datePublished" datetime="2016-06-26T15:09:37+08:00">2016-06-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>运行了一段时间之后才开始aof这个设置项的，先执行一次bgrewriteaof，把当前的key，value保存起来，之后的操作再累加。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/" class="post-title-link" itemprop="url">Lumen-问题-NotFoundHttpException</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-19 09:10:48" itemprop="dateCreated datePublished" datetime="2016-06-19T09:10:48+08:00">2016-06-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>The problem was solved by changing the</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$app-&gt;run();</span><br></pre></td></tr></table></figure>
-<p>in /public/index.php to</p>
-<p>$request = Illuminate\Http\Request::capture();</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$app-&gt;run($request);</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E5%BF%AB%E6%8D%B7%E9%94%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/17/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E5%BF%AB%E6%8D%B7%E9%94%AE/" class="post-title-link" itemprop="url">IntelliJ-快捷键</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-17 17:29:48" itemprop="dateCreated datePublished" datetime="2016-06-17T17:29:48+08:00">2016-06-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="keymaps为Mac-OS-X-10-5"><a href="#keymaps为Mac-OS-X-10-5" class="headerlink" title="keymaps为Mac OS X 10.5+"></a>keymaps为Mac OS X 10.5+</h2><h3 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h3><ul>
-<li>跳到下一步(Step Over 相当于eclipse的f6)：<code>F8</code> (Win)</li>
-<li>进入到代码(Step Into 相当于eclipse的f5)：<code>F7</code> (Win)</li>
-<li>跳过：<code>F9</code> (Win)</li>
-<li>运行到光标处：<code>Alt + F9</code> (Win)</li>
-</ul>
-<h3 id="搜索、查看"><a href="#搜索、查看" class="headerlink" title="搜索、查看"></a>搜索、查看</h3><ul>
-<li><p>查看上下步：<code>command + alt + 左右方向键</code> (Mac)、 <code>ctrl + alt + 左右方向键</code> (Win)</p>
-</li>
-<li><p>跳转到上次编辑的地方：<code>command + shift + backspace</code> (Mac)、 <code>ctrl + shift + backspace</code> (Win)</p>
-</li>
-<li><p>查看类中的方法和属性：<code>command + F12</code> (Mac)、 <code>ctrl + F12</code> (Win)</p>
-</li>
-<li><p>通过类名打开类：<code>command + o</code> (Mac)、 <code>ctrl + n</code> (Win)</p>
-</li>
-<li><p>通过文件名打开文件：<code>command + shift + o</code> (Mac)、 <code>ctrl + shift + n</code> (Win)</p>
-</li>
-<li><p>列出最近查看的文件列表：<code>command + e</code> (Mac)、 <code>ctrl + e</code> (Win)</p>
-</li>
-<li><p>最近修改文件列表：<code>shift + command + e</code> (Mac)、 <code>ctrl + shift + e</code> (Win)</p>
-</li>
-<li><p>全局搜索：<code>double shift</code> (Mac)</p>
-</li>
-<li><p>查看文档：<code>ctrl + j</code> (Mac)</p>
-</li>
-</ul>
-<h4 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h4><ul>
-<li>显示当前文件的结构：<code>ctrl + F12</code> (Win)</li>
-</ul>
-<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><ul>
-<li><p>查看当前方法的声明：<code>alt + q</code> (Win)</p>
-</li>
-<li><p>查看方法的引用：<code>command + b</code> (Mac)</p>
-</li>
-<li><p>查看方法的super方法：<code>command + u</code> (Mac)</p>
-</li>
-<li><p>查看接口方法的实现：<code>command + alt + b</code> (Mac)</p>
-</li>
-<li><p>查询方法super、继承关系图（Call Hierarchy）：<code>command + shift + h</code> (Mac)</p>
-</li>
-<li><p>查看调用的方法申明：<code>option + space</code> (Mac)</p>
-</li>
-</ul>
-<h4 id="类"><a href="#类" class="headerlink" title="类"></a>类</h4><ul>
-<li><p>查询类super、继承关系树图（Type Hierarchy）：<code>ctrl + h</code> (Mac)</p>
-</li>
-<li><p>查看类的层次结构图（Diagram）：<code>command + alt + shift + u</code> (Mac)、<code>ctrl + alt + shift + u</code> (Win)</p>
-</li>
-<li><p>查看类的子类：<code>ctrl + alt + b</code> (Win)</p>
-</li>
-<li><p>查看类的夫类：<code>ctrl + alt + p</code> (Win)</p>
-</li>
-<li><p>搜索对象被引用的地方：<code>alt + F7</code> (Mac &amp; Win)</p>
-</li>
-<li><p>搜索对象在当前文件被引用的地方：<code>command + F7</code> (Mac)、 <code>ctrl + F7</code> (Win)</p>
-</li>
-<li><p>跳到大括号的开头结尾：<code>ctrl + [或者]</code> (Win)</p>
-</li>
-</ul>
-<h3 id="编辑"><a href="#编辑" class="headerlink" title="编辑"></a>编辑</h3><ul>
-<li><p>删除行：<code>command + delete</code> (Mac)、 <code>ctrl + y</code> (Win)</p>
-</li>
-<li><p>向下插入新行：<code>command + shift + enter</code> (Mac)、 <code>shift + enter</code> (Win)</p>
-</li>
-<li><p>向上插入新行：<code>command + alt + enter</code> (Mac)、 <code>ctrl + alt + enter</code> (Win)</p>
-</li>
-<li><p>向上下移动当前行：<code>shift + alt + 上下方向键</code> (Mac &amp; Win)</p>
-</li>
-<li><p>注释：<code>command + ／</code> (Mac)、 <code>ctrl + /</code> (Win)</p>
-</li>
-<li><p>错误内容提示：<code>alt + enter</code> (Mac &amp; Win)</p>
-</li>
-<li><p>格式化代码：<code>command + alt + l</code> (Mac)、 <code>ctrl + alt + l</code> (Win)</p>
-</li>
-<li><p>剪切当前行：<code>command + x</code> (Mac)、 <code>ctrl + x</code> (Win)</p>
-</li>
-<li><p>复制当前行：<code>command + c</code> (Mac)、 <code>ctrl + c</code> (Win)</p>
-</li>
-<li><p>将当前行复制到到下一行：<code>command + d</code> (Mac)、 <code>ctrl + d</code> (Win)</p>
-</li>
-<li><p>粘贴：<code>command + v</code> (Mac)、 <code>ctrl + v</code> (Win)</p>
-</li>
-<li><p>将选择的内容转换大小写：<code>command + shift + u</code> (Mac)、 <code>ctrl + shift + u</code> (Win)</p>
-</li>
-<li><p>代码模版：<code>ctrl + j</code> (Win)</p>
-</li>
-<li><p>整合两行：<code>ctrl + shift + j</code> (Win)</p>
-</li>
-<li><p>撤销：<code>ctrl + z</code> (Win)</p>
-</li>
-<li><p>取消撤销：<code>ctrl + shift + z</code> (Win)</p>
-</li>
-<li><p>get\set\构造方法等生成：<code>alt + Insert</code> (Win)</p>
-</li>
-<li><p>自动导入包、删除多余的包：<code>alt + ctrl + o</code> (Mac)</p>
-</li>
-<li><p>大小写切换：<code>ctrl + shift + u</code> (Win)</p>
-</li>
-</ul>
-<hr>
-<ul>
-<li>psvm：public static void main</li>
-<li>sout：System.out.println</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/%E7%B1%BB%E8%A3%85%E8%BD%BD%E5%99%A8%E3%80%81%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%89%98%E6%A8%A1%E5%9E%8B%E3%80%81%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E3%80%81%E5%AE%89%E5%85%A8%E6%80%A7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/17/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%85%B6%E4%BB%96/%E7%B1%BB%E8%A3%85%E8%BD%BD%E5%99%A8%E3%80%81%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%89%98%E6%A8%A1%E5%9E%8B%E3%80%81%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E3%80%81%E5%AE%89%E5%85%A8%E6%80%A7/" class="post-title-link" itemprop="url">类装载器、双亲委托模型、命名空间、安全性</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-17 17:29:48" itemprop="dateCreated datePublished" datetime="2016-06-17T17:29:48+08:00">2016-06-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/yuan22003/article/details/6839335">http://blog.csdn.net/yuan22003/article/details/6839335</a></p>
-<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>类加载器是用来把类 class 装载入 JVM 的</p>
-<p>Java 运行时会产生三个 ClassLoader</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Bootstrap ClassLoader(C++ 编写 )            用来加载核心类库，如 java.lang.* 等</span><br><span class="line">↑</span><br><span class="line"></span><br><span class="line">ExtClassLoader                         用来加载 ext 目录下或者 ext.dir 指定的目录下的类库。</span><br><span class="line">↑</span><br><span class="line"></span><br><span class="line">AppClassLoader                        用来加载 CLASSPATH 下的类库及类</span><br></pre></td></tr></table></figure>
-<p>其中，ExtClassLoader和AppClassLoader也是由Bootstrap ClassLoader加载的。我们也可以继承ClassLoader，实现自己的ClassLoader</p>
-<h2 id="双亲委托模型"><a href="#双亲委托模型" class="headerlink" title="双亲委托模型"></a>双亲委托模型</h2><p>更好的保证 JAVA 平台的安全。在此模型下，当一个装载器被请求加载某个类时，先委托自己的 parent 去装载，如果 parent 能装载，则返回这个类对应的 Class 对象，否则，递归委托给父类的父类装载。</p>
-<p>在此模型下，用户自定义的类装载器，不可能装载应该由父亲装载的可靠类，从而防止不可靠甚至恶意的代码代替本应该由父亲装载器装载的可靠代码。</p>
-<h2 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h2><p>假设我们有如下结构：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">                 Loader1 ( 装载 Class1)</span><br><span class="line">                          ↑</span><br><span class="line">                 Loader2 ( 装载 Class2)</span><br><span class="line">              ↑                        ↑</span><br><span class="line">Loader3( 装载 Class3)             Loader4( 装载 Class4)</span><br></pre></td></tr></table></figure>
-<p>其中， Loader1 实际装载了 Class1 ， Loader2 实际装载了 Class2 ，其余类似。</p>
-<p>这里我们明确 2 个概念：</p>
-<ol>
-<li>定义类装载器：实际装载类的类装载器。比如上例中的 Class1 的定义类装载器就是 Loader1 。 Class3 的定义类装载器就是 Loader3 。</li>
-<li>初始类装载器：任何被要求装载某个类型，并且能够返回该类型的 Class 的类装载器，都称为改类型的初始类装载器。比如上例中， Class1 的初始装载器有 Loader3,Loader4,Loader2,Loader1 。   所以，从定义类装载器往下的所有子装载器，都是该类型的初始类装载器，包括定义类装载器。</li>
-</ol>
-<p>每个 ClassLoader 都有自己的命名空间，命名空间由所有以此装载器为初始类装载器的类组成，见下表：<br>|类加载器|命名空间|<br>|:-:|:-:|<br>|Loader1|Class1|<br>|Loader2|Class1 Class2|<br>|Loader3|Class1 Class2 Class3|<br>|Loader4|Class1 Class2 Class4|</p>
-<p>ClassLoader 在调用 loadClass 之前，总会先检查当前的命名空间（内部列表），如果 ClassLoader 是这个类型的初始类装载器，就会返回表示这个类型的 Class 实例。这样，虚拟机永远不会在同一个 ClassLoader 上装载同一个类型 2 次。</p>
-<p>不同命名空间的两个类是不可见的 （如，上例中的 Class3 和 Class4 ） ，但只要得到类所对应的Class对象的reference，还是可以访问另一命名空间的类。</p>
-<h2 id="运行时包"><a href="#运行时包" class="headerlink" title="运行时包"></a>运行时包</h2><p>由同一个 ClassLoader 定义装载的属于相同包的类，组成了运行时包，决定两个类是不是属于同一个运行时包，不仅要看包名是否相同，还要看是否是由同一个 ClassLoader 加载的。 只有属于同一个运行时包的类才能互相访问包可见的类和成员。</p>
-<p>这样的限制避免了用户自己的代码冒充核心类库的类访问核心类库包可见成员的情况。假设用户自己定义了一个类 java.lang.xxx ，并用自定义的 ClassLoader 装载，由于 Java.lang.* 和 java.lang.xxx 是由不同的装载器装载，属于不同的运行时包，所以 java.lang.xxx 不能访问核心类库 java.lang 中类的包可见成员。</p>
-<p>综上，命名空间隔并不完全禁止属于不同空间的类的互相访问，而双亲委托加强了 Java 的安全，运行时包增加了对包可见成员的保护。</p>
-<h2 id="实现自己的ClassLoader"><a href="#实现自己的ClassLoader" class="headerlink" title="实现自己的ClassLoader"></a>实现自己的ClassLoader</h2><p>我们也可以实现自己的ClassLoader，通过继承ClassLoader类，并重写findClass方法。例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">import java.io.ByteArrayOutputStream;  </span><br><span class="line">import java.io.File;  </span><br><span class="line">import java.io.FileInputStream;  </span><br><span class="line">import java.io.IOException;  </span><br><span class="line">  </span><br><span class="line">public class MyClassLoader extends ClassLoader &#123;     </span><br><span class="line">    </span><br><span class="line">    public Class findClass(String name) &#123;     </span><br><span class="line">        byte[] data = loadClassData(name);     </span><br><span class="line">        return defineClass(name, data, 0, data.length);     </span><br><span class="line">    &#125;     </span><br><span class="line">    </span><br><span class="line">    public byte[] loadClassData(String name) &#123;     </span><br><span class="line">        FileInputStream fis = null;     </span><br><span class="line">        byte[] data = null;     </span><br><span class="line">        try &#123;     </span><br><span class="line">            fis = new FileInputStream(new File(&quot;E:/home/&quot; + name.replace(&quot;.&quot;, &quot;/&quot;) + &quot;.class&quot;));     </span><br><span class="line">            ByteArrayOutputStream out = new ByteArrayOutputStream();     </span><br><span class="line">            int ch = 0;     </span><br><span class="line">            while ((ch = fis.read()) != -1) &#123;     </span><br><span class="line">                out.write(ch);     </span><br><span class="line">            &#125;     </span><br><span class="line">            data = out.toByteArray();     </span><br><span class="line">        &#125; catch (IOException e) &#123;     </span><br><span class="line">            e.printStackTrace();     </span><br><span class="line">        &#125;     </span><br><span class="line">        return data;     </span><br><span class="line">    &#125;     </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">HTML-报头Accept与Content-Type的区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-17 14:32:58" itemprop="dateCreated datePublished" datetime="2016-06-17T14:32:58+08:00">2016-06-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/HTTP/" itemprop="url" rel="index"><span itemprop="name">HTTP</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ol>
-<li>Accept属于请求头， Content-Type属于实体头。</li>
-</ol>
-<p>  Http报头分为通用报头，请求报头，响应报头和实体报头。</p>
-<p>  请求方的http报头结构：通用报头|请求报头|实体报头</p>
-<p>  响应方的http报头结构：通用报头|响应报头|实体报头</p>
-<ol start="2">
-<li>Accept代表发送端（客户端）希望接受的数据类型。</li></ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-configure%EF%BC%8Fmake%EF%BC%8Fmake%20install%E7%9A%84%E4%BD%9C%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/05/14/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E5%91%BD%E4%BB%A4-configure%EF%BC%8Fmake%EF%BC%8Fmake%20install%E7%9A%84%E4%BD%9C%E7%94%A8/" class="post-title-link" itemprop="url">Linux-命令-configure／make／make install的作用</a>
+            <a href="/2016/05/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E5%91%BD%E4%BB%A4-configure%EF%BC%8Fmake%EF%BC%8Fmake%20install%E7%9A%84%E4%BD%9C%E7%94%A8/" class="post-title-link" itemprop="url">Linux-命令-configure／make／make install的作用</a>
         </h2>
 
         <div class="post-meta">
@@ -977,7 +267,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E9%85%8D%E7%BD%AE/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/05/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E9%85%8D%E7%BD%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -991,7 +281,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Nginx-日志-日志配置</a>
+            <a href="/2016/05/05/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Nginx-日志-日志配置</a>
         </h2>
 
         <div class="post-meta">
@@ -1028,14 +318,32 @@
 <p>需要注意的是：Nginx进程设置的用户和组必须对日志路径有创建文件的权限，否则，会报错。</p>
 <h3 id="访问日志格式配置"><a href="#访问日志格式配置" class="headerlink" title="访问日志格式配置"></a>访问日志格式配置</h3><p>log_format用来设置日志格式，也就是日志文件中每条日志的格式，具体如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">log_format name(格式名称) type(格式样式)</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E9%85%8D%E7%BD%AE/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+
+<p>举例说明如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">log_format  main  &#x27;$server_name $remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;</span><br><span class="line">                &#x27;$status $uptream_status $body_bytes_sent &quot;$http_referer&quot; &#x27;</span><br><span class="line">                &#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot; &#x27;</span><br><span class="line">                &#x27;$ssl_protocol $ssl_cipher $upstream_addr $request_time $upstream_response_time&#x27;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$server_name：虚拟主机名称。</span><br><span class="line">$remote_addr：远程客户端的IP地址。</span><br><span class="line">-：空白，用一个“-”占位符替代，历史原因导致还存在。</span><br><span class="line">$remote_user：远程客户端用户名称，用于记录浏览者进行身份验证时提供的名字，如登录百度的用户名scq2099yt，如果没有登录就是空白。</span><br><span class="line">[$time_local]：访问的时间与时区，比如18/Jul/2012:17:00:01 +0800，时间信息最后的&quot;+0800&quot;表示服务器所处时区位于UTC之后的8小时。</span><br><span class="line">$request：请求的URI和HTTP协议，这是整个PV日志记录中最有用的信息，记录服务器收到一个什么样的请求</span><br><span class="line">$status：记录请求返回的http状态码，比如成功是200。</span><br><span class="line">$uptream_status：upstream状态，比如成功是200.</span><br><span class="line">$body_bytes_sent：发送给客户端的文件主体内容的大小，比如899，可以将日志每条记录中的这个值累加起来以粗略估计服务器吞吐量。</span><br><span class="line">$http_referer：记录从哪个页面链接访问过来的。</span><br><span class="line">$http_user_agent：客户端浏览器信息</span><br><span class="line">$http_x_forwarded_for：客户端的真实ip，通常web服务器放在反向代理的后面，这样就不能获取到客户的IP地址了，通过$remote_add拿到的IP地址是反向代理服务器的iP地址。反向代理服务器在转发请求的http头信息中，可以增加x_forwarded_for信息，用以记录原有客户端的IP地址和原来客户端的请求的服务器地址。</span><br><span class="line">$ssl_protocol：SSL协议版本，比如TLSv1。</span><br><span class="line">$ssl_cipher：交换数据中的算法，比如RC4-SHA。</span><br><span class="line">$upstream_addr：upstream的地址，即真正提供服务的主机地址。</span><br><span class="line">$request_time：整个请求的总时间。</span><br><span class="line">$upstream_response_time：请求过程中，upstream的响应时间。</span><br></pre></td></tr></table></figure>
+
+<h3 id="访问日志路径配置"><a href="#访问日志路径配置" class="headerlink" title="访问日志路径配置"></a>访问日志路径配置</h3><p>access_log指令用来指定日志文件的存放路径（包含日志文件名）、格式和缓存大小，具体如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">access_log path(存放路径) [format(自定义日志格式名称) [buffer=size | off]]</span><br></pre></td></tr></table></figure>
+
+<p>举例说明如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">access_log  logs/access.log  main;</span><br></pre></td></tr></table></figure>
+
+<h3 id="关闭某个日志"><a href="#关闭某个日志" class="headerlink" title="关闭某个日志"></a>关闭某个日志</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location = /favicon.ico &#123;  </span><br><span class="line">  access_log off;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="错误日志"><a href="#错误日志" class="headerlink" title="错误日志"></a>错误日志</h2><p>错误日志主要记录客户端访问Nginx出错时的日志，格式不支持自定义。通过错误日志，你可以得到系统某个服务或server的性能瓶颈等。因此，将日志好好利用，你可以得到很多有价值的信息。错误日志由指令error_log来指定，具体格式如下：</p>
+<p><code>error_log path(存放路径) level(日志等级)</code></p>
+<p>path含义同access_log，level表示日志等级，具体如下：</p>
+<p>[ debug | info | notice | warn | error | crit ]</p>
+<p>从左至右，日志详细程度逐级递减，即debug最详细，crit最少。</p>
+<p>举例说明如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error_log  logs/error.log  info;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是：error_log off并不能关闭错误日志，而是会将错误日志记录到一个文件名为off的文件中。</p>
+<p>正确的关闭错误日志记录功能的方法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error_log /dev/null;</span><br></pre></td></tr></table></figure>
+
+<p>上面表示将存储日志的路径设置为“垃圾桶”。</p>
+
       
     </div>
 
@@ -1054,7 +362,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/05/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1068,7 +376,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">Nginx-日志-日志分析</a>
+            <a href="/2016/05/05/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">Nginx-日志-日志分析</a>
         </h2>
 
         <div class="post-meta">
@@ -1109,10 +417,93 @@
 <li>动态Web请求</li>
 <li>静态web请求，如图片、样式表、脚本等。</li>
 <li>来路域名</li>
-<li>404 错误</li></ul>
+<li>404 错误</li>
+<li>操作系统</li>
+<li>浏览器和搜索引擎</li>
+<li>主机、DNS和ip地址</li>
+<li>HTTP 响应代码</li>
+<li>引荐网站</li>
+<li>键盘布局</li>
+<li>自定义显示</li>
+<li>支持超大日志（分析速度很快）</li>
+</ul>
+<ol>
+<li>语法<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">goaccess [ -b ][ -s ][ -e IP_ADDRESS][ -a ] &lt;-f log_file &gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>参数<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-f – 日志文件名</span><br><span class="line">-b – 开启流量统计，如果希望加快分析速度不建议使用该参数</span><br><span class="line">-s – 开启HTTP响应代码统计</span><br><span class="line">-a – 开启用户代理统计</span><br><span class="line">-e – 开启指定IP地址统计，默认禁用</span><br></pre></td></tr></table></figure></li>
+<li>例子<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">goaccess -f access.log</span><br><span class="line"></span><br><span class="line"># 参数以显示HTTP响应代码、用户代理、流量消耗</span><br><span class="line">goaccess -f access.log -s -a -b</span><br><span class="line"></span><br><span class="line">zcat access.log.1.gz | goaccess</span><br><span class="line"></span><br><span class="line"># 分析目前下所有日志</span><br><span class="line">zcat access.log* | goaccess</span><br><span class="line"></span><br><span class="line"># 10月5号那天的日志</span><br><span class="line">sed -n ‘/05/Dec/2010/,$ p’ access.log | goaccess -s -b</span><br><span class="line"></span><br><span class="line"># 分析从11月5号到12月5号一个月内的日志</span><br><span class="line">sed -n ‘/5/Nov/2010/,/5/Dec/2010/ p’ access.log | goaccess -s -b</span><br><span class="line"></span><br><span class="line"># 通过调用本地的goaccess程序来分析服务器上的日志</span><br><span class="line">ssh user@server &#x27;cat /var/log/apache2/access.log&#x27; | goaccess -s -a -b</span><br><span class="line"></span><br><span class="line"># 获取某个时间段的日志</span><br><span class="line"># 方法1：sed</span><br><span class="line">cat access_nginx.log | egrep &quot;12/Sep/2016&quot; | sed  -n &#x27;/09:00:00/,/09:30:00/p&#x27;</span><br><span class="line"># 方法二：awk</span><br><span class="line">cat web.log | egrep &quot;01/Apr/2014&quot; | awk -F&#x27;:&#x27; &#x27;$2 = 21 &amp;&amp; $3 &gt;= 30 &amp;&amp; $3 &lt;= 50&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/30/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-Validation%E6%B3%A8%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/30/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-Validation%E6%B3%A8%E8%A7%A3/" class="post-title-link" itemprop="url">JavaEE-Validation注解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-30 13:08:33" itemprop="dateCreated datePublished" datetime="2016-04-30T13:08:33+08:00">2016-04-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Bean-Validation-1-0（JSR-303）"><a href="#Bean-Validation-1-0（JSR-303）" class="headerlink" title="Bean Validation 1.0（JSR-303）"></a>Bean Validation 1.0（JSR-303）</h3><h4 id="Null-被注释的元素必须为-null"><a href="#Null-被注释的元素必须为-null" class="headerlink" title="@Null    被注释的元素必须为 null"></a>@Null    被注释的元素必须为 null</h4><h4 id="NotNull-被注释的元素必须不为-null"><a href="#NotNull-被注释的元素必须不为-null" class="headerlink" title="@NotNull    被注释的元素必须不为 null"></a>@NotNull    被注释的元素必须不为 null</h4><h4 id="AssertTrue-被注释的元素必须为-true"><a href="#AssertTrue-被注释的元素必须为-true" class="headerlink" title="@AssertTrue    被注释的元素必须为 true"></a>@AssertTrue    被注释的元素必须为 true</h4><h4 id="AssertFalse-被注释的元素必须为-false"><a href="#AssertFalse-被注释的元素必须为-false" class="headerlink" title="@AssertFalse    被注释的元素必须为 false"></a>@AssertFalse    被注释的元素必须为 false</h4><h4 id="Min-value-被注释的元素必须是一个数字，其值必须大于等于指定的最小值"><a href="#Min-value-被注释的元素必须是一个数字，其值必须大于等于指定的最小值" class="headerlink" title="@Min(value)    被注释的元素必须是一个数字，其值必须大于等于指定的最小值"></a>@Min(value)    被注释的元素必须是一个数字，其值必须大于等于指定的最小值</h4><h4 id="Max-value-被注释的元素必须是一个数字，其值必须小于等于指定的最大值"><a href="#Max-value-被注释的元素必须是一个数字，其值必须小于等于指定的最大值" class="headerlink" title="@Max(value)    被注释的元素必须是一个数字，其值必须小于等于指定的最大值"></a>@Max(value)    被注释的元素必须是一个数字，其值必须小于等于指定的最大值</h4>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2016/05/05/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E6%97%A5%E5%BF%97-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/#more" rel="contents">
+              <a class="btn" href="/2016/04/30/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/JavaEE-Validation%E6%B3%A8%E8%A7%A3/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1132,10 +523,448 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/28/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E8%AE%BE%E7%BD%AE-%E5%B8%B8%E8%A7%81%E8%AE%BE%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/28/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E8%AE%BE%E7%BD%AE-%E5%B8%B8%E8%A7%81%E8%AE%BE%E7%BD%AE/" class="post-title-link" itemprop="url">IntelliJ-设置-常见设置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-28 08:55:57" itemprop="dateCreated datePublished" datetime="2016-04-28T08:55:57+08:00">2016-04-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="1-Intellj-IDEA显示行号"><a href="#1-Intellj-IDEA显示行号" class="headerlink" title="1. Intellj IDEA显示行号"></a>1. Intellj IDEA显示行号</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">File&gt;setting&gt;editor&gt;appearance&gt;general&gt;show line numbers</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-src中资源文件编译进classes文件夹"><a href="#2-src中资源文件编译进classes文件夹" class="headerlink" title="2. src中资源文件编译进classes文件夹"></a>2. src中资源文件编译进classes文件夹</h3><p>IDEA的maven项目中，默认源代码目录下的xml等资源文件并不会在编译的时候一块打包进classes文件夹，而是直接舍弃掉。</p>
+<p>Eclipse的src目录下的xml等资源文件在编译的时候会自动打包进输出到classes文件夹。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/04/28/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E8%AE%BE%E7%BD%AE-%E5%B8%B8%E8%A7%81%E8%AE%BE%E7%BD%AE/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/25/%E8%AF%AD%E8%A8%80/%E6%AF%94%E8%BE%83/PHP%E5%92%8CJava%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/25/%E8%AF%AD%E8%A8%80/%E6%AF%94%E8%BE%83/PHP%E5%92%8CJava%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">PHP和Java的区别</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-25 17:29:48" itemprop="dateCreated datePublished" datetime="2016-04-25T17:29:48+08:00">2016-04-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%AD%E8%A8%80/" itemprop="url" rel="index"><span itemprop="name">语言</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="php-和-java-的区别"><a href="#php-和-java-的区别" class="headerlink" title="php 和 java 的区别"></a>php 和 java 的区别</h1><ol>
+<li>php 是解释型语言。java 是编译型语言</li>
+<li>php 子类构造方法不能自动调用父类的构造方法，java 子类构造方法自动调用父类的无参构造方法，如果没有无参构造方法，则必须手动调用有参构造方法</li>
+<li>php 是弱类型语言。java 是强类型语言</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%92%8Cbrew%20cask%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%92%8Cbrew%20cask%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Mac-brew-brew和brew cask的区别</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-23 19:55:57" itemprop="dateCreated datePublished" datetime="2016-04-23T19:55:57+08:00">2016-04-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mac/" itemprop="url" rel="index"><span itemprop="name">Mac</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>brew 是从下载源码解压然后 ./configure &amp;&amp; make install ，同时会包含相关依存库。并自动配置好各种环境变量，而且易于卸载。<br>这个对程序员来说简直是福音，简单的指令，就能快速安装和升级本地的各种开发环境。</p>
+<p>而 brew cask 是 已经编译好了的应用包 （.dmg/.pkg），仅仅是下载解压，放在统一的目录中（/opt/homebrew-cask/Caskroom），省掉了自己去下载、解压、拖拽（安装）等蛋疼步骤，同样，卸载相当容易与干净。这个对一般用户来说会比较方便，包含很多在 AppStore 里没有的常用软件。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/22/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/22/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Mac-brew-brew常见问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-22 13:11:57" itemprop="dateCreated datePublished" datetime="2016-04-22T13:11:57+08:00">2016-04-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mac/" itemprop="url" rel="index"><span itemprop="name">Mac</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="brew-Error-no-implicit-conversion-of-nil-into-String"><a href="#brew-Error-no-implicit-conversion-of-nil-into-String" class="headerlink" title="brew Error: no implicit conversion of nil into String"></a>brew Error: no implicit conversion of nil into String</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/bin</span><br><span class="line">git reset --hard HEAD</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/20/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E6%9B%B4%E6%8D%A2%E6%BA%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/20/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E6%9B%B4%E6%8D%A2%E6%BA%90/" class="post-title-link" itemprop="url">Mac-brew-brew更换源</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-20 21:16:21" itemprop="dateCreated datePublished" datetime="2016-04-20T21:16:21+08:00">2016-04-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mac/" itemprop="url" rel="index"><span itemprop="name">Mac</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="清华"><a href="#清华" class="headerlink" title="清华"></a>清华</h1><h2 id="替换brew-git"><a href="#替换brew-git" class="headerlink" title="替换brew.git:"></a>替换brew.git:</h2><p><code>git -C &quot;$(brew --repo)&quot; remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git</code></p>
+<h2 id="替换homebrew-core-git"><a href="#替换homebrew-core-git" class="headerlink" title="替换homebrew-core.git:"></a>替换homebrew-core.git:</h2><p><code>git -C &quot;$(brew --repo homebrew/core)&quot; remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git</code></p>
+<h2 id="应用生效"><a href="#应用生效" class="headerlink" title="应用生效"></a>应用生效</h2><p><code>brew update</code></p>
+<h2 id="替换homebrew-bottles"><a href="#替换homebrew-bottles" class="headerlink" title="替换homebrew-bottles:"></a>替换homebrew-bottles:</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles&#x27; &gt;&gt; ~/.bash_profile</span><br><span class="line">source ~/.bash_profile</span><br></pre></td></tr></table></figure>
+
+<h1 id="阿里"><a href="#阿里" class="headerlink" title="阿里"></a>阿里</h1><h2 id="替换brew-git-1"><a href="#替换brew-git-1" class="headerlink" title="替换brew.git:"></a>替换brew.git:</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &quot;$(brew --repo)&quot;</span><br><span class="line">git remote set-url origin https://mirrors.aliyun.com/homebrew/brew.git</span><br></pre></td></tr></table></figure>
+
+<h2 id="替换homebrew-core-git-1"><a href="#替换homebrew-core-git-1" class="headerlink" title="替换homebrew-core.git:"></a>替换homebrew-core.git:</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &quot;$(brew --repo)/Library/Taps/homebrew/homebrew-core&quot;</span><br><span class="line">git remote set-url origin https://mirrors.aliyun.com/homebrew/homebrew-core.git</span><br></pre></td></tr></table></figure>
+
+<h2 id="应用生效-1"><a href="#应用生效-1" class="headerlink" title="应用生效"></a>应用生效</h2><p><code>brew update</code></p>
+<h2 id="替换homebrew-bottles-1"><a href="#替换homebrew-bottles-1" class="headerlink" title="替换homebrew-bottles:"></a>替换homebrew-bottles:</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.aliyun.com/homebrew/homebrew-bottles&#x27; &gt;&gt; ~/.bash_profile</span><br><span class="line">source ~/.bash_profile</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/20/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/04/20/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">Mac-brew-brew常用命令</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-04-20 20:20:51" itemprop="dateCreated datePublished" datetime="2016-04-20T20:20:51+08:00">2016-04-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mac/" itemprop="url" rel="index"><span itemprop="name">Mac</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>安装（需要 Ruby）：ruby -e “$(curl -fsSL <a target="_blank" rel="noopener" href="https://raw.github.com/Homebrew/homebrew/go/install)&quot;">https://raw.github.com/Homebrew/homebrew/go/install)&quot;</a></li>
+<li>搜索：brew search mysql</li>
+<li>查询：brew info mysql 主要看具体的信息，比如目前的版本，依赖，安装后注意事项等</li>
+<li>更新：brew update 这会更新 Homebrew 自己，并且使得接下来的两个操作有意义——</li>
+<li>检查过时（是否有新版本）：brew outdated 这回列出所有安装的软件里可以升级的那些</li>
+<li>升级：brew upgrade 升级所有可以升级的软件们</li>
+<li>清理：brew cleanup 清理不需要的版本极其安装包缓存</li>
+<li>安装包：brew install</li>
+<li>卸载包：brew uninstall</li>
+<li><code>brew leaves</code>：打印所有不是其他软件包依赖的软件包</li>
+<li><code>brew deps --tree --installed</code>：列出包和依赖</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/42/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><span class="page-number current">43</span><a class="page-number" href="/page/44/">44</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/44/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/42/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/42/">42</a><span class="page-number current">43</span><a class="page-number" href="/page/44/">44</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/44/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1203,20 +1032,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

@@ -188,280 +188,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/23/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-setting.xml%E4%B8%8Epom.xml/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/07/23/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-setting.xml%E4%B8%8Epom.xml/" class="post-title-link" itemprop="url">Maven-setting.xml与pom.xml</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-07-23 09:17:48" itemprop="dateCreated datePublished" datetime="2016-07-23T09:17:48+08:00">2016-07-23</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Maven/" itemprop="url" rel="index"><span itemprop="name">Maven</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>pom.xml位于创建的项目文件夹内，setting.xml位于maven包解压后conf文件夹内。</p>
-<h2 id="settings-xml"><a href="#settings-xml" class="headerlink" title="settings.xml"></a>settings.xml</h2><p>先来说说settings.xml，settings.xml对于maven来说相当于全局性的配置，用于所有的项目。在maven2中存在两个 settings.xml，一个位于maven2的解压目录conf下面，作为全局性配置。对于团队设置，保持一致的定义是关键，所以 maven2/conf下面的settings.xml就作为团队共同的配置文件，保证所有的团队成员都拥有相同的配置。当然对于每个成员，都需要特殊的自定义设置，如用户信息，所以另外一个settings.xml就作为本地配置。</p>
-<p>settings.xml基本结构如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&lt;settings xmlns=”http://maven.apache.org/POM/4.0.0″</span><br><span class="line"></span><br><span class="line">      xmlns:xsi=”http://www.w3.org/2001/XMLSchema-instance”</span><br><span class="line"></span><br><span class="line">      xsi:schemaLocation=”http://maven.apache.org/POM/4.0.0</span><br><span class="line"></span><br><span class="line">      http://maven.apache.org/xsd/settings-1.0.0.xsd”&gt;</span><br><span class="line"></span><br><span class="line">  &lt;localRepository/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;interactiveMode/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;usePluginRegistry/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;offline/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;pluginGroups/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;servers/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;mirrors/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;proxies/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;profiles/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;activeProfiles/&gt;</span><br><span class="line"></span><br><span class="line">&lt;/settings&gt;</span><br></pre></td></tr></table></figure>
-
-<p>几个主要的、常用的配置因素：</p>
-<ol>
-<li><p>localRepository：表示本地库的保存位置，也就是maven2主要的jar保存位置，默认在${user.dir}/.m2/repository，如需要另外设置，就换成其他的路径，如：:\repo。</p>
-</li>
-<li><p>offline：如果不想每次编译，都去查找远程中心库，那就设置为true。当然前提是你已经下载了必须的依赖包。</p>
-</li>
-<li><p>Servers： 在POM中的 distributionManagement元素定义了开发库。然而，特定的username和pwd不能使用于pom.xml，所以通过此配置来保存server信息：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;servers&gt;</span><br><span class="line">  &lt;server&gt;</span><br><span class="line">    &lt;id&gt;server001&lt;/id&gt;</span><br><span class="line">    &lt;username&gt;guangyuan&lt;/username&gt;</span><br><span class="line">    &lt;password&gt;my_password&lt;/password&gt;</span><br><span class="line">    &lt;privateKey&gt;$&#123;usr.home&#125;/.ssh/id_dsa&lt;/privateKey&gt;</span><br><span class="line">    &lt;passphrase&gt;some_passphrase&lt;/passphrase&gt;</span><br><span class="line">    &lt;filePermissions&gt;664&lt;/filePermissions&gt;</span><br><span class="line">    &lt;directoryPermissions&gt;775&lt;/directoryPermissions&gt;</span><br><span class="line">    &lt;configuration&gt;&lt;/configuration&gt;</span><br><span class="line">  &lt;/server&gt;</span><br><span class="line">&lt;/servers&gt;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<ul>
-<li>id:server 的id,用于匹配distributionManagement库id，比较重要。</li>
-<li>username, password:用于登陆此服务器的用户名和密码</li>
-<li>privateKey, passphrase：设置private key，以及passphrase</li>
-<li>filePermissions, directoryPermissions：当库文件或者目录创建后，需要使用权限进行访问。参照unix文件许可，如664和775</li>
-</ul>
-<ol start="4">
-<li>Mirrors 表示镜像库，指定库的镜像，用于增加其他库：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;mirrors&gt;</span><br><span class="line">  &lt;mirror&gt;</span><br><span class="line">    &lt;id&gt;tb_mirror&lt;/id&gt;</span><br><span class="line">    &lt;name&gt;taobao mirror&lt;/name&gt;</span><br><span class="line">    &lt;url&gt;http://downloads.planetmirror.com/pub/maven2&lt;/url&gt;</span><br><span class="line">    &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;</span><br><span class="line">  &lt;/mirror&gt;</span><br><span class="line">&lt;/mirrors&gt;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<ul>
-<li>id,name:唯一的标志，用于区别镜像</li>
-<li>url:镜像的url</li>
-<li>mirrorOf：此镜像指向的服务id</li>
-</ul>
-<ol start="5">
-<li>Proxies 此代理设置，主要用于无法直接访问中心的库用户配置。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;proxies&gt;</span><br><span class="line">  &lt;proxy&gt;</span><br><span class="line">    &lt;id&gt;myproxy&lt;/id&gt;</span><br><span class="line">    &lt;active&gt;true&lt;/active&gt;</span><br><span class="line">    &lt;protocol&gt;http&lt;/protocol&gt;</span><br><span class="line">    &lt;host&gt;proxy.somewhere.com&lt;/host&gt;</span><br><span class="line">    &lt;port&gt;8080&lt;/port&gt;</span><br><span class="line">    &lt;username&gt;proxyuser&lt;/username&gt;</span><br><span class="line">    &lt;password&gt;somepassword&lt;/password&gt;</span><br><span class="line">    &lt;nonProxyHosts&gt;*.google.com|ibiblio.org&lt;/nonProxyHosts&gt;</span><br><span class="line">  &lt;/proxy&gt;</span><br><span class="line">&lt;/proxies&gt;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<ul>
-<li>id:代理的标志</li>
-<li>active：是否激活代理</li>
-<li>protocol, host, port:protocol://host:port 代理</li>
-<li>username, password：用户名和密码</li>
-<li>nonProxyHosts: 不需要代理的host</li>
-</ul>
-<ol start="6">
-<li>repositories 和pluginRepositories  定义其他开发库和插件开发库。对于团队来说，肯定有自己的开发库。可以通过此配置来定义。 如下的配置，定义了本地开发库，用于release 发布。pluginRepositories 的定义与repositories类似。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;repositories&gt;</span><br><span class="line">  &lt;repository&gt;</span><br><span class="line">    &lt;id&gt;repo-local&lt;/id&gt;</span><br><span class="line">    &lt;name&gt;Internal 开发库&lt;/name&gt;</span><br><span class="line">    &lt;url&gt;http://192.168.0.2:8082/repo-local&lt;/url&gt;</span><br><span class="line">    &lt;releases&gt;</span><br><span class="line">      &lt;enabled&gt;true&lt;/enabled&gt;</span><br><span class="line">      &lt;updatePolicy&gt;never&lt;/updatePolicy&gt;</span><br><span class="line">      &lt;checksumPolicy&gt;warn&lt;/checksumPolicy&gt;</span><br><span class="line">    &lt;/releases&gt;</span><br><span class="line">    &lt;snapshots&gt;</span><br><span class="line">      &lt;enabled&gt;false&lt;/enabled&gt;</span><br><span class="line">    &lt;/snapshots&gt;</span><br><span class="line">    &lt;layout&gt;default&lt;/layout&gt;</span><br><span class="line">  &lt;/repository&gt;</span><br><span class="line">&lt;/repositories&gt;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<ul>
-<li>releases, snapshots:每个产品的版本的Release或者snapshot(注：release和snapshot的区别，release一般是比较稳定的版本，而snapshot基本上不稳定，只是作为快照）。</li>
-</ul>
-<p>关于setting.xml里的常用配置主要就是上面的这些了。事实上，在实际项目应用中，我们只需要重点理解这些配置的意思就足够了。但如果想自己开发一个项目，那么下面的这些配置说明就显得尤为重要了。</p>
-<h2 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h2><p>通过在 pom.xml 中定义 jar 包版本和依赖，能够方便的管理 jar 文件。pom作为项目对象模型。通过xml表示maven项目，使用pom.xml来实现。主要描述了项目：包括配置文件；开发者需要遵循的规则，缺陷管理系统，组织和licenses，项目的url，项目的依赖性，以及其他所有的项目相关因素。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-What's%20faster,%20SELECT%20DISTINCT%20or%20GROUP%20BY/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-What's%20faster,%20SELECT%20DISTINCT%20or%20GROUP%20BY/" class="post-title-link" itemprop="url">MySQL-What's faster, SELECT DISTINCT or GROUP BY</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-07-15 17:06:17" itemprop="dateCreated datePublished" datetime="2016-07-15T17:06:17+08:00">2016-07-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/581521/whats-faster-select-distinct-or-group-by-in-mysql">http://stackoverflow.com/questions/581521/whats-faster-select-distinct-or-group-by-in-mysql</a></p>
-<p>They are essentially equivalent to each other (in fact this is how some databases implement DISTINCT under the hood).</p>
-<p>If one of them is faster, it’s going to be DISTINCT. This is because, although the two are the same, a query optimizer would have to catch the fact that your GROUP BY is not taking advantage of any group members, just their keys. DISTINCT makes this explicit, so you can get away with a slightly dumber optimizer.</p>
-<p>When in doubt, test!</p>
-<hr>
-<p>If you have an index on profession, these two are synonyms.</p>
-<p>If you don’t, then use DISTINCT.</p>
-<p>GROUP BY in MySQL sorts results. You can even do:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT u.profession FROM users u GROUP BY u.profession DESC</span><br></pre></td></tr></table></figure>
-<p>and get your professions sorted in DESC order.</p>
-<p>DISTINCT creates a temporary table and uses it for storing duplicates. GROUP BY does the same, but sortes the distinct results afterwards.</p>
-<p>So</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT DISTINCT u.profession FROM users u</span><br></pre></td></tr></table></figure>
-<p>is faster, if you don’t have an index on profession.</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/" class="post-title-link" itemprop="url">MySQL-语句执行顺序</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-07-15 15:59:53" itemprop="dateCreated datePublished" datetime="2016-07-15T15:59:53+08:00">2016-07-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>MySQL的语句一共分为11步，如下图所标注的那样，最先执行的总是FROM操作，最后执行的是LIMIT操作。其中每一个操作都会产生一张虚拟的表，这个虚拟的表作为一个处理的输入，只是这些虚拟的表对用户来说是透明的，但是只有最后一个虚拟的表才会被作为结果返回。如果没有在语句中指定某一个子句，那么将会跳过相应的步骤。</p>
-<p><img src="/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F.png" alt="语句执行顺序"></p>
-<p>下面我们来具体分析一下查询处理的每一个阶段</p>
-<ol>
-<li>FROM: 对FROM的左边的表和右边的表计算笛卡尔积。产生虚表VT1</li>
-<li>ON: 对虚表VT1进行ON筛选，只有那些符合<code>&lt;join-condition&gt;</code>的行才会被记录在虚表VT2中。</li>
-<li>JOIN： 如果指定了OUTER JOIN（比如left join、 right join），那么保留表中未匹配的行就会作为外部行添加到虚拟表VT2中，产生虚拟表VT3, rug from子句中包含两个以上的表的话，那么就会对上一个join连接产生的结果VT3和下一个表重复执行步骤1~3这三个步骤，一直到处理完所有的表为止。</li>
-<li>WHERE： 对虚拟表VT3进行WHERE条件过滤。只有符合<code>&lt;where-condition&gt;</code>的记录才会被插入到虚拟表VT4中。</li>
-<li>GROUP BY: 根据group by子句中的列，对VT4中的记录进行分组操作，产生VT5.</li>
-<li>CUBE | ROLLUP: 对表VT5进行cube或者rollup操作，产生表VT6.使用聚集函数进行计算。</li>
-<li>HAVING： 对虚拟表VT6应用having过滤，只有符合<code>&lt;having-condition&gt;</code>的记录才会被 插入到虚拟表VT7中。</li>
-<li>SELECT： 执行select操作，选择指定的列，插入到虚拟表VT8中。</li>
-<li>DISTINCT： 对VT8中的记录进行去重。产生虚拟表VT9.</li>
-<li>ORDER BY: 将虚拟表VT9中的记录按照<code>&lt;order_by_list&gt;</code>进行排序操作，产生虚拟表VT10.</li>
-<li>LIMIT：取出指定行的记录，产生虚拟表VT11, 并将结果返回。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/14/%E6%95%B0%E6%8D%AE%E5%BA%93/SQL%20Server/SQL%20Server-SELECT%20INTO%20%E5%92%8C%20INSERT%20INTO%20SELECT%20%E4%B8%A4%E7%A7%8D%E8%A1%A8%E5%A4%8D%E5%88%B6%E8%AF%AD%E5%8F%A5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -509,13 +235,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>Insert是T-sql中常用语句，<code>Insert INTO table(field1,field2,...) values(value1,value2,...)</code>这种形式的在应用程序开发中必不可少。但我们在开发、测试过程中，经常会遇到需要表复制的情况，如将一个table1的数据的部分字段复制到table2中，或者将整个table1复制到table2中，这时候我们就要使用SELECT INTO 和 INSERT INTO SELECT 表复制语句了。</p>
-<h3 id="INSERT-INTO-SELECT语句"><a href="#INSERT-INTO-SELECT语句" class="headerlink" title="INSERT INTO SELECT语句"></a>INSERT INTO SELECT语句</h3><p>语句形式为：<code>Insert into Table2(field1,field2,...) select value1,value2,... from Table1</code></p>
-<p>要求目标表Table2必须存在，由于目标表Table2已经存在，所以我们除了插入源表Table1的字段外，还可以插入常量。</p>
-<h3 id="SELECT-INTO-FROM语句"><a href="#SELECT-INTO-FROM语句" class="headerlink" title="SELECT INTO FROM语句"></a>SELECT INTO FROM语句</h3><p>语句形式为：<code>SELECT vale1, value2 into Table2 from Table1</code></p>
-<p>要求目标表Table2不存在，因为在插入时会自动创建表Table2，并将Table1中指定字段数据复制到Table2中。</p>
+          <p>Insert 是 T-sql 中常用语句，<code>Insert INTO table(field1,field2,...) values(value1,value2,...)</code>这种形式的在应用程序开发中必不可少。但我们在开发、测试过程中，经常会遇到需要表复制的情况，如将一个 table1 的数据的部分字段复制到 table2 中，或者将整个 table1 复制到 table2 中，这时候我们就要使用 SELECT INTO 和 INSERT INTO SELECT 表复制语句了。</p>
+<h3 id="INSERT-INTO-SELECT-语句"><a href="#INSERT-INTO-SELECT-语句" class="headerlink" title="INSERT INTO SELECT 语句"></a>INSERT INTO SELECT 语句</h3><p>语句形式为：<code>Insert into Table2(field1,field2,...) select value1,value2,... from Table1</code></p>
+<p>要求目标表 Table2 必须存在，由于目标表 Table2 已经存在，所以我们除了插入源表 Table1 的字段外，还可以插入常量。</p>
+<h3 id="SELECT-INTO-FROM-语句"><a href="#SELECT-INTO-FROM-语句" class="headerlink" title="SELECT INTO FROM 语句"></a>SELECT INTO FROM 语句</h3><p>语句形式为：<code>SELECT vale1, value2 into Table2 from Table1</code></p>
+<p>要求目标表 Table2 不存在，因为在插入时会自动创建表 Table2，并将 Table1 中指定字段数据复制到 Table2 中。</p>
 <p>SQL Server用法。</p>
-<h2 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h2><p>MySQL不支持: <code>Select * Into new_table_name from old_table_name;</code></p>
+<h2 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h2><p>MySQL 不支持: <code>Select * Into new_table_name from old_table_name;</code></p>
 <p>替代方法: <code>Create table new_table_name (Select * from old_table_name);</code></p>
 
       
@@ -583,46 +309,46 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>rollup 是根据维度在数据结果集中进行的聚合操作。</p>
-<p>假设用户需要对N个唯独进行聚合查询操作，普通的group by语句需要N个查询和N次group by操作。</p>
-<p>而rollup的有点是一次可以去的N次group by的结果，这样可以提高查询效率，同时大大减少网络的传输流量。</p>
-<p>(注，此表的表结构和数据与格式化聚合表formatting一致)</p>
+          <h3 id="rollup"><a href="#rollup" class="headerlink" title="rollup"></a>rollup</h3><p>rollup 是根据维度在数据结果集中进行的聚合操作。</p>
+<p>假设用户需要对 N 个唯独进行聚合查询操作，普通的 group by 语句需要 N 个查询和 N 次 group by 操作。</p>
+<p>而 rollup 的有点是一次可以去的 N 次 group by 的结果，这样可以提高查询效率，同时大大减少网络的传输流量。</p>
+<p>（注，此表的表结构和数据与格式化聚合表 formatting 一致）</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE rollup(</span><br><span class="line">  orderid int NOT NULL,</span><br><span class="line">  orderdate date NOT NULL,</span><br><span class="line">  empid int NOT NULL,</span><br><span class="line">  custid varchar(10) NOT NULL,</span><br><span class="line">  qty int NOT NULL,</span><br><span class="line">  PRIMARY KEY(orderid,orderdate));</span><br><span class="line"></span><br><span class="line">INSERT INTO rollup SELECT 1,&#x27;2010-01-02&#x27;,3,&#x27;A&#x27;,10;</span><br><span class="line">INSERT INTO rollup SELECT 2,&#x27;2010-04-02&#x27;,2,&#x27;B&#x27;,20;</span><br><span class="line">INSERT INTO rollup SELECT 3,&#x27;2010-05-02&#x27;,1,&#x27;A&#x27;,30;</span><br><span class="line">INSERT INTO rollup SELECT 4,&#x27;2010-07-02&#x27;,3,&#x27;D&#x27;,40;</span><br><span class="line">INSERT INTO rollup SELECT 5,&#x27;2011-01-02&#x27;,4,&#x27;A&#x27;,20;</span><br><span class="line">INSERT INTO rollup SELECT 6,&#x27;2011-01-02&#x27;,3,&#x27;B&#x27;,30;</span><br><span class="line">INSERT INTO rollup SELECT 7,&#x27;2011-01-02&#x27;,1,&#x27;C&#x27;,40;</span><br><span class="line">INSERT INTO rollup SELECT 8,&#x27;2009-01-02&#x27;,2,&#x27;A&#x27;,10;</span><br><span class="line">INSERT INTO rollup SELECT 9,&#x27;2009-01-02&#x27;,3,&#x27;B&#x27;,20;</span><br></pre></td></tr></table></figure>
 <p>首先做一个简单的一维聚合</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT YEAR(orderdate) year, SUM(qty) sum </span><br><span class="line">FROM rollup</span><br><span class="line">GROUP BY YEAR(orderdate)</span><br><span class="line">WITH ROLLUP;</span><br></pre></td></tr></table></figure>
 <p>结果为</p>
 <p><img src="/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/1.png" alt="1"></p>
-<p>和普通的group by差别不大，只是多了一个(null,220)，表示对所有的year再做一次聚合，即订单数量总和。</p>
-<p>对单个唯独进行rollup操作只是可以在最后得到聚合的数据，对比group by语句并没有非常大的优势。</p>
-<p>对多个维度进行rollup才能体现出rollup的优势：</p>
-<p>(对3列进行层次的维度操作)</p>
+<p>和普通的 group by 差别不大，只是多了一个 <code>(null,220)</code>，表示对所有的 year 再做一次聚合，即订单数量总和。</p>
+<p>对单个唯独进行 rollup 操作只是可以在最后得到聚合的数据，对比 group by 语句并没有非常大的优势。</p>
+<p>对多个维度进行 rollup 才能体现出 rollup 的优势：</p>
+<p>（对 3 列进行层次的维度操作）</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT empid, custid, YEAR(orderdate) year, SUM(qty) sum</span><br><span class="line">FROM rollup</span><br><span class="line">GROUP BY empid,custid,YEAR(orderdate)</span><br><span class="line">WITH ROLLUP;</span><br></pre></td></tr></table></figure>
 <p>结果为</p>
 <p><img src="/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/2.png" alt="2"></p>
-<p>其中(null,null,null)表示最后的聚合</p>
-<p>(empid,custid,year)表示对这3列进行分组的聚合结果</p>
-<p>(empid,custid,null)表示对(empid,custid)两列进行分组的聚合结果</p>
-<p>(empid,null,null)表示仅对(empid)一列进行分组的聚合结果</p>
+<p>其中 <code>(null,null,null)</code> 表示最后的聚合</p>
+<p><code>(empid,custid,year)</code> 表示对这 3 列进行分组的聚合结果</p>
+<p><code>(empid,custid,null)</code> 表示对 <code>(empid,custid)</code> 两列进行分组的聚合结果</p>
+<p><code>(empid,null,null)</code> 表示仅对 <code>(empid)</code> 一列进行分组的聚合结果</p>
 <p>所以上述语句等同于（但未排序）</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SELECT empid, custid, YEAR(orderdate) YEAR, SUM(qty) sum FROM rollup</span><br><span class="line">GROUP BY empid, custid, YEAR(orderdate)</span><br><span class="line">UNION</span><br><span class="line">SELECT empid, custid, NULL, SUM(qty) sum FROM rollup</span><br><span class="line">GROUP BY empid, custid</span><br><span class="line">UNION</span><br><span class="line">SELECT empid, NULL, NULL, SUM(qty) sum FROM rollup</span><br><span class="line">GROUP BY empid</span><br><span class="line">UNION</span><br><span class="line">SELECT NULL, NULL, NULL, SUM(qty) sum FROM rollup</span><br></pre></td></tr></table></figure>
 <p>虽然两者得到相同的结果，但是执行计划却不同</p>
-<p>rollup只需要一次表扫描操作就能得到全部结果，因此查询效率在此得到了极大的提升。</p>
-<p>P.S.在使用rollup需要注意以下几方面</p>
+<p>rollup 只需要一次表扫描操作就能得到全部结果，因此查询效率在此得到了极大的提升。</p>
+<p>P.S.在使用 rollup 需要注意以下几方面</p>
 <ol>
-<li>ORDER BY不能在rollup中使用，两者为互斥关键字，如果使用，会抛出以下错误：Error Code:1221. Incorrect usage of CUBE/ROLLUP and ORDER BY</li>
-<li>可以使用LIMIT，但是因为不能使用order by，所以阅读性下降，故大多数情况下无实际意义。</li>
-<li>如果分组的列包含NULL值，那么rollup的结果可能不正确</li>
+<li>ORDER BY 不能在 rollup 中使用，两者为互斥关键字，如果使用，会抛出以下错误：Error Code:1221. Incorrect usage of CUBE/ROLLUP and ORDER BY</li>
+<li>可以使用 LIMIT，但是因为不能使用 order by，所以阅读性下降，故大多数情况下无实际意义。</li>
+<li>如果分组的列包含 NULL 值，那么 rollup 的结果可能不正确</li>
 </ol>
-<p>  因为在rollup中进行的分组统计时，null具有特殊意义</p>
-<p>  因此在进行rollup时可以先将null转换成一个不可能存在的值，或者没有特别含义的值，比如：<code> IFNULL(xxx,0) </code></p>
-<p>###【关于cube】<br>rollup是cube的一种特殊情况，和rollup一样，cube也是一种对数据的聚合操作</p>
-<p>但是rollup只在层次上对数据进行聚合，而cube对所有的维度进行聚合</p>
-<p>具有N个维度的列，cube需要2的N次方次分组操作，而rollup只需要N次分组操作</p>
-<p>在mysql 5.6.17版本中，只定义了cube，但是不支持cube操作：</p>
+<p>因为在 rollup 中进行的分组统计时，null 具有特殊意义</p>
+<p>因此在进行 rollup 时可以先将 null 转换成一个不可能存在的值，或者没有特别含义的值，比如：<code>IFNULL(xxx,0)</code></p>
+<h3 id="cube"><a href="#cube" class="headerlink" title="cube"></a>cube</h3><p>rollup 是 cube 的一种特殊情况，和 rollup 一样，cube 也是一种对数据的聚合操作</p>
+<p>但是 rollup 只在层次上对数据进行聚合，而 cube 对所有的维度进行聚合</p>
+<p>具有 N 个维度的列，cube 需要 2 的 N 次方次分组操作，而 rollup 只需要 N 次分组操作</p>
+<p>在 mysql 5.6.17 版本中，只定义了 cube，但是不支持 cube 操作：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT empid, custid, YEAR(orderdate), SUM(qty)</span><br><span class="line">FROM rollup</span><br><span class="line">GROUP BY empid, custid, YEAR(orderdate)</span><br><span class="line">WITH CUBE;</span><br></pre></td></tr></table></figure>
-<p>上述SQL语句会报错：</p>
+<p>上述 SQL 语句会报错：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-- ERROR 1235 (42000): This version of MySQL doesn&#x27;t yet support &#x27;CUBE&#x27;</span><br></pre></td></tr></table></figure>
-<p>可以通过rollup来模拟cube：</p>
+<p>可以通过 rollup 来模拟 cube：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">SELECT </span><br><span class="line">    empid, custid, YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY empid, custid, YEAR(orderdate)</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid, custid, YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY empid, YEAR(orderdate), custid</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid, custid, YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY custid, YEAR(orderdate),empid</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid, custid, YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY custid, empid, YEAR(orderdate)</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid,custid,YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY YEAR(orderdate), empid, custid</span><br><span class="line">WITH ROLLUP</span><br><span class="line">UNION</span><br><span class="line">SELECT </span><br><span class="line">    empid,custid,YEAR(orderdate) year, SUM(qty) sum from rollup</span><br><span class="line">GROUP BY YEAR(orderdate), custid, empid </span><br><span class="line">WITH ROLLUP;</span><br></pre></td></tr></table></figure>
 <p>产生的最终结果为：</p>
 <p><img src="/2016/07/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ROLLUP%E5%92%8CCUBE/3.png" alt="3"></p>
@@ -645,7 +371,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/03/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%BF%AB%E6%8D%B7%E9%94%AE/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%BF%AB%E6%8D%B7%E9%94%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -659,7 +385,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/07/03/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%BF%AB%E6%8D%B7%E9%94%AE/" class="post-title-link" itemprop="url">Mac-快捷键</a>
+            <a href="/2016/07/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%BF%AB%E6%8D%B7%E9%94%AE/" class="post-title-link" itemprop="url">Mac-快捷键</a>
         </h2>
 
         <div class="post-meta">
@@ -715,7 +441,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -729,7 +455,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/" class="post-title-link" itemprop="url">Mac-卸载-卸载软件</a>
+            <a href="/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/" class="post-title-link" itemprop="url">Mac-卸载-卸载软件</a>
         </h2>
 
         <div class="post-meta">
@@ -765,24 +491,24 @@
           <p>转自：<a target="_blank" rel="noopener" href="http://sspai.com/28012">http://sspai.com/28012</a></p>
 <p>从 Mac 电脑上卸载已经安装的应用程序可能是你知道的操作系统里面最简单的一种了。而如果你是一名新买了 Mac 电脑的用户，那么你可能比较困惑：怎么没有控制面板中的相应板块来卸载它们呢？但是其实你想不到，在 Mac 电脑上卸载应用程序这一点简直简单得要命。本文就来讨论讨论如何卸载 Mac 电脑已经装好的应用程序。</p>
 <h3 id="最经典的方法"><a href="#最经典的方法" class="headerlink" title="最经典的方法"></a>最经典的方法</h3><p>这是 OS X 最经典的方法。你只需找到需要卸载的应用程序，然后拖动应用程序图标到垃圾桶；或右键单击并选择「移到废纸篓」选项；或直接按下 command－delete 快捷键组合。然后在废纸篓图标上单机鼠标右键，选择「清倒废纸篓」选项。</p>
-<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/1.png" alt="1"></p>
+<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/1.png" alt="1"></p>
 <h3 id="使用-LaunchPad"><a href="#使用-LaunchPad" class="headerlink" title="使用 LaunchPad"></a>使用 LaunchPad</h3><p>如果你的应用程序来自 Mac App Store，那么你可以更快一点：</p>
 <p><strong>第一步</strong>：启动 LaunchPad 应用程序（或者按下键盘 F4 键）。</p>
 <p><strong>第二步</strong>：点击并按住你要卸载的应用程序的图标直至它们开始晃动起来，点击左上角的「X」按钮；或者按下 option 键不放进入抖动模式。</p>
 <p><strong>第三步</strong>：点击「删除」，接着确认即可。</p>
-<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/2.gif" alt="2"></p>
+<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/2.gif" alt="2"></p>
 <p>▲ 注：这时都不用清空废纸篓。</p>
 <p>使用 LaunchPad 来卸载是在运行 OS X 10.7 以及更高版本的电脑上最快的方法。如果你使用 iOS 设备，应该对此卸载方法很熟悉。</p>
 <h3 id="求助第三方应用程序"><a href="#求助第三方应用程序" class="headerlink" title="求助第三方应用程序"></a>求助第三方应用程序</h3><p>你还可以使用 Clean My Mac 或 CCleaner 或是 AppCleaner 来进行卸载。</p>
-<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/3.png" alt="3"></p>
+<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/3.png" alt="3"></p>
 <p>（▲ 注：Clean My Mac 卸载）</p>
-<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/4.png" alt="4"></p>
+<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/4.png" alt="4"></p>
 <p>（▲ 注：CCleaner 卸载）</p>
-<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/5.png" alt="5"></p>
+<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/5.png" alt="5"></p>
 <p>（▲ 注：CCleaner 卸载）</p>
 <p>有了第三方应用程序的帮助，卸载过程简单多了。此外，这些第三方卸载程序还会顺带删除一些关联的库文件、配置文档等，着实方便。</p>
 <h3 id="使用应用程序自带的卸载程序"><a href="#使用应用程序自带的卸载程序" class="headerlink" title="使用应用程序自带的卸载程序"></a>使用应用程序自带的卸载程序</h3><p>你可能会注意到，某些应用程序安装完毕后居然包括独立的卸载工具。这在 Mac 上有些罕见，但的确有些应用程序这么特立独行：通常是 Adobe 家或者微软家的软件。例如，Adobe 公司的 Photoshop 应用程序可能在安装主程序的同时安装 Adobe Bridge 等附加应用程序。这种情况下，你可以使用附带的卸载程序来帮忙。</p>
-<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/6.png" alt="6"></p>
+<p><img src="/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BD%E8%BD%AF%E4%BB%B6/6.png" alt="6"></p>
 <h3 id="扫尾工作：删除应用程序的库文件，缓存，首选项"><a href="#扫尾工作：删除应用程序的库文件，缓存，首选项" class="headerlink" title="扫尾工作：删除应用程序的库文件，缓存，首选项"></a>扫尾工作：删除应用程序的库文件，缓存，首选项</h3><p>卸载某些应用程序后会留下一些预置文件和缓存等，一般这些文件没有潜在坏处，但是你可以删除它们来彻底跟该应用程序说拜拜。这些文件通常位于以下路径：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">~/Library/Application Support/(应用程序名称)</span><br><span class="line">~/Library/Preferences/(应用程序名称)</span><br><span class="line">~/Library/Caches/(应用程序名称)</span><br></pre></td></tr></table></figure>
 
@@ -806,7 +532,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BDParagonNTFS/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BDParagonNTFS/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -820,7 +546,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2016/07/01/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BDParagonNTFS/" class="post-title-link" itemprop="url">Mac-卸载-卸载ParagonNTFS</a>
+            <a href="/2016/07/01/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-%E5%8D%B8%E8%BD%BD-%E5%8D%B8%E8%BD%BDParagonNTFS/" class="post-title-link" itemprop="url">Mac-卸载-卸载ParagonNTFS</a>
         </h2>
 
         <div class="post-meta">
@@ -854,73 +580,6 @@
 
       
           <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">/Applications/Paragon NTFS for Mac OS X /Manual.pdf</span><br><span class="line">/Applications/Paragon NTFS for Mac OS X/Register NTFS for Mac OS X.app</span><br><span class="line">/Library/Application Support/Paragon NTFS for Mac OS X/NTFS for Mac OS X.app</span><br><span class="line">/Library/PreferencePanes/NTFSforMacOSX.prefPane</span><br><span class="line">/System/Library/Filesystems/ufsd_NTFS.fs</span><br><span class="line">/System/Library/LaunchAgents/com.paragon.NTFS.trial.plist</span><br><span class="line">/etc/mach_init_per_user.d/trial_expired_NTFS.plist</span><br><span class="line">/sbin/fsck_ufsd_NTFS</span><br><span class="line">/sbin/mount_ufsd_NTFS</span><br><span class="line">/sbin/newfs_ufsd_NTFS</span><br><span class="line">/usr/lib/libUFSDNTFS.dylib</span><br><span class="line">/usr/sbin/fsctl_ufsd</span><br><span class="line">/Library/Logs/ufsd.log</span><br><span class="line">/tmp/ufsd.log</span><br><span class="line">/usr/share/.intelligence</span><br><span class="line">/Library/Receipts/$PRODUCT.pkg/Archive.bom</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/29/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E6%8C%81%E4%B9%85%E5%8C%96-%E5%85%B3%E9%97%AD%E6%8C%81%E4%B9%85%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/29/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E6%8C%81%E4%B9%85%E5%8C%96-%E5%85%B3%E9%97%AD%E6%8C%81%E4%B9%85%E5%8C%96/" class="post-title-link" itemprop="url">Redis-持久化-关闭持久化</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-29 20:11:54" itemprop="dateCreated datePublished" datetime="2016-06-29T20:11:54+08:00">2016-06-29</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#save 900 1</span><br><span class="line">#save 300 10</span><br><span class="line">#save 60 10000</span><br><span class="line">save &quot;&quot; # 关闭RDB</span><br><span class="line"></span><br><span class="line">appendonly no # 关闭AOF</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -987,60 +646,552 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>Redis中数据存储模式有2种：cache-only,persistence;</p>
+          <p>Redis 中数据存储模式有 2 种：cache-only、persistence</p>
 <ul>
-<li>cache-only即只做为“缓存”服务，不持久数据，数据在服务终止后将消失，此模式下也将不存在“数据恢复”的手段，是一种安全性低/效率高/容易扩展的方式；</li>
-<li>persistence即为内存中的数据持久备份到磁盘文件，在服务重启后可以恢复，此模式下数据相对安全。</li>
+<li>cache-only 即只做为“缓存”服务，不持久数据，数据在服务终止后将消失，此模式下也将不存在“数据恢复”的手段，是一种安全性低/效率高/容易扩展的方式；</li>
+<li>persistence 即为内存中的数据持久备份到磁盘文件，在服务重启后可以恢复，此模式下数据相对安全。</li>
 </ul>
-<p>对于persistence持久化存储，Redis提供了两种持久化方法：</p>
+<p>对于 persistence 持久化存储，Redis 提供了两种持久化方法：</p>
 <ul>
-<li>Redis DataBase(简称RDB)</li>
-<li>Append-only file (简称AOF)</li>
+<li>Redis DataBase（简称 RDB）</li>
+<li>Append-only file（简称 AOF）</li>
 </ul>
-<p>除了这两种方法，Redis在早起的版本还存在虚拟内存的方法，现在已经被废弃。</p>
-<h2 id="RDB概述"><a href="#RDB概述" class="headerlink" title="RDB概述"></a>RDB概述</h2><p>RDB是在某个时间点将数据写入一个临时文件，持久化结束后，用这个临时文件替换上次持久化的文件，达到数据恢复。</p>
+<p>除了这两种方法，Redis 在早起的版本还存在虚拟内存的方法，现在已经被废弃。</p>
+<h2 id="RDB"><a href="#RDB" class="headerlink" title="RDB"></a>RDB</h2><h3 id="RDB概述"><a href="#RDB概述" class="headerlink" title="RDB概述"></a>RDB概述</h3><p>RDB 是在某个时间点将数据写入一个临时文件，持久化结束后，用这个临时文件替换上次持久化的文件，达到数据恢复。</p>
 <ul>
-<li>优点：使用单独子进程来进行持久化，主进程不会进行任何IO操作，保证了redis的高性能</li>
-<li>缺点：RDB是间隔一段时间进行持久化，如果持久化之间redis发生故障，会发生数据丢失。所以这种方式更适合数据要求不严谨的时候</li>
+<li>优点：使用单独子进程来进行持久化，主进程不会进行任何 I/O 操作，保证了 redis 的高性能</li>
+<li>缺点：RDB 是间隔一段时间进行持久化，如果持久化之间 redis 发生故障，会发生数据丢失。所以这种方式更适合数据要求不严谨的时候</li>
 </ul>
-<p>这里说的这个执行数据写入到临时文件的时间点是可以通过配置来自己确定的，通过配置redis在n秒内如果超过m个key被修改这执行一次RDB操作。这个操作就类似于在这个时间点来保存一次Redis的所有数据，一次快照数据。所有这个持久化方法也通常叫做snapshots。</p>
-<p>RDB默认开启，redis.conf中的具体配置参数如下；</p>
+<p>这里说的这个执行数据写入到临时文件的时间点是可以通过配置来自己确定的，通过配置 redis 在 n 秒内如果超过 m 个 key 被修改这执行一次 RDB 操作。这个操作就类似于在这个时间点来保存一次 Redis 的所有数据，一次快照数据。所有这个持久化方法也通常叫做 snapshots。</p>
+<p>RDB 默认开启，redis.conf 中的具体配置参数如下；</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#dbfilename：持久化数据存储在本地的文件</span><br><span class="line">dbfilename dump.rdb</span><br><span class="line">#dir：持久化数据存储在本地的路径，如果是在/redis/redis-3.0.6/src下启动的redis-cli，则数据会存储在当前src目录下</span><br><span class="line">dir ./</span><br><span class="line">##snapshot触发的时机，save &lt;seconds&gt; &lt;changes&gt;  </span><br><span class="line">##如下为900秒后，至少有一个变更操作，才会snapshot  </span><br><span class="line">##对于此值的设置，需要谨慎，评估系统的变更操作密集程度  </span><br><span class="line">##可以通过“save “””来关闭snapshot功能  </span><br><span class="line">#save时间，以下分别表示更改了1个key时间隔900s进行持久化存储；更改了10个key300s进行存储；更改10000个key60s进行存储。</span><br><span class="line">save 900 1</span><br><span class="line">save 300 10</span><br><span class="line">save 60 10000</span><br><span class="line">##当snapshot时出现错误无法继续时，是否阻塞客户端“变更操作”，“错误”可能因为磁盘已满/磁盘故障/OS级别异常等  </span><br><span class="line">stop-writes-on-bgsave-error yes  </span><br><span class="line">##是否启用rdb文件压缩，默认为“yes”，压缩往往意味着“额外的cpu消耗”，同时也意味这较小的文件尺寸以及较短的网络传输时间  </span><br><span class="line">rdbcompression yes  </span><br></pre></td></tr></table></figure>
 
-<p>snapshot触发的时机，是有“间隔时间”和“变更次数”共同决定，同时符合2个条件才会触发snapshot,否则“变更次数”会被继续累加到下一个“间隔时间”上。snapshot过程中并不阻塞客户端请求。snapshot首先将数据写入临时文件，当成功结束后，将临时文件重名为dump.rdb。</p>
-<h3 id="使用RDB恢复数据："><a href="#使用RDB恢复数据：" class="headerlink" title="使用RDB恢复数据："></a>使用RDB恢复数据：</h3><p>自动的持久化数据存储到dump.rdb后。实际只要重启redis服务即可完成（启动redis的server时会从dump.rdb中先同步数据）</p>
+<p>snapshot 触发的时机，是有“间隔时间”和“变更次数”共同决定，同时符合 2 个条件才会触发 snapshot，否则“变更次数”会被继续累加到下一个“间隔时间”上。snapshot 过程中并不阻塞客户端请求。snapshot 首先将数据写入临时文件，当成功结束后，将临时文件重名为 dump.rdb。</p>
+<h3 id="使用-RDB-恢复数据："><a href="#使用-RDB-恢复数据：" class="headerlink" title="使用 RDB 恢复数据："></a>使用 RDB 恢复数据：</h3><p>自动的持久化数据存储到 dump.rdb 后。实际只要重启 redis 服务即可完成（启动 redis 的 server 时会从 dump.rdb 中先同步数据）</p>
 <p>客户端使用命令进行持久化save存储：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./redis-cli -h ip -p port save</span><br><span class="line">./redis-cli -h ip -p port bgsave</span><br></pre></td></tr></table></figure>
 
-<p>一个是在前台进行存储，一个是在后台进行存储。我的client就在server这台服务器上，所以不需要连其他机器，直接./redis-cli bgsave。由于redis是用一个主线程来处理所有 client的请求，这种方式会阻塞所有client请求。所以不推荐使用。另一点需要注意的是，每次快照持久化都是将内存数据完整写入到磁盘一次，并不是增量的只同步脏数据。如果数据量大的话，而且写操作比较多，必然会引起大量的磁盘io操作，可能会严重影响性能。</p>
-<h2 id="AOF概述"><a href="#AOF概述" class="headerlink" title="AOF概述"></a>AOF概述</h2><p>Append-only file，将“操作 + 数据”以格式化指令的方式追加到操作日志文件的尾部，在append操作返回后(已经写入到文件或者即将写入)，才进行实际的数据变更，“日志文件”保存了历史所有的操作过程；当server需要数据恢复时，可以直接replay此日志文件，即可还原所有的操作过程。AOF相对可靠，它和MySQL中bin.log、apache.log、zookeeper中txn-log简直异曲同工。AOF文件内容是字符串，非常容易阅读和解析。</p>
+<p>一个是在前台进行存储，一个是在后台进行存储。我的 client 就在 server 这台服务器上，所以不需要连其他机器，直接 <code>./redis-cli bgsave</code>。由于 redis 是用一个主线程来处理所有 client 的请求，这种方式会阻塞所有 client 请求。所以不推荐使用。另一点需要注意的是，每次快照持久化都是将内存数据完整写入到磁盘一次，并不是增量的只同步脏数据。如果数据量大的话，而且写操作比较多，必然会引起大量的磁盘 I/O 操作，可能会严重影响性能。</p>
+<h2 id="AOF"><a href="#AOF" class="headerlink" title="AOF"></a>AOF</h2><h3 id="AOF概述"><a href="#AOF概述" class="headerlink" title="AOF概述"></a>AOF概述</h3><p>Append-only file，将“操作 + 数据”以格式化指令的方式追加到操作日志文件的尾部，在 append 操作返回后（已经写入到文件或者即将写入），才进行实际的数据变更，“日志文件”保存了历史所有的操作过程；当 server 需要数据恢复时，可以直接 replay 此日志文件，即可还原所有的操作过程。AOF 相对可靠，它和 MySQL 中 bin.log、apache.log、zookeeper 中 txn-log 简直异曲同工。AOF 文件内容是字符串，非常容易阅读和解析。</p>
 <ul>
-<li>优点：可以保持更高的数据完整性，如果设置追加file的时间是1s，如果redis发生故障，最多会丢失1s的数据；且如果日志写入不完整支持redis-check-aof来进行日志修复；AOF文件没被rewrite之前（文件过大时会对命令进行合并重写），可以删除其中的某些命令（比如误操作的flushall）。</li>
-<li>缺点：AOF文件比RDB文件大，且恢复速度慢。</li>
+<li>优点：可以保持更高的数据完整性，如果设置追加 file 的时间是 1s，如果 redis 发生故障，最多会丢失 1s 的数据；且如果日志写入不完整支持 redis-check-aof 来进行日志修复；AOF 文件没被 rewrite 之前（文件过大时会对命令进行合并重写），可以删除其中的某些命令（比如误操作的 flushall）。</li>
+<li>缺点：AOF 文件比 RDB 文件大，且恢复速度慢。</li>
 </ul>
-<p>我们可以简单的认为AOF就是日志文件，此文件只会记录“变更操作”(例如：set/del等)，如果server中持续的大量变更操作，将会导致AOF文件非常的庞大，意味着server失效后，数据恢复的过程将会很长；事实上，一条数据经过多次变更，将会产生多条AOF记录，其实只要保存当前的状态，历史的操作记录是可以抛弃的；因为AOF持久化模式还伴生了“AOF rewrite”。</p>
-<p>AOF的特性决定了它相对比较安全，如果你期望数据更少的丢失，那么可以采用AOF模式。如果AOF文件正在被写入时突然server失效，有可能导致文件的最后一次记录是不完整，你可以通过手工或者程序的方式去检测并修正不完整的记录，以便通过aof文件恢复能够正常；同时需要提醒，如果你的redis持久化手段中有aof，那么在server故障失效后再次启动前，需要检测aof文件的完整性。</p>
-<p>AOF默认关闭，开启方法，修改配置文件reds.conf：appendonly yes</p>
+<p>我们可以简单的认为 AOF 就是日志文件，此文件只会记录“变更操作”（例如：set/del 等），如果 server 中持续的大量变更操作，将会导致 AOF 文件非常的庞大，意味着 server 失效后，数据恢复的过程将会很长；事实上，一条数据经过多次变更，将会产生多条 AOF 记录，其实只要保存当前的状态，历史的操作记录是可以抛弃的；因为 AOF 持久化模式还伴生了“AOF rewrite”。</p>
+<p>AOF 的特性决定了它相对比较安全，如果你期望数据更少的丢失，那么可以采用 AOF 模式。如果 AOF 文件正在被写入时突然 server 失效，有可能导致文件的最后一次记录是不完整，你可以通过手工或者程序的方式去检测并修正不完整的记录，以便通过 aof 文件恢复能够正常；同时需要提醒，如果你的 redis 持久化手段中有 aof，那么在 server 故障失效后再次启动前，需要检测 aof 文件的完整性。</p>
+<p>AOF 默认关闭，开启方法，修改配置文件 reds.conf：appendonly yes</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">##此选项为aof功能的开关，默认为“no”，可以通过“yes”来开启aof功能  </span><br><span class="line">##只有在“yes”下，aof重写/文件同步等特性才会生效  </span><br><span class="line">appendonly yes  </span><br><span class="line"></span><br><span class="line">##指定aof文件名称  </span><br><span class="line">appendfilename appendonly.aof  </span><br><span class="line"></span><br><span class="line">##指定aof操作中文件同步策略，有三个合法值：always everysec no,默认为everysec  </span><br><span class="line">appendfsync everysec  </span><br><span class="line">##在aof-rewrite期间，appendfsync是否暂缓文件同步，&quot;no&quot;表示“不暂缓”，“yes”表示“暂缓”，默认为“no”  </span><br><span class="line">no-appendfsync-on-rewrite no  </span><br><span class="line"></span><br><span class="line">##aof文件rewrite触发的最小文件尺寸(mb,gb),只有大于此aof文件大于此尺寸是才会触发rewrite，默认“64mb”，建议“512mb”  </span><br><span class="line">auto-aof-rewrite-min-size 64mb  </span><br><span class="line"></span><br><span class="line">##相对于“上一次”rewrite，本次rewrite触发时aof文件应该增长的百分比。  </span><br><span class="line">##每一次rewrite之后，redis都会记录下此时“新aof”文件的大小(例如A)，那么当aof文件增长到A*(1 + p)之后  </span><br><span class="line">##触发下一次rewrite，每一次aof记录的添加，都会检测当前aof文件的尺寸。  </span><br><span class="line">auto-aof-rewrite-percentage 100  </span><br></pre></td></tr></table></figure>
-<p>AOF是文件操作，对于变更操作比较密集的server，那么必将造成磁盘IO的负荷加重；此外linux对文件操作采取了“延迟写入”手段，即并非每次write操作都会触发实际磁盘操作，而是进入了buffer中，当buffer数据达到阀值时触发实际写入(也有其他时机)，这是linux对文件系统的优化，但是这却有可能带来隐患，如果buffer没有刷新到磁盘，此时物理机器失效(比如断电)，那么有可能导致最后一条或者多条aof记录的丢失。通过上述配置文件，可以得知redis提供了3中aof记录同步选项：</p>
-<ul>
-<li>always：每一条aof记录都立即同步到文件，这是最安全的方式，也以为更多的磁盘操作和阻塞延迟，是IO开支较大。</li>
-<li>everysec：每秒同步一次，性能和安全都比较中庸的方式，也是redis推荐的方式。如果遇到物理服务器故障，有可能导致最近一秒内aof记录丢失(可能为部分丢失)。</li>
-<li>no：redis并不直接调用文件同步，而是交给操作系统来处理，操作系统可以根据buffer填充情况/通道空闲时间等择机触发同步；这是一种普通的文件操作方式。性能较好，在物理服务器故障时，数据丢失量会因OS配置有关。</li>
-</ul>
-<p>其实，我们可以选择的太少，everysec是最佳的选择。如果你非常在意每个数据都极其可靠，建议你选择一款“关系性数据库”吧。</p>
-<p>AOF文件会不断增大，它的大小直接影响“故障恢复”的时间,而且AOF文件中历史操作是可以丢弃的。AOF rewrite操作就是“压缩”AOF文件的过程，当然redis并没有采用“基于原aof文件”来重写的方式，而是采取了类似snapshot的方式：基于copy-on-write，全量遍历内存中数据，然后逐个序列到aof文件中。因此AOF rewrite能够正确反应当前内存数据的状态，这正是我们所需要的；<em>rewrite过程中，对于新的变更操作将仍然被写入到原AOF文件中，同时这些新的变更操作也会被redis收集起来(buffer，copy-on-write方式下，最极端的可能是所有的key都在此期间被修改，将会耗费2倍内存)，当内存数据被全部写入到新的aof文件之后，收集的新的变更操作也将会一并追加到新的aof文件中，此后将会重命名新的aof文件为appendonly.aof,此后所有的操作都将被写入新的aof文件。如果在rewrite过程中，出现故障，将不会影响原AOF文件的正常工作，只有当rewrite完成之后才会切换文件，因为rewrite过程是比较可靠的。</em></p>
-<p>触发rewrite的时机可以通过配置文件来声明，同时redis中可以通过bgrewriteaof指令人工干预。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-cli -h ip -p port bgrewriteaof</span><br></pre></td></tr></table></figure>
-<p>因为rewrite操作/aof记录同步/snapshot都消耗磁盘IO，redis采取了“schedule”策略：无论是“人工干预”还是系统触发，snapshot和rewrite需要逐个被执行。</p>
-<p>AOF rewrite过程并不阻塞客户端请求。系统会开启一个子进程来完成。</p>
-<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>AOF和RDB各有优缺点，这是有它们各自的特点所决定：</p>
-<ol>
-<li>AOF更加安全，可以将数据更加及时的同步到文件中，但是AOF需要较多的磁盘IO开支，AOF文件尺寸较大，文件内容恢复数度相对较慢。</li>
-<li>snapshot，安全性较差，它是“正常时期”数据备份以及master-slave数据同步的最佳手段，文件尺寸较小，恢复数度较快。</li>
-</ol>
-<p>可以通过配置文件来指定它们中的一种，或者同时使用它们(不建议同时使用)，或者全部禁用，在架构良好的环境中，master通常使用AOF，slave使用snapshot，主要原因是master需要首先确保数据完整性，它作为数据备份的第一选择；slave提供只读服务(目前slave只能提供读取服务)，它的主要目的就是快速响应客户端read请求；但是如果你的redis运行在网络稳定性差/物理环境糟糕情况下，建议你master和slave均采取AOF，这个在master和slave角色切换时，可以减少“人工数据备份”/“人工引导数据恢复”的时间成本；如果你的环境一切非常良好，且服务需要接收密集性的write操作，那么建议master采取snapshot，而slave采用AOF。</p>
 
+<p>AOF 是文件操作，对于变更操作比较密集的 server，那么必将造成磁盘 I/O 的负荷加重；此外 linux 对文件操作采取了“延迟写入”手段，即并非每次 write 操作都会触发实际磁盘操作，而是进入了 buffer 中，当 buffer 数据达到阀值时触发实际写入（也有其他时机），这是 linux 对文件系统的优化，但是这却有可能带来隐患，如果 buffer 没有刷新到磁盘，此时物理机器失效（比如断电），那么有可能导致最后一条或者多条 aof 记录的丢失。通过上述配置文件，可以得知 redis 提供了 3 中 aof 记录同步选项：</p>
+<ul>
+<li>always：每一条 aof 记录都立即同步到文件，这是最安全的方式，也以为更多的磁盘操作和阻塞延迟，是 I/O 开支较大。</li>
+<li>everysec：每秒同步一次，性能和安全都比较中庸的方式，也是 redis 推荐的方式。如果遇到物理服务器故障，有可能导致最近一秒内 aof 记录丢失（可能为部分丢失）。</li>
+<li>no：redis 并不直接调用文件同步，而是交给操作系统来处理，操作系统可以根据 buffer 填充情况/通道空闲时间等择机触发同步；这是一种普通的文件操作方式。性能较好，在物理服务器故障时，数据丢失量会因 OS 配置有关。</li>
+</ul>
+<p>其实，我们可以选择的太少，everysec 是最佳的选择。如果你非常在意每个数据都极其可靠，建议你选择一款“关系性数据库”吧。</p>
+<p>AOF 文件会不断增大，它的大小直接影响“故障恢复”的时间，而且 AOF 文件中历史操作是可以丢弃的。AOF rewrite 操作就是“压缩” AOF 文件的过程，当然 redis 并没有采用“基于原 aof 文件”来重写的方式，而是采取了类似 snapshot 的方式：基于 copy-on-write，全量遍历内存中数据，然后逐个序列到 aof 文件中。因此 AOF rewrite 能够正确反应当前内存数据的状态，这正是我们所需要的；<em>rewrite 过程中，对于新的变更操作将仍然被写入到原 AOF 文件中，同时这些新的变更操作也会被 redis 收集起来（buffer，copy-on-write 方式下，最极端的可能是所有的 key 都在此期间被修改，将会耗费 2 倍内存），当内存数据被全部写入到新的 aof 文件之后，收集的新的变更操作也将会一并追加到新的 aof 文件中，此后将会重命名新的 aof 文件为 appendonly.aof，此后所有的操作都将被写入新的 aof 文件。如果在 rewrite 过程中，出现故障，将不会影响原 AOF 文件的正常工作，只有当 rewrite 完成之后才会切换文件，因为 rewrite 过程是比较可靠的。</em></p>
+<p>触发 rewrite 的时机可以通过配置文件来声明，同时 redis 中可以通过 bgrewriteaof 指令人工干预。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-cli -h ip -p port bgrewriteaof</span><br></pre></td></tr></table></figure>
+<p>因为 rewrite 操作/ aof 记录同步/ snapshot 都消耗磁盘 I/O，redis 采取了“schedule”策略：无论是“人工干预”还是系统触发，snapshot 和 rewrite 需要逐个被执行。</p>
+<p>AOF rewrite 过程并不阻塞客户端请求。系统会开启一个子进程来完成。</p>
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>AOF 和 RDB 各有优缺点，这是有它们各自的特点所决定：</p>
+<ol>
+<li>AOF 更加安全，可以将数据更加及时的同步到文件中，但是 AOF 需要较多的磁盘 I/O 开支，AOF 文件尺寸较大，文件内容恢复数度相对较慢。</li>
+<li>snapshot，安全性较差，它是“正常时期”数据备份以及 master-slave 数据同步的最佳手段，文件尺寸较小，恢复数度较快。</li>
+</ol>
+<p>可以通过配置文件来指定它们中的一种，或者同时使用它们（不建议同时使用），或者全部禁用，在架构良好的环境中，master 通常使用 AOF，slave 使用 snapshot，主要原因是 master 需要首先确保数据完整性，它作为数据备份的第一选择；slave 提供只读服务（目前 slave 只能提供读取服务），它的主要目的就是快速响应客户端 read 请求；但是如果你的 redis 运行在网络稳定性差/物理环境糟糕情况下，建议你 master 和 slave 均采取 AOF，这个在 master 和 slave 角色切换时，可以减少“人工数据备份”/“人工引导数据恢复”的时间成本；如果你的环境一切非常良好，且服务需要接收密集性的 write 操作，那么建议 master 采取 snapshot，而 slave 采用 AOF。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/" class="post-title-link" itemprop="url">Redis-主从切换-sentinel（哨兵机制）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-26 19:01:27" itemprop="dateCreated datePublished" datetime="2016-06-26T19:01:27+08:00">2016-06-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/zhoujinyi/p/5569462.html">http://www.cnblogs.com/zhoujinyi/p/5569462.html</a></p>
+<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Redis-Sentinel 是 Redis 官方推荐的高可用性（HA）解决方案，当用 Redis 做 Master-slave 的高可用方案时，假如 master 宕机了，Redis 本身（包括它的很多客户端）都没有实现自动进行主备切换，而 Redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。</p>
+<p>它的主要功能有以下几点</p>
+<ul>
+<li>不时地监控 redis 是否按照预期良好地运行；</li>
+<li>如果发现某个 redis 节点运行出现状况，能够通知另外一个进程（例如它的客户端）；</li>
+<li>能够进行自动切换。当一个 master 节点不可用时，能够选举出 master 的多个 slave（如果有超过一个 slave 的话）中的一个来作为新的 master，其它的 slave 节点会将它所追随的 master 的地址改为被提升为 master 的 slave 的新地址。</li>
+</ul>
+<h2 id="Sentinel-支持集群"><a href="#Sentinel-支持集群" class="headerlink" title="Sentinel 支持集群"></a>Sentinel 支持集群</h2><p>很显然，只使用单个 sentinel 进程来监控 redis 集群是不可靠的，当 sentinel 进程宕掉后（sentinel 本身也有单点问题，single-point-of-failure）整个集群系统将无法按照预期的方式运行。所以有必要将 sentinel 集群，这样有几个好处：</p>
+<ul>
+<li>即使有一些 sentinel 进程宕掉了，依然可以进行 redis 集群的主备切换；</li>
+<li>如果只有一个 sentinel 进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现 redis 集群的主备切换（单点问题）;</li>
+<li>如果有多个 sentinel，redis 的客户端可以随意地连接任意一个 sentinel 来获得关于 redis 集群中的信息。</li>
+</ul>
+<h2 id="运行-Sentinel"><a href="#运行-Sentinel" class="headerlink" title="运行 Sentinel"></a>运行 Sentinel</h2><p>运行 sentinel 有两种方式：</p>
+<ol>
+<li>```<br>redis-sentinel /path/to/sentinel.conf<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2. ```</span><br><span class="line">   redis-server /path/to/sentinel.conf --sentinel</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>以上两种方式，都必须指定一个 sentinel 的配置文件 sentinel.conf，如果不指定，将无法启动 sentinel。sentinel 默认监听 26379 端口，所以运行前必须确定该端口没有被别的进程占用。</p>
+<h2 id="Sentinel-的配置"><a href="#Sentinel-的配置" class="headerlink" title="Sentinel 的配置"></a>Sentinel 的配置</h2><p>Redis 源码包中包含了一个 sentinel.conf 文件作为 sentinel 的配置文件，配置文件自带了关于各个配置项的解释。典型的配置项如下所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 60000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br><span class="line">sentinel parallel-syncs mymaster 1</span><br><span class="line"></span><br><span class="line">sentinel monitor resque 192.168.1.3 6380 4</span><br><span class="line">sentinel down-after-milliseconds resque 10000</span><br><span class="line">sentinel failover-timeout resque 180000</span><br><span class="line">sentinel parallel-syncs resque 5</span><br></pre></td></tr></table></figure>
+
+<p>上面的配置项配置了两个名字分别为 mymaster 和 resque 的 master，配置文件只需要配置 master 的信息就好啦，不用配置 slave 的信息，因为 slave 能够被自动检测到（master 节点会有关于 slave 的消息）。需要注意的是，配置文件在 sentinel 运行期间是会被动态修改的，例如当发生主备切换时候，配置文件中的 master 会被修改为另外一个 slave。这样，之后 sentinel 如果重启时，就可以根据这个配置来恢复其之前所监控的 redis 集群的状态。</p>
+<p>接下来我们将一行一行地解释上面的配置项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br></pre></td></tr></table></figure>
+<p>这一行代表 sentinel 监控的 master 的名字叫做 mymaster，地址为 127.0.0.1:6379，行尾最后的一个 2 代表什么意思呢？我们知道，网络是不可靠的，有时候一个 sentinel 会因为网络堵塞而误以为一个 master redis 已经死掉了，当 sentinel 集群式，解决这个问题的方法就变得很简单，只需要多个 sentinel 互相沟通来确认某个 master 是否真的死了，这个 2 代表，当集群中有 2 个 sentinel 认为 master 死了时，才能真正认为该 master 已经不可用了。（sentinel 集群中各个 sentinel 也有互相通信，通过 gossip 协议）。</p>
+<p>除了第一行配置，我们发现剩下的配置都有一个统一的格式:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel &lt;option_name&gt; &lt;master_name&gt; &lt;option_value&gt;</span><br></pre></td></tr></table></figure>
+<p>接下来我们根据上面格式中的 option_name 一个一个来解释这些配置项：</p>
+<ul>
+<li>down-after-milliseconds<ul>
+<li>sentinel 会向 master 发送心跳 PING 来确认 master 是否存活，如果 master 在“一定时间范围”内不回应PONG 或者是回复了一个错误消息，那么这个 sentinel 会主观地（单方面地）认为这个 master 已经不可用了（subjectively down, 也简称为 SDOWN）。而这个 down-after-milliseconds 就是用来指定这个“一定时间范围”的，单位是毫秒。</li>
+<li>不过需要注意的是，这个时候 sentinel 并不会马上进行 failover 主备切换，这个 sentinel 还需要参考 sentinel 集群中其他 sentinel 的意见，如果超过某个数量的 sentinel 也主观地认为该 master 死了，那么这个 master 就会被客观地（注意哦，这次不是主观，是客观，与刚才的 subjectively down 相对，这次是 objectively down，简称为 ODOWN）认为已经死了。需要一起做出决定的 sentinel 数量在上一条配置中进行配置。</li>
+</ul>
+</li>
+<li>parallel-syncs<ul>
+<li>在发生 failover 主备切换时，这个选项指定了最多可以有多少个 slave 同时对新的 master 进行同步，这个数字越小，完成 failover 所需的时间就越长，但是如果这个数字越大，就意味着越多的 slave 因为 replication 而不可用。可以通过将这个值设为 1 来保证每次只有一个 slave 处于不能处理命令请求的状态。</li>
+</ul>
+</li>
+<li>其他配置项在 sentinel.conf 中都有很详细的解释。</li>
+</ul>
+<p>所有的配置都可以在运行时用命令 SENTINEL SET command 动态修改。</p>
+<hr>
+<p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yswKnight/article/details/78158540">https://blog.csdn.net/yswKnight/article/details/78158540</a></p>
+<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="什么是哨兵机制"><a href="#什么是哨兵机制" class="headerlink" title="什么是哨兵机制?"></a>什么是哨兵机制?</h2><p>Redis 的哨兵（sentinel）系统用于管理多个 Redis 服务器，该系统执行以下三个任务:</p>
+<ol>
+<li>监控（Monitoring）：哨兵（sentinel）会不断地检查你的 Master 和 Slave 是否运作正常。</li>
+<li>提醒（Notification）：当被监控的某个 Redis 出现问题时，哨兵（sentinel）可以通过 API 向管理员或者其他应用程序发送通知。</li>
+<li>自动故障迁移（Automatic failover）：当一个 Master 不能正常工作时，哨兵（sentinel）会开始一次自动故障迁移操作，它会将失效 Master 的其中一个 Slave 升级为新的 Master，并让失效 Master 的其他 Slave 改为复制新的 Master；当客户端试图连接失效的 Master 时，集群也会向客户端返回新 Master 的地址，使得集群可以使用 Master 代替失效 Master。</li>
+</ol>
+<p>哨兵（sentinel）是一个分布式系统，你可以在一个架构中运行多个哨兵（sentinel）进程，这些进程使用流言协议（gossip protocols）来接收关于 Master 是否下线的信息，并使用投票协议（agreement protocols）来决定是否执行自动故障迁移，以及选择哪个 Slave 作为新的 Master。</p>
+<p>哨兵（sentinel）会向其它哨兵（sentinel）、master、slave 定时发送消息，以确认对方是否”活”着，如果发现对方在指定时间（可配置）内未回应，则暂时认为对方已挂（所谓的”主观认为宕机” Subjective Down，简称 sdown）.</p>
+<p>若“哨兵群”中的多数 sentinel，都报告某一 master 没响应，系统才认为该 master “彻底死亡”（即:客观上的真正down 机，Objective Down，简称 odown），通过一定的 vote 算法，从剩下的 slave 节点中，选一台提升为 master，然后自动修改相关配置。</p>
+<p>虽然哨兵（sentinel）释出为一个单独的可执行文件 redis-sentinel，但实际上它只是一个运行在特殊模式下的 Redis 服务器，你可以在启动一个普通 Redis 服务器时通过给定 <code>--sentinel</code> 选项来启动哨兵（sentinel）。</p>
+<p>哨兵（sentinel）的一些设计思路和 zookeeper 非常类似<br><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/1.png" alt="1"></p>
+<h2 id="哨兵模式的配置修改"><a href="#哨兵模式的配置修改" class="headerlink" title="哨兵模式的配置修改"></a>哨兵模式的配置修改</h2><p>实现步骤:</p>
+<ol>
+<li>拷贝到 etc 目录<ul>
+<li><code>cp sentinel.conf  /usr/local/redis/etc</code></li>
+</ul>
+</li>
+<li>修改 sentinel.conf 配置文件<ul>
+<li>sentinel monitor mymast  192.168.110.133 6379 1  #主节点 名称 IP 端口号 选举次数</li>
+<li><code>#配置主服务器的密码(如没设置密码，可以省略)</code></li>
+<li><code>sentinel auth-pass mymaster 123456</code></li>
+</ul>
+</li>
+<li>修改心跳检测 5000 毫秒<ul>
+<li><code>sentinel down-after-milliseconds mymaster 5000</code></li>
+</ul>
+</li>
+<li>做多多少合格节点<ul>
+<li><code>sentinel parallel-syncs mymaster 2</code></li>
+</ul>
+</li>
+<li>启动哨兵模式<ul>
+<li><code>./redis-server /usr/local/redis/etc/sentinel.conf --sentinel &amp;</code></li>
+</ul>
+</li>
+<li>停止哨兵模式</li>
+</ol>
+<p>注意：</p>
+<ol>
+<li>当启动哨兵模式之后，如果你的 master 服务器宕机之后，哨兵自动会在从 redis 服务器里面投票选举一个 master 主服务器出来；这个主服务器也可以进行读写操作！</li>
+<li>如果之前宕机的主服务器已经修好，可以正式运行了。那么这个服务器只能进行读的操作，会自动跟随由哨兵选举出来的新服务器！</li>
+<li>大家可以进入 <code>./redis-cli</code>，输入 info，查看你的状态信息；</li>
+</ol>
+<p><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/2.png" alt="2"></p>
+<h2 id="哨兵（sentinel）总结"><a href="#哨兵（sentinel）总结" class="headerlink" title="哨兵（sentinel）总结"></a>哨兵（sentinel）总结</h2><h3 id="Sentinel-的作用："><a href="#Sentinel-的作用：" class="headerlink" title="Sentinel 的作用："></a>Sentinel 的作用：</h3><ol>
+<li>Master 状态监测</li>
+<li>如果Master 异常，则会进行 Master-slave 转换，将其中一个 Slave 作为 Master，将之前的 Master 作为Slave </li>
+<li>Master-Slave 切换后，master_redis.conf、slave_redis.conf 和 sentinel.conf 的内容都会发生改变，即 master_redis.conf 中会多一行 slaveof 的配置，sentinel.conf 的监控目标会随之调换 </li>
+</ol>
+<h3 id="Sentinel-的工作方式"><a href="#Sentinel-的工作方式" class="headerlink" title="Sentinel 的工作方式:"></a>Sentinel 的工作方式:</h3><ol>
+<li>每个 Sentinel 以每秒钟一次的频率向它所知的 Master，Slave 以及其他 Sentinel 实例发送一个 PING 命令。</li>
+<li>如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel 标记为主观下线。 </li>
+<li>如果一个 Master 被标记为主观下线，则正在监视这个 Master 的所有 Sentinel 要以每秒一次的频率确认 Master 的确进入了主观下线状态。 </li>
+<li>当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认 Master 的确进入了主观下线状态， 则 Master 会被标记为客观下线 。</li>
+<li>在一般情况下，每个 Sentinel 会以每 10 秒一次的频率向它已知的所有 Master，Slave发送 INFO 命令。</li>
+<li>当 Master 被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次 。</li>
+<li>若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 </li>
+<li>若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/" class="post-title-link" itemprop="url">Lumen-问题-NotFoundHttpException</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-19 09:10:48" itemprop="dateCreated datePublished" datetime="2016-06-19T09:10:48+08:00">2016-06-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>The problem was solved by changing the</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$app-&gt;run();</span><br></pre></td></tr></table></figure>
+<p>in /public/index.php to</p>
+<p>$request = Illuminate\Http\Request::capture();</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$app-&gt;run($request);</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E5%BF%AB%E6%8D%B7%E9%94%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/06/17/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E5%BF%AB%E6%8D%B7%E9%94%AE/" class="post-title-link" itemprop="url">IntelliJ-快捷键</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-17 17:29:48" itemprop="dateCreated datePublished" datetime="2016-06-17T17:29:48+08:00">2016-06-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="keymaps为Mac-OS-X-10-5"><a href="#keymaps为Mac-OS-X-10-5" class="headerlink" title="keymaps为Mac OS X 10.5+"></a>keymaps为Mac OS X 10.5+</h2><h3 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h3><ul>
+<li>跳到下一步(Step Over 相当于eclipse的f6)：<code>F8</code> (Win)</li>
+<li>进入到代码(Step Into 相当于eclipse的f5)：<code>F7</code> (Win)</li>
+<li>跳过：<code>F9</code> (Win)</li>
+<li>运行到光标处：<code>Alt + F9</code> (Win)</li>
+</ul>
+<h3 id="搜索、查看"><a href="#搜索、查看" class="headerlink" title="搜索、查看"></a>搜索、查看</h3><ul>
+<li><p>查看上下步：<code>command + alt + 左右方向键</code> (Mac)、 <code>ctrl + alt + 左右方向键</code> (Win)</p>
+</li>
+<li><p>跳转到上次编辑的地方：<code>command + shift + backspace</code> (Mac)、 <code>ctrl + shift + backspace</code> (Win)</p>
+</li>
+<li><p>查看类中的方法和属性：<code>command + F12</code> (Mac)、 <code>ctrl + F12</code> (Win)</p>
+</li>
+<li><p>通过类名打开类：<code>command + o</code> (Mac)、 <code>ctrl + n</code> (Win)</p>
+</li>
+<li><p>通过文件名打开文件：<code>command + shift + o</code> (Mac)、 <code>ctrl + shift + n</code> (Win)</p>
+</li>
+<li><p>列出最近查看的文件列表：<code>command + e</code> (Mac)、 <code>ctrl + e</code> (Win)</p>
+</li>
+<li><p>最近修改文件列表：<code>shift + command + e</code> (Mac)、 <code>ctrl + shift + e</code> (Win)</p>
+</li>
+<li><p>全局搜索：<code>double shift</code> (Mac)</p>
+</li>
+<li><p>查看文档：<code>ctrl + j</code> (Mac)</p>
+</li>
+</ul>
+<h4 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h4><ul>
+<li>显示当前文件的结构：<code>ctrl + F12</code> (Win)</li>
+</ul>
+<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><ul>
+<li><p>查看当前方法的声明：<code>alt + q</code> (Win)</p>
+</li>
+<li><p>查看方法的引用：<code>command + b</code> (Mac)</p>
+</li>
+<li><p>查看方法的super方法：<code>command + u</code> (Mac)</p>
+</li>
+<li><p>查看接口方法的实现：<code>command + alt + b</code> (Mac)</p>
+</li>
+<li><p>查询方法super、继承关系图（Call Hierarchy）：<code>command + shift + h</code> (Mac)</p>
+</li>
+<li><p>查看调用的方法申明：<code>option + space</code> (Mac)</p>
+</li>
+</ul>
+<h4 id="类"><a href="#类" class="headerlink" title="类"></a>类</h4><ul>
+<li><p>查询类super、继承关系树图（Type Hierarchy）：<code>ctrl + h</code> (Mac)</p>
+</li>
+<li><p>查看类的层次结构图（Diagram）：<code>command + alt + shift + u</code> (Mac)、<code>ctrl + alt + shift + u</code> (Win)</p>
+</li>
+<li><p>查看类的子类：<code>ctrl + alt + b</code> (Win)</p>
+</li>
+<li><p>查看类的夫类：<code>ctrl + alt + p</code> (Win)</p>
+</li>
+<li><p>搜索对象被引用的地方：<code>alt + F7</code> (Mac &amp; Win)</p>
+</li>
+<li><p>搜索对象在当前文件被引用的地方：<code>command + F7</code> (Mac)、 <code>ctrl + F7</code> (Win)</p>
+</li>
+<li><p>跳到大括号的开头结尾：<code>ctrl + [或者]</code> (Win)</p>
+</li>
+</ul>
+<h3 id="编辑"><a href="#编辑" class="headerlink" title="编辑"></a>编辑</h3><ul>
+<li><p>删除行：<code>command + delete</code> (Mac)、 <code>ctrl + y</code> (Win)</p>
+</li>
+<li><p>向下插入新行：<code>command + shift + enter</code> (Mac)、 <code>shift + enter</code> (Win)</p>
+</li>
+<li><p>向上插入新行：<code>command + alt + enter</code> (Mac)、 <code>ctrl + alt + enter</code> (Win)</p>
+</li>
+<li><p>向上下移动当前行：<code>shift + alt + 上下方向键</code> (Mac &amp; Win)</p>
+</li>
+<li><p>注释：<code>command + ／</code> (Mac)、 <code>ctrl + /</code> (Win)</p>
+</li>
+<li><p>错误内容提示：<code>alt + enter</code> (Mac &amp; Win)</p>
+</li>
+<li><p>格式化代码：<code>command + alt + l</code> (Mac)、 <code>ctrl + alt + l</code> (Win)</p>
+</li>
+<li><p>剪切当前行：<code>command + x</code> (Mac)、 <code>ctrl + x</code> (Win)</p>
+</li>
+<li><p>复制当前行：<code>command + c</code> (Mac)、 <code>ctrl + c</code> (Win)</p>
+</li>
+<li><p>将当前行复制到到下一行：<code>command + d</code> (Mac)、 <code>ctrl + d</code> (Win)</p>
+</li>
+<li><p>粘贴：<code>command + v</code> (Mac)、 <code>ctrl + v</code> (Win)</p>
+</li>
+<li><p>将选择的内容转换大小写：<code>command + shift + u</code> (Mac)、 <code>ctrl + shift + u</code> (Win)</p>
+</li>
+<li><p>代码模版：<code>ctrl + j</code> (Win)</p>
+</li>
+<li><p>整合两行：<code>ctrl + shift + j</code> (Win)</p>
+</li>
+<li><p>撤销：<code>ctrl + z</code> (Win)</p>
+</li>
+<li><p>取消撤销：<code>ctrl + shift + z</code> (Win)</p>
+</li>
+<li><p>get\set\构造方法等生成：<code>alt + Insert</code> (Win)</p>
+</li>
+<li><p>自动导入包、删除多余的包：<code>alt + ctrl + o</code> (Mac)</p>
+</li>
+<li><p>大小写切换：<code>ctrl + shift + u</code> (Win)</p>
+</li>
+</ul>
+<hr>
+<ul>
+<li>psvm：public static void main</li>
+<li>sout：System.out.println</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">HTML-报头Accept与Content-Type的区别</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-17 14:32:58" itemprop="dateCreated datePublished" datetime="2016-06-17T14:32:58+08:00">2016-06-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HTTP/" itemprop="url" rel="index"><span itemprop="name">HTTP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ol>
+<li>Accept属于请求头， Content-Type属于实体头。</li>
+</ol>
+<p>  Http报头分为通用报头，请求报头，响应报头和实体报头。</p>
+<p>  请求方的http报头结构：通用报头|请求报头|实体报头</p>
+<p>  响应方的http报头结构：通用报头|响应报头|实体报头</p>
+<ol start="2">
+<li>Accept代表发送端（客户端）希望接受的数据类型。</li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1058,7 +1209,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/41/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><span class="page-number current">42</span><a class="page-number" href="/page/43/">43</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/43/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/41/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/41/">41</a><span class="page-number current">42</span><a class="page-number" href="/page/43/">43</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/43/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1126,20 +1277,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

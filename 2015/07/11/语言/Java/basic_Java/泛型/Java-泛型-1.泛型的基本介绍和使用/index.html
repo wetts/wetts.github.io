@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;lonelyroamer&#x2F;article&#x2F;details&#x2F;7864531 一、泛型的基本概念泛型的定义：泛型是JDK 1.5的一项新特性，它的本质是参数化类型（Parameterized Type）的应用，也就是说所操作的数据类型被指定为一个参数，在用到的时候在指定具体的类型。这种参数类型可以用在类、接口和方法的创建中，分别称为泛型类、泛型接口和泛型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java-泛型-1.泛型的基本介绍和使用">
+<meta property="og:url" content="https://wetts.github.io/2015/07/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/%E6%B3%9B%E5%9E%8B/Java-%E6%B3%9B%E5%9E%8B-1.%E6%B3%9B%E5%9E%8B%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D%E5%92%8C%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;blog.csdn.net&#x2F;lonelyroamer&#x2F;article&#x2F;details&#x2F;7864531 一、泛型的基本概念泛型的定义：泛型是JDK 1.5的一项新特性，它的本质是参数化类型（Parameterized Type）的应用，也就是说所操作的数据类型被指定为一个参数，在用到的时候在指定具体的类型。这种参数类型可以用在类、接口和方法的创建中，分别称为泛型类、泛型接口和泛型">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-07-11T00:24:11.000Z">
+<meta property="article:modified_time" content="2016-12-10T07:02:00.000Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="泛型">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://wetts.github.io/2015/07/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/%E6%B3%9B%E5%9E%8B/Java-%E6%B3%9B%E5%9E%8B-1.%E6%B3%9B%E5%9E%8B%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D%E5%92%8C%E4%BD%BF%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java-泛型-1.泛型的基本介绍和使用 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/%E6%B3%9B%E5%9E%8B/Java-%E6%B3%9B%E5%9E%8B-1.%E6%B3%9B%E5%9E%8B%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D%E5%92%8C%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java-泛型-1.泛型的基本介绍和使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-07-11 08:24:11" itemprop="dateCreated datePublished" datetime="2015-07-11T08:24:11+08:00">2015-07-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/lonelyroamer/article/details/7864531">http://blog.csdn.net/lonelyroamer/article/details/7864531</a></p>
+<h2 id="一、泛型的基本概念"><a href="#一、泛型的基本概念" class="headerlink" title="一、泛型的基本概念"></a>一、泛型的基本概念</h2><p>泛型的定义：泛型是JDK 1.5的一项新特性，它的本质是参数化类型（Parameterized Type）的应用，也就是说所操作的数据类型被指定为一个参数，在用到的时候在指定具体的类型。这种参数类型可以用在类、接口和方法的创建中，分别称为泛型类、泛型接口和泛型方法。</p>
+<span id="more"></span>
+
+<p>泛型思想早在C++语言的模板（Templates）中就开始生根发芽，在Java语言处于还没有出现泛型的版本时，只能通过Object是所有类型的父类和类型强制转换两个特点的配合来实现类型泛化。例如在哈希表的存取中，JDK 1.5之前使用HashMap的get()方法，返回值就是一个Object对象，由于Java语言里面所有的类型都继承于java.lang.Object，那Object转型为任何对象成都是有可能的。但是也因为有无限的可能性，就只有程序员和运行期的虚拟机才知道这个Object到底是个什么类型的对象。在编译期间，编译器无法检查这个Object的强制转型是否成功，如果仅仅依赖程序员去保障这项操作的正确性，许多ClassCastException的风险就会被转嫁到程序运行期之中。</p>
+<p>泛型技术在C#和Java之中的使用方式看似相同，但实现上却有着根本性的分歧，C#里面泛型无论在程序源码中、编译后的IL中（Intermediate Language，中间语言，这时候泛型是一个占位符）或是运行期的CLR中都是切实存在的，List<int>与List<String>就是两个不同的类型，它们在系统运行期生成，有自己的虚方法表和类型数据，这种实现称为类型膨胀，基于这种方法实现的泛型被称为真实泛型。</String></int></p>
+<p>Java语言中的泛型则不一样，它只在程序源码中存在，在编译后的字节码文件中，就已经被替换为原来的原始类型（Raw Type，也称为裸类型）了，并且在相应的地方插入了强制转型代码，因此对于运行期的Java语言来说，ArrayList<int>与ArrayList<String>就是同一个类。所以说泛型技术实际上是Java语言的一颗语法糖，Java语言中的泛型实现方法称为类型擦除，基于这种方法实现的泛型被称为伪泛型。（类型擦除在后面在学习）</String></int></p>
+<p>使用泛型机制编写的程序代码要比那些杂乱的使用Object变量，然后再进行强制类型转换的代码具有更好的安全性和可读性。泛型对于集合类来说尤其有用。</p>
+<p>泛型程序设计（Generic Programming）意味着编写的代码可以被很多不同类型的对象所重用。</p>
+<p>####实例分析：</p>
+<p>在JDK1.5之前，Java泛型程序设计是用继承来实现的。因为Object类是所用类的基类，所以只需要维持一个Object类型的引用即可。就比如ArrayList只维护一个Object引用的数组：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class ArrayList//JDK1.5之前的  </span><br><span class="line">&#123;  </span><br><span class="line">    public Object get(int i)&#123;......&#125;  </span><br><span class="line">    public void add(Object o)&#123;......&#125;  </span><br><span class="line">    ......  </span><br><span class="line">    private Object[] elementData;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<p>这样会有两个问题：</p>
+<ol>
+<li>没有错误检查，可以向数组列表中添加类的对象</li>
+<li>在取元素的时候，需要进行强制类型转换</li>
+</ol>
+<p>这样，很容易发生错误，比如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/**jdk1.5之前的写法，容易出问题*/  </span><br><span class="line">ArrayList arrayList1=new ArrayList();  </span><br><span class="line">arrayList1.add(1);  </span><br><span class="line">arrayList1.add(1L);  </span><br><span class="line">arrayList1.add(&quot;asa&quot;);  </span><br><span class="line">int i=(Integer) arrayList1.get(1);//因为不知道取出来的值的类型，类型转换的时候容易出错  </span><br></pre></td></tr></table></figure>
+<p>这里的第一个元素是一个长整型，而你以为是整形，所以在强转的时候发生了错误。</p>
+<p>所以。在JDK1.5之后，加入了泛型来解决类似的问题。例如在ArrayList中使用泛型：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">                /** jdk1.5之后加入泛型*/  </span><br><span class="line">        ArrayList&lt;String&gt; arrayList2=new ArrayList&lt;String&gt;();  //限定数组列表中的类型  </span><br><span class="line">//      arrayList2.add(1); //因为限定了类型，所以不能添加整形  </span><br><span class="line">//      arrayList2.add(1L);//因为限定了类型，所以不能添加整长形  </span><br><span class="line">        arrayList2.add(&quot;asa&quot;);//只能添加字符串  </span><br><span class="line">        String str=arrayList2.get(0);//因为知道取出来的值的类型，所以不需要进行强制类型转换  </span><br></pre></td></tr></table></figure>
+
+<p>还要明白的是，泛型特性是向前兼容的。尽管 JDK 5.0 的标准类库中的许多类，比如集合框架，都已经泛型化了，但是使用集合类（比如 HashMap 和 ArrayList）的现有代码可以继续不加修改地在 JDK 1.5 中工作。当然，没有利用泛型的现有代码将不会赢得泛型的类型安全的好处。</p>
+<p>在学习泛型之前，简单介绍下泛型的一些基本术语，以ArrayList<E>和ArrayList<Integer>做简要介绍：</Integer></E></p>
+<p>整个成为ArrayList<E>泛型类型</E></p>
+<p>ArrayList<E>中的 E称为类型变量或者类型参数</E></p>
+<p>整个ArrayList<Integer> 称为参数化的类型</Integer></p>
+<p>ArrayList<Integer>中的integer称为类型参数的实例或者实际类型参数</Integer></p>
+<p>·ArrayList<Integer>中的<Integer>念为typeof   Integer</Integer></Integer></p>
+<p>ArrayList称为原始类型</p>
+<h2 id="二、泛型的使用"><a href="#二、泛型的使用" class="headerlink" title="二、泛型的使用"></a>二、泛型的使用</h2><p>泛型的参数类型可以用在类、接口和方法的创建中，分别称为泛型类、泛型接口和泛型方法。下面看看具体是如何定义的。</p>
+<h3 id="1、泛型类的定义和使用"><a href="#1、泛型类的定义和使用" class="headerlink" title="1、泛型类的定义和使用"></a>1、泛型类的定义和使用</h3><p>一个泛型类（generic class）就是具有一个或多个类型变量的类。定义一个泛型类十分简单，只需要在类名后面加上&lt;&gt;，再在里面加上类型参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">class Pair&lt;T&gt; &#123;  </span><br><span class="line">    private T value;  </span><br><span class="line">        public Pair(T value) &#123;  </span><br><span class="line">                this.value=value;  </span><br><span class="line">        &#125;  </span><br><span class="line">        public T getValue() &#123;  </span><br><span class="line">        return value;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public void setValue(T value) &#123;  </span><br><span class="line">        this.value = value;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>现在我们就可以使用这个泛型类了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) throws ClassNotFoundException &#123;  </span><br><span class="line">        Pair&lt;String&gt; pair=new Pair&lt;String&gt;(&quot;Hello&quot;);  </span><br><span class="line">        String str=pair.getValue();  </span><br><span class="line">        System.out.println(str);  </span><br><span class="line">        pair.setValue(&quot;World&quot;);  </span><br><span class="line">        str=pair.getValue();  </span><br><span class="line">        System.out.println(str);  </span><br><span class="line">    &#125;  </span><br></pre></td></tr></table></figure>
+
+<p>Pair类引入了一个类型变量T，用尖括号&lt;&gt;括起来，并放在类名的后面。泛型类可以有多个类型变量。例如，可以定义Pair类，其中第一个域和第二个域使用不同的类型：<code>public class Pair&lt;T,U&gt;&#123;......&#125;</code></p>
+<p>注意：类型变量使用大写形式，且比较短，这是很常见的。在Java库中，使用变量E表示集合的元素类型，K和V分别表示关键字与值的类型。（需要时还可以用临近的字母U和S）表示“任意类型”。</p>
+<h3 id="2、泛型接口的定义和使用"><a href="#2、泛型接口的定义和使用" class="headerlink" title="2、泛型接口的定义和使用"></a>2、泛型接口的定义和使用</h3><p>定义泛型接口和泛型类差不多，看下面简单的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">interface Show&lt;T,U&gt;&#123;  </span><br><span class="line">    void show(T t,U u);  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">class ShowTest implements Show&lt;String,Date&gt;&#123;  </span><br><span class="line">    @Override  </span><br><span class="line">    public void show(String str,Date date) &#123;  </span><br><span class="line">        System.out.println(str);  </span><br><span class="line">        System.out.println(date);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<p>测试一下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) throws ClassNotFoundException &#123;  </span><br><span class="line">        ShowTest showTest=new ShowTest();  </span><br><span class="line">        showTest.show(&quot;Hello&quot;,new Date());  </span><br><span class="line">    &#125;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="3、泛型方法的定义和使用"><a href="#3、泛型方法的定义和使用" class="headerlink" title="3、泛型方法的定义和使用"></a>3、泛型方法的定义和使用</h3><p>泛型类在多个方法签名间实施类型约束。在 List<V> 中，类型参数 V 出现在 get()、add()、contains() 等方法的签名中。当创建一个 Map&lt;K, V&gt; 类型的变量时，您就在方法之间宣称一个类型约束。您传递给 add() 的值将与 get() 返回的值的类型相同。</V></p>
+<p>类似地，之所以声明泛型方法，一般是因为您想要在该方法的多个参数之间宣称一个类型约束。</p>
+<p>举个简单的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) throws ClassNotFoundException &#123;  </span><br><span class="line">        String str=get(&quot;Hello&quot;, &quot;World&quot;);  </span><br><span class="line">        System.out.println(str);  </span><br><span class="line">    &#125;  </span><br><span class="line"></span><br><span class="line">    public static &lt;T, U&gt; T get(T t, U u) &#123;  </span><br><span class="line">        if (u != null)  </span><br><span class="line">            return t;  </span><br><span class="line">        else  </span><br><span class="line">            return null;  </span><br><span class="line">    &#125;  </span><br></pre></td></tr></table></figure>
+
+<h2 id="三、泛型变量的类型限定"><a href="#三、泛型变量的类型限定" class="headerlink" title="三、泛型变量的类型限定"></a>三、泛型变量的类型限定</h2><p>在上面，我们简单的学习了泛型类、泛型接口和泛型方法。我们都是直接使用<T>这样的形式来完成泛型类型的声明。</T></p>
+<p>有的时候，类、接口或方法需要对类型变量加以约束。看下面的例子：</p>
+<p>有这样一个简单的泛型方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public static &lt;T&gt; T get(T t1,T t2) &#123;  </span><br><span class="line">        if(t1.compareTo(t2)&gt;=0);//编译错误  </span><br><span class="line">        return t1;  </span><br><span class="line">    &#125;  </span><br></pre></td></tr></table></figure>
+
+<p>因为，在编译之前，也就是我们还在定义这个泛型方法的时候，我们并不知道这个泛型类型T，到底是什么类型，所以，只能默认T为原始类型Object。所以它只能调用来自于Object的那几个方法，而不能调用compareTo方法。</p>
+<p>可我的本意就是要比较t1和t2，怎么办呢？这个时候，就要使用类型限定，对类型变量T设置限定（bound）来做到这一点。</p>
+<p>我们知道，所有实现Comparable接口的方法，都会有compareTo方法。所以，可以对<T>做如下限定：</T></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public static &lt;T extends Comparable&gt; T get(T t1,T t2) &#123; //添加类型限定  </span><br><span class="line">        if(t1.compareTo(t2)&gt;=0);  </span><br><span class="line">        return t1;  </span><br><span class="line">    &#125;  </span><br></pre></td></tr></table></figure>
+<p>类型限定在泛型类、泛型接口和泛型方法中都可以使用，不过要注意下面几点：</p>
+<ol>
+<li>不管该限定是类还是接口，统一都使用关键字 extends</li>
+<li>可以使用&amp;符号给出多个限定，比如<code>public static &lt;T extends Comparable&amp;Serializable&gt; T get(T t1,T t2) </code></li>
+<li>如果限定既有接口也有类，那么类必须只有一个，并且放在首位置<code>public static &lt;T extends Object&amp;Comparable&amp;Serializable&gt; T get(T t1,T t2)</code></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E6%B3%9B%E5%9E%8B/" rel="tag"># 泛型</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/07/06/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-Oracle_11g%E6%9C%8D%E5%8A%A1/" rel="prev" title="Oracle-Oracle_11g服务">
+      <i class="fa fa-chevron-left"></i> Oracle-Oracle_11g服务
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/07/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/%E6%B3%9B%E5%9E%8B/Java-%E6%B3%9B%E5%9E%8B-2.%E6%B3%9B%E5%9E%8B%E7%9A%84%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86%EF%BC%9A%E7%B1%BB%E5%9E%8B%E6%93%A6%E9%99%A4%E4%BB%A5%E5%8F%8A%E7%B1%BB%E5%9E%8B%E6%93%A6%E9%99%A4%E5%B8%A6%E6%9D%A5%E7%9A%84%E9%97%AE%E9%A2%98/" rel="next" title="Java-泛型-2.泛型的内部原理：类型擦除以及类型擦除带来的问题">
+      Java-泛型-2.泛型的内部原理：类型擦除以及类型擦除带来的问题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%B3%9B%E5%9E%8B%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">一、泛型的基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%B3%9B%E5%9E%8B%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">二、泛型的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E6%B3%9B%E5%9E%8B%E7%B1%BB%E7%9A%84%E5%AE%9A%E4%B9%89%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="nav-number">2.1.</span> <span class="nav-text">1、泛型类的定义和使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E6%B3%9B%E5%9E%8B%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%AE%9A%E4%B9%89%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="nav-number">2.2.</span> <span class="nav-text">2、泛型接口的定义和使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81%E6%B3%9B%E5%9E%8B%E6%96%B9%E6%B3%95%E7%9A%84%E5%AE%9A%E4%B9%89%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="nav-number">2.3.</span> <span class="nav-text">3、泛型方法的定义和使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%B3%9B%E5%9E%8B%E5%8F%98%E9%87%8F%E7%9A%84%E7%B1%BB%E5%9E%8B%E9%99%90%E5%AE%9A"><span class="nav-number">3.</span> <span class="nav-text">三、泛型变量的类型限定</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '3c2328508a5c9e8b1c66ee7e5bc7ae41',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

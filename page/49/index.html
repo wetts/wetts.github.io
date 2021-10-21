@@ -188,940 +188,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/11/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">计算机网络基础知识总结</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-11-13 09:21:07" itemprop="dateCreated datePublished" datetime="2015-11-13T09:21:07+08:00">2015-11-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/maybe2030/p/4781555.html">https://www.cnblogs.com/maybe2030/p/4781555.html</a></p>
-<p>计算机网络学习的核心内容就是网络协议的学习。网络协议是为计算机网络中进行数据交换而建立的规则、标准或者说是约定的集合。因为不同用户的数据终端可能采取的字符集是不同的，两者需要进行通信，必须要在一定的标准上进行。一个很形象地比喻就是我们的语言，我们大天朝地广人多，地方性语言也非常丰富，而且方言之间差距巨大。A地区的方言可能B地区的人根本无法接受，所以我们要为全国人名进行沟通建立一个语言标准，这就是我们的普通话的作用。同样，放眼全球，我们与外国友人沟通的标准语言是英语，所以我们才要苦逼的学习英语。</p>
-<p>计算机网络协议同我们的语言一样，多种多样。而ARPA公司与1977年到1979年推出了一种名为ARPANET的网络协议受到了广泛的热捧，其中最主要的原因就是它推出了人尽皆知的TCP/IP标准网络协议。目前TCP/IP协议已经成为Internet中的“通用语言”，下图为不同计算机群之间利用TCP/IP进行通信的示意图。</p>
-<p><img src="/2015/11/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/1.gif" alt="1"></p>
-<h2 id="网络层次划分"><a href="#网络层次划分" class="headerlink" title="网络层次划分"></a>网络层次划分</h2><p>为了使不同计算机厂家生产的计算机能够相互通信，以便在更大的范围内建立计算机网络，国际标准化组织（ISO）在1978年提出了“开放系统互联参考模型”，即著名的OSI/RM模型（Open System Interconnection/Reference Model）。它将计算机网络体系结构的通信协议划分为七层，自下而上依次为：物理层（Physics Layer）、数据链路层（Data Link Layer）、网络层（Network Layer）、传输层（Transport Layer）、会话层（Session Layer）、表示层（Presentation Layer）、应用层（Application Layer）。其中第四层完成数据传送服务，上面三层面向用户。</p>
-<p>除了标准的OSI七层模型以外，常见的网络层次划分还有TCP/IP四层协议以及TCP/IP五层协议，它们之间的对应关系如下图所示：</p>
-<p><img src="/2015/11/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/2.jpg" alt="2"></p>
-<h2 id="OSI七层网络模型"><a href="#OSI七层网络模型" class="headerlink" title="OSI七层网络模型"></a>OSI七层网络模型</h2><p>TCP/IP协议毫无疑问是互联网的基础协议，没有它就根本不可能上网，任何和互联网有关的操作都离不开TCP/IP协议。不管是OSI七层模型还是TCP/IP的四层、五层模型，每一层中都要自己的专属协议，完成自己相应的工作以及与上下层级之间进行沟通。由于OSI七层模型为网络的标准层次划分，所以我们以OSI七层模型为例从下向上进行一一介绍。</p>
-<p><img src="/2015/11/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/3.gif" alt="3"> </p>
-<h3 id="物理层（Physical-Layer）"><a href="#物理层（Physical-Layer）" class="headerlink" title="物理层（Physical Layer）"></a>物理层（Physical Layer）</h3><p>激活、维持、关闭通信端点之间的机械特性、电气特性、功能特性以及过程特性。<strong>该层为上层协议提供了一个传输数据的可靠的物理媒体。简单的说，物理层确保原始的数据可在各种物理媒体上传输。</strong>物理层记住两个重要的设备名称，中继器（Repeater，也叫放大器）和集线器。</p>
-<h3 id="数据链路层（Data-Link-Layer）"><a href="#数据链路层（Data-Link-Layer）" class="headerlink" title="数据链路层（Data Link Layer）"></a>数据链路层（Data Link Layer）</h3><p>数据链路层在物理层提供的服务的基础上向网络层提供服务，其最基本的服务是将源自网络层来的数据可靠地传输到相邻节点的目标机网络层。为达到这一目的，数据链路必须具备一系列相应的功能，主要有：如何将数据组合成数据块，在数据链路层中称这种数据块为帧（frame），帧是数据链路层的传送单位；如何控制帧在物理信道上的传输，包括如何处理传输差错，如何调节发送速率以使与接收方相匹配；以及在两个网络实体之间提供数据链路通路的建立、维持和释放的管理。数据链路层在不可靠的物理介质上提供可靠的传输。该层的作用包括：物理地址寻址、数据的成帧、流量控制、数据的检错、重发等。</p>
-<p>有关数据链路层的重要知识点：</p>
-<ol>
-<li><strong>数据链路层为网络层提供可靠的数据传输；</strong></li>
-<li><strong>基本数据单位为帧；</strong></li>
-<li><strong>主要的协议：以太网协议；</strong></li>
-<li><strong>两个重要设备名称：网桥和交换机。</strong></li>
-</ol>
-<h3 id="网络层（Network-Layer）"><a href="#网络层（Network-Layer）" class="headerlink" title="网络层（Network Layer）"></a>网络层（Network Layer）</h3><p>网络层的目的是实现两个端系统之间的数据透明传送，具体功能包括寻址和路由选择、连接的建立、保持和终止等。它提供的服务使传输层不需要了解网络中的数据传输和交换技术。如果您想用尽量少的词来记住网络层，那就是“路径选择、路由及逻辑寻址”。</p>
-<p>网络层中涉及众多的协议，其中包括最重要的协议，也是TCP/IP的核心协议——IP协议。IP协议非常简单，仅仅提供不可靠、无连接的传送服务。IP协议的主要功能有：无连接数据报传输、数据报路由选择和差错控制。与IP协议配套使用实现其功能的还有地址解析协议ARP、逆地址解析协议RARP、因特网报文协议ICMP、因特网组管理协议IGMP。具体的协议我们会在接下来的部分进行总结，有关网络层的重点为：</p>
-<ol>
-<li><strong>网络层负责对子网间的数据包进行路由选择。此外，网络层还可以实现拥塞控制、网际互连等功能；</strong></li>
-<li><strong>基本数据单位为IP数据报；</strong></li>
-<li><strong>包含的主要协议：</strong><ul>
-<li><strong>IP协议（Internet Protocol，因特网互联协议）;</strong></li>
-<li><strong>ICMP协议（Internet Control Message Protocol，因特网控制报文协议）;</strong></li>
-<li><strong>ARP协议（Address Resolution Protocol，地址解析协议）;</strong></li>
-<li><strong>RARP协议（Reverse Address Resolution Protocol，逆地址解析协议）。</strong></li>
-</ul>
-</li>
-<li><strong>重要的设备：路由器。</strong></li>
-</ol>
-<h3 id="传输层（Transport-Layer）"><a href="#传输层（Transport-Layer）" class="headerlink" title="传输层（Transport Layer）"></a>传输层（Transport Layer）</h3><p>第一个端到端，即主机到主机的层次。传输层负责将上层数据分段并提供端到端的、可靠的或不可靠的传输。此外，传输层还要处理端到端的差错控制和流量控制问题。</p>
-<p>传输层的任务是根据通信子网的特性，最佳的利用网络资源，为两个端系统的会话层之间，提供建立、维护和取消传输连接的功能，负责端到端的可靠数据传输。在这一层，信息传送的协议数据单元称为段或报文。</p>
-<p>网络层只是根据网络地址将源结点发出的数据包传送到目的结点，而传输层则负责将数据可靠地传送到相应的端口。</p>
-<p>有关网络层的重点：</p>
-<ol>
-<li><strong>传输层负责将上层数据分段并提供端到端的、可靠的或不可靠的传输以及端到端的差错控制和流量控制问题；</strong></li>
-<li><strong>包含的主要协议：TCP协议（Transmission Control Protocol，传输控制协议）、UDP协议（User Datagram Protocol，用户数据报协议）；</strong></li>
-<li><strong>重要设备：网关。</strong></li>
-</ol>
-<h3 id="会话层"><a href="#会话层" class="headerlink" title="会话层"></a>会话层</h3><p>会话层管理主机之间的会话进程，即负责建立、管理、终止进程之间的会话。会话层还利用在数据中插入校验点来实现数据的同步。</p>
-<h3 id="表示层"><a href="#表示层" class="headerlink" title="表示层"></a>表示层</h3><p>表示层对上层数据或信息进行变换以保证一个主机应用层信息可以被另一个主机的应用程序理解。表示层的数据转换包括数据的加密、压缩、格式转换等。</p>
-<h3 id="应用层"><a href="#应用层" class="headerlink" title="应用层"></a>应用层</h3><p>为操作系统或网络应用程序提供访问网络服务的接口。</p>
-<p>会话层、表示层和应用层重点：</p>
-<ol>
-<li><strong>数据传输基本单位为报文；</strong></li>
-<li><strong>包含的主要协议：FTP（文件传送协议）、Telnet（远程登录协议）、DNS（域名解析协议）、SMTP（邮件传送协议），POP3协议（邮局协议），HTTP协议（Hyper Text Transfer Protocol）。</strong></li>
-</ol>
-<h2 id="IP地址"><a href="#IP地址" class="headerlink" title="IP地址"></a>IP地址</h2><h3 id="网络地址"><a href="#网络地址" class="headerlink" title="网络地址"></a>网络地址</h3><p>IP地址由网络号（包括子网号）和主机号组成，网络地址的主机号为全0，网络地址代表着整个网络。</p>
-<h3 id="广播地址"><a href="#广播地址" class="headerlink" title="广播地址"></a>广播地址</h3><p>广播地址通常称为直接广播地址，是为了区分受限广播地址。</p>
-<p>广播地址与网络地址的主机号正好相反，广播地址中，主机号为全1。当向某个网络的广播地址发送消息时，该网络内的所有主机都能收到该广播消息。</p>
-<h3 id="组播地址"><a href="#组播地址" class="headerlink" title="组播地址"></a>组播地址</h3><p>D类地址就是组播地址。</p>
-<p>先回忆下A，B，C，D类地址吧：</p>
-<ul>
-<li>A类地址以0开头，第一个字节作为网络号，地址范围为：0.0.0.0~127.255.255.255；</li>
-<li>B类地址以10开头，前两个字节作为网络号，地址范围是：128.0.0.0~191.255.255.255;</li>
-<li>C类地址以110开头，前三个字节作为网络号，地址范围是：192.0.0.0~223.255.255.255。</li>
-<li>D类地址以1110开头，地址范围是224.0.0.0~239.255.255.255，D类地址作为组播地址（一对多的通信）；</li>
-<li>E类地址以1111开头，地址范围是240.0.0.0~255.255.255.255，E类地址为保留地址，供以后使用。</li>
-</ul>
-<p>注：只有A,B,C有网络号和主机号之分，D类地址和E类地址没有划分网络号和主机号。</p>
-<h3 id="255-255-255-255"><a href="#255-255-255-255" class="headerlink" title="255.255.255.255"></a>255.255.255.255</h3><p>该IP地址指的是受限的广播地址。受限广播地址与一般广播地址（直接广播地址）的区别在于，受限广播地址只能用于本地网络，路由器不会转发以受限广播地址为目的地址的分组；一般广播地址既可在本地广播，也可跨网段广播。例如：主机192.168.1.1/30上的直接广播数据包后，另外一个网段192.168.1.5/30也能收到该数据报；若发送受限广播数据报，则不能收到。</p>
-<p>注：一般的广播地址（直接广播地址）能够通过某些路由器（当然不是所有的路由器），而受限的广播地址不能通过路由器。</p>
-<h3 id="0-0-0-0"><a href="#0-0-0-0" class="headerlink" title="0.0.0.0"></a>0.0.0.0</h3><p>常用于寻找自己的IP地址，例如在我们的RARP，BOOTP和DHCP协议中，若某个未知IP地址的无盘机想要知道自己的IP地址，它就以255.255.255.255为目的地址，向本地范围（具体而言是被各个路由器屏蔽的范围内）的服务器发送IP请求分组。</p>
-<h3 id="回环地址"><a href="#回环地址" class="headerlink" title="回环地址"></a>回环地址</h3><p>127.0.0.0/8被用作回环地址，回环地址表示本机的地址，常用于对本机的测试，用的最多的是127.0.0.1。</p>
-<h3 id="A、B、C类私有地址"><a href="#A、B、C类私有地址" class="headerlink" title="A、B、C类私有地址"></a>A、B、C类私有地址</h3><p>私有地址(private address)也叫专用地址，它们不会在全球使用，只具有本地意义。</p>
-<ul>
-<li>A类私有地址：10.0.0.0/8，范围是：10.0.0.0~10.255.255.255</li>
-<li>B类私有地址：172.16.0.0/12，范围是：172.16.0.0~172.31.255.255</li>
-<li>C类私有地址：192.168.0.0/16，范围是：192.168.0.0~192.168.255.255</li>
-</ul>
-<h2 id="子网掩码及网络划分"><a href="#子网掩码及网络划分" class="headerlink" title="子网掩码及网络划分"></a>子网掩码及网络划分</h2><p>随着互连网应用的不断扩大，原先的IPv4的弊端也逐渐暴露出来，即网络号占位太多，而主机号位太少，所以其能提供的主机地址也越来越稀缺，目前除了使用NAT在企业内部利用保留地址自行分配以外，通常都对一个高类别的IP地址进行再划分，以形成多个子网，提供给不同规模的用户群使用。</p>
-<p>这里主要是为了在网络分段情况下有效地利用IP地址，通过对主机号的高位部分取作为子网号，从通常的网络位界限中扩展或压缩子网掩码，用来创建某类地址的更多子网。但创建更多的子网时，在每个子网上的可用主机地址数目会比原先减少。</p>
-<h3 id="什么是子网掩码？"><a href="#什么是子网掩码？" class="headerlink" title="什么是子网掩码？"></a>什么是子网掩码？</h3><p>子网掩码是标志两个IP地址是否同属于一个子网的，也是32位二进制地址，其每一个为1代表该位是网络位，为0代表主机位。它和IP地址一样也是使用点式十进制来表示的。如果两个IP地址在子网掩码的按位与的计算下所得结果相同，即表明它们共属于同一子网中。</p>
-<p><strong>在计算子网掩码时，我们要注意IP地址中的保留地址，即“ 0”地址和广播地址，它们是指主机地址或网络地址全为“ 0”或“ 1”时的IP地址，它们代表着本网络地址和广播地址，一般是不能被计算在内的。</strong></p>
-<h3 id="子网掩码的计算："><a href="#子网掩码的计算：" class="headerlink" title="子网掩码的计算："></a>子网掩码的计算：</h3><p>对于无须再划分成子网的IP地址来说，其子网掩码非常简单，即按照其定义即可写出：如某B类IP地址为 10.12.3.0，无须再分割子网，则该IP地址的子网掩码255.255.0.0。如果它是一个C类地址，则其子网掩码为 255.255.255.0。其它类推，不再详述。下面我们关键要介绍的是一个IP地址，还需要将其高位主机位再作为划分出的子网网络号，剩下的是每个子网的主机号，这时该如何进行每个子网的掩码计算。</p>
-<p>下面总结一下有关子网掩码和网络划分常见的面试考题：</p>
-<h4 id="利用子网数来计算"><a href="#利用子网数来计算" class="headerlink" title="利用子网数来计算"></a>利用子网数来计算</h4><p>在求子网掩码之前必须先搞清楚要划分的子网数目，以及每个子网内的所需主机数目。</p>
-<p>(1) 将子网数目转化为二进制来表示;</p>
-<p>如欲将B类IP地址168.195.0.0划分成27个子网：27=11011；</p>
-<p>(2) 取得该二进制的位数，为N；</p>
-<p>该二进制为五位数，N = 5</p>
-<p>(3) 取得该IP地址的类子网掩码，将其主机地址部分的的前N位置1即得出该IP地址划分子网的子网掩码。</p>
-<p>将B类地址的子网掩码255.255.0.0的主机地址前5位置 1，得到 255.255.248.0</p>
-<h4 id="利用主机数来计算"><a href="#利用主机数来计算" class="headerlink" title="利用主机数来计算"></a>利用主机数来计算</h4><p>如欲将B类IP地址168.195.0.0划分成若干子网，每个子网内有主机700台：</p>
-<p>(1) 将主机数目转化为二进制来表示；</p>
-<p>700=1010111100；</p>
-<p>(2) 如果主机数小于或等于254（注意去掉保留的两个IP地址），则取得该主机的二进制位数，为N，这里肯定 N&lt;8。如果大于254，则 N&gt;8，这就是说主机地址将占据不止8位；</p>
-<p>该二进制为十位数，N=10；</p>
-<p>(3) 使用255.255.255.255来将该类IP地址的主机地址位数全部置1，然后从后向前的将N位全部置为 0，即为子网掩码值。</p>
-<p>将该B类地址的子网掩码255.255.0.0的主机地址全部置1，得到255.255.255.255，然后再从后向前将后 10位置0,即为：11111111.11111111.11111100.00000000，即255.255.252.0。这就是该欲划分成主机为700台的B类IP地址 168.195.0.0的子网掩码。</p>
-<h4 id="还有一种题型，要你根据每个网络的主机数量进行子网地址的规划和计算子网掩码。这也可按上述原则进行计算。"><a href="#还有一种题型，要你根据每个网络的主机数量进行子网地址的规划和计算子网掩码。这也可按上述原则进行计算。" class="headerlink" title="还有一种题型，要你根据每个网络的主机数量进行子网地址的规划和计算子网掩码。这也可按上述原则进行计算。"></a>还有一种题型，要你根据每个网络的主机数量进行子网地址的规划和计算子网掩码。这也可按上述原则进行计算。</h4><p>比如一个子网有10台主机，那么对于这个子网需要的IP地址是：</p>
-<p>10＋1＋1＋1＝13</p>
-<p><strong>注意：加的第一个1是指这个网络连接时所需的网关地址，接着的两个1分别是指网络地址和广播地址。</strong></p>
-<p>因为13小于16（16等于2的4次方），所以主机位为4位。而256－16＝240，所以该子网掩码为255.255.255.240。</p>
-<p>如果一个子网有14台主机，不少人常犯的错误是：依然分配具有16个地址空间的子网，而忘记了给网关分配地址。这样就错误了，因为14＋1＋1＋1＝17，17大于16，所以我们只能分配具有32个地址（32等于2的5次方）空间的子网。这时子网掩码为：255.255.255.224。</p>
-<h2 id="ARP-RARP协议"><a href="#ARP-RARP协议" class="headerlink" title="ARP/RARP协议"></a>ARP/RARP协议</h2><p><strong>地址解析协议，即ARP（Address Resolution Protocol），是根据IP地址获取物理地址的一个TCP/IP协议</strong>。主机发送信息时将包含目标IP地址的ARP请求广播到网络上的所有主机，并接收返回消息，以此确定目标的物理地址；收到返回消息后将该IP地址和物理地址存入本机ARP缓存中并保留一定时间，下次请求时直接查询ARP缓存以节约资源。地址解析协议是建立在网络中各个主机互相信任的基础上的，网络上的主机可以自主发送ARP应答消息，其他主机收到应答报文时不会检测该报文的真实性就会将其记入本机ARP缓存；由此攻击者就可以向某一主机发送伪ARP应答报文，使其发送的信息无法到达预期的主机或到达错误的主机，这就构成了一个ARP欺骗。<strong>ARP命令可用于查询本机ARP缓存中IP地址和MAC地址的对应关系、添加或删除静态对应关系等</strong>。</p>
-<p>ARP工作流程举例：</p>
-<p>主机A的IP地址为192.168.1.1，MAC地址为0A-11-22-33-44-01；</p>
-<p>主机B的IP地址为192.168.1.2，MAC地址为0A-11-22-33-44-02；</p>
-<p>当主机A要与主机B通信时，地址解析协议可以将主机B的IP地址（192.168.1.2）解析成主机B的MAC地址，以下为工作流程：</p>
-<ol>
-<li>根据主机A上的路由表内容，IP确定用于访问主机B的转发IP地址是192.168.1.2。然后A主机在自己的本地ARP缓存中检查主机B的匹配MAC地址。</li>
-<li>如果主机A在ARP缓存中没有找到映射，它将询问192.168.1.2的硬件地址，从而将ARP请求帧广播到本地网络上的所有主机。源主机A的IP地址和MAC地址都包括在ARP请求中。本地网络上的每台主机都接收到ARP请求并且检查是否与自己的IP地址匹配。如果主机发现请求的IP地址与自己的IP地址不匹配，它将丢弃ARP请求。</li>
-<li>主机B确定ARP请求中的IP地址与自己的IP地址匹配，则将主机A的IP地址和MAC地址映射添加到本地ARP缓存中。</li>
-<li>主机B将包含其MAC地址的ARP回复消息直接发送回主机A。</li>
-<li>当主机A收到从主机B发来的ARP回复消息时，会用主机B的IP和MAC地址映射更新ARP缓存。本机缓存是有生存期的，生存期结束后，将再次重复上面的过程。主机B的MAC地址一旦确定，主机A就能向主机B发送IP通信了。</li>
-</ol>
-<p><strong>逆地址解析协议，即RARP，功能和ARP协议相对，其将局域网中某个主机的物理地址转换为IP地址</strong>，比如局域网中有一台主机只知道物理地址而不知道IP地址，那么可以通过RARP协议发出征求自身IP地址的广播请求，然后由RARP服务器负责回答。</p>
-<p>RARP协议工作流程：</p>
-<ol>
-<li>给主机发送一个本地的RARP广播，在此广播包中，声明自己的MAC地址并且请求任何收到此请求的RARP服务器分配一个IP地址；</li>
-<li>本地网段上的RARP服务器收到此请求后，检查其RARP列表，查找该MAC地址对应的IP地址；</li>
-<li>如果存在，RARP服务器就给源主机发送一个响应数据包并将此IP地址提供给对方主机使用；</li>
-<li>如果不存在，RARP服务器对此不做任何的响应；</li>
-<li>源主机收到从RARP服务器的响应信息，就利用得到的IP地址进行通讯；如果一直没有收到RARP服务器的响应信息，表示初始化失败。</li>
-</ol>
-<h2 id="路由选择协议"><a href="#路由选择协议" class="headerlink" title="路由选择协议"></a>路由选择协议</h2><p>常见的路由选择协议有：RIP协议、OSPF协议。</p>
-<ul>
-<li>RIP协议 ：底层是贝尔曼福特算法，它选择路由的度量标准（metric）是跳数，最大跳数是15跳，如果大于15跳，它就会丢弃数据包。</li>
-<li>OSPF协议 ：Open Shortest Path First开放式最短路径优先，底层是迪杰斯特拉算法，是链路状态路由选择协议，它选择路由的度量标准是带宽，延迟。</li>
-</ul>
-<h2 id="TCP-IP协议"><a href="#TCP-IP协议" class="headerlink" title="TCP/IP协议"></a>TCP/IP协议</h2><p><strong>TCP/IP协议是Internet最基本的协议、Internet国际互联网络的基础，由网络层的IP协议和传输层的TCP协议组成。通俗而言：TCP负责发现传输的问题，一有问题就发出信号，要求重新传输，直到所有数据安全正确地传输到目的地。而IP是给因特网的每一台联网设备规定一个地址。</strong></p>
-<p>IP层接收由更低层（网络接口层例如以太网设备驱动程序）发来的数据包，并把该数据包发送到更高层—TCP或UDP层；相反，IP层也把从TCP或UDP层接收来的数据包传送到更低层。IP数据包是不可靠的，因为IP并没有做任何事情来确认数据包是否按顺序发送的或者有没有被破坏，IP数据包中含有发送它的主机的地址（源地址）和接收它的主机的地址（目的地址）。</p>
-<p>TCP是面向连接的通信协议，通过三次握手建立连接，通讯完成时要拆除连接，由于TCP是面向连接的所以只能用于端到端的通讯。TCP提供的是一种可靠的数据流服务，采用“带重传的肯定确认”技术来实现传输的可靠性。TCP还采用一种称为“滑动窗口”的方式进行流量控制，所谓窗口实际表示接收能力，用以限制发送方的发送速度。</p>
-<p>TCP报文首部格式：<br><img src="/2015/11/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/4.png" alt="4"></p>
-<p><strong>TCP协议的三次握手和四次挥手：</strong><br><img src="/2015/11/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93/5.gif" alt="5"></p>
-<p>注：<strong>seq</strong>:”sequance”序列号；<strong>ack</strong>:”acknowledge”确认号；<strong>SYN</strong>:”synchronize”请求同步标志；；<strong>ACK</strong>:”acknowledge”确认标志”；<strong>FIN</strong>：”Finally”结束标志。</p>
-<p><strong>TCP连接建立过程</strong>：首先Client端发送连接请求报文，Server段接受连接后回复ACK报文，并为这次连接分配资源。Client端接收到ACK报文后也向Server段发生ACK报文，并分配资源，这样TCP连接就建立了。</p>
-<p><strong>TCP连接断开过程</strong>：假设Client端发起中断连接请求，也就是发送FIN报文。Server端接到FIN报文后，意思是说”我Client端没有数据要发给你了”，但是如果你还有数据没有发送完成，则不必急着关闭Socket，可以继续发送数据。所以你先发送ACK，”告诉Client端，你的请求我收到了，但是我还没准备好，请继续你等我的消息”。这个时候Client端就进入FIN_WAIT状态，继续等待Server端的FIN报文。当Server端确定数据已发送完成，则向Client端发送FIN报文，”告诉Client端，好了，我这边数据发完了，准备好关闭连接了”。Client端收到FIN报文后，”就知道可以关闭连接了，但是他还是不相信网络，怕Server端不知道要关闭，所以发送ACK后进入TIME_WAIT状态，如果Server端没有收到ACK则可以重传。“，Server端收到ACK后，”就知道可以断开连接了”。Client端等待了2MSL后依然没有收到回复，则证明Server端已正常关闭，那好，我Client端也可以关闭连接了。Ok，TCP连接就这样关闭了！</p>
-<h3 id="为什么要三次挥手？"><a href="#为什么要三次挥手？" class="headerlink" title="为什么要三次挥手？"></a><strong>为什么要三次挥手？</strong></h3><p>在只有两次“握手”的情形下，假设Client想跟Server建立连接，但是却因为中途连接请求的数据报丢失了，故Client端不得不重新发送一遍；这个时候Server端仅收到一个连接请求，因此可以正常的建立连接。但是，有时候Client端重新发送请求不是因为数据报丢失了，而是有可能数据传输过程因为网络并发量很大在某结点被阻塞了，这种情形下Server端将先后收到2次请求，并持续等待两个Client请求向他发送数据…问题就在这里，Client端实际上只有一次请求，而Server端却有2个响应，极端的情况可能由于Client端多次重新发送请求数据而导致Server端最后建立了N多个响应在等待，因而造成极大的资源浪费！所以，“三次握手”很有必要！</p>
-<h3 id="为什么要四次挥手？"><a href="#为什么要四次挥手？" class="headerlink" title="为什么要四次挥手？"></a>为什么要四次挥手？</h3><p>试想一下，假如现在你是客户端你想断开跟Server的所有连接该怎么做？第一步，你自己先停止向Server端发送数据，并等待Server的回复。但事情还没有完，虽然你自身不往Server发送数据了，但是因为你们之前已经建立好平等的连接了，所以此时他也有主动权向你发送数据；故Server端还得终止主动向你发送数据，并等待你的确认。其实，说白了就是保证双方的一个合约的完整执行！</p>
-<p>使用TCP的协议：FTP（文件传输协议）、Telnet（远程登录协议）、SMTP（简单邮件传输协议）、POP3（和SMTP相对，用于接收邮件）、HTTP协议等。</p>
-<h2 id="UDP协议"><a href="#UDP协议" class="headerlink" title="UDP协议"></a>UDP协议</h2><p><strong>UDP用户数据报协议，是面向无连接的通讯协议，UDP数据包括目的端口号和源端口号信息，由于通讯不需要连接，所以可以实现广播发送。UDP通讯时不需要接收方确认，属于不可靠的传输，可能会出现丢包现象，实际应用中要求程序员编程验证。</strong></p>
-<p>UDP与TCP位于同一层，但它不管数据包的顺序、错误或重发。因此，UDP不被应用于那些使用虚电路的面向连接的服务，UDP主要用于那些面向查询—应答的服务，例如NFS。相对于FTP或Telnet，这些服务需要交换的信息量较小。</p>
-<p>每个UDP报文分UDP报头和UDP数据区两部分。报头由四个16位长（2字节）字段组成，分别说明该报文的源端口、目的端口、报文长度以及校验值。UDP报头由4个域组成，其中每个域各占用2个字节，具体如下：</p>
-<ol>
-<li>源端口号；</li>
-<li>目标端口号；</li>
-<li>数据报长度；</li>
-<li>校验值。</li>
-</ol>
-<p>使用UDP协议包括：TFTP（简单文件传输协议）、SNMP（简单网络管理协议）、DNS（域名解析协议）、NFS、BOOTP。</p>
-<p><strong>TCP 与 UDP 的区别：TCP是面向连接的，可靠的字节流服务；UDP是面向无连接的，不可靠的数据报服务。</strong></p>
-<h2 id="DNS协议"><a href="#DNS协议" class="headerlink" title="DNS协议"></a>DNS协议</h2><p>DNS是域名系统(DomainNameSystem)的缩写，该系统用于命名组织到域层次结构中的计算机和网络服务，可以简单地理解为将URL转换为IP地址。域名是由圆点分开一串单词或缩写组成的，每一个域名都对应一个惟一的IP地址，在Internet上域名与IP地址之间是一一对应的，DNS就是进行域名解析的服务器。DNS命名用于Internet等TCP/IP网络中，通过用户友好的名称查找计算机和服务。</p>
-<h2 id="NAT协议"><a href="#NAT协议" class="headerlink" title="NAT协议"></a>NAT协议</h2><p>NAT网络地址转换(Network Address Translation)属接入广域网(WAN)技术，是一种将私有（保留）地址转化为合法IP地址的转换技术，它被广泛应用于各种类型Internet接入方式和各种类型的网络中。原因很简单，NAT不仅完美地解决了lP地址不足的问题，而且还能够有效地避免来自网络外部的攻击，隐藏并保护网络内部的计算机。</p>
-<h2 id="DHCP协议"><a href="#DHCP协议" class="headerlink" title="DHCP协议"></a>DHCP协议</h2><p>DHCP动态主机设置协议（Dynamic Host Configuration Protocol）是一个局域网的网络协议，使用UDP协议工作，主要有两个用途：给内部网络或网络服务供应商自动分配IP地址，给用户或者内部网络管理员作为对所有计算机作中央管理的手段。</p>
-<h2 id="HTTP协议"><a href="#HTTP协议" class="headerlink" title="HTTP协议"></a>HTTP协议</h2><p>超文本传输协议（HTTP，HyperText Transfer Protocol)是互联网上应用最为广泛的一种网络协议。所有的WWW文件都必须遵守这个标准。</p>
-<p>HTTP 协议包括哪些请求？</p>
-<ul>
-<li>GET：请求读取由URL所标志的信息。</li>
-<li>POST：给服务器添加信息（如注释）。</li>
-<li>PUT：在给定的URL下存储一个文档。</li>
-<li>DELETE：删除给定的URL所标志的资源。</li>
-</ul>
-<p>HTTP 中， POST 与 GET 的区别</p>
-<ol>
-<li>Get是从服务器上获取数据，Post是向服务器传送数据。</li>
-<li>Get是把参数数据队列加到提交表单的Action属性所指向的URL中，值和表单内各个字段一一对应，在URL中可以看到。</li>
-<li>Get传送的数据量小，不能大于2KB；Post传送的数据量较大，一般被默认为不受限制。</li>
-<li>根据HTTP规范，GET用于信息获取，而且应该是安全的和幂等的。<ul>
-<li>所谓 安全的 意味着该操作用于获取信息而非修改信息。换句话说，GET请求一般不应产生副作用。就是说，它仅仅是获取资源信息，就像数据库查询一样，不会修改，增加数据，不会影响资源的状态。</li>
-<li>幂等 的意味着对同一URL的多个请求应该返回同样的结果。</li>
-</ul>
-</li>
-</ol>
-<h2 id="一个举例"><a href="#一个举例" class="headerlink" title="一个举例"></a>一个举例</h2><p>在浏览器中输入 <a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a>  后执行的全部过程</p>
-<p>现在假设如果我们在客户端（客户端）浏览器中输入<a href="http://www.baidu.com,而baidu.com为要访问的服务器（服务器），下面详细分析客户端为了访问服务器而执行的一系列关于协议的操作：">http://www.baidu.com,而baidu.com为要访问的服务器（服务器），下面详细分析客户端为了访问服务器而执行的一系列关于协议的操作：</a></p>
-<ol>
-<li>客户端浏览器通过DNS解析到<a target="_blank" rel="noopener" href="http://www.baidu.com的ip地址220.181.27.48,通过这个ip地址找到客户端到服务器的路径.客户端浏览器发起一个http会话到220.161.27.48,然后通过tcp进行封装数据包,输入到网络层./">www.baidu.com的IP地址220.181.27.48，通过这个IP地址找到客户端到服务器的路径。客户端浏览器发起一个HTTP会话到220.161.27.48，然后通过TCP进行封装数据包，输入到网络层。</a></li>
-<li>在客户端的传输层，把HTTP会话请求分成报文段，添加源和目的端口，如服务器使用80端口监听客户端的请求，客户端由系统随机选择一个端口如5000，与服务器进行交换，服务器把相应的请求返回给客户端的5000端口。然后使用IP层的IP地址查找目的端。</li>
-<li>客户端的网络层不用关系应用层或者传输层的东西，主要做的是通过查找路由表确定如何到达服务器，期间可能经过多个路由器，这些都是由路由器来完成的工作，不作过多的描述，无非就是通过查找路由表决定通过那个路径到达服务器。</li>
-<li>客户端的链路层，包通过链路层发送到路由器，通过邻居协议查找给定IP地址的MAC地址，然后发送ARP请求查找目的地址，如果得到回应后就可以使用ARP的请求应答交换的IP数据包现在就可以传输了，然后发送IP数据包到达服务器的地址。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC5%E7%AB%A0%20-%20Two-phase%20Termination%EF%BC%88%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BB%88%E6%AD%A2%EF%BC%89%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC5%E7%AB%A0%20-%20Two-phase%20Termination%EF%BC%88%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BB%88%E6%AD%A2%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第5章-Two-phase Termination（两阶段终止）模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-11-12 23:57:48" itemprop="dateCreated datePublished" datetime="2015-11-12T23:57:48+08:00">2015-11-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
-<h2 id="第五章-Two-phase-Termination（两阶段终止）模式"><a href="#第五章-Two-phase-Termination（两阶段终止）模式" class="headerlink" title="第五章 Two-phase Termination（两阶段终止）模式"></a>第五章 Two-phase Termination（两阶段终止）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
-<li>停止线程时一个目标简单而实现却不那么简单的任务。首先，Java 没有提供直接的 API 用于停止线程（ava.lang.Thread 类的 stop 方法早已被不提倡使用了）。此外，停止线程还有一些额外的细节需要考虑，如待停止的线程处于阻塞（如等待锁）或者等待状态（等待其他线程）、尚有未处理完的任务等。</li>
-<li>Two-phase Termination 模式通过将停止线程这个动作分解为准备阶段和执行阶段这两个阶段，提供了一种通用的用于优雅地停止线程的方法。</li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC5%E7%AB%A0%20-%20Two-phase%20Termination%EF%BC%88%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BB%88%E6%AD%A2%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC4%E7%AB%A0%20-%20Guarded%20Suspension%EF%BC%88%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E6%8C%82%EF%BC%89%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC4%E7%AB%A0%20-%20Guarded%20Suspension%EF%BC%88%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E6%8C%82%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第4章-Guarded Suspension（保护性暂挂）模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-11-12 22:11:03" itemprop="dateCreated datePublished" datetime="2015-11-12T22:11:03+08:00">2015-11-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
-<h2 id="第四章-Guarded-Suspension（保护性暂挂）模式"><a href="#第四章-Guarded-Suspension（保护性暂挂）模式" class="headerlink" title="第四章 Guarded Suspension（保护性暂挂）模式"></a>第四章 Guarded Suspension（保护性暂挂）模式</h2><h4 id="模式简介"><a href="#模式简介" class="headerlink" title="模式简介"></a>模式简介</h4><ul>
-<li>多线程编程中，为了提高并发率，往往将一个任务分解为不同的部分，将其交由不同的线程来执行。这些线程间相互协作时，仍然可能会出现一个线程去等待另外一个线程完成一定的操作，其自身才能继续运行的情形。</li>
-<li>Guarded Suspension 模式可以帮组完美解决上述的等待问题。该模式的核心思想是如果某个线程执行特定的操作前需要满足一定的条件，则在该条件未满足时将该线程暂停运行（即暂挂线程，使其处于等待（WAITING）状态，直到该条件满足时才继续该线程的运行）。</li>
-<li>wait／notify 可以用来实现 Guarded Suspension 模式。但是，Guarded Suspension 模式还要解决 wait／notify 所解决的问题之外的问题。</li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/11/12/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC4%E7%AB%A0%20-%20Guarded%20Suspension%EF%BC%88%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E6%8C%82%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC2%E7%AB%A0%20-%20%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/11/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC2%E7%AB%A0%20-%20%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第2章-设计模式介绍</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-11-11 21:17:42" itemprop="dateCreated datePublished" datetime="2015-11-11T21:17:42+08:00">2015-11-11</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
-<h2 id="第二章-设计模式简介"><a href="#第二章-设计模式简介" class="headerlink" title="第二章 设计模式简介"></a>第二章 设计模式简介</h2><h4 id="多线程设计模式的分类："><a href="#多线程设计模式的分类：" class="headerlink" title="多线程设计模式的分类："></a>多线程设计模式的分类：</h4><ul>
-<li><strong>不使用锁的情况下保证线程安全：</strong> Immutable Object（不可变对象）模式、Thread Specific Storage（线程持有存储）模式、Serial Thread Confinement（串行线程封闭）模式</li>
-<li><strong>优雅地停止线程：</strong> Two-phase Termination（两阶段终止）模式</li>
-<li><strong>线程协作：</strong> Guarded Suspension（保护性暂挂）模式，Producer-Consumer（生产者／消费者）模式</li>
-<li><strong>提高并发性（Concurrency）、减少等待：</strong> Promise（承诺）模式、Active Object（主动对象）模式、Pipeline（流水线）模式</li>
-<li><strong>提高响应性（Responsiveness）：</strong> Master-Slave（主仆）模式、Half-sync／Half-async（半同步／半异步）模式</li>
-<li><strong>减少资源消耗：</strong> Thread Pool（线程池）模式、Serial Thread Confinement（串行线程封闭）模式</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC1%E7%AB%A0%20-%20Java%20%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%AE%9E%E6%88%98%E5%9F%BA%E7%A1%80/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/11/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC1%E7%AB%A0%20-%20Java%20%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%AE%9E%E6%88%98%E5%9F%BA%E7%A1%80/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第1章-Java 多线程实战基础</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-11-11 19:29:48" itemprop="dateCreated datePublished" datetime="2015-11-11T19:29:48+08:00">2015-11-11</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><h2 id="第一章-Java-多线程实战基础"><a href="#第一章-Java-多线程实战基础" class="headerlink" title="第一章 Java 多线程实战基础"></a>第一章 Java 多线程实战基础</h2><h4 id="进程与线程"><a href="#进程与线程" class="headerlink" title="进程与线程"></a>进程与线程</h4><ul>
-<li>进程（Process）：代表运行中的程序。一个运行的Java程序就是一个进程。</li>
-<li>线程（Thread）：进程中可独立执行的字任务。</li>
-</ul>
-<p>JVM启动的时候会创建一个 main 线程，该线程负责执行Java程序的入口方法（main方法）。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/11/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC1%E7%AB%A0%20-%20Java%20%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%AE%9E%E6%88%98%E5%9F%BA%E7%A1%80/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/03/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E9%85%8D%E7%BD%AE-PS1%E3%80%81PS2%E3%80%81PS3%E3%80%81PS4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/11/03/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E9%85%8D%E7%BD%AE-PS1%E3%80%81PS2%E3%80%81PS3%E3%80%81PS4/" class="post-title-link" itemprop="url">Linux-配置-PS1、PS2、PS3、PS4</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-11-03 17:21:58" itemprop="dateCreated datePublished" datetime="2015-11-03T17:21:58+08:00">2015-11-03</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://os.51cto.com/art/201205/334954.htm">http://os.51cto.com/art/201205/334954.htm</a></p>
-<h2 id="PS1——默认提示符"><a href="#PS1——默认提示符" class="headerlink" title="PS1——默认提示符"></a>PS1——默认提示符</h2><p>如下所示，可以通过修改Linux下的默认提示符，使其更加实用。在下面的例子中，默认的PS1的值是<code>\s-\v\$</code>,显示出了shell的名称的版本。我们通过修改，可以使其显示用户名、主机名和当前工作目录。</p>
-<ul>
-<li><code>\d</code> ：代表日期，格式为weekday month date，例如：”Mon Aug 1”</li>
-<li><code>\H</code> ：完整的主机名称。例如：我的机器名称为：fc4.linux，则这个名称就是fc4.linux</li>
-<li><code>\h</code> ：仅取主机的第一个名字，如上例，则为fc4，.linux则被省略</li>
-<li><code>\t</code> ：显示时间为24小时格式，如：HH：MM：SS</li>
-<li><code>\T</code> ：显示时间为12小时格式</li>
-<li><code>\A</code> ：显示时间为24小时格式：HH：MM</li>
-<li><code>\u</code> ：当前用户的账号名称</li>
-<li><code>\v</code> ：BASH的版本信息</li>
-<li><code>\w</code> ：完整的工作目录名称。家目录会以 ~代替</li>
-<li><code>\W</code> ：利用basename取得工作目录名称，所以只会列出最后一个目录</li>
-<li><code>\#</code> ：下达的第几个命令</li>
-<li><code>\$</code> ：提示字符，如果是root时，提示符为：# ，普通用户则为：$</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th align="center">前景</th>
-<th align="center">背景</th>
-<th align="center">颜色</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">30</td>
-<td align="center">40</td>
-<td align="center">黑色</td>
-</tr>
-<tr>
-<td align="center">31</td>
-<td align="center">41</td>
-<td align="center">红色</td>
-</tr>
-<tr>
-<td align="center">32</td>
-<td align="center">42</td>
-<td align="center">绿色</td>
-</tr>
-<tr>
-<td align="center">33</td>
-<td align="center">43</td>
-<td align="center">黄色</td>
-</tr>
-<tr>
-<td align="center">34</td>
-<td align="center">44</td>
-<td align="center">蓝色</td>
-</tr>
-<tr>
-<td align="center">35</td>
-<td align="center">45</td>
-<td align="center">紫红色</td>
-</tr>
-<tr>
-<td align="center">36</td>
-<td align="center">46</td>
-<td align="center">青蓝色</td>
-</tr>
-<tr>
-<td align="center">37</td>
-<td align="center">47</td>
-<td align="center">白色</td>
-</tr>
-</tbody></table>
-<p><code>\[\e[37;40m\][\[\e[32;40m\]\u\[\e[37;40m\]@\h \[\e[36;40m\]\w\[\e[0m\]]\n$</code><br>[用户名@计算机名 当前路径]</p>
-<h2 id="PS2——再谈提示符"><a href="#PS2——再谈提示符" class="headerlink" title="PS2——再谈提示符"></a>PS2——再谈提示符</h2><p>一个非常长的命令可以通过在末尾加<code>\</code>使其分行显示。多行命令的默认提示符是<code>&gt;</code>。 我们可以通过修改PS2，将提示符修改为”continue-&gt;” 。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; myisamchk --silent --force --fast --update-state \</span><br><span class="line">&gt; --key_buffer_size=512M --sort_buffer_size=512M \</span><br><span class="line">&gt; --read_buffer_size=4M --write_buffer_size=4M \</span><br><span class="line">&gt; /var/lib/mysql/bugs/*.MYI</span><br></pre></td></tr></table></figure>
-<p>[注: 这里使用 “&gt;” 作为默认提示符]</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; export PS2=&quot;continue-&gt; &quot;</span><br><span class="line">ramesh@dev-db ~&gt; myisamchk --silent --force --fast --update-state \</span><br><span class="line">continue-&gt; --key_buffer_size=512M --sort_buffer_size=512M \</span><br><span class="line">continue-&gt; --read_buffer_size=4M --write_buffer_size=4M \</span><br><span class="line">continue-&gt; /var/lib/mysql/bugs/*.MYI</span><br></pre></td></tr></table></figure>
-<p>[注: 与上面类似，用 “continue-&gt; “ 作提示符]</p>
-<p>当用<code>\</code>使长命令分行显示，我发现非常易读。当然我也见过有的人不喜欢分行显示命令</p>
-<h2 id="PS3——Shell脚本中使用select时的提示符"><a href="#PS3——Shell脚本中使用select时的提示符" class="headerlink" title="PS3——Shell脚本中使用select时的提示符"></a>PS3——Shell脚本中使用select时的提示符</h2><p>你可以像下面示范的那样，用环境变量PS3定制shell脚本的select提示：</p>
-<p>不使用PS3的脚本输出:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps3.sh</span><br><span class="line">select i in mon tue wed exit</span><br><span class="line">do</span><br><span class="line">    case $i in</span><br><span class="line">        mon) echo &quot;Monday&quot;;;</span><br><span class="line">        tue) echo &quot;Tuesday&quot;;;</span><br><span class="line">        wed) echo &quot;Wednesday&quot;;;</span><br><span class="line">        exit) exit;;</span><br><span class="line">    esac</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; ./ps3.sh</span><br><span class="line">1) mon</span><br><span class="line">2) tue</span><br><span class="line">3) wed</span><br><span class="line">4) exit</span><br><span class="line">#? 1</span><br><span class="line">Monday</span><br><span class="line">#? 4</span><br></pre></td></tr></table></figure>
-<p>[注: 缺省的提示符是 #?]</p>
-<p>使用PS3的脚本输出：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps3.sh</span><br><span class="line">PS3=&quot;Select a day (1-4): &quot;</span><br><span class="line">select i in mon tue wed exit</span><br><span class="line">do</span><br><span class="line">    case $i in</span><br><span class="line">        mon) echo &quot;Monday&quot;;;</span><br><span class="line">        tue) echo &quot;Tuesday&quot;;;</span><br><span class="line">        wed) echo &quot;Wednesday&quot;;;</span><br><span class="line">        exit) exit;;</span><br><span class="line">    esac</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; ./ps3.sh</span><br><span class="line">1) mon</span><br><span class="line">2) tue</span><br><span class="line">3) wed</span><br><span class="line">4) exit</span><br><span class="line">Select a day (1-4): 1</span><br><span class="line">Monday</span><br><span class="line">Select a day (1-4): 4</span><br></pre></td></tr></table></figure>
-<p>[注: 设置了PS3变量后，命令提示符已经成为 “Select a day (1-4):”]</p>
-<h2 id="PS4——PS4-“set-x”用来修改跟踪输出的前缀"><a href="#PS4——PS4-“set-x”用来修改跟踪输出的前缀" class="headerlink" title="PS4——PS4-“set -x”用来修改跟踪输出的前缀"></a>PS4——PS4-“set -x”用来修改跟踪输出的前缀</h2><p>如果你像下面那样在调试模式下的脚本中，PS4环境变量可以定制提示信息：</p>
-<p>没有设置PS4时的shell脚本输出:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps4.sh</span><br><span class="line"></span><br><span class="line">set –x</span><br><span class="line">echo &quot;PS4 demo script&quot;</span><br><span class="line">ls -l /etc/ | wc –l du -sh ~</span><br><span class="line"></span><br><span class="line">ramesh@dev-db ~&gt; ./ps4.sh</span><br><span class="line">    ++ echo &#x27;PS4 demo script&#x27;</span><br><span class="line">PS4 demo script</span><br><span class="line">++ ls -l /etc/</span><br><span class="line">++ wc –l</span><br><span class="line">243</span><br><span class="line">++ du -sh /home/ramesh</span><br><span class="line">48K /home/ramesh</span><br></pre></td></tr></table></figure>
-<p>[注: 当使用sex -x跟踪输出时的提示符为 ++]<br>设置PS4后的脚本输出:</p>
-<p>PS4在ps.sh中定义了下面两个变量</p>
-<ul>
-<li>$0 显示当前的脚本名</li>
-<li>$LINENO 显示的当前的行号<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps4.sh</span><br><span class="line">export PS4=&#x27;$0.$LINENO+ &#x27;</span><br><span class="line">set -x</span><br><span class="line">echo &quot;PS4 demo script&quot;</span><br><span class="line">ls -l /etc/ | wc -l</span><br><span class="line">du -sh ~</span><br><span class="line"></span><br><span class="line">ramesh@dev-db ~&gt; ./ps4.sh</span><br><span class="line">../ps4.sh.3+ echo &#x27;PS4 demo script&#x27;</span><br><span class="line">PS4 demo script</span><br><span class="line">../ps4.sh.4+ ls -l /etc/</span><br><span class="line">../ps4.sh.4+ wc -l</span><br><span class="line">243</span><br><span class="line">../ps4.sh.5+ du -sh /home/ramesh</span><br><span class="line">48K /home/ramesh</span><br></pre></td></tr></table></figure>
-[注: 使用PS4后使 “{script-name}.{line-number}+” 成为set –x的命令提示符]</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Android-问题-Eclipse创建Android项目时，会多出一个appcompat_v7的问题</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-10-13 10:07:29" itemprop="dateCreated datePublished" datetime="2015-10-13T10:07:29+08:00">2015-10-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Eclipse创建Android项目时，会多出一个appcompat-v7的问题"><a href="#Eclipse创建Android项目时，会多出一个appcompat-v7的问题" class="headerlink" title="Eclipse创建Android项目时，会多出一个appcompat_v7的问题"></a>Eclipse创建Android项目时，会多出一个appcompat_v7的问题</h1><hr>
-<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>使用eclipse创建一个Android项目时，发现project列表中会多创建出一个appcompat_v7项目，再创建一个Android项目时，又会再多出一个appcompat_v7_2，如果再次创建，会以此类推地创建出appcompat_v7_x格式的“多余项目”出来（此情况在ADT升级为22.6.x版本后出现，22.3.x前的版本不会有）</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">Android-SDK-SDK文档目录结构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-10-12 14:41:54" itemprop="dateCreated datePublished" datetime="2015-10-12T14:41:54+08:00">2015-10-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="android-SDK-文档目录结构"><a href="#android-SDK-文档目录结构" class="headerlink" title="android SDK 文档目录结构"></a>android SDK 文档目录结构</h1><ol>
-<li><p>add-ons 这里面保存着附加库，比如google Maps，当然你如果安装了OPhone SDK，这里也会有一些类库在里面。</p>
-</li>
-<li><p>docs 这里面是Android SDK API参考文档，所有的API都可以在这里查到。</p></li></ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/09/27/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/09/27/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/" class="post-title-link" itemprop="url">Linux-配置-防火墙</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-09-27 16:12:57" itemprop="dateCreated datePublished" datetime="2015-09-27T16:12:57+08:00">2015-09-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="关闭开启"><a href="#关闭开启" class="headerlink" title="关闭开启"></a>关闭开启</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1) 重启后生效</span><br><span class="line">开启： chkconfig iptables on</span><br><span class="line">关闭： chkconfig iptables off</span><br><span class="line"></span><br><span class="line">2) 即时生效，重启后失效</span><br><span class="line">开启： service iptables start</span><br><span class="line">关闭： service iptables stop</span><br><span class="line">重启： service iptables restart</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/09/27/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ON%20DUPLICATE%20KEY%20UPDATE%E3%80%81REPLACE%20INTO%E7%9A%84%E5%8C%BA%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1173,11 +239,125 @@
 <p>INSERT INTO ON DUPLICATE KEY UPDATE 与 REPLACE INTO，两个命令可以处理重复键值问题，在实际上它之间有什么区别呢？</p>
 <p>前提条件是这个表必须有一个唯一索引或主键。</p>
 <ol>
-<li>REPLACE发现重复的先删除再插入，如果记录有多个字段，在插入的时候如果有的字段没有赋值，那么新插入的记录这些字段为空。</li>
-<li>INSERT发现重复的是更新操作。在原有记录基础上，更新指定字段内容，其它字段内容保留。</li></ol>
+<li>REPLACE 发现重复的先删除再插入，如果记录有多个字段，在插入的时候如果有的字段没有赋值，那么新插入的记录这些字段为空。</li>
+<li>INSERT 发现重复的是更新操作。在原有记录基础上，更新指定字段内容，其它字段内容保留。</li>
+</ol>
+<p>这样 REPLACE 的操作成本要大于 INSERT ON DUPLICATE KEY UPDATE，按道理应该选用 INSERT ON DUPLICATE KEY UPDATE</p>
+<p>INSERT语法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INSERT [LOW_PRIORITY | DELAYED | HIGH_PRIORITY] [IGNORE]</span><br><span class="line">       [INTO] tbl_name [(col_name,...)]</span><br><span class="line">       VALUES (&#123;expr | DEFAULT&#125;,...),(...),...</span><br><span class="line">       [ ON DUPLICATE KEY UPDATE col_name=expr, ... ]</span><br></pre></td></tr></table></figure>
+<p>或：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INSERT [LOW_PRIORITY | DELAYED | HIGH_PRIORITY] [IGNORE]</span><br><span class="line">       [INTO] tbl_name</span><br><span class="line">       SET col_name=&#123;expr | DEFAULT&#125;, ...</span><br><span class="line">       [ ON DUPLICATE KEY UPDATE col_name=expr, ... ]</span><br></pre></td></tr></table></figure>
+<p>或：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INSERT [LOW_PRIORITY | HIGH_PRIORITY] [IGNORE]</span><br><span class="line">       [INTO] tbl_name [(col_name,...)]</span><br><span class="line">       SELECT ...</span><br><span class="line">       [ ON DUPLICATE KEY UPDATE col_name=expr, ... ]</span><br></pre></td></tr></table></figure>
+
+<h4 id="一、DELAYED-的使用"><a href="#一、DELAYED-的使用" class="headerlink" title="一、DELAYED 的使用"></a>一、DELAYED 的使用</h4><p>使用延迟插入操作</p>
+<p>DELAYED 调节符应用于 INSERT 和 REPLACE 语句。当 DELAYED 插入操作到达的时候，服务器把数据行放入一个队列中，并立即给客户端返回一个状态信息，这样客户端就可以在数据表被真正地插入记录之前继续进行操作了。如果读取者从该数据表中读取数据，队列中的数据就会被保持着，直到没有读取者为止。接着服务器开始插入延迟数据行（delayed-row）队列中的数据行。在插入操作的同时，服务器还要检查是否有新的读取请求到达和等待。如果有，延迟数据行队列就被挂起，允许读取者继续操作。当没有读取者的时候，服务器再次开始插入延迟的数据行。这个过程一直进行，直到队列空了为止。</p>
+<p>几点要注意事项：</p>
+<ul>
+<li>INSERT DELAYED 应该仅用于指定值清单的 INSERT 语句。服务器忽略用于 INSERT DELAYED…SELECT 语句的 DELAYED。</li>
+<li>服务器忽略用于 INSERT DELAYED…ON DUPLICATE UPDATE 语句的 DELAYED。</li>
+<li>因为在行被插入前，语句立刻返回，所以您不能使用 <code>LAST_INSERT_ID()</code> 来获取 AUTO_INCREMENT 值。AUTO_INCREMENT 值可能由语句生成。</li>
+<li>对于 SELECT 语句，DELAYED 行不可见，直到这些行确实被插入了为止。</li>
+<li>DELAYED 在从属复制服务器中被忽略了，因为 DELAYED 不会在从属服务器中产生与主服务器不一样的数据。</li>
+</ul>
+<p>注意，目前在队列中的各行只保存在存储器中，直到它们被插入到表中为止。这意味着，如果您强行中止了 mysqld（例如，使用 <code>kill -9</code>）</p>
+<p>或者如果 mysqld 意外停止，则所有没有被写入磁盘的行都会丢失。</p>
+<h4 id="二、IGNORE-的使用"><a href="#二、IGNORE-的使用" class="headerlink" title="二、IGNORE 的使用"></a>二、IGNORE 的使用</h4><p>IGNORE 是 MySQL 相对于标准 SQL 的扩展。如果在新表中有重复关键字，或者当 STRICT 模式启动后出现警告，则使用 IGNORE 控制 ALTER TABLE 的运行。如果没有指定 IGNORE，当重复关键字错误发生时，复制操作被放弃，返回前一步骤。如果指定了 IGNORE，则对于有重复关键字的行，只使用第一行，其它有冲突的行被删除。并且，对错误值进行修正，使之尽量接近正确值。<code>insert ignore into tb(...) value(...)</code> 这样不用校验是否存在了，有则忽略，无则添加</p>
+<h3 id="三、ON-DUPLICATE-KEY-UPDATE-的使用"><a href="#三、ON-DUPLICATE-KEY-UPDATE-的使用" class="headerlink" title="三、ON DUPLICATE KEY UPDATE 的使用"></a>三、ON DUPLICATE KEY UPDATE 的使用</h3><p>如果您指定了 ON DUPLICATE KEY UPDATE，并且插入行后会导致在一个 UNIQUE 索引或 PRIMARY KEY 中出现重复值，则执行旧行 UPDATE。例如，如果列 a 被定义为 UNIQUE，并且包含值 1，则以下两个语句具有相同的效果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; INSERT INTO table (a,b,c) VALUES (1,2,3) ON DUPLICATE KEY UPDATE c=c+1;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; UPDATE table SET c=c+1 WHERE a=1;</span><br></pre></td></tr></table></figure>
+
+<p>如果行作为新记录被插入，则受影响行的值为1；如果原有的记录被更新，则受影响行的值为2。</p>
+<p>注释：如果列b也是唯一列，则INSERT与此UPDATE语句相当：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; UPDATE table SET c=c+1 WHERE a=1 OR b=2 LIMIT 1;</span><br></pre></td></tr></table></figure>
+<p>如果 <code>a=1 OR b=2</code> 与多个行向匹配，则只有一个行被更新。通常，您应该尽量避免对带有多个唯一关键字的表使用 ON DUPLICATE KEY 子句。</p>
+<p>您可以在UPDATE子句中使用 <code>VALUES(col_name)</code>函数从 INSERT…UPDATE 语句的 INSERT 部分引用列值。换句话说，如果没有发生重复关键字冲突，则 UPDATE子 句中的 <code>VALUES(col_name)</code> 可以引用被插入的 col_name 的值。本函数特别适用于多行插入。<code>VALUES()</code> 函数只在 INSERT…UPDATE 语句中有意义，其它时候会返回 NULL。</p>
+<p>示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; INSERT INTO table (a,b,c) VALUES (1,2,3),(4,5,6) ON DUPLICATE KEY UPDATE c=VALUES(a)+VALUES(b);</span><br></pre></td></tr></table></figure>
+<p>本语句与以下两个语句作用相同：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; INSERT INTO table (a,b,c) VALUES (1,2,3) ON DUPLICATE KEY UPDATE c=3;</span><br><span class="line"></span><br><span class="line">mysql&gt; INSERT INTO table (a,b,c) VALUES (4,5,6) ON DUPLICATE KEY UPDATE c=9;</span><br></pre></td></tr></table></figure>
+<p>当您使用 ON DUPLICATE KEY UPDATE 时，DELAYED 选项被忽略。</p>
+<hr>
+<p>总结：</p>
+<ul>
+<li>DELAYED 做为快速插入，并不是很关心失效性，提高插入性能。</li>
+<li>ignore 只关注主键对应记录是不存在，无则添加，有则忽略。</li>
+<li>ON DUPLICATE KEY UPDATE 在添加时操作，关注非主键列，注意与 ignore 的区别。有则更新指定列，无则添加。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/09/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%85%B6%E4%BB%96/Java-API-%E5%BC%95%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/09/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%85%B6%E4%BB%96/Java-API-%E5%BC%95%E7%94%A8/" class="post-title-link" itemprop="url">Java-API-引用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-09-19 13:07:29" itemprop="dateCreated datePublished" datetime="2015-09-19T13:07:29+08:00">2015-09-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Java-中的引用"><a href="#Java-中的引用" class="headerlink" title="Java 中的引用"></a>Java 中的引用</h1><hr>
+<p>Java 官方 API 中是这么对可达性来分类的：  </p>
+<blockquote>
+<p>从最强到最弱，不同的可到达性级别反映了对象的生命周期。在操作上，可将它们定义如下：</p>
+</blockquote>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2015/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ON%20DUPLICATE%20KEY%20UPDATE%E3%80%81REPLACE%20INTO%E7%9A%84%E5%8C%BA%E5%88%AB/#more" rel="contents">
+              <a class="btn" href="/2015/09/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%85%B6%E4%BB%96/Java-API-%E5%BC%95%E7%94%A8/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1197,10 +377,859 @@
   
   
 
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/09/18/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E6%97%A5%E5%BF%97-%E6%85%A2%E6%97%A5%E5%BF%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/09/18/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E6%97%A5%E5%BF%97-%E6%85%A2%E6%97%A5%E5%BF%97/" class="post-title-link" itemprop="url">MySQL慢日志</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-09-18 08:29:44" itemprop="dateCreated datePublished" datetime="2015-09-18T08:29:44+08:00">2015-09-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="慢查询日志"><a href="#慢查询日志" class="headerlink" title="慢查询日志"></a>慢查询日志</h1><h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h4 id="方法一："><a href="#方法一：" class="headerlink" title="方法一："></a>方法一：</h4><ol>
+<li>找到 mysql的 配置文件 my.cnf</li>
+<li>在[mysqld]下方加入慢查询的配置语句 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># log-slow-queries: 代表MYSQL慢查询的日志存储目录, 此目录文件一定要有写权限</span><br><span class="line">log-slow-queries = /usr/local/mysql/mysql-slow.log</span><br><span class="line"># long_query_time: 最长执行时间</span><br><span class="line">long_query_time = 2</span><br><span class="line"># log下来没有使用索引的query</span><br><span class="line">log-queries-not-using-indexes</span><br></pre></td></tr></table></figure></li>
+<li>重启 MySQL（service mysqld restart）</li>
+</ol>
+<h4 id="方法二："><a href="#方法二：" class="headerlink" title="方法二："></a>方法二：</h4><ol>
+<li>执行 <em><strong>set global log_slow_queries = on</strong></em>;<blockquote>
+<p>慢日志默认放在MySQL目录下，记录执行时间超过 2s 的 sql</p>
+</blockquote>
+</li>
+</ol>
+<h2 id="日志分析"><a href="#日志分析" class="headerlink" title="日志分析"></a>日志分析</h2><p>慢日志分析命令为 <em><strong>mysqldumpslow</strong></em></p>
+<ul>
+<li>参数：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">-s ORDER what to sort by (t, at, l, al, r, ar etc), ‘at’ is default  </span><br><span class="line">是order的顺序，说明写的不够详细，俺用下来，包括看了代码，主要有c,t,l,r和ac,at,al,ar，分别是按照query次数，时间，lock的时间和返回的记录数来排序，前面加了a的时倒叙。</span><br><span class="line"></span><br><span class="line">-t NUM just show the top n queries  </span><br><span class="line">是top n的意思，即为返回前面多少条的数据。</span><br><span class="line"></span><br><span class="line">-g PATTERN grep: only consider stmts that include this string</span><br><span class="line">后边可以写一个正则匹配模式，大小写不敏感的。</span><br></pre></td></tr></table></figure></li>
+<li>例子：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 访问次数最多的20个sql语句</span><br><span class="line">mysqldumpslow -s c -t 20 host-slow.log  </span><br><span class="line"></span><br><span class="line"># 记录集最多的20个sql</span><br><span class="line">mysqldumpslow -s r -t 20 host-slow.log</span><br><span class="line"></span><br><span class="line"># 前10条里面含有左连接的sql语句</span><br><span class="line">mysqldumpslow -t 10 -s t -g “left join” host-slow.log</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/09/13/%E8%AF%AD%E8%A8%80/web/CSS-%E5%8D%95%E8%A1%8C%E6%98%BE%E7%A4%BA%E6%96%87%E5%AD%97%E3%80%81%E4%B8%8D%E6%8D%A2%E8%A1%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/09/13/%E8%AF%AD%E8%A8%80/web/CSS-%E5%8D%95%E8%A1%8C%E6%98%BE%E7%A4%BA%E6%96%87%E5%AD%97%E3%80%81%E4%B8%8D%E6%8D%A2%E8%A1%8C/" class="post-title-link" itemprop="url">CSS-单行显示文字、不换行</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-09-13 23:11:46" itemprop="dateCreated datePublished" datetime="2015-09-13T23:11:46+08:00">2015-09-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CSS/" itemprop="url" rel="index"><span itemprop="name">CSS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><code>white-space: nowrap; </code></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E9%85%8D%E7%BD%AE-%E8%87%AA%E5%8A%A8%E5%B0%86tinyint%E8%BD%AC%E6%88%90boolean/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E9%85%8D%E7%BD%AE-%E8%87%AA%E5%8A%A8%E5%B0%86tinyint%E8%BD%AC%E6%88%90boolean/" class="post-title-link" itemprop="url">Mybatis-配置-自动将tinyint转成boolean</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-08-26 12:38:48" itemprop="dateCreated datePublished" datetime="2015-08-26T12:38:48+08:00">2015-08-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><p>修改tinyint长度<br>tinyint 长度为1，指的是占用1个字节空间，TINYINT(1)、BOOL、BOOLEAN 所占用的存储空间和 TINYINT 一样，都是一个字节；<br>TINYINT(1) 只是在显示的时候作为一个位进行输出而已，所以设置成TINYINT(4)就可以了</p></li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E9%85%8D%E7%BD%AE-%E8%87%AA%E5%8A%A8%E5%B0%86tinyint%E8%BD%AC%E6%88%90boolean/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/08/07/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%85%B6%E4%BB%96/Java-API-%E6%9E%9A%E4%B8%BE-%E5%B8%B8%E7%94%A8%E7%94%A8%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/08/07/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%85%B6%E4%BB%96/Java-API-%E6%9E%9A%E4%B8%BE-%E5%B8%B8%E7%94%A8%E7%94%A8%E6%B3%95/" class="post-title-link" itemprop="url">Java-API-枚举-常用用法</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-08-07 22:37:12" itemprop="dateCreated datePublished" datetime="2015-08-07T22:37:12+08:00">2015-08-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.iteye.com/topic/1116193">http://www.iteye.com/topic/1116193</a></p>
+<h2 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h2><p>在JDK1.5 之前，我们定义常量都是： public static fianl…. 。现在好了，有了枚举，可以把相关的常量分组到一个枚举类型里，而且枚举提供了比常量更多的方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;  </span><br><span class="line">  RED, GREEN, BLANK, YELLOW  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h2 id="switch"><a href="#switch" class="headerlink" title="switch"></a>switch</h2><p>JDK1.6之前的switch语句只支持int,char,enum类型，使用枚举，能让我们的代码可读性更强。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">enum Signal &#123;  </span><br><span class="line">    GREEN, YELLOW, RED  </span><br><span class="line">&#125;  </span><br><span class="line">public class TrafficLight &#123;  </span><br><span class="line">    Signal color = Signal.RED;  </span><br><span class="line">    public void change() &#123;  </span><br><span class="line">        switch (color) &#123;  </span><br><span class="line">        case RED:  </span><br><span class="line">            color = Signal.GREEN;  </span><br><span class="line">            break;  </span><br><span class="line">        case YELLOW:  </span><br><span class="line">            color = Signal.RED;  </span><br><span class="line">            break;  </span><br><span class="line">        case GREEN:  </span><br><span class="line">            color = Signal.YELLOW;  </span><br><span class="line">            break;  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h2 id="向枚举中添加新方法"><a href="#向枚举中添加新方法" class="headerlink" title="向枚举中添加新方法"></a>向枚举中添加新方法</h2><p>如果打算自定义自己的方法，那么必须在enum实例序列的最后添加一个分号。而且 Java 要求必须先定义 enum 实例。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    // 普通方法  </span><br><span class="line">    public static String getName(int index) &#123;  </span><br><span class="line">        for (Color c : Color.values()) &#123;  </span><br><span class="line">            if (c.getIndex() == index) &#123;  </span><br><span class="line">                return c.name;  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;  </span><br><span class="line">        return null;  </span><br><span class="line">    &#125;  </span><br><span class="line">    // get set 方法  </span><br><span class="line">    public String getName() &#123;  </span><br><span class="line">        return name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public void setName(String name) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public int getIndex() &#123;  </span><br><span class="line">        return index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public void setIndex(int index) &#123;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h2 id="覆盖枚举的方法"><a href="#覆盖枚举的方法" class="headerlink" title="覆盖枚举的方法"></a>覆盖枚举的方法</h2><p>下面给出一个toString()方法覆盖的例子。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    //覆盖方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public String toString() &#123;  </span><br><span class="line">        return this.index+&quot;_&quot;+this.name;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h2 id="实现接口"><a href="#实现接口" class="headerlink" title="实现接口"></a>实现接口</h2><p>所有的枚举都继承自java.lang.Enum类。由于Java 不支持多继承，所以枚举对象不能再继承其他类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public interface Behaviour &#123;  </span><br><span class="line">    void print();  </span><br><span class="line">    String getInfo();  </span><br><span class="line">&#125;  </span><br><span class="line">public enum Color implements Behaviour&#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">//接口方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public String getInfo() &#123;  </span><br><span class="line">        return this.name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    //接口方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public void print() &#123;  </span><br><span class="line">        System.out.println(this.index+&quot;:&quot;+this.name);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h2 id="使用接口组织枚举"><a href="#使用接口组织枚举" class="headerlink" title="使用接口组织枚举"></a>使用接口组织枚举</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public interface Food &#123;  </span><br><span class="line">    enum Coffee implements Food&#123;  </span><br><span class="line">        BLACK_COFFEE,DECAF_COFFEE,LATTE,CAPPUCCINO  </span><br><span class="line">    &#125;  </span><br><span class="line">    enum Dessert implements Food&#123;  </span><br><span class="line">        FRUIT, CAKE, GELATO  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h2 id="关于枚举集合的使用"><a href="#关于枚举集合的使用" class="headerlink" title="关于枚举集合的使用"></a>关于枚举集合的使用</h2><p>java.util.EnumSet和java.util.EnumMap是两个枚举集合。EnumSet保证集合中的元素不重复；EnumMap中的 key是enum类型，而value则可以是任意类型。关于这个两个集合的使用就不在这里赘述，可以参考JDK文档。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/08/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AE%BE%E7%BD%AE-Oracle_XE%E4%BF%AE%E6%94%B9HTTP%E7%9B%91%E5%90%AC%E7%A8%8B%E5%BA%8F%E7%AB%AF%E5%8F%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/08/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AE%BE%E7%BD%AE-Oracle_XE%E4%BF%AE%E6%94%B9HTTP%E7%9B%91%E5%90%AC%E7%A8%8B%E5%BA%8F%E7%AB%AF%E5%8F%A3/" class="post-title-link" itemprop="url">Oracle-设置-Oracle_XE修改HTTP监听程序端口</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-08-05 10:02:35" itemprop="dateCreated datePublished" datetime="2015-08-05T10:02:35+08:00">2015-08-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>打开 SQL*Plus 控制台。用 sys 或者 system 登陆。然后运行： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">begin</span><br><span class="line">  dbms_xdb.sethttpport(&#x27;8088&#x27;);</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
+<p>这样就把端口设置为 8088 了。 </p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/21/%E5%B7%A5%E5%85%B7/git/git-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/07/21/%E5%B7%A5%E5%85%B7/git/git-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">git-常用命令</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-07-21 16:36:44" itemprop="dateCreated datePublished" datetime="2015-07-21T16:36:44+08:00">2015-07-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li><p><code>git config --global user.name &quot;Your Name&quot;</code></p>
+</li>
+<li><p><code>git config --global user.email &quot;email@example.com&quot;</code></p>
+</li>
+<li><p><code>git reflog</code> : 查看命令历史，以便确定要回到未来的哪个版本</p>
+</li>
+<li><p><code>git --version</code>: 查看Git版本</p>
+</li>
+<li><p><code>git config -l</code>: 查看git所有配置项</p>
+</li>
+</ul>
+<h3 id="start-a-working-area"><a href="#start-a-working-area" class="headerlink" title="start a working area"></a>start a working area</h3><ul>
+<li><code>git init</code>: 初始化一个Git仓库（Create an empty Git repository or reinitialize an existing one）</li>
+<li><code>git clone</code>: Clone a repository into a new directory</li>
+</ul>
+<h3 id="work-on-the-current-change"><a href="#work-on-the-current-change" class="headerlink" title="work on the current change"></a>work on the current change</h3><ul>
+<li><code>git add &lt;files&gt;</code>: Add file contents to the index</li>
+<li><code>git reset</code>: 跳转版本（Reset current HEAD to the specified state）<blockquote>
+<p>用HEAD表示当前版本，上一个版本就是HEAD^，上上一个版本就是HEAD^^，当然往上100个版本写100个^比较容易数不过来，所以写成HEAD~100<br>用命令 <code>git reset HEAD file</code> 可以把暂存区的修改撤销掉（unstage），重新放回工作区</p>
+</blockquote>
+</li>
+<li><code>git rm &lt;file&gt;</code>: Remove files from the working tree and from the index（用于删除一个文件）</li>
+</ul>
+<h3 id="grow-mark-and-tweak-your-common-history"><a href="#grow-mark-and-tweak-your-common-history" class="headerlink" title="grow, mark and tweak your common history"></a>grow, mark and tweak your common history</h3><ul>
+<li><code>git commit</code>: Record changes to the repository</li>
+<li><code>git diff &lt;file&gt;</code>: 查看difference，显示的格式正是Unix通用的diff格式（Show changes between commits, commit and working tree, etc）</li>
+<li><code>git checkout</code>: Switch branches or restore working tree files<blockquote>
+<p>命令<code>git checkout -- readme.txt</code>意思就是，把readme.txt文件在工作区的修改全部撤销，这里有两种情况：<br>一种是readme.txt自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；<br>一种是readme.txt已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。<br>总之，就是让这个文件回到最近一次git commit或git add时的状态。</p>
+</blockquote>
+</li>
+<li><code>git branch</code>: List, create, or delete branches</li>
+</ul>
+<h3 id="examine-the-history-and-state"><a href="#examine-the-history-and-state" class="headerlink" title="examine the history and state"></a>examine the history and state</h3><ul>
+<li><code>git status</code>: 可以让我们时刻掌握仓库当前的状态（Show the working tree status）</li>
+<li><code>git log</code>: 显示从最近到最远的提交日志（Show commit logs）<blockquote>
+<p><code>git log --pretty=oneline</code>: 一行输出</p>
+</blockquote>
+</li>
+</ul>
+<hr>
+<h3 id="git-结构"><a href="#git-结构" class="headerlink" title="git 结构"></a>git 结构</h3><p>工作区 add 暂存区 commit 本地版本库 push 远程库</p>
+<h3 id="创建版本库"><a href="#创建版本库" class="headerlink" title="创建版本库"></a>创建版本库</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git init</span><br><span class="line">git add readme.txt</span><br><span class="line">git commit -m &quot;wrote a readme file&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看状态"><a href="#查看状态" class="headerlink" title="查看状态"></a>查看状态</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git status</span><br><span class="line">git diff readme.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="回退"><a href="#回退" class="headerlink" title="回退"></a>回退</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git log</span><br><span class="line">git log --pretty=oneline #查看git版本记录</span><br><span class="line">git reset --hard HEAD^</span><br><span class="line">git reflog #查看git操作日志</span><br></pre></td></tr></table></figure>
+
+<h3 id="撤销修改"><a href="#撤销修改" class="headerlink" title="撤销修改"></a>撤销修改</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -- readme.txt</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>命令<code>git checkout -- readme.txt</code>意思就是，把readme.txt文件在工作区的修改全部撤销，这里有两种情况：</p>
+<ol>
+<li>readme.txt自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；</li>
+<li>readme.txt已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>总之，就是让这个文件回到最近一次git commit或git add时的状态。<br><em><strong>checkout是将暂存库还原到工作区</strong></em></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset HEAD readme.txt</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>git reset命令既可以回退版本，也可以把暂存区的修改回退到工作区。当我们用HEAD时，表示最新的版本。</p>
+</blockquote>
+<blockquote>
+<p><em><strong>reset是将版本库还原到暂存区</strong></em></p>
+</blockquote>
+<p>场景1：当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令 <code>git checkout -- file</code>。</p>
+<p>场景2：当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令 <code>git reset HEAD file</code>，就回到了场景1，第二步按场景1操作。</p>
+<p>场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考版本回退一节，不过前提是没有推送到远程库。</p>
+<p><code>git checkout</code> 其实是用版本库里的版本替换工作区的版本，无论工作区是修改还是删除，都可以“一键还原”。</p>
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm test.txt</span><br></pre></td></tr></table></figure>
+
+<p>命令git rm用于删除一个文件。如果一个文件已经被提交到版本库，那么你永远不用担心误删，但是要小心，你只能恢复文件到最新版本，你会丢失最近一次提交后你修改的内容。</p>
+<h3 id="修改"><a href="#修改" class="headerlink" title="修改"></a>修改</h3><p>每次修改，如果不add到暂存区，那就不会加入到commit中。</p>
+<h3 id="创建远程库"><a href="#创建远程库" class="headerlink" title="创建远程库"></a>创建远程库</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail@example.com&quot;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如果一切顺利的话，可以在用户主目录里找到.ssh目录，里面有id_rsa和id_rsa.pub两个文件，这两个就是SSH Key的秘钥对，id_rsa是私钥，不能泄露出去，id_rsa.pub是公钥，可以放心地告诉任何人</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin git@github.com:michaelliao/learngit.git</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>把上面的 michaelliao 替换成你自己的 GitHub 账户名，否则，你在本地关联的就是我的远程库，关联没有问题，但是你以后推送是推不上去的，因为你的 SSH Key 公钥不在我的账户列表中。<br>添加后，远程库的名字就是 origin，这是 Git 默认的叫法，也可以改成别的，但是 origin 这个名字一看就知道是远程库。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push -u origin master</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>把本地库的内容推送到远程，用 <code>git push</code> 命令，实际上是把当前分支 master 推送到远程。<br>由于远程库是空的，我们第一次推送 master 分支时，加上了 <code>-u</code> 参数，Git 不但会把本地的 master 分支内容推送的远程新的 master 分支，还会把本地的 master 分支和远程的 master 分支关联起来，在以后的推送或者拉取时就可以简化命令。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin master</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><h3 id="克隆远程库"><a href="#克隆远程库" class="headerlink" title="克隆远程库"></a>克隆远程库</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone git@github.com:michaelliao/gitskills.git</span><br></pre></td></tr></table></figure>
+
+<p>可以加参数 <code>--depth=1</code>，depth 用于指定克隆深度，为 1 即表示只克隆最近一次 commit。</p>
+<h3 id="当add错误的时候"><a href="#当add错误的时候" class="headerlink" title="当add错误的时候"></a>当add错误的时候</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm -r --cached</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>该方法为递归删除</p>
+</blockquote>
+<blockquote>
+<p>“add”有个“-n”，可以预览会加进哪些文件</p>
+</blockquote>
+<h3 id="分支"><a href="#分支" class="headerlink" title="分支"></a>分支</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch &lt;branch名称&gt; &lt;commit版本&gt;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>根据一个特定的提交创建新分支</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b dev</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>git checkout命令加上-b参数表示创建并切换，相当于以下两条命令：</p>
+</blockquote>
+<ul>
+<li>git branch dev</li>
+<li>git checkout dev</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>git branch命令会列出所有分支，当前分支前面会标一个*号</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git add readme.txt</span><br><span class="line">git commit -m &quot;branch test&quot;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout master</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>切换回master分支</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge dev</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>git merge命令用于合并指定分支到当前分支</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d dev</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>删除dev分支</p>
+</blockquote>
+<h3 id="解决冲突"><a href="#解决冲突" class="headerlink" title="解决冲突"></a>解决冲突</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b feature1</span><br><span class="line">git add readme.txt</span><br><span class="line">git commit -m &quot;AND simple&quot;</span><br><span class="line">git checkout master</span><br><span class="line">git add readme.txt</span><br><span class="line">git commit -m &quot;&amp; simple&quot;</span><br><span class="line">git merge feature1</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Git用&lt;&lt;&lt;&lt;&lt;&lt;&lt;，=======，&gt;&gt;&gt;&gt;&gt;&gt;&gt;标记出不同分支的内容，我们修改如下后保存</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git log --graph --pretty=oneline --abbrev-commit</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>用带参数的 <code>git log</code> 也可以看到分支的合并情况</p>
+</blockquote>
+<h3 id="删除git远程分支"><a href="#删除git远程分支" class="headerlink" title="删除git远程分支"></a>删除git远程分支</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin :test</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>git push [远程名] :[分支名]</code></p>
+</blockquote>
+<blockquote>
+<p><code>git push [远程名] [本地分支]:[远程分支]</code> 语法，如<br>果省略 <code>[本地分支]</code>，那就等于是在说“在这里提取空白然后把它变成 <code>[远程分支]</code>”。</p>
+</blockquote>
+<h3 id="删除代码库中文件"><a href="#删除代码库中文件" class="headerlink" title="删除代码库中文件"></a>删除代码库中文件</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm --cached &quot;文件路径&quot;</span><br></pre></td></tr></table></figure>
+
+<p>不删除物理文件，仅将该文件从缓存中删除</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm --f &quot;文件路径&quot;</span><br></pre></td></tr></table></figure>
+
+<p>将该文件从缓存中删除，还会将物理文件删除</p>
+<h3 id="更新代码"><a href="#更新代码" class="headerlink" title="更新代码"></a>更新代码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git pull origin master</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git pull &lt;远程主机名&gt; &lt;远程分支名&gt;:&lt;本地分支名&gt;</span><br></pre></td></tr></table></figure>
+<p>比如，取回origin主机的next分支，与本地的master分支合并，需要写成下面这样。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git pull origin next:master</span><br></pre></td></tr></table></figure>
+
+<p>或者</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git fetch origin master</span><br><span class="line">git merge origin/master</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>从远程的origin仓库的master主分支更新最新的版本到origin/master分支上</li>
+<li>合并内容到本地master分支</li>
+</ol>
+<h3 id="更新代码，保留生产服务器上所做的改动"><a href="#更新代码，保留生产服务器上所做的改动" class="headerlink" title="更新代码，保留生产服务器上所做的改动"></a>更新代码，保留生产服务器上所做的改动</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git stash</span><br><span class="line">git pull</span><br><span class="line">git stash pop</span><br></pre></td></tr></table></figure>
+
+<h3 id="将缓存区内容释放恢复"><a href="#将缓存区内容释放恢复" class="headerlink" title="将缓存区内容释放恢复"></a>将缓存区内容释放恢复</h3><p><code>git stash apply</code></p>
+<p>将当前分支的最后一次缓存的内容释放出来，但是刚才的记录还存在list中</p>
+<p><code>git stash pop</code></p>
+<p>将当前分支的最后一次缓存的内容释放出来，但是刚才的记录不存在list中</p>
+<h3 id="撤销“本地的”修改（修改了文件，没有add）"><a href="#撤销“本地的”修改（修改了文件，没有add）" class="headerlink" title="撤销“本地的”修改（修改了文件，没有add）"></a>撤销“本地的”修改（修改了文件，没有add）</h3><ul>
+<li><p>场景: 一只猫从键盘上走过，无意中保存了修改，然后破坏了编辑器。不过，你还没有 commit 这些修改。你想要恢复被修改文件里的所有内容 — 就像上次 commit 的时候一模一样。</p>
+</li>
+<li><p>方法: <code>git checkout -- &lt;bad filename&gt;</code></p>
+</li>
+<li><p>原理: <code>git checkout</code> 会把工作目录里的文件修改到 Git 之前记录的某个状态。你可以提供一个你想返回的分支名或特定 SHA ，或者在缺省情况下，Git 会认为你希望 checkout 的是 HEAD，当前 checkout 分支的最后一次 commit。</p>
+</li>
+<li><p>记住：你用这种方法“撤销”的任何修改真的会完全消失。因为它们从来没有被提交过，所以之后 Git 也无法帮助我们恢复它们。你要确保自己了解你在这个操作里扔掉的东西是什么！（也许可以先利用 git diff 确认一下）</p>
+</li>
+</ul>
+<h3 id="重置“本地的”修改（修改了文件，已经add）"><a href="#重置“本地的”修改（修改了文件，已经add）" class="headerlink" title="重置“本地的”修改（修改了文件，已经add）"></a>重置“本地的”修改（修改了文件，已经add）</h3><ul>
+<li><p>场景: 你在本地提交了一些东西（还没有 push），但是所有这些东西都很糟糕，你希望撤销前面的三次提交 — 就像它们从来没有发生过一样。</p>
+</li>
+<li><p>方法: <code>git reset &lt;last good SHA&gt;</code> 或 <code>git reset --hard &lt;last good SHA&gt;</code></p>
+</li>
+<li><p>原理: git reset 会把你的代码库历史返回到指定的 SHA 状态。 这样就像是这些提交从来没有发生过。缺省情况下， git reset 会保留工作目录。这样，提交是没有了，但是修改内容还在磁盘上。这是一种安全的选择，但通常我们会希望一步就“撤销”提交以及修改内容 — 这就是 –hard 选项的功能。</p>
+</li>
+</ul>
+<h3 id="删除本地untracked文件"><a href="#删除本地untracked文件" class="headerlink" title="删除本地untracked文件"></a>删除本地untracked文件</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 删除 untracked files</span><br><span class="line">git clean -f</span><br><span class="line"></span><br><span class="line"># 连 untracked 的目录也一起删掉</span><br><span class="line">git clean -fd</span><br><span class="line"></span><br><span class="line"># 连 gitignore 的untrack 文件/目录也一起删掉 （慎用，一般这个是用来删掉编译出来的 .o之类的文件用的）</span><br><span class="line">git clean -xfd</span><br><span class="line"></span><br><span class="line"># 在用上述 git clean 前，墙裂建议加上 -n 参数来先看看会删掉哪些文件，防止重要文件被误删</span><br><span class="line">git clean -nxfd</span><br><span class="line">git clean -nf</span><br><span class="line">git clean -nfd</span><br></pre></td></tr></table></figure>
+
+<h3 id="在撤销“本地修改”之后再恢复"><a href="#在撤销“本地修改”之后再恢复" class="headerlink" title="在撤销“本地修改”之后再恢复"></a>在撤销“本地修改”之后再恢复</h3><ul>
+<li><p>场景: 你提交了几个 commit，然后用 git reset –hard 撤销了这些修改（见上一段），接着你又意识到：你希望还原这些修改！</p>
+</li>
+<li><p>方法: git reflog 和 git reset 或 git checkout</p>
+</li>
+<li><p>原理: git reflog 对于恢复项目历史是一个超棒的资源。你可以恢复几乎 任何东西 — 任何你 commit 过的东西 — 只要通过 reflog。</p>
+</li>
+</ul>
+<h3 id="撤销一个“已push”的改变"><a href="#撤销一个“已push”的改变" class="headerlink" title="撤销一个“已push”的改变"></a>撤销一个“已push”的改变</h3><ul>
+<li><p>场景: 你已经执行了 git push, 把你的修改发送到了 GitHub，现在你意识到这些 commit 的其中一个是有问题的，你需要撤销那一个 commit.</p>
+</li>
+<li><p>方法: <code>git revert &lt;SHA&gt;</code>;</p>
+</li>
+<li><p>原理: git revert 会产生一个新的 commit，它和指定 SHA 对应的 commit 是相反的（或者说是反转的）。如果原先的 commit 是“物质”，新的 commit 就是“反物质” — 任何从原先的 commit 里删除的内容会在新的 commit 里被加回去，任何在原先的 commit 里加入的内容会在新的 commit  里被删除。</p>
+</li>
+</ul>
+<h3 id="向-GitHub-上贡献代码"><a href="#向-GitHub-上贡献代码" class="headerlink" title="向 GitHub 上贡献代码"></a>向 GitHub 上贡献代码</h3><ol>
+<li>先fork下别人的代码，于是你的github上就出现了同名的项目</li>
+<li>把这个自己的项目git clone到本地，修修改改，然后push到你自己的项目里</li>
+<li>在github上你的项目页面有个按钮，叫Pull request，对 你点它就会把你的修改发到对方的项目里</li>
+</ol>
+<p>在你fork他的项目之后，如果他又更新了代码，你自己fork的项目怎么做到和原项目同步呢？</p>
+<ol>
+<li>先git clone我的代码到本地，然后修修改改</li>
+<li>然后你不是不能push到我的项目里么，你可以先在github页面上fork我的项目</li>
+<li>有了你自己的项目地址（url）之后呢，你在本地操作git remote add [sort name] [your url]，意思就是添加第二个远程仓库地址，这个仓库的“昵称”就是你刚指定的[sort name]</li>
+<li>之后push文件呢 就通过指定这个［sort name］来push到这个你自己的仓库里</li>
+</ol>
+<h3 id="查看每一行代码的作者和创建时间"><a href="#查看每一行代码的作者和创建时间" class="headerlink" title="查看每一行代码的作者和创建时间"></a>查看每一行代码的作者和创建时间</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git blame &lt;文件名&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="针对某一时间的版本做上标记"><a href="#针对某一时间的版本做上标记" class="headerlink" title="针对某一时间的版本做上标记"></a>针对某一时间的版本做上标记</h3><p>添加tag</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -a &lt;版本&gt; -m &#x27;&lt;注释&gt;&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>查看所有tag</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -l</span><br></pre></td></tr></table></figure>
+
+<p>切换到对应的标签</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout &lt;tag的版本&gt;</span><br></pre></td></tr></table></figure>
+
+<p>切换到对应的标签（如果有个同名的分枝名）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout tags/&lt;tag的版本&gt;</span><br></pre></td></tr></table></figure>
+
+<p>删除tag</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -d &lt;tag的版本&gt;</span><br></pre></td></tr></table></figure>
+
+<p>提交某一版本tag</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin &lt;tag的版本&gt;</span><br></pre></td></tr></table></figure>
+
+<p>提交所有tag</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin --tag</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/21/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-union%E3%80%81union_all%E3%80%81intersect%E3%80%81minus/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/07/21/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-union%E3%80%81union_all%E3%80%81intersect%E3%80%81minus/" class="post-title-link" itemprop="url">Oracle-语法-union、union_all、intersect、minus</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-07-21 10:54:32" itemprop="dateCreated datePublished" datetime="2015-07-21T10:54:32+08:00">2015-07-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>Union：对两个结果集进行并集操作，不包括重复行，同时进行默认规则的排序；</li>
+<li>Union All：对两个结果集进行并集操作，包括重复行，不进行排序；</li>
+<li>Intersect：对两个结果集进行交集操作，不包括重复行，同时进行默认规则的排序；</li>
+<li>Minus：对两个结果集进行差操作，不包括重复行，同时进行默认规则的排序。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95/" class="post-title-link" itemprop="url">MySQL-索引</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-07-15 15:04:21" itemprop="dateCreated datePublished" datetime="2015-07-15T15:04:21+08:00">2015-07-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="普通索引"><a href="#普通索引" class="headerlink" title="普通索引"></a>普通索引</h2><p>普通索引（由关键字 KEY 或 INDEX 定义的索引）的唯一任务是加快对数据的访问速度。因此，应该只为那些最经常出现在查询条件（WHERE column = …）或排序条件（ORDER BY column）中的数据列创建索引。只要有可能，就应该选择一个数据最整齐、最紧凑的数据列（如一个整数类型的数据列）来创建索引。</p>
+<h2 id="唯一索引"><a href="#唯一索引" class="headerlink" title="唯一索引"></a>唯一索引</h2><p>普通索引允许被索引的数据列包含重复的值。比如说，因为人有可能同名，所以同一个姓名在同一个”员工个人资料”数据表里可能出现两次或更多次。</p>
+<p>如果能确定某个数据列将只包含彼此各不相同的值，在为这个数据列创建索引的时候就应该用关键字 UNIQUE 把它定义为一个唯一索引。这么做的好处：一是简化了 MySQL 对这个索引的管理工作，这个索引也因此而变得更有效率；二是 MySQL 会在有新记录插入数据表时，自动检查新记录的这个字段的值是否已经在某个记录的这个字段里出现过了；如果是， MySQL 将拒绝插入那条新记录。也就是说，唯一索引可以保证数据记录的唯一性。事实上，在许多场合，人们创建唯一索引的目的往往不是为了提高访问速度，而只是为了避免数据出现重复。</p>
+<h2 id="主索引"><a href="#主索引" class="headerlink" title="主索引"></a>主索引</h2><p>在前面已经反复多次强调过：必须为主键字段创建一个索引，这个索引就是所谓的”主索引”。主索引与唯一索引的唯一区别是：前者在定义时使用的关键字是 PRIMARY 而不是 UNIQUE。</p>
+<h2 id="外键索引"><a href="#外键索引" class="headerlink" title="外键索引"></a>外键索引</h2><p>如果为某个外键字段定义了一个外键约束条件，MySQL 就会定义一个内部索引来帮助自己以最有效率的方式去管理和使用外键约束条件。</p>
+<h2 id="复合索引"><a href="#复合索引" class="headerlink" title="复合索引"></a>复合索引</h2><p>索引可以覆盖多个数据列，如像 <code>INDEX(columnA, columnB)</code> 索引。这种索引的特点是 MySQL 可以有选择地使用一个这样的索引。如果查询操作只需要用到 columnA 数据列上的一个索引，就可以使用复合索引 <code>INDEX(columnA, columnB)</code>。不过，这种用法仅适用于在复合索引中排列在前的数据列组合。比如说，<code>INDEX(A, B, C)</code> 可以当做 A 或 <code>(A, B)</code> 的索引来使用，但不能当做 B、C 或 <code>(B, C)</code> 的索引来使用。</p>
+<h2 id="索引的长度"><a href="#索引的长度" class="headerlink" title="索引的长度"></a>索引的长度</h2><p>在为 CHAR 和 VARCHAR 类型的数据列定义索引时，可以把索引的长度限制为一个给定的字符个数（这个数字必须小于这个字段所允许的最大字符个数）。这么做的好处是可以生成一个尺寸比较小、检索速度却比较快的索引文件。在绝大多数应用里，数据库中的字符串数据大都以各种各样的名字为主，把索引的长度设置为 10~15 个字符已经足以把搜索范围缩小到很少的几条数据记录了。</p>
+<p>在为 BLOB 和 TEXT 类型的数据列创建索引时，必须对索引的长度做出限制；MySQL 所允许的最大索引长度是 255 个字符。</p>
+<h2 id="全文索引"><a href="#全文索引" class="headerlink" title="全文索引"></a>全文索引</h2><p>文本字段上的普通索引只能加快对出现在字段内容最前面的字符串（也就是字段内容开头的字符）进行检索操作。如果字段里存放的是由几个、甚至是多个单词构成的较大段文字，普通索引就没什么作用了。这种检索往往以 <code>LIKE %word%</code> 的形式出现，这对 MySQL 来说很复杂，如果需要处理的数据量很大，响应时间就会很长。</p>
+<p>这类场合正是全文索引（full-text index）可以大显身手的地方。在生成这种类型的索引时，MySQL 将把在文本中出现的所有单词创建为一份清单，查询操作将根据这份清单去检索有关的数据记录。全文索引即可以随数据表一同创建，也可以等日后有必要时再使用下面这条命令添加：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE tablename ADD FULLTEXT(column1, column2)</span><br></pre></td></tr></table></figure>
+<p>有了全文索引，就可以用SELECT查询命令去检索那些包含着一个或多个给定单词的数据记录了。下面是这类查询命令的基本语法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM tablename WHERE MATCH(column1, column2) AGAINST(&#x27;word1&#x27;, &#x27;word2&#x27;, &#x27;word3&#x27;)</span><br></pre></td></tr></table></figure>
+<p>上面这条命令将把 column1 和 column2 字段里有 word1、word2 和 word3 的数据记录全部查询出来。</p>
+<p>注解：InnoDB 数据表不支持全文索引。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/48/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/48/">48</a><span class="page-number current">49</span><a class="page-number" href="/page/50/">50</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/50/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/48/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/48/">48</a><span class="page-number current">49</span><a class="page-number" href="/page/50/">50</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/50/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1268,20 +1297,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

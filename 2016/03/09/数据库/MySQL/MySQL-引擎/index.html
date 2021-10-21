@@ -20,18 +20,18 @@
     var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="转自：http:&#x2F;&#x2F;www.2cto.com&#x2F;database&#x2F;201503&#x2F;385669.html Innodb引擎Innodb引擎提供了对数据库ACID事务的支持，并且实现了SQL标准的四种隔离级别，关于数据库事务与其隔离级别的内容请见数据库事务与其隔离级别这篇文章。该引擎还提供了行级锁和外键约束，它的设计目标是处理大容量数据库系统，它本身其实就是基于MySQL后台的完整数据库系统，MySQL">
+  <meta name="description" content="转自：http:&#x2F;&#x2F;www.2cto.com&#x2F;database&#x2F;201503&#x2F;385669.html Innodb 引擎Innodb 引擎提供了对数据库 ACID 事务的支持，并且实现了 SQL 标准的四种隔离级别。该引擎还提供了行级锁和外键约束，它的设计目标是处理大容量数据库系统，它本身其实就是基于 MySQL 后台的完整数据库系统，MySQL 运行时 Innodb 会在内存中建立缓冲池，用于缓">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL-引擎">
 <meta property="og:url" content="https://wetts.github.io/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/index.html">
 <meta property="og:site_name" content="Wetts&#39;s blog">
-<meta property="og:description" content="转自：http:&#x2F;&#x2F;www.2cto.com&#x2F;database&#x2F;201503&#x2F;385669.html Innodb引擎Innodb引擎提供了对数据库ACID事务的支持，并且实现了SQL标准的四种隔离级别，关于数据库事务与其隔离级别的内容请见数据库事务与其隔离级别这篇文章。该引擎还提供了行级锁和外键约束，它的设计目标是处理大容量数据库系统，它本身其实就是基于MySQL后台的完整数据库系统，MySQL">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;www.2cto.com&#x2F;database&#x2F;201503&#x2F;385669.html Innodb 引擎Innodb 引擎提供了对数据库 ACID 事务的支持，并且实现了 SQL 标准的四种隔离级别。该引擎还提供了行级锁和外键约束，它的设计目标是处理大容量数据库系统，它本身其实就是基于 MySQL 后台的完整数据库系统，MySQL 运行时 Innodb 会在内存中建立缓冲池，用于缓">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://wetts.github.io/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/1.png">
 <meta property="og:image" content="https://wetts.github.io/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/2.png">
 <meta property="og:image" content="https://wetts.github.io/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/3.png">
 <meta property="article:published_time" content="2016-03-09T03:22:03.000Z">
-<meta property="article:modified_time" content="2021-08-05T18:01:55.512Z">
+<meta property="article:modified_time" content="2021-10-14T07:21:43.133Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="MySQL">
 <meta name="twitter:card" content="summary">
@@ -243,20 +243,20 @@
 
       
         <p>转自：<a target="_blank" rel="noopener" href="http://www.2cto.com/database/201503/385669.html">http://www.2cto.com/database/201503/385669.html</a></p>
-<h3 id="Innodb引擎"><a href="#Innodb引擎" class="headerlink" title="Innodb引擎"></a>Innodb引擎</h3><p>Innodb引擎提供了对数据库ACID事务的支持，并且实现了SQL标准的四种隔离级别，关于数据库事务与其隔离级别的内容请见数据库事务与其隔离级别这篇文章。该引擎还提供了行级锁和外键约束，它的设计目标是处理大容量数据库系统，它本身其实就是基于MySQL后台的完整数据库系统，MySQL运行时Innodb会在内存中建立缓冲池，用于缓冲数据和索引。但是该引擎不支持FULLTEXT类型的索引，而且它没有保存表的行数，当<code>SELECT COUNT(*) FROM TABLE</code>时需要扫描全表。当需要使用数据库事务时，该引擎当然是首选。由于锁的粒度更小，写操作不会锁定全表，所以在并发较高时，使用Innodb引擎会提升效率。但是使用行级锁也不是绝对的，如果在执行一个SQL语句时MySQL不能确定要扫描的范围，InnoDB表同样会锁全表。</p>
-<h3 id="MyIASM引擎"><a href="#MyIASM引擎" class="headerlink" title="MyIASM引擎"></a>MyIASM引擎</h3><p>MyIASM是MySQL默认的引擎，但是它没有提供对数据库事务的支持，也不支持行级锁和外键，因此当INSERT(插入)或UPDATE(更新)数据时即写操作需要锁定整个表，效率便会低一些。不过和Innodb不同，MyIASM中存储了表的行数，于是<code>SELECT COUNT(*) FROM TABLE</code>时只需要直接读取已经保存好的值而不需要进行全表扫描。如果表的读操作远远多于写操作且不需要数据库事务的支持，那么MyIASM也是很好的选择。</p>
-<h3 id="两种引擎的选择"><a href="#两种引擎的选择" class="headerlink" title="两种引擎的选择"></a>两种引擎的选择</h3><p>大尺寸的数据集趋向于选择InnoDB引擎，因为它支持事务处理和故障恢复。数据库的大小决定了故障恢复的时间长短，InnoDB可以利用事务日志进行数据恢复，这会比较快。主键查询在InnoDB引擎下也会相当快，不过需要注意的是如果主键太长也会导致性能问题，关于这个问题我会在下文中讲到。大批的INSERT语句(在每个INSERT语句中写入多行，批量插入)在MyISAM下会快一些，但是UPDATE语句在InnoDB下则会更快一些，尤其是在并发量大的时候。</p>
-<h4 id="Index——索引"><a href="#Index——索引" class="headerlink" title="Index——索引"></a>Index——索引</h4><p>索引（Index）是帮助MySQL高效获取数据的数据结构。MyIASM和Innodb都使用了树这种数据结构做为索引，关于树我也曾经写过一篇文章树是一种伟大的数据结构，只是自己的理解，有兴趣的朋友可以去阅读。下面我接着讲这两种引擎使用的索引结构，讲到这里，首先应该谈一下B-Tree和B+Tree。</p>
-<h5 id="B-Tree和B-Tree"><a href="#B-Tree和B-Tree" class="headerlink" title="B-Tree和B+Tree"></a>B-Tree和B+Tree</h5><p>B+Tree是B-Tree的变种，那么我就先讲B-Tree吧，相信大家都知道红黑树，这是我前段时间学《算法》一书时，实现的一颗红黑树，大家可以参考。其实红黑树类似2,3-查找树，这种树既有2叉结点又有3叉结点。B-Tree也与之类似，它的每个结点做多可以有d个分支（叉），d称为B-Tree的度，如下图所示，它的每个结点可以有4个元素，5个分支，于是它的度为5。B-Tree中的元素是有序的，比如图中元素7左边的指针指向的结点中的元素都小于7，而元素7和16之间的指针指向的结点中的元素都处于7和16之间，正是满足这样的关系，才能高效的查找：首先从根节点进行二分查找，找到就返回对应的值，否则就进入相应的区间结点递归的查找，直到找到对应的元素或找到null指针，找到null指针则表示查找失败。这个查找是十分高效的，其时间复杂度为O(logN)（以d为底，当d很大时，树的高度就很低），因为每次检索最多只需要检索树高h个结点。</p>
+<h3 id="Innodb-引擎"><a href="#Innodb-引擎" class="headerlink" title="Innodb 引擎"></a>Innodb 引擎</h3><p>Innodb 引擎提供了对数据库 ACID 事务的支持，并且实现了 SQL 标准的四种隔离级别。该引擎还提供了行级锁和外键约束，它的设计目标是处理大容量数据库系统，它本身其实就是基于 MySQL 后台的完整数据库系统，MySQL 运行时 Innodb 会在内存中建立缓冲池，用于缓冲数据和索引。但是该引擎不支持 FULLTEXT 类型的索引，而且它没有保存表的行数，当 <code>SELECT COUNT(*) FROM TABLE</code> 时需要扫描全表。当需要使用数据库事务时，该引擎当然是首选。由于锁的粒度更小，写操作不会锁定全表，所以在并发较高时，使用Innodb引擎会提升效率。但是使用行级锁也不是绝对的，如果在执行一个 SQL 语句时 MySQL 不能确定要扫描的范围，InnoDB表同样会锁全表。</p>
+<h3 id="MyIASM-引擎"><a href="#MyIASM-引擎" class="headerlink" title="MyIASM 引擎"></a>MyIASM 引擎</h3><p>MyIASM 是 MySQL 默认的引擎，但是它没有提供对数据库事务的支持，也不支持行级锁和外键，因此当 INSERT（插入）或 UPDATE（更新）数据时即写操作需要锁定整个表，效率便会低一些。不过和 Innodb 不同，MyIASM 中存储了表的行数，于是 <code>SELECT COUNT(*) FROM TABLE</code> 时只需要直接读取已经保存好的值而不需要进行全表扫描。如果表的读操作远远多于写操作且不需要数据库事务的支持，那么 MyIASM 也是很好的选择。</p>
+<h3 id="两种引擎的选择"><a href="#两种引擎的选择" class="headerlink" title="两种引擎的选择"></a>两种引擎的选择</h3><p>大尺寸的数据集趋向于选择 InnoDB 引擎，因为它支持事务处理和故障恢复。数据库的大小决定了故障恢复的时间长短，InnoDB 可以利用事务日志进行数据恢复，这会比较快。主键查询在 InnoDB 引擎下也会相当快，不过需要注意的是如果主键太长也会导致性能问题，关于这个问题我会在下文中讲到。大批的 INSERT 语句（在每个 INSERT 语句中写入多行，批量插入）在 MyISAM 下会快一些，但是 UPDATE 语句在 InnoDB 下则会更快一些，尤其是在并发量大的时候。</p>
+<h4 id="Index——索引"><a href="#Index——索引" class="headerlink" title="Index——索引"></a>Index——索引</h4><p>索引（Index）是帮助MySQL高效获取数据的数据结构。MyIASM 和 Innodb 都使用了树这种数据结构做为索引。下面我接着讲这两种引擎使用的索引结构，讲到这里，首先应该谈一下 B-Tree 和 B+Tree。</p>
+<h5 id="B-Tree-和-B-Tree"><a href="#B-Tree-和-B-Tree" class="headerlink" title="B-Tree 和 B+Tree"></a>B-Tree 和 B+Tree</h5><p>B+Tree 是 B-Tree 的变种，那么我就先讲 B-Tree 吧，相信大家都知道红黑树。其实红黑树类似2,3-查找树，这种树既有 2 叉结点又有 3 叉结点。B-Tree 也与之类似，它的每个结点做多可以有 d 个分支（叉），d 称为 B-Tree 的度，如下图所示，它的每个结点可以有 4 个元素，5 个分支，于是它的度为 5。B-Tree 中的元素是有序的，比如图中元素 7 左边的指针指向的结点中的元素都小于 7，而元素 7 和 16 之间的指针指向的结点中的元素都处于 7 和 16 之间，正是满足这样的关系，才能高效的查找：首先从根节点进行二分查找，找到就返回对应的值，否则就进入相应的区间结点递归的查找，直到找到对应的元素或找到 null 指针，找到 null 指针则表示查找失败。这个查找是十分高效的，其时间复杂度为 $O(logN)$（以 d 为底，当 d 很大时，树的高度就很低），因为每次检索最多只需要检索树高 h 个结点。</p>
 <p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/1.png" alt="1"></p>
-<p>接下来就该讲B+Tree了，它是B-Tree的变种，如下面两张图所示：</p>
+<p>接下来就该讲 B+Tree 了，它是 B-Tree 的变种，如下面两张图所示：</p>
 <p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/2.png" alt="2"></p>
 <p><img src="/2016/03/09/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%BC%95%E6%93%8E/3.png" alt="3"></p>
-<p>从图中就可以看出，B+Tree的内部结点不存储数据，只存储指针，而叶子结点则只存储数据，不存储指针。并且在其每个叶子节点上增加了一个指向湘MyISAM引擎的索引结构</p>
-<p>MyISAM引擎的索引结构为B+Tree，其中B+Tree的数据域存储的内容为实际数据的地址，也就是说它的索引和实际的数据是分开的，只不过是用索引指向了实际的数据，这种索引就是所谓的非聚集索引。</p>
-<h5 id="Innodb引擎的索引结构"><a href="#Innodb引擎的索引结构" class="headerlink" title="Innodb引擎的索引结构"></a>Innodb引擎的索引结构</h5><p>MyISAM引擎的索引结构同样也是B+Tree，但是Innodb的索引文件本身就是数据文件，即B+Tree的数据域存储的就是实际的数据，这种索引就是聚集索引。这个索引的key就是数据表的主键，因此InnoDB表数据文件本身就是主索引。</p>
-<p>因为InnoDB的数据文件本身要按主键聚集，所以InnoDB要求表必须有主键（MyISAM可以没有），如果没有显式指定，则MySQL系统会自动选择一个可以唯一标识数据记录的列作为主键，如果不存在这种列，则MySQL自动为InnoDB表生成一个隐含字段作为主键，这个字段长度为6个字节，类型为长整形。</p>
-<p>并且和MyISAM不同，InnoDB的辅助索引数据域存储的也是相应记录主键的值而不是地址，所以当以辅助索引查找时，会先根据辅助索引找到主键，再根据主键索引找到实际的数据。所以Innodb不建议使用过长的主键，否则会使辅助索引变得过大。建议使用自增的字段作为主键，这样B+Tree的每一个结点都会被顺序的填满，而不会频繁的分裂调整，会有效的提升插入数据的效率。</p>
+<p>从图中就可以看出，B+Tree 的内部结点不存储数据，只存储指针，而叶子结点则只存储数据，不存储指针。并且在其每个叶子节点上增加了一个指向 MyISAM 引擎的索引结构</p>
+<p>MyISAM 引擎的索引结构为 B+Tree，其中 B+Tree 的数据域存储的内容为实际数据的地址，也就是说它的索引和实际的数据是分开的，只不过是用索引指向了实际的数据，这种索引就是所谓的非聚集索引。</p>
+<h5 id="Innodb-引擎的索引结构"><a href="#Innodb-引擎的索引结构" class="headerlink" title="Innodb 引擎的索引结构"></a>Innodb 引擎的索引结构</h5><p>MyISAM 引擎的索引结构同样也是 B+Tree，但是 Innodb 的索引文件本身就是数据文件，即 B+Tree 的数据域存储的就是实际的数据，这种索引就是聚集索引。这个索引的 key 就是数据表的主键，因此 InnoDB 表数据文件本身就是主索引。</p>
+<p>因为 InnoDB 的数据文件本身要按主键聚集，所以 InnoDB 要求表必须有主键（MyISAM 可以没有），如果没有显式指定，则 MySQL 系统会自动选择一个可以唯一标识数据记录的列作为主键，如果不存在这种列，则 MySQL 自动为 InnoDB 表生成一个隐含字段作为主键，这个字段长度为 6 个字节，类型为长整形。</p>
+<p>并且和 MyISAM 不同，InnoDB 的辅助索引数据域存储的也是相应记录主键的值而不是地址，所以当以辅助索引查找时，会先根据辅助索引找到主键，再根据主键索引找到实际的数据。所以 Innodb 不建议使用过长的主键，否则会使辅助索引变得过大。建议使用自增的字段作为主键，这样 B+Tree 的每一个结点都会被顺序的填满，而不会频繁的分裂调整，会有效的提升插入数据的效率。</p>
 <hr>
 <p>转自：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20596402/answer/211492971">https://www.zhihu.com/question/20596402/answer/211492971</a></p>
 <p>时间：2021/07/13 01:57:48</p>
@@ -264,15 +264,15 @@
 <li>InnoDB 支持事务，MyISAM 不支持事务。这是 MySQL 将默认存储引擎从 MyISAM 变成 InnoDB 的重要原因之一；</li>
 <li>InnoDB 支持外键，而 MyISAM 不支持。对一个包含外键的 InnoDB 表转为 MYISAM 会失败；</li>
 <li>InnoDB 是聚集索引，MyISAM 是非聚集索引。聚簇索引的文件存放在主键索引的叶子节点上，因此 InnoDB 必须要有主键，通过主键索引效率很高。但是辅助索引需要两次查询，先查询到主键，然后再通过主键查询到数据。因此，主键不应该过大，因为主键太大，其他索引也都会很大。而 MyISAM 是非聚集索引，数据文件是分离的，索引保存的是数据文件的指针。主键索引和辅助索引是独立的。</li>
-<li>InnoDB 不保存表的具体行数，执行 select count(*) from table 时需要全表扫描。而MyISAM 用一个变量保存了整个表的行数，执行上述语句时只需要读出该变量即可，速度很快；</li>
+<li>InnoDB 不保存表的具体行数，执行 <code>select count(*) from table</code> 时需要全表扫描。而 MyISAM 用一个变量保存了整个表的行数，执行上述语句时只需要读出该变量即可，速度很快；</li>
 <li>InnoDB 最小的锁粒度是行锁，MyISAM 最小的锁粒度是表锁。一个更新语句会锁住整张表，导致其他查询和更新都会被阻塞，因此并发访问受限。这也是 MySQL 将默认存储引擎从 MyISAM 变成 InnoDB 的重要原因之一；</li>
 </ol>
 <p>如何选择：</p>
 <ol>
 <li>是否要支持事务，如果要请选择 InnoDB，如果不需要可以考虑 MyISAM；</li>
-<li>如果表中绝大多数都只是读查询，可以考虑 MyISAM，如果既有读写也挺频繁，请使用InnoDB。</li>
-<li>系统奔溃后，MyISAM恢复起来更困难，能否接受，不能接受就选 InnoDB；</li>
-<li>MySQL5.5版本开始Innodb已经成为Mysql的默认引擎(之前是MyISAM)，说明其优势是有目共睹的。如果你不知道用什么存储引擎，那就用InnoDB，至少不会差。</li>
+<li>如果表中绝大多数都只是读查询，可以考虑 MyISAM，如果既有读写也挺频繁，请使用 InnoDB。</li>
+<li>系统奔溃后，MyISAM 恢复起来更困难，能否接受，不能接受就选 InnoDB；</li>
+<li>MySQL5.5 版本开始 Innodb 已经成为 MySQL 的默认引擎（之前是 MyISAM），说明其优势是有目共睹的。如果你不知道用什么存储引擎，那就用 InnoDB，至少不会差。</li>
 </ol>
 
     </div>
@@ -292,7 +292,7 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2016/02/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/%E5%85%B6%E4%BB%96/Shiro%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" rel="prev" title="Shiro注意事项">
+    <a href="/2016/02/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/%E5%85%B6%E4%BB%96/Shiro%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" rel="prev" title="Shiro注意事项">
       <i class="fa fa-chevron-left"></i> Shiro注意事项
     </a></div>
       <div class="post-nav-item">
@@ -358,7 +358,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Innodb%E5%BC%95%E6%93%8E"><span class="nav-number">1.</span> <span class="nav-text">Innodb引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MyIASM%E5%BC%95%E6%93%8E"><span class="nav-number">2.</span> <span class="nav-text">MyIASM引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E7%A7%8D%E5%BC%95%E6%93%8E%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-number">3.</span> <span class="nav-text">两种引擎的选择</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Index%E2%80%94%E2%80%94%E7%B4%A2%E5%BC%95"><span class="nav-number">3.1.</span> <span class="nav-text">Index——索引</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#B-Tree%E5%92%8CB-Tree"><span class="nav-number">3.1.1.</span> <span class="nav-text">B-Tree和B+Tree</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Innodb%E5%BC%95%E6%93%8E%E7%9A%84%E7%B4%A2%E5%BC%95%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.2.</span> <span class="nav-text">Innodb引擎的索引结构</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%BA%E5%88%AB%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">区别：</span></a></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Innodb-%E5%BC%95%E6%93%8E"><span class="nav-number">1.</span> <span class="nav-text">Innodb 引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MyIASM-%E5%BC%95%E6%93%8E"><span class="nav-number">2.</span> <span class="nav-text">MyIASM 引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E7%A7%8D%E5%BC%95%E6%93%8E%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-number">3.</span> <span class="nav-text">两种引擎的选择</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Index%E2%80%94%E2%80%94%E7%B4%A2%E5%BC%95"><span class="nav-number">3.1.</span> <span class="nav-text">Index——索引</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#B-Tree-%E5%92%8C-B-Tree"><span class="nav-number">3.1.1.</span> <span class="nav-text">B-Tree 和 B+Tree</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Innodb-%E5%BC%95%E6%93%8E%E7%9A%84%E7%B4%A2%E5%BC%95%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.2.</span> <span class="nav-text">Innodb 引擎的索引结构</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%BA%E5%88%AB%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">区别：</span></a></div>
       </div>
       <!--/noindex-->
 
@@ -374,20 +374,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

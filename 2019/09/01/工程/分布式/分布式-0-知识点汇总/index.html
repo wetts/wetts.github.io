@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="分布式基础理论 ACID 原子性（Atomicity） 原子性是指事务是一个不可分割的工作单位，事务中的操作要么都发生，要么都不发生。   一致性（Consistency） 一致性是指事务执行前后，数据处于一种合法的状态，这种状态是语义上的而不是语法上的。 那什么是合法的数据状态呢？ 这个状态是满足预定的约束就叫做合法的状态，再通俗一点，这状态是由你自己来定义的。满足这个状态，数据就是一致的，不满">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式-0-知识点汇总.md">
+<meta property="og:url" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="分布式基础理论 ACID 原子性（Atomicity） 原子性是指事务是一个不可分割的工作单位，事务中的操作要么都发生，要么都不发生。   一致性（Consistency） 一致性是指事务执行前后，数据处于一种合法的状态，这种状态是语义上的而不是语法上的。 那什么是合法的数据状态呢？ 这个状态是满足预定的约束就叫做合法的状态，再通俗一点，这状态是由你自己来定义的。满足这个状态，数据就是一致的，不满">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/BasicPaxos%E7%AE%97%E6%B3%95.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/MultiPaxos%E7%AE%97%E6%B3%95.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E6%A6%82%E5%BF%B5%E4%BB%8B%E7%BB%8D.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_1.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_2.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_3.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_4.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_5.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_6.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_7.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_1.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_2.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_3.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_4.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_5.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_6.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_7.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_8.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_9.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_10.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Gossip%E7%AE%97%E6%B3%95_%E6%AD%A5%E9%AA%A4_1.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Gossip%E7%AE%97%E6%B3%95_%E6%AD%A5%E9%AA%A4_2.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Gossip%E7%AE%97%E6%B3%95_%E6%AD%A5%E9%AA%A4_3.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_2PC_%E6%88%90%E5%8A%9F.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_2PC_%E5%A4%B1%E8%B4%A5.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_3PC_%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_TCC_%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_%E6%9C%AC%E5%9C%B0%E6%B6%88%E6%81%AF%E8%A1%A8.jpg">
+<meta property="og:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E8%B0%83%E5%BA%A6_%E5%8F%91%E5%B1%95%E5%8F%B2.jpg">
+<meta property="article:published_time" content="2019-09-01T04:10:14.000Z">
+<meta property="article:modified_time" content="2021-10-14T09:44:20.654Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="工程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/BasicPaxos%E7%AE%97%E6%B3%95.jpg">
+
+<link rel="canonical" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>分布式-0-知识点汇总.md | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分布式-0-知识点汇总.md
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-01 12:10:14" itemprop="dateCreated datePublished" datetime="2019-09-01T12:10:14+08:00">2019-09-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h1><h2 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h2><ul>
+<li>ACID<ul>
+<li>原子性（Atomicity）<ul>
+<li>原子性是指事务是一个不可分割的工作单位，事务中的操作要么都发生，要么都不发生。</li>
+</ul>
+</li>
+<li>一致性（Consistency）<ul>
+<li>一致性是指事务执行前后，数据处于一种合法的状态，这种状态是语义上的而不是语法上的。<ul>
+<li><strong>那什么是合法的数据状态呢？</strong><ul>
+<li>这个状态是满足预定的约束就叫做合法的状态，再通俗一点，这状态是由你自己来定义的。满足这个状态，数据就是一致的，不满足这个状态，数据就是不一致的！</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>隔离性（Isolation）<ul>
+<li>事务的隔离性是多个用户并发访问数据库时，数据库为每一个用户开启的事务，不能被其他事务的操作数据所干扰，多个并发事务之间要相互隔离。</li>
+</ul>
+</li>
+<li>持久性（Durability）<ul>
+<li>持久性是指一个事务一旦被提交，它对数据库中数据的改变就是永久性的，接下来即使数据库发生故障也不应该对其有任何影响</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>CAP<ul>
+<li>CAP 原则又称 CAP 定理，指的是在一个分布式系统中，Consistency（一致性）、Availability（可用性）、Partition tolerance（分区容错性），三者不可得兼。<ul>
+<li>一致性（C）：在分布式系统中的所有数据备份，在同一时刻是否同样的值。（等同于所有节点访问同一份最新的数据副本）</li>
+<li>可用性（A）：在集群中一部分节点故障后，集群整体是否还能响应客户端的读写请求。（对数据更新具备高可用性）</li>
+<li>分区容忍性（P）：以实际效果而言，分区相当于对通信的时限要求。系统如果不能在时限内达成数据一致性，就意味着发生了分区的情况，必须就当前操作在 C 和 A 之间做出选择。</li>
+</ul>
+</li>
+<li>“三选二”定律<ul>
+<li>CAP 要解释成，当 P 发生的时候，A 和 C 只能而选一。</li>
+<li>例子<ul>
+<li>A 服务器 B 服务器同步数据，现在 A、B 之间网络断掉了，那么现在发来 A 一个写入请求，但是 B 却没有相关的请求，显然，如果 A 不写，保持一致性，那么我们就失去了 A 的服务，但是如果 A 写了，跟 B 的数据就不一致了，我们自然就丧失了一致性。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BASE 理论<ul>
+<li>BASE 是 Basically Available（基本可用）、Soft state（软状态）和 Eventually consistent（最终一致性）三个短语的简写，BASE 是对 CAP 中一致性和可用性权衡的结果，其来源于对大规模互联网系统分布式实践的结论，是基于 CAP 定理逐步演化而来的，其核心思想是即使无法做到强一致性（Strong consistency），但每个应用都可以根据自身的业务特点，采用适当的方式来使系统达到最终一致性（Eventual consistency）。<ul>
+<li>基本可用<ul>
+<li>基本可用是指分布式系统在出现不可预知故障的时候，允许损失部分可用性。</li>
+<li>但请注意，这绝不等价于系统不可用，以下两个就是“基本可用”的典型例子。<ul>
+<li>响应时间上的损失：正常情况下，一个在线搜索引擎需要 0.5 秒内返回给用户相应的查询结果，但由于出现异常（比如系统部分机房发生断电或断网故障），查询结果的响应时间增加到了 1~2 秒。</li>
+<li>功能上的损失：正常情况下，在一个电子商务网站上进行购物，消费者几乎能够顺利地完成每一笔订单，但是在一些节日大促购物高峰的时候，由于消费者的购物行为激增，为了保护购物系统的稳定性，部分消费者可能会被引导到一个降级页面。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>软状态<ul>
+<li>弱状态也称为软状态，和硬状态相对，是指允许系统中的数据存在中间状态，并认为该中间状态的存在不会影响系统的整体可用性，即允许系统在不同节点的数据副本之间进行数据听不的过程存在延时。</li>
+</ul>
+</li>
+<li>最终一致性<ul>
+<li>最终一致性强调的是系统中所有的数据副本，在经过一段时间的同步后，最终能够达到一个一致的状态。因此，最终一致性的本质是需要系统保证最终数据能够达到一致，而不需要实时保证系统数据的强一致性。</li>
+<li>在实际工程实践中，最终一致性分为 5 种：<ul>
+<li>因果一致性（Causal consistency）<ul>
+<li>如果节点 A 在更新完某个数据后通知了节点 B，那么节点 B 之后对该数据的访问和修改都是基于 A 更新后的值。于此同时，和节点 A 无因果关系的节点 C 的数据访问则没有这样的限制。</li>
+</ul>
+</li>
+<li>读己之所写（Read your writes）<ul>
+<li>节点 A 更新一个数据后，它自身总是能访问到自身更新过的最新值，而不会看到旧值。其实也算一种因果一致性。</li>
+</ul>
+</li>
+<li>会话一致性（Session consistency）<ul>
+<li>会话一致性将对系统数据的访问过程框定在了一个会话当中：系统能保证在同一个有效的会话中实现“读己之所写”的一致性，也就是说，执行更新操作之后，客户端能够在同一个会话中始终读取到该数据项的最新值。</li>
+</ul>
+</li>
+<li>单调读一致性（Monotonic read consistency）<ul>
+<li>如果一个节点从系统中读取出一个数据项的某个值后，那么系统对于该节点后续的任何数据访问都不应该返回更旧的值。</li>
+</ul>
+</li>
+<li>单调写一致性（Monotonic write consistency）<ul>
+<li>一个系统要能够保证来自同一个节点的写操作被顺序的执行。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="分布式相关问题及算法"><a href="#分布式相关问题及算法" class="headerlink" title="分布式相关问题及算法"></a>分布式相关问题及算法</h2><ul>
+<li>问题<ul>
+<li>拜占庭将军问题<ul>
+<li>拜占庭将军问题是 Leslie Lamport（2013 年的图灵讲得住）用来为描述分布式系统一致性问题（Distributed Consensus）在论文中抽象出来一个著名的例子。</li>
+<li>例子<ul>
+<li>拜占庭帝国想要进攻一个强大的敌人，为此派出了 10 支军队去包围这个敌人。这个敌人虽不比拜占庭帝国，但也足以抵御 5 支常规拜占庭军队的同时袭击。这10支军队在分开的包围状态下同时攻击。他们任一支军队单独进攻都毫无胜算，除非有至少 6 支军队（一半以上）同时袭击才能攻下敌国。他们分散在敌国的四周，依靠通信兵骑马相互通信来协商进攻意向及进攻时间。困扰这些将军的问题是，他们不确定他们中是否有叛徒，叛徒可能擅自变更进攻意向或者进攻时间。在这种状态下，拜占庭将军们才能保证有多于6支军队在同一时间一起发起进攻，从而赢取战斗？</li>
+<li><blockquote>
+<p>拜占庭将军问题中并不去考虑通信兵是否会被截获或无法传达信息等问题，即消息传递的信道绝无问题。Lamport 已经证明了在消息可能丢失的不可靠信道上试图通过消息传递的方式达到一致性是不可能的。所以，在研究拜占庭将军问题的时候，已经假定了信道是没有问题的。</p>
+</blockquote>
+</li>
+<li>问题分析<ul>
+<li>先看在没有叛徒情况下，假如一个将军 A 提一个进攻提议（如：明日下午 1 点进攻，你愿意加入吗？）由通信兵通信分别告诉其他的将军，如果幸运中的幸运，他收到了其他6位将军以上的同意，发起进攻。如果不幸，其他的将军也在此时发出不同的进攻提议（如：明日下午 2 点、3 点进攻，你愿意加入吗？），由于时间上的差异，不同的将军收到（并认可）的进攻提议可能是不一样的，这是可能出现 A 提议有 3 个支持者，B 提议有 4 个支持者，C 提议有 2 个支持者等等。</li>
+<li>再加一点复杂性，在有叛徒情况下，一个叛徒会向不同的将军发出不同的进攻提议（通知 A 明日下午 1 点进攻， 通知B明日下午 2 点进攻等等），一个叛徒也会可能同意多个进攻提议（即同意下午 1 点进攻又同意下午 2 点进攻）。<ul>
+<li>叛徒发送前后不一致的进攻提议，被称为“拜占庭错误”，而能够处理拜占庭错误的这种容错性称为「Byzantine fault tolerance」，简称为 BFT。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>算法<ul>
+<li>一致性算法<ul>
+<li>一致性就是数据保持一致，在分布式系统中，可以理解为多个节点中数据的值是一致的。</li>
+<li>具体算法<ul>
+<li>强一致性<ul>
+<li>说明：保证系统改变提交以后立即改变集群的状态。</li>
+<li>模型：<ul>
+<li>Paxos<ul>
+<li>概念介绍<ul>
+<li>Proposal<ul>
+<li>提案，即分布式系统的修改请求，可以表示为<code>[提案编号N，提案内容value]</code></li>
+</ul>
+</li>
+<li>Client<ul>
+<li>用户，类似社会民众，负责提出建议</li>
+</ul>
+</li>
+<li>Proposer<ul>
+<li>议员，类似基层人大代表，负责帮 Client 上交提案</li>
+</ul>
+</li>
+<li>Acceptor<ul>
+<li>投票者，类似全国人大代表，负责为提案投票，不同意比自己以前接收过的提案编号要小的提案，其他提案都同意，例如 A 以前给 N 号提案表决过，那么再收到小于等于 N 号的提案时就直接拒绝了</li>
+</ul>
+</li>
+<li>Learner<ul>
+<li>提案接受者，类似记录被通过提案的记录员，负责记录提案</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Basic Paxos 算法<ul>
+<li>步骤<ol>
+<li>Proposer 准备一个 N 号提案</li>
+<li>Proposer 询问 Acceptor 中的多数派是否接收过 N 号的提案，如果都没有进入下一步，否则本提案不被考虑</li>
+<li>Acceptor 开始表决，Acceptor 无条件同意从未接收过的 N 号提案，达到多数派同意后，进入下一步</li>
+<li>Learner 记录提案</li>
+</ol>
+<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/BasicPaxos%E7%AE%97%E6%B3%95.jpg" alt="BasicPaxos算法"></li>
+</ul>
+</li>
+<li>节点故障<ul>
+<li>若 Proposer 故障，没关系，再从集群中选出 Proposer 即可</li>
+<li>若 Acceptor 故障，表决时能达到多数派也没问题</li>
+</ul>
+</li>
+<li>潜在问题<ul>
+<li>活锁<ul>
+<li>假设系统有多个 Proposer，他们不断向 Acceptor 发出提案，还没等到上一个提案达到多数派下一个提案又来了，就会导致 Acceptor 放弃当前提案转向处理下一个提案，于是所有提案都别想通过了。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Multi Paxos 算法<ul>
+<li>根据 Basic Paxos 的改进：整个系统只有一个 Proposer，称之为 Leader。</li>
+<li>步骤<ol>
+<li>若集群中没有 Leader，则在集群中选出一个节点并声明它为第 M 任 Leader。</li>
+<li>集群的 Acceptor 只表决最新的 Leader 发出的最新的提案</li>
+<li>其他步骤和 Basic Paxos 相同</li>
+</ol>
+<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/MultiPaxos%E7%AE%97%E6%B3%95.jpg" alt="MultiPaxos算法"></li>
+</ul>
+</li>
+<li>算法优化<ul>
+<li>Multi Paxos 角色过多，对于计算机集群而言，可以将 Proposer、Acceptor 和 Learner 三者身份集中在一个节点上，此时只需要从集群中选出 Proposer，其他节点都是 Acceptor 和 Learner，这就是接下来要讨论的 Raft 算法。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Raft（muti-paxos）<ul>
+<li>说明：Paxos 算法不容易实现，Raft 算法是对 Paxos 算法的简化和改进</li>
+<li>概念介绍<ul>
+<li>Leader<ul>
+<li>总统节点，负责发出提案</li>
+</ul>
+</li>
+<li>Follower<ul>
+<li>追随者节点，负责同意 Leader 发出的提案</li>
+</ul>
+</li>
+<li>Candidate<ul>
+<li>候选人，负责争夺 Leader</li>
+</ul>
+</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E6%A6%82%E5%BF%B5%E4%BB%8B%E7%BB%8D.jpg" alt="Raft_概念介绍"></li>
+</ul>
+</li>
+<li>步骤：Raft 算法将一致性问题分解为两个的子问题，Leader 选举和状态复制<ul>
+<li>Leader 选举<ul>
+<li>时间被分为很多连续的随机长度的 term，term 有唯一的 id。每个 term 一开始就进行选主</li>
+<li>流程<ol>
+<li>每个 Follower 都持有一个定时器<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_1.jpg" alt="Raft_Leader选举_1"></li>
+</ul>
+</li>
+<li>当定时器时间到了而集群中仍然没有 Leader，<strong>【批注：将自己维护的 current_term_id 加 1】</strong>Follower 将声明自己是 Candidate 并参与 Leader 选举，同时将消息发给其他节点来争取他们的投票 <strong>【批注：发送 RequestVoteRPC 消息（带上 current_term_id）】</strong>，若其他节点长时间没有响应 Candidate 将重新发送选举信息<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_2.jpg" alt="Raft_Leader选举_2"></li>
+</ul>
+</li>
+<li>集群中其他节点将给 Candidate 投票<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_3.jpg" alt="Raft_Leader选举_3"></li>
+</ul>
+</li>
+<li>获得多数派支持的 Candidate 将成为第 M 任 Leader（M 任是最新的任期）<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_4.jpg" alt="Raft_Leader选举_4"></li>
+</ul>
+</li>
+<li>在任期内的 Leader 会不断发送心跳给其他节点证明自己还活着，其他节点受到心跳以后就清空自己的计时器并回复 Leader 的心跳。这个机制保证其他节点不会在 Leader 任期内参加 Leader 选举。<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_5.jpg" alt="Raft_Leader选举_5"></li>
+</ul>
+</li>
+<li>当 Leader 节点出现故障而导致 Leader 失联，没有接收到心跳的 Follower 节点将准备成为 Candidate 进入下一轮 Leader 选举<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_6.jpg" alt="Raft_Leader选举_6"></li>
+</ul>
+</li>
+<li>若出现两个 Candidate 同时选举并获得了相同的票数，那么这两个 Candidate 将随机推迟一段时间后再向其他节点发出投票请求，这保证了再次发送投票请求以后不冲突<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_Leader%E9%80%89%E4%B8%BE_7.jpg" alt="Raft_Leader选举_7"></li>
+</ul>
+</li>
+</ol>
+</li>
+<li>过程会有三种结果<ul>
+<li>自己被选成了主<ul>
+<li>当收到了 majority 的投票后，状态切成 Leader，并且定期给其它的所有 server 发心跳消息（不带 log 的 AppendEntriesRPC）以告诉对方自己是 current_term_id 所标识的 term 的 leader。每个 term 最多只有一个 leader，term id 作为 logical clock，在每个 RPC 消息中都会带上，用于检测过期的消息。当一个 server 收到的 RPC 消息中的 rpc_term_id 比本地的 current_term_id 更大时，就更新 current_term_id 为 rpc_term_id，并且如果当前 state 为 leader 或者 candidate 时，将自己的状态切成 follower。如果 rpc_term_id 比本地的 current_term_id 更小，则拒绝这个 RPC 消息。</li>
+</ul>
+</li>
+<li>别人成为了主<ul>
+<li>当 Candidator 在等待投票的过程中，收到了大于或者等于本地的 current_term_id 的声明对方是 leader 的 AppendEntriesRPC 时，则将自己的 state 切成 follower，并且更新本地的 current_term_id。</li>
+</ul>
+</li>
+<li>没有选出主<ul>
+<li>当投票被瓜分，没有任何一个 candidate 收到了 majority 的 vote 时，没有 leader 被选出。这种情况下，每个 candidate 等待的投票的过程就超时了，接着 candidates 都会将本地的 current_term_id 再加 1，发起 RequestVoteRPC 进行新一轮的 leader election。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>投票策略<ul>
+<li>每个节点只会给每个 term 投一票，具体的是否同意和后续的 Safety 有关。<ul>
+<li>Safety<ul>
+<li><strong>哪些 follower 有资格成为 leader?</strong><ul>
+<li><blockquote>
+<p>Raft 保证被选为新 leader 的节点拥有所有已提交的 log entry，这与 ViewStamped Replication 不同，后者不需要这个保证，而是通过其他机制从 follower 拉取自己没有的提交的日志记录</p>
+</blockquote>
+</li>
+<li>这个保证是在 RequestVoteRPC 阶段做的，candidate 在发送 RequestVoteRPC 时，会带上自己的最后一条日志记录的 term_id 和 index，其他节点收到消息时，如果发现自己的日志比 RPC 请求中携带的更新，拒绝投票。日志比较的原则是，如果本地的最后一条 log entry 的 term id 更大，则更新，如果 term id 一样大，则日志更多的更大（index 更大）。</li>
+</ul>
+</li>
+<li><strong>哪些日志记录被认为是 commited?</strong><ul>
+<li>leader 正在 replicate 当前 term（即 term 2）的日志记录给其它 Follower，一旦 leader 确认了这条 log entry 被 majority 写盘了，这条 log entry 就被认为是 committed。</li>
+<li>leader 正在 replicate 更早的 term 的 log entry 给其它 follower。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>当投票被瓜分后，所有的 candidate 同时超时，然后有可能进入新一轮的票数被瓜分，为了避免这个问题，Raft 采用一种很简单的方法：每个 Candidate 的 election timeout 从 150ms-300ms 之间随机取，那么第一个超时的 Candidate 就可以发起新一轮的 leader election，带着最大的 term_id 给其它所有 server 发送 RequestVoteRPC 消息，从而自己成为 leader，然后给他们发送心跳消息以告诉他们自己是主。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>状态复制<ol>
+<li>Leader 负责接收来自 Client 的提案请求（红色提案表示未确认）<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_1.jpg" alt="Raft_状态复制_1"></li>
+</ul>
+</li>
+<li>提案内容将包含在 Leader 发出的下一个心跳中<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_2.jpg" alt="Raft_状态复制_2"></li>
+</ul>
+</li>
+<li>Follower 接收到心跳以后回复 Leader 的心跳<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_3.jpg" alt="Raft_状态复制_3"></li>
+</ul>
+</li>
+<li>Leader 接收到多数派 Follower 的回复以后<strong>确认提案</strong>并写入自己的存储空间中并<strong>回复 Client</strong><ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_4.jpg" alt="Raft_状态复制_4"></li>
+</ul>
+</li>
+<li>Leader <strong>通知 Follower 节点确认提案</strong>并写入自己的存储空间，随后所有的节点都拥有相同的数据<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_5.jpg" alt="Raft_状态复制_5"></li>
+</ul>
+</li>
+<li>若集群中出现网络异常，导致集群被分割，将出现多个 Leader<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_6.jpg" alt="Raft_状态复制_6"></li>
+</ul>
+</li>
+<li>被分割出的非多数派集群将无法达到共识，即<strong>脑裂</strong>，如图中的 A、B 节点将无法确认提案<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_7.jpg" alt="Raft_状态复制_7"></li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_8.jpg" alt="Raft_状态复制_8"></li>
+</ul>
+</li>
+<li>当集群再次连通时，将只听从最新任期 Leader 的指挥，旧 Leader 将退化为 Follower，如图中 B 节点的 Leader（任期 1）需要听从 D 节点的 Leader（任期 2）的指挥，此时集群重新达到一致性状态<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_9.jpg" alt="Raft_状态复制_9"></li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Raft_%E7%8A%B6%E6%80%81%E5%A4%8D%E5%88%B6_10.jpg" alt="Raft_状态复制_10"></li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ZAB（muti-paxos）<ul>
+<li>说明：ZAB 也是对 Multi Paxos 算法的改进，大部分和 Raft 相同</li>
+<li>和 Raft 算法的主要区别：<ul>
+<li>对于 Leader 的任期，Raft 叫做 term，而 ZAB 叫做 epoch</li>
+<li>在状态复制的过程中，Raft 的心跳从 Leader 向 Follower 发送，而 ZAB 则相反。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>弱一致性<ul>
+<li>说明：也叫最终一致性，系统不保证改变提交以后立即改变集群的状态，但是随着时间的推移最终状态是一致的。</li>
+<li>模型：<ul>
+<li>DNS 系统</li>
+<li>Gossip 协议<ul>
+<li>说明：Gossip 算法每个节点都是对等的，即没有角色之分。Gossip 算法中的每个节点都会将数据改动告诉其他节点（类似传八卦）。有话说得好：”最多通过六个人你就能认识全世界任何一个陌生人”，因此数据改动的消息很快就会传遍整个集群。</li>
+<li>步骤：<ol>
+<li>集群启动，如下图所示（这里设置集群有20个节点）<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Gossip%E7%AE%97%E6%B3%95_%E6%AD%A5%E9%AA%A4_1.jpg" alt="Gossip算法_步骤_1"></li>
+</ul>
+</li>
+<li>某节点收到数据改动，并将改动传播给其他 4 个节点，传播路径表示为较粗的 4 条线<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Gossip%E7%AE%97%E6%B3%95_%E6%AD%A5%E9%AA%A4_2.jpg" alt="Gossip算法_步骤_2"></li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Gossip%E7%AE%97%E6%B3%95_%E6%AD%A5%E9%AA%A4_3.jpg" alt="Gossip算法_步骤_3"></li>
+</ul>
+</li>
+<li>收到数据改动的节点重复上面的过程直到所有的节点都被感染</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>应用举例<ul>
+<li>Google 的 Chubby 分布式锁服务，采用了 Paxos 算法</li>
+<li>etcd 分布式键值数据库，采用了 Raft 算法</li>
+<li>ZooKeeper 分布式应用协调服务，Chubby 的开源实现，采用 ZAB 算法</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="分布式-ID"><a href="#分布式-ID" class="headerlink" title="分布式 ID"></a>分布式 ID</h2><ul>
+<li>雪花算法<ul>
+<li>组成部分（64bit）<ol>
+<li>第一位 占用 1bit，其值始终是 0，没有实际作用。</li>
+<li>时间戳 占用 41bit，精确到毫秒，总共可以容纳约 69 年的时间。</li>
+<li>工作机器 id 占用 10bit，其中高位 5bit 是数据中心 ID，低位 5bit 是工作节点 ID，做多可以容纳 1024 个节点。</li>
+<li>序列号占用 12bit，每个节点每毫秒 0 开始不断累加，最多可以累加到 4095，一共可以产生 4096 个 ID。</li>
+</ol>
+</li>
+<li>可能出现的问题<ul>
+<li>时钟回拨<ul>
+<li>如果时间回拨时间较短，比如配置 5ms 以内，那么可以直接等待一定的时间，让机器的时间追上来。</li>
+<li>如果时间的回拨时间较长，我们不能接受这么长的阻塞等待，那么又有两个策略:<ol>
+<li>直接拒绝，抛出异常，打日志，通知 RD 时钟回滚。</li>
+<li>利用扩展位，上面我们讨论过不同业务场景位数可能用不到那么多，那么我们可以把扩展位数利用起来了，比如当这个时间回拨比较长的时候，我们可以不需要等待，直接在扩展位加 1、2 位的扩展位允许我们有 3 次大的时钟回拨，一般来说就够了，如果其超过三次我们还是选择抛出异常，打日志。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h2><ul>
+<li>基于 MySQL 的分布式锁</li>
+<li>基于 Redis 的分布式锁</li>
+<li>基于 Zookeeper 的分布式锁</li>
+</ul>
+<h2 id="分布式事务"><a href="#分布式事务" class="headerlink" title="分布式事务"></a>分布式事务</h2><ul>
+<li>2PC<ul>
+<li>2PC（Two-phase commit protocol），中文叫二阶段提交。 二阶段提交是一种强一致性设计，2PC 引入一个事务协调者的角色来协调管理各参与者（也可称之为各本地资源）的提交和回滚，二阶段分别指的是准备（投票）和提交两个阶段。</li>
+<li>具体流程<ol>
+<li>准备阶段协调者会给各参与者发送准备命令，你可以把准备命令理解成除了提交事务之外啥事都做完了。</li>
+<li>同步等待所有资源的响应之后就进入第二阶段即提交阶段（注意提交阶段不一定是提交事务，也可能是回滚事务）。<ol>
+<li>假如在第一阶段所有参与者都返回准备成功，那么协调者则向所有参与者发送提交事务命令，然后等待所有事务都提交成功之后，返回事务执行成功。<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_2PC_%E6%88%90%E5%8A%9F.jpg" alt="分布式事务_2PC_成功"></li>
+</ul>
+</li>
+<li>假如在第一阶段有一个参与者返回失败，那么协调者就会向所有参与者发送回滚事务的请求，即分布式事务执行失败。<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_2PC_%E5%A4%B1%E8%B4%A5.jpg" alt="分布式事务_2PC_失败"></li>
+</ul>
+</li>
+</ol>
+</li>
+<li>如果第二阶段提交失败<ol>
+<li>第一种是第二阶段执行的是回滚事务操作，那么答案是不断重试，直到所有参与者都回滚了，不然那些在第一阶段准备成功的参与者会一直阻塞着。</li>
+<li>第二种是第二阶段执行的是提交事务操作，那么答案也是不断重试，因为有可能一些参与者的事务已经提交成功了，这个时候只有一条路，就是头铁往前冲，不断的重试，直到提交成功，到最后真的不行只能人工介入处理。</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>首先 2PC 是一个同步阻塞协议，<ul>
+<li>第一阶段协调者会等待所有参与者响应才会进行下一步操作，当然第一阶段的协调者有超时机制，假设因为网络原因没有收到某参与者的响应或某参与者挂了，那么超时后就会判断事务失败，向所有参与者发送回滚命令。</li>
+<li>在第二阶段协调者的没法超时，因为按照我们上面分析只能不断重试！</li>
+</ul>
+</li>
+<li>协调者故障分析<ul>
+<li>协调者是一个单点，存在单点故障问题。<ul>
+<li>假设协调者在发送准备命令之前挂了，还行等于事务还没开始。</li>
+<li>假设协调者在发送准备命令之后挂了，这就不太行了，有些参与者等于都执行了处于事务资源锁定的状态。不仅事务执行不下去，还会因为锁定了一些公共资源而阻塞系统其它操作。</li>
+<li>假设协调者在发送回滚事务命令之前挂了，那么事务也是执行不下去，且在第一阶段那些准备成功参与者都阻塞着。</li>
+<li>假设协调者在发送回滚事务命令之后挂了，这个还行，至少命令发出去了，很大的概率都会回滚成功，资源都会释放。但是如果出现网络分区问题，某些参与者将因为收不到命令而阻塞着。</li>
+<li>假设协调者在发送提交事务命令之前挂了，这下是所有资源都阻塞着。</li>
+<li>假设协调者在发送提交事务命令之后挂了，这个还行，也是至少命令发出去了，很大概率都会提交成功，然后释放资源，但是如果出现网络分区问题某些参与者将因为收不到命令而阻塞着。</li>
+</ul>
+</li>
+<li>协调者故障，通过选举得到新协调者<ul>
+<li>如果处于第一阶段，其实影响不大都回滚好了，在第一阶段事务肯定还没提交。</li>
+<li>如果处于第二阶段，假设参与者都没挂，此时新协调者可以向所有参与者确认它们自身情况来推断下一步的操作。</li>
+<li>假设有个别参与者挂了！比如协调者发送了回滚命令，此时第一个参与者收到了并执行，然后协调者和第一个参与者都挂了。<ul>
+<li>此时其他参与者都没收到请求，然后新协调者来了，它询问其他参与者都说OK，但它不知道挂了的那个参与者到底O不OK，所以它傻了。</li>
+<li>问题其实就出在每个参与者自身的状态只有自己和协调者知道，因此新协调者无法通过在场的参与者的状态推断出挂了的参与者是什么情况。</li>
+</ul>
+</li>
+<li>虽然协议上没说，不过在实现的时候我们可以灵活的让协调者将自己发过的请求在哪个地方记一下，也就是日志记录</li>
+<li>但是就算协调者知道自己该发提交请求，那么在参与者也一起挂了的情况下没用，因为你不知道参与者在挂之前有没有提交事务。<ul>
+<li>如果参与者在挂之前事务提交成功，新协调者确定存活着的参与者都没问题，那肯定得向其他参与者发送提交事务命令才能保证数据一致。</li>
+<li>如果参与者在挂之前事务还未提交成功，参与者恢复了之后数据是回滚的，此时协调者必须是向其他参与者发送回滚事务命令才能保持事务的一致。</li>
+</ul>
+</li>
+<li>所以说极端情况下还是无法避免数据不一致问题。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>3PC<ul>
+<li>3PC 的出现是为了解决 2PC 的一些问题，相比于 2PC 它在参与者中也引入了超时机制，并且新增了一个阶段使得参与者可以利用这一个阶段统一各自的状态。</li>
+<li>3PC 包含了三个阶段，分别是准备阶段、预提交阶段和提交阶段，对应的英文就是：CanCommit、PreCommit 和 DoCommit。<ul>
+<li>看起来是把 2PC 的提交阶段变成了预提交阶段和提交阶段，但是 3PC 的准备阶段协调者只是询问参与者的自身状况。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_3PC_%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg" alt="分布式事务_3PC_流程图"></li>
+<li>不管哪一个阶段有参与者返回失败都会宣布事务失败，这和 2PC 是一样的（当然到最后的提交阶段和 2PC 一样只要是提交请求就只能不断重试）。</li>
+</ul>
+</li>
+<li>3PC 的阶段相对 2PC 的变更有什么影响<ul>
+<li>首先准备阶段的变更成不会直接执行事务，而是会先去询问此时的参与者是否有条件接这个事务，因此不会一来就干活直接锁资源，使得在某些资源不可用的情况下所有参与者都阻塞着。</li>
+<li>而预提交阶段的引入起到了一个统一状态的作用，它像一道栅栏，表明在预提交阶段前所有参与者其实还未都回应，在预处理阶段表明所有参与者都已经回应了。<ul>
+<li>假如你是一位参与者，你知道自己进入了预提交状态那你就可以推断出来其他参与者也都进入了预提交状态。</li>
+</ul>
+</li>
+<li>但是多引入一个阶段也多一个交互，因此性能会差一些，而且绝大部分的情况下资源应该都是可用的，这样等于每次明知可用执行还得询问一次。</li>
+</ul>
+</li>
+<li>超时机制<ul>
+<li>如果是等待提交命令超时，那么参与者就会提交事务了，因为都到了这一阶段了大概率是提交的，如果是等待预提交命令超时，那该干啥就干啥了，反正本来啥也没干。</li>
+<li>数据不一致<ul>
+<li>比如在等待提交命令时候超时了，参与者默认执行的是提交事务操作，但是有可能执行的是回滚操作，这样一来数据就不一致了。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>2PC 和 3PC 都不能保证数据100%一致，因此一般都需要有定时扫描补偿机制。</li>
+</ul>
+</li>
+<li>TCC<ul>
+<li>2PC 和 3PC 都是数据库层面的，而 TCC 是业务层面的分布式事务，分布式事务不仅仅包括数据库的操作，还包括发送短信等，这时候 TCC 就派上用场了！</li>
+<li>TCC 指的是Try - Confirm - Cancel。<ul>
+<li>Try 指的是预留，即资源的预留和锁定，注意是预留。</li>
+<li>Confirm 指的是确认操作，这一步其实就是真正的执行了。</li>
+<li>Cancel 指的是撤销操作，可以理解为把预留阶段的动作撤销了。</li>
+</ul>
+</li>
+<li>TCC 模型还有个事务管理者的角色，用来记录 TCC 全局事务状态并提交或者回滚事务。</li>
+<li>流程<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_TCC_%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg" alt="分布式事务_TCC_流程图"></li>
+</ul>
+</li>
+<li>特点<ul>
+<li>TCC 对业务的侵入较大和业务紧耦合，需要根据特定的场景和业务逻辑来设计相应的操作。</li>
+<li>撤销和确认操作的执行可能需要重试，因此还需要保证操作的幂等。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>本地消息表<ul>
+<li>例子<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1_%E6%9C%AC%E5%9C%B0%E6%B6%88%E6%81%AF%E8%A1%A8.jpg" alt="分布式事务_本地消息表"></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="分布式调度"><a href="#分布式调度" class="headerlink" title="分布式调度"></a>分布式调度</h2><ul>
+<li>发展史<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/%E5%88%86%E5%B8%83%E5%BC%8F-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E5%88%86%E5%B8%83%E5%BC%8F%E8%B0%83%E5%BA%A6_%E5%8F%91%E5%B1%95%E5%8F%B2.jpg" alt="分布式调度_发展史"></li>
+</ul>
+<ol>
+<li>第一阶段<ul>
+<li>单线程调度，在 Java1.5 之前，基于线程的等待（sleep 或 wait）机制定时执行，需要开发者实现调度逻辑，单个线程（Thread）处理单个任务有些浪费，但是一个线程（Timer）处理多个任务容易因为某个任务繁忙导致其他任务阻塞。</li>
+</ul>
+</li>
+<li>第二阶段<ul>
+<li>线程池调度，在 Java1.5 开始提供 ScheduledExecutorService 调度线程池，调度线程池支持固定的延时和固定间隔模式，对于需要在某天或者某月的时间点执行就不大方便，需要计算时间间隔，转换成启动延时和固定间隔，处理起来比较麻烦。</li>
+</ul>
+</li>
+<li>第三阶段<ul>
+<li>Spring 任务调度，Spring 简化了任务调度，通过 @Scheduled 注解支持将某个 Bean 的方法定时执行，除了支持固定延时和固定间隔模式外，还支持 cron 表达式，使得定时任务的开发变得极其简单。</li>
+</ul>
+</li>
+<li>第四阶段<ul>
+<li>Quartz 任务调度，在任务服务集群部署下，Quartz 通过数据库锁，实现任务的调度并发控制，避免同一个任务同时执行的情况。Quartz 通过 Scheduler 提供了任务调度 API，开发可以基于此开发自己的任务调度管理平台。</li>
+</ul>
+</li>
+<li>第五阶段<ul>
+<li>分布式任务平台，提供一个统一的平台，无需再去做和调度相关的开发，业务系统只需要实现具体的任务逻辑，自动注册到任务调度平台，在上面进行相关的配置就完成了定时任务的开发。</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+              <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"># 面试</a>
+              <a href="/tags/%E5%B7%A5%E7%A8%8B/" rel="tag"># 工程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" rel="prev" title="工程、解决方案-0-知识点汇总.md">
+      <i class="fa fa-chevron-left"></i> 工程、解决方案-0-知识点汇总.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/09/01/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" rel="next" title="计算机网络-0-知识点汇总.md">
+      计算机网络-0-知识点汇总.md <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">分布式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA"><span class="nav-number">1.1.</span> <span class="nav-text">基础理论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98%E5%8F%8A%E7%AE%97%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">分布式相关问题及算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F-ID"><span class="nav-number">1.3.</span> <span class="nav-text">分布式 ID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="nav-number">1.4.</span> <span class="nav-text">分布式锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="nav-number">1.5.</span> <span class="nav-text">分布式事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%B0%83%E5%BA%A6"><span class="nav-number">1.6.</span> <span class="nav-text">分布式调度</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : '6e406bca1b1e183c88d1059415ba7d1a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

@@ -20,15 +20,15 @@
     var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;MY0213&#x2F;p&#x2F;8798926.html TCP、UDP可以绑定同一端口来进行通信： 网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。  按照OSI七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP&#x2F;IP协">
+  <meta name="description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;MY0213&#x2F;p&#x2F;8798926.html TCP、UDP 可以绑定同一端口来进行通信： 网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。  按照 OSI 七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP&#x2F;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="TCP、UDP绑定同一端口通信的解释">
 <meta property="og:url" content="https://wetts.github.io/2019/07/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/TCP%E3%80%81UDP%E7%BB%91%E5%AE%9A%E5%90%8C%E4%B8%80%E7%AB%AF%E5%8F%A3%E9%80%9A%E4%BF%A1%E7%9A%84%E8%A7%A3%E9%87%8A/index.html">
 <meta property="og:site_name" content="Wetts&#39;s blog">
-<meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;MY0213&#x2F;p&#x2F;8798926.html TCP、UDP可以绑定同一端口来进行通信： 网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。  按照OSI七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP&#x2F;IP协">
+<meta property="og:description" content="转自：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;MY0213&#x2F;p&#x2F;8798926.html TCP、UDP 可以绑定同一端口来进行通信： 网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。  按照 OSI 七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP&#x2F;">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2019-07-05T08:24:22.000Z">
-<meta property="article:modified_time" content="2021-07-27T06:15:09.118Z">
+<meta property="article:modified_time" content="2021-10-14T09:02:13.045Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="TCP">
 <meta property="article:tag" content="UDP">
@@ -240,14 +240,14 @@
 
       
         <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/MY0213/p/8798926.html">https://www.cnblogs.com/MY0213/p/8798926.html</a></p>
-<p>TCP、UDP可以绑定同一端口来进行通信：</p>
+<p>TCP、UDP 可以绑定同一端口来进行通信：</p>
 <p>网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。 </p>
-<p>按照OSI七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP/IP协议提出了协议端口（protocol port，简称端口）的概念，用于标识通信的进程。 </p>
-<p>端口是一种抽象的软件结构（包括一些数据结构和I/O缓冲区）。应用程序（即进程）通过系统调用与某端口建立连接（binding）后，传输层传给该端口的数据都被相应进程所接收，相应进程发给传输层的数据都通过该端口输出。在TCP/IP协议的实现中，端口操作类似于一般的I/O操作，进程获取一个端口，相当于获取本地唯一的I/O文件，可以用一般的读写原语访问之。 </p>
-<p>类似于文件描述符，每个端口都拥有一个叫端口号（port number）的整数型标识符，用于区别不同端口。由于TCP/IP传输层的两个协议TCP和UDP是完全独立的两个软件模块，因此各自的端口号也相互独立，如TCP有一个255号端口，UDP也可以有一个255号端口，二者并不冲突。 </p>
-<p>端口号的分配是一个重要问题。有两种基本分配方式：第一种叫全局分配，这是一种集中控制方式，由一个公认的中央机构根据用户需要进行统一分配，并将结果公布于众。第二种是本地分配，又称动态连接，即进程需要访问传输层服务时，向本地操作系统提出申请，操作系统返回一个本地唯一的端口号，进程再通过合适的系统调用将自己与该端口号联系起来（绑扎）。TCP/IP端口号的分配中综合了上述两种方式。TCP/IP将端口号分为两部分，少量的作为保留端口，以全局方式分配给服务进程。因此，每一个标准服务器都拥有一个全局公认的端口（即周知口，well-known port），即使在不同机器上，其端口号也相同。剩余的为自由端口，以本地方式进行分配。TCP和UDP均规定，小于256的端口号才能作保留端口。</p>
-<p>再讨论一下，一个服务器监控一个端口，比如80端口，它为什么可以建立上成千上万的连接？</p>
-<p>首先， 一个TCP连接需要由四元组来形成，即(src_ip,src_port,dst_ip,dst_port)。当一个连接请求过来的时候，服务端调用accept函数，新生成一个socket，这个socket所占用的本地端口依然是80端口。由四元组就很容易分析到了，同一个(src_ip,src_port)，它所对应的(dst_ip,dst_port)可以无穷变化，这样就可以建立很多个客户端的请求了。</p>
+<p>按照 OSI 七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP/IP 协议提出了协议端口（protocol port，简称端口）的概念，用于标识通信的进程。 </p>
+<p>端口是一种抽象的软件结构（包括一些数据结构和 I/O 缓冲区）。应用程序（即进程）通过系统调用与某端口建立连接（binding）后，传输层传给该端口的数据都被相应进程所接收，相应进程发给传输层的数据都通过该端口输出。在 TCP/IP 协议的实现中，端口操作类似于一般的 I/O 操作，进程获取一个端口，相当于获取本地唯一的 I/O 文件，可以用一般的读写原语访问之。 </p>
+<p>类似于文件描述符，每个端口都拥有一个叫端口号（port number）的整数型标识符，用于区别不同端口。由于 TCP/IP 传输层的两个协议 TCP 和 UDP 是完全独立的两个软件模块，因此各自的端口号也相互独立，如 TCP 有一个 255 号端口，UDP也可以有一个 255 号端口，二者并不冲突。 </p>
+<p>端口号的分配是一个重要问题。有两种基本分配方式：第一种叫全局分配，这是一种集中控制方式，由一个公认的中央机构根据用户需要进行统一分配，并将结果公布于众。第二种是本地分配，又称动态连接，即进程需要访问传输层服务时，向本地操作系统提出申请，操作系统返回一个本地唯一的端口号，进程再通过合适的系统调用将自己与该端口号联系起来（绑扎）。TCP/IP 端口号的分配中综合了上述两种方式。TCP/IP 将端口号分为两部分，少量的作为保留端口，以全局方式分配给服务进程。因此，每一个标准服务器都拥有一个全局公认的端口（即周知口，well-known port），即使在不同机器上，其端口号也相同。剩余的为自由端口，以本地方式进行分配。TCP 和 UDP 均规定，小于 256 的端口号才能作保留端口。</p>
+<p>再讨论一下，一个服务器监控一个端口，比如 80 端口，它为什么可以建立上成千上万的连接？</p>
+<p>首先， 一个 TCP 连接需要由四元组来形成，即（src_ip、src_port、dst_ip、dst_port）。当一个连接请求过来的时候，服务端调用 accept 函数，新生成一个 socket，这个 socket 所占用的本地端口依然是 80 端口。由四元组就很容易分析到了，同一个（src_ip、src_port），它所对应的（dst_ip、dst_port）可以无穷变化，这样就可以建立很多个客户端的请求了。</p>
 
     </div>
 
@@ -348,20 +348,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

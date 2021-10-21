@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/24/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%BA%E5%88%AB-new()%E5%92%8Cmake()/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E7%BB%93%E6%9E%84%E4%BD%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -202,7 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2017/05/24/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%BA%E5%88%AB-new()%E5%92%8Cmake()/" class="post-title-link" itemprop="url">Golang-区别-new()和make()</a>
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E7%BB%93%E6%9E%84%E4%BD%93/" class="post-title-link" itemprop="url">C-类型-结构体</a>
         </h2>
 
         <div class="post-meta">
@@ -212,7 +212,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2017-05-24 12:33:18" itemprop="dateCreated datePublished" datetime="2017-05-24T12:33:18+08:00">2017-05-24</time>
+              <time title="创建时间：2017-07-26 14:54:18" itemprop="dateCreated datePublished" datetime="2017-07-26T14:54:18+08:00">2017-07-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -220,7 +220,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
                 </span>
             </span>
 
@@ -235,51 +235,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>转自：<a target="_blank" rel="noopener" href="http://studygolang.com/articles/3496">http://studygolang.com/articles/3496</a></p>
-<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Go 语言中的 <code>new</code> 和 <code>make</code> 一直是新手比较容易混淆的东西，咋一看很相似。不过解释两者之间的不同也非常容易。 他们所做的事情，和应用的类型也不相同。<br>二者都是用来分配空间。</p>
-<h2 id="new-函数"><a href="#new-函数" class="headerlink" title="new 函数"></a>new 函数</h2><ul>
-<li>new 是内建函数，函数原型为<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func new(Type) *Type</span><br></pre></td></tr></table></figure>
-官方文档描述为：<blockquote>
-<p>The new build-in function allocates memory（仅仅分配空间）. The first argument is a type, not a value, and the value returned is a pointer to a newly allocated zero value of that type.</p>
-</blockquote>
-</li>
-</ul>
-<p>翻译如下：</p>
-<blockquote>
-<p>内置函数 new 分配空间。传递给new 函数的是一个类型，不是一个值。返回值是 指向这个新分配的零值的指针。<br>根据这段描述，我们也可以自己实现一个类似 new 的功能</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func newInt *int &#123;</span><br><span class="line">    var i int</span><br><span class="line">    return &amp;i   //为何可以返回局部变量呢？</span><br><span class="line">&#125;</span><br><span class="line">someInt := newInt()</span><br></pre></td></tr></table></figure>
+          <p>C 数组允许定义可存储相同类型数据项的变量，结构是 C 编程中另一种用户自定义的可用的数据类型，它允许您存储不同类型的数据项。</p>
+<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>为了定义结构，您必须使用 struct 语句。struct 语句定义了一个包含多个成员的新的数据类型，struct 语句的格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct [structure tag]</span><br><span class="line">&#123;</span><br><span class="line">  member definition;</span><br><span class="line">  member definition;</span><br><span class="line">  ...</span><br><span class="line">  member definition;</span><br><span class="line">&#125; [one or more structure variables];</span><br></pre></td></tr></table></figure>
+<p>structure tag 是可选的，每个 member definition 是标准的变量定义，比如 int i; 或者 float f; 或者其他有效的变量定义。在结构定义的末尾，最后一个分号之前，您可以指定一个或多个结构变量，这是可选的。</p>
+<p>例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct Books</span><br><span class="line">&#123;</span><br><span class="line">  char  title[50];</span><br><span class="line">  char  author[50];</span><br><span class="line">  char  subject[100];</span><br><span class="line">  int   book_id;</span><br><span class="line">&#125; book;</span><br></pre></td></tr></table></figure>
 
-<p>这里要注意的第一点是，返回值是一个指针。<br>然后，为何一个golang 中的函数可以返回局部变量呢？</p>
-<h2 id="make-函数"><a href="#make-函数" class="headerlink" title="make 函数"></a>make 函数</h2><p>make 也是内建函数，你可以从 <a target="_blank" rel="noopener" href="http://golang.org/pkg/builtin/#make">http://golang.org/pkg/builtin/#make</a> 看到它， 它的函数原型 比 new 多了一个（长度）参数，返回值也不同。</p>
-<p>函数原型是：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">func make(Type, size IntegerType) Type</span><br></pre></td></tr></table></figure>
-<ul>
-<li>第一个参数是一个类型，第二个参数是长度</li>
-<li>返回值是一个类型</li>
-</ul>
-<p>官方描述为：</p>
-<blockquote>
-<p>The make built-in function allocates and initializes an object（分配空间 + 初始化） of type slice, map or chan**(only)**. Like new , the first arguement is a type, not a value. Unlike new, make’s return type is the same as the type of its argument, not a pointer to it. The specification of the result depends on the type.</p>
-</blockquote>
-<p>翻译为：</p>
-<blockquote>
-<p>内建函数 make 分配并且初始化 一个 slice, 或者 map 或者 chan 对象。 并且只能是这三种对象。 和 new 一样，第一个参数是 类型，不是一个值。 但是make 的返回值就是这个类型（即使一个引用类型），而不是指针。 具体的返回值，依赖具体传入的类型。</p>
-</blockquote>
-<p>Slice : 第二个参数 size 指定了它的长度，此时它的容量和长度相同。</p>
-<p>你可以传入第三个参数 来指定不同的容量值，但是必须不能比长度值小。</p>
-<p>比如: make([]int, 0, 10)</p>
-<p>Map: 根据size 大小来初始化分配内存，不过分配后的 map 长度为0。 如果 size 被忽略了，那么会在初始化分配内存的时候 分配一个小尺寸的内存。</p>
-<p>Channel: 管道缓冲区依据缓冲区容量被初始化。如果容量为 0 或者被 忽略，管道是没有缓冲区的。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var p *[]int = new([]int)</span><br><span class="line">var v []int = make([]int, 10)</span><br></pre></td></tr></table></figure>
-<p>上述第一条语句 使用 new() 函数为 切片结构分配内存，<code>*p == nil</code> （这意味着什么？ 意味着没有对Slice结构进行初始化）， 但是在实际中这种用法很少使用。</p>
-<p>第二条语句使用 make() 函数创建了一个有10个元素的 Slice对象。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>new 的作用是 初始化 一个指向类型的指针 <code>(*T)</code>， make 的作用是为 slice, map 或者 channel 初始化，并且返回引用 T</p>
-<p>make(T, args)函数的目的与new(T)不同。它仅仅用于创建 Slice, Map 和 Channel，并且返回类型是 T（不是T*）的一个初始化的（不是零值）的实例。 这中差别的出现是由于这三种类型实质上是对在使用前必须进行初始化的数据结构的引用。 例如, Slice是一个 具有三项内容的描述符，包括 指向数据（在一个数组内部）的指针，长度以及容量。在这三项内容被初始化之前，Slice的值为nil。对于Slice，Map和Channel， make（）函数初始化了其内部的数据结构，并且准备了将要使用的值。</p>
-<h2 id="问题：栈中分配的变量，出栈的时候不会被释放吗？"><a href="#问题：栈中分配的变量，出栈的时候不会被释放吗？" class="headerlink" title="问题：栈中分配的变量，出栈的时候不会被释放吗？"></a>问题：栈中分配的变量，出栈的时候不会被释放吗？</h2><p>我们注意到有如下函数：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">func newInt *int &#123;</span><br><span class="line">    var i int</span><br><span class="line">    return &amp;i   //为何可以返回局部变量呢？</span><br><span class="line">&#125;</span><br><span class="line">someInt := newInt()</span><br></pre></td></tr></table></figure>
+<h2 id="访问结构成员"><a href="#访问结构成员" class="headerlink" title="访问结构成员"></a>访问结构成员</h2><p>为了访问结构的成员，我们使用成员访问运算符（<code>.</code>）。成员访问运算符是结构变量名称和我们要访问的结构成员之间的一个句号。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">book.title</span><br></pre></td></tr></table></figure>
 
-<p>有个回答回答的很好： golang 和 c 语言不一样，栈区分配的存储空间不会随着函数的返回而释放，本地变量地址所占据的存储空间会生存下来。</p>
+<h2 id="指向结构的指针"><a href="#指向结构的指针" class="headerlink" title="指向结构的指针"></a>指向结构的指针</h2><p>使用指向该结构的指针访问结构的成员，您必须使用 <code>-&gt;</code> 运算符。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">book -&gt; title</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -299,7 +266,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/22/%E8%AF%AD%E8%A8%80/Golang/Golang-%E9%83%A8%E7%BD%B2-web%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-sizeof/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -313,7 +280,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2017/05/22/%E8%AF%AD%E8%A8%80/Golang/Golang-%E9%83%A8%E7%BD%B2-web%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">Golang-部署-web项目部署</a>
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-sizeof/" class="post-title-link" itemprop="url">C-关键字-sizeof</a>
         </h2>
 
         <div class="post-meta">
@@ -323,7 +290,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2017-05-22 16:51:32" itemprop="dateCreated datePublished" datetime="2017-05-22T16:51:32+08:00">2017-05-22</time>
+              <time title="创建时间：2017-07-26 14:17:33" itemprop="dateCreated datePublished" datetime="2017-07-26T14:17:33+08:00">2017-07-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -331,7 +298,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
                 </span>
             </span>
 
@@ -346,557 +313,24 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>用 supervisord ，这样如果服务出错挂掉后，会自动重启</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/21/%E8%AF%AD%E8%A8%80/Golang/Golang-%E8%AF%AD%E6%B3%95-%E4%B8%89%E4%B8%AA%E7%82%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/21/%E8%AF%AD%E8%A8%80/Golang/Golang-%E8%AF%AD%E6%B3%95-%E4%B8%89%E4%B8%AA%E7%82%B9/" class="post-title-link" itemprop="url">Golang-语法-三个点</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-21 17:21:31" itemprop="dateCreated datePublished" datetime="2017-05-21T17:21:31+08:00">2017-05-21</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="用途之一：为函数定义多个参数"><a href="#用途之一：为函数定义多个参数" class="headerlink" title="用途之一：为函数定义多个参数"></a>用途之一：为函数定义多个参数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 函数x接受任意数量的int参数</span><br><span class="line">func x(args ...int)&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="用途之二：将切片拆散"><a href="#用途之二：将切片拆散" class="headerlink" title="用途之二：将切片拆散"></a>用途之二：将切片拆散</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 将切片m（含有3个int型元素）拆散成单个int型作为参数调用函数x</span><br><span class="line">m := make([]int, 3)</span><br><span class="line">x(m...)</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-Glide/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-Glide/" class="post-title-link" itemprop="url">Golang-包管理-Glide</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-16 19:55:34" itemprop="dateCreated datePublished" datetime="2017-05-16T19:55:34+08:00">2017-05-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://studygolang.com/articles/7129">http://studygolang.com/articles/7129</a></p>
-<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>golang的包管理工具有很多，本篇幅主要介绍glide进行包管理。</p>
-<h2 id="安装及命令介绍"><a href="#安装及命令介绍" class="headerlink" title="安装及命令介绍"></a>安装及命令介绍</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/Masterminds/glide</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>glide create|init 初始化项目并创建glide.yaml文件.</p>
-</li>
-<li><p>glide get 获取单个包</p>
-<ul>
-<li>–all-dependencies 会下载所有关联的依赖包</li>
-<li>-s 删除所有版本控制，如.git</li>
-<li>-v 删除嵌套的vendor</li>
-</ul>
-</li>
-<li><p>glide install 安装包</p>
-</li>
-<li><p>glide update|up 更新包</p>
-</li>
-</ul>
-<h2 id="案例测试"><a href="#案例测试" class="headerlink" title="案例测试"></a>案例测试</h2><p>准备：本次测试的包是 github.com/mattn/go-adodb ，这个包其中有一个依赖包是 github.com/go-ole/go-ole</p>
-<h3 id="下载单个包"><a href="#下载单个包" class="headerlink" title="下载单个包"></a>下载单个包</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">command：</span><br><span class="line">    glide get github.com/mattn/go-adodb</span><br><span class="line"></span><br><span class="line">glide.lock:</span><br><span class="line">    hash:    60061bf3133f0eec2f147f3d80f3e37c402ee12df8cde841b03d80c82a96bab7</span><br><span class="line">    updated: 2016-05-18T23:30:08.5219207+08:00</span><br><span class="line">    imports:</span><br><span class="line">    - name: github.com/mattn/go-adodb</span><br><span class="line">      version: 452cccbbcfb7906b3cbc512992557c1083e1011b</span><br><span class="line">    devImports: []</span><br><span class="line"></span><br><span class="line">glide.yaml:</span><br><span class="line">    package: glide_demo6</span><br><span class="line">    import:</span><br><span class="line">    - package: github.com/mattn/go-adodb</span><br></pre></td></tr></table></figure>
-
-<h3 id="下载单个包-–all-dependencies"><a href="#下载单个包-–all-dependencies" class="headerlink" title="下载单个包, –all-dependencies"></a>下载单个包, –all-dependencies</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">command:</span><br><span class="line">    glide get --all-dependencies -s -v github.com/mattn/go-adodb</span><br><span class="line"></span><br><span class="line">glide.lock:</span><br><span class="line">    hash: 60061bf3133f0eec2f147f3d80f3e37c402ee12df8cde841b03d80c82a96bab7</span><br><span class="line">    updated: 2016-05-18T23:34:48.7545322+08:00</span><br><span class="line">    imports:</span><br><span class="line">    - name: github.com/go-ole/go-ole</span><br><span class="line">      version: 572eabb84c424e76a0d39d31510dd7dfd62f70b2</span><br><span class="line">      subpackages:</span><br><span class="line">      - oleutil</span><br><span class="line">    - name: github.com/gonuts/commander</span><br><span class="line">      version: f8ba4e959ca914268227c3ebbd7f6bf0bb35541a</span><br><span class="line">    - name: github.com/gonuts/flag</span><br><span class="line">      version: 741a6cbd37a30dedc93f817e7de6aaf0ca38a493</span><br><span class="line">    - name: github.com/mattn/go-adodb</span><br><span class="line">      version: 452cccbbcfb7906b3cbc512992557c1083e1011b</span><br><span class="line">    devImports: []</span><br><span class="line"></span><br><span class="line">glide.yaml:</span><br><span class="line">    package: glide_demo6</span><br><span class="line">    import:</span><br><span class="line">    - package: github.com/mattn/go-adodb</span><br></pre></td></tr></table></figure>
-<p>从lock中可以看到，确实将所有的依赖包都下载了。</p>
-<h3 id="下载制定版本号的包"><a href="#下载制定版本号的包" class="headerlink" title="下载制定版本号的包"></a>下载制定版本号的包</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">command:</span><br><span class="line">    glide get github.com/go-sql-driver/mysql#v1.2</span><br><span class="line"></span><br><span class="line">glide.yaml:</span><br><span class="line">    package: glide_demo</span><br><span class="line">    import:</span><br><span class="line">    - package: github.com/go-sql-driver/mysql</span><br><span class="line">      version: v1.2</span><br></pre></td></tr></table></figure>
-
-<h3 id="团队开发"><a href="#团队开发" class="headerlink" title="团队开发"></a>团队开发</h3><p>在团队开始时，需要将 glide.yaml 和 glide.lock 进行版本控制，vendor 忽略掉。</p>
-<p>模拟下团队开发的流程</p>
-<p>A同学：初始化项目，并提交了源码，其中glide.yaml 和 glide.lock的内容如下</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">glide.yaml:</span><br><span class="line">    package: glide_demo6</span><br><span class="line">    import:</span><br><span class="line">    - package: github.com/mattn/go-adodb</span><br><span class="line">    - package: github.com/go-ole/go-ole</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">glide.lock:</span><br><span class="line">    hash: 18e3b9c2f5c11f3268b22ebdbea09636c5cae28e78f0011578f455c485e9d214</span><br><span class="line">    updated: 2016-05-18T23:43:15.8217224+08:00</span><br><span class="line">    imports:</span><br><span class="line">    - name: github.com/go-ole/go-ole</span><br><span class="line">      version: 572eabb84c424e76a0d39d31510dd7dfd62f70b2</span><br><span class="line">    - name: github.com/mattn/go-adodb</span><br><span class="line">      version: 452cccbbcfb7906b3cbc512992557c1083e1011b</span><br><span class="line">    devImports: []</span><br></pre></td></tr></table></figure>
-<p>B同学：拉去项目，执行 glide install，会自动下载对应的包</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>使用glide的好处是，每个项目都采用各自独立的包，而且可以很好的控制包的版本，这在团队开发中尤其重要。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-%E4%BD%BF%E7%94%A8vendor%E7%AE%A1%E7%90%86Golang%E9%A1%B9%E7%9B%AE%E4%BE%9D%E8%B5%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-%E4%BD%BF%E7%94%A8vendor%E7%AE%A1%E7%90%86Golang%E9%A1%B9%E7%9B%AE%E4%BE%9D%E8%B5%96/" class="post-title-link" itemprop="url">Golang-包管理-使用vendor管理Golang项目依赖</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-16 19:55:34" itemprop="dateCreated datePublished" datetime="2017-05-16T19:55:34+08:00">2017-05-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.tuicool.com/articles/NjMzIbJ">http://www.tuicool.com/articles/NjMzIbJ</a></p>
-<p>我们在项目中除了大量的使用Python外，也大量的使用了Golang构建高效基础运行服务。在使用Golang过程中，我们发现Golang程序缺少依赖库版本功能是一个非常令人头大的问题：某些依赖在某个commit之后发生了API变更之后，如果不修改代码很难兼容，然而开发者之间很有可能因为参与的时间不同，导致执行 go get 命令获取的版本不同，而导致在不同电脑上出现编译不通过问题。同时，在多个程序中，如果使用的commit版本不同，也可能会导致程序编译过程中出现不同的问题。</p>
-<p>在之前，我们解决这个问题有两个方案，一种是拆解 go get 命令的执行，首先创建对应依赖目录，利用git命令切换至指定的commit，然后执行 go install 命令。另外一种比较省事的方法是使用 godep 工具，这里就不做过多介绍了，具体可以参考文档或者搜索中文教程。</p>
-<p>在Golang1.5之后，Go提供了 GO15VENDOREXPERIMENT 环境变量，用于将go build时的应用路径搜索调整成为 当前项目目录/vendor 目录方式。通过这种形式，我们可以实现类似于 godep 方式的项目依赖管理。不过起码在程序编译过程中，再也无需在其他端部署一个 godep 工具。</p>
-<p>在使用之前，需要安装一个辅助工具（如果Golang自改一个就好了）： <code>go get -u -v github.com/kardianos/govendor</code> 。</p>
-<p>下面，我们用一个例子来说明。首先有一个名为 vendorproj 的项目。假如只有一个文件：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">    &quot;github.com/yeeuu/echoic&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    e := echoic.New()</span><br><span class="line">    e.SetDebug(true)</span><br><span class="line">    e.Run(&quot;127.0.0.1:4321&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>执行一下命令就可以生成vendor文件夹：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ govendor init</span><br><span class="line">$ ls</span><br><span class="line">main.go    vendor</span><br><span class="line">$ cd vendor/</span><br><span class="line">$ ls</span><br><span class="line">vendor.json</span><br></pre></td></tr></table></figure>
-<p>这个 vendor.json 会类似 godep 工具中的描述文件版本的功能。接下来，需要执行命令将当前应用必须的文件包含进来</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ govendor add +external</span><br></pre></td></tr></table></figure>
-<p>如果需要更新或移除，可以参考一下工具的具体文档使用 update 或者 remove 命令即可。这样会在vendor目录下将必须的编译文件移入进来（注意：测试所需依赖并不包含，依赖项目的测试文件也不会包含）。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ ls</span><br><span class="line">github.com  golang.org  vendor.json</span><br><span class="line">$ cat vendor.json</span><br><span class="line">&#123;</span><br><span class="line">    &quot;comment&quot;: &quot;&quot;,</span><br><span class="line">    &quot;ignore&quot;: &quot;test&quot;,</span><br><span class="line">    &quot;package&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;path&quot;: &quot;github.com/yeeuu/echoic&quot;,</span><br><span class="line">            &quot;revision&quot;: &quot;a7d6994f92e2dc60cff071ae38b204fbd4bd2a3f&quot;,</span><br><span class="line">            &quot;revisionTime&quot;: &quot;2015-12-18T11:14:29+08:00&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;path&quot;: &quot;golang.org/x/net/context&quot;,</span><br><span class="line">            &quot;revision&quot;: &quot;1d9fd3b8333e891c0e7353e1adcfe8a612573033&quot;,</span><br><span class="line">            &quot;revisionTime&quot;: &quot;2015-11-13T15:40:13-08:00&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line">$ cd github.com/yeeuu/echoic</span><br><span class="line">$ ls</span><br><span class="line">LICENSE     context.go  group.go    router.go</span><br><span class="line">README.md   echoic.go   response.go</span><br></pre></td></tr></table></figure>
-<p>通过设置环境变量 <code>GO15VENDOREXPERIMENT=1</code> 使用vendor文件夹构建文件。可以选择 <code>export GO15VENDOREXPERIMENT=1</code> 或者干脆 <code>GO15VENDOREXPERIMENT=1 go build</code> 执行编译。</p>
-<p>通过这种方式就可以保证程序能够实现类似Python中Virtualenv的模式，实现不同程序使用不同版本依赖的目的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%91%BD%E4%BB%A4-%E6%9B%B4%E6%96%B0%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%91%BD%E4%BB%A4-%E6%9B%B4%E6%96%B0%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85/" class="post-title-link" itemprop="url">Golang-命令-更新第三方包</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-16 16:20:25" itemprop="dateCreated datePublished" datetime="2017-05-16T16:20:25+08:00">2017-05-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>go get 默认会将包安装在 GOPATH 列举的第一个路径中。 你可以使用 go get -u 来更新已经存在的第三方包。</p>
-<p>你也可以使用 go get -u all 来更新在你 GOPATH 中的所有第三方包</p>
-<p>对于大一点的项目，为不同的项目创建不同的 GOPATH 则更为合理，因为这样更新A项目里的库不会导致B项目出问题。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E7%BC%96%E8%AF%91-%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E7%BC%96%E8%AF%91-%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91/" class="post-title-link" itemprop="url">Golang-编译-交叉编译</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-16 12:38:27" itemprop="dateCreated datePublished" datetime="2017-05-16T12:38:27+08:00">2017-05-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>从go1.5开始，将源码编译成非本地系统的程序，不再需要先生成目的系统的编译工具了，直接加参数编译即可，例如在64位ubuntu上想要编译64位windows的程序，在源码路径下执行</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GOOS=windows GOARCH=amd64 go build</span><br></pre></td></tr></table></figure>
-<p>就结束了(其中GOARCH=amd64可以省略)。当然如果是32位windows，则由于目的系统和本地系统架构不一致需要显示指明，命令变为</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GOOS=windows GOARCH=386 go build</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/15/%E8%AF%AD%E8%A8%80/Golang/Golang-API-groupcache/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/15/%E8%AF%AD%E8%A8%80/Golang/Golang-API-groupcache/" class="post-title-link" itemprop="url">Golang-API-groupcache</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-15 22:10:29" itemprop="dateCreated datePublished" datetime="2017-05-15T22:10:29+08:00">2017-05-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="主要代码结构"><a href="#主要代码结构" class="headerlink" title="主要代码结构"></a>主要代码结构</h2><p>consistenthash(提供一致性哈希算法的支持)，lru(提供了LRU方式清楚缓存的算法)，singleflight(保证了多次相同请求只去获取值一次，减少了资源消耗)，还有一些源文件：byteview.go 提供类似于一个数据的容器，http.go提供不同地址间的缓存的沟通的实现，peers.go节点的定义，sinks.go感觉就是一个开辟空间给容器，并和容器交互的一个中间人，groupcache.go整个源码里的大当家，其它人都是为它服务的。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/04/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E6%8F%92%E4%BB%B6-%E9%83%A8%E7%BD%B2war%E5%8C%85%E5%88%B0Tomcat%E4%B8%AD/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/04/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E6%8F%92%E4%BB%B6-%E9%83%A8%E7%BD%B2war%E5%8C%85%E5%88%B0Tomcat%E4%B8%AD/" class="post-title-link" itemprop="url">Jenkins-插件-部署war包到Tomcat中</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-04 16:57:03" itemprop="dateCreated datePublished" datetime="2017-05-04T16:57:03+08:00">2017-05-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Jenkins/" itemprop="url" rel="index"><span itemprop="name">Jenkins</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ol>
-<li><p>在jenkins“系统管理”的“管理插件”中安装“Deploy to container Plugin”</p>
-</li>
-<li><p>在Jenkins中配置Job，在“构建后操作”中增加“Deploy war/ear to container”</p>
-</li>
+          <p>转自：<a target="_blank" rel="noopener" href="http://blog.sina.com.cn/s/blog_5da08c340100bmwu.html">http://blog.sina.com.cn/s/blog_5da08c340100bmwu.html</a></p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>sizeof是C语言的一种单目操作符，如C语言的其他操作符++、–等。它并不是函数。</p>
+<p>sizeof操作符以字节形式给出了其操作数的存储大小。操作数可以是一个表达式或括在括号内的类型名。操作数的存储大小由操作数的类型决定。　</p>
+<h2 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h2><h3 id="用于数据类型"><a href="#用于数据类型" class="headerlink" title="用于数据类型"></a>用于数据类型</h3><p>sizeof使用形式: <code>sizeof(type)</code></p>
+<p>数据类型必须用括号括住: <code>sizeof(int)</code></p>
+<h3 id="用于变量"><a href="#用于变量" class="headerlink" title="用于变量"></a>用于变量</h3><p>sizeof使用形式: <code>sizeof(var_name)</code> 或 <code>sizeof var_name</code></p>
+<h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>sizeof操作符不能用于函数类型，不完全类型（不完全类型指具有未知存储大小的数据类型）或位字段。</p>
+<h2 id="返回结果"><a href="#返回结果" class="headerlink" title="返回结果"></a>返回结果</h2><p>sizeof操作符的结果类型是size_t</p>
+<p>它在头文件中定义为: <code>typedef unsigned int size_t</code></p>
+<h2 id="主要用途"><a href="#主要用途" class="headerlink" title="主要用途"></a>主要用途</h2><ol>
+<li>主要用途是与存储分配和I/O系统那样的例程进行通信</li>
 </ol>
-<p>  <img src="/2017/05/04/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E6%8F%92%E4%BB%B6-%E9%83%A8%E7%BD%B2war%E5%8C%85%E5%88%B0Tomcat%E4%B8%AD/1.png" alt="1"></p>
-<p>  参数说明</p>
-<ul>
-<li><p>WAR/EAR files</p>
-<p>相对于工作空间的相对路径，也可以写“Ant-style GLOBs”表达式，如：<code>**/*.war</code>，“Ant-style GLOBs”暂时还没有弄明白是什么，经测试可以按如下形式写：<code>source/target/*.war</code>或<code>source/target/yiqifa-adcenter-web.war</code>，建议以“<code>**/*.war</code>”形式填写。</p>
-<p>如本文中使用的Jenkins的工作空间为/data/jenkins，job名称为hyf-test-deploy-plugin，则这里的路径是相对/data/jenkins/hyf-test-deploy-plugin的（其中source是在job中指定的源码存放目录，视设置确定需不需要加上这个目录）</p>
-<p>如果所有配置都正确，在Jenkins的控制台会看到如下图的提示：</p>
-<p><img src="/2017/05/04/%E5%B7%A5%E5%85%B7/Jenkins/Jenkins-%E6%8F%92%E4%BB%B6-%E9%83%A8%E7%BD%B2war%E5%8C%85%E5%88%B0Tomcat%E4%B8%AD/2.png" alt="2"></p>
-<p>其中“hyf-test-deploy-plugin”为Jenkins的job名称。</p>
-</li>
-<li><p>Context Path</p>
-<p>应用在Tomcat中的部署路径，如上图，部署后可以通过<a target="_blank" rel="noopener" href="http://172.16.18.192:8080/hyftest%E6%9D%A5%E8%AE%BF%E9%97%AE%E9%83%A8%E7%BD%B2%E7%9A%84%E5%BA%94%E7%94%A8">http://172.16.18.192:8080/hyftest来访问部署的应用</a></p>
-</li>
-<li><p>Manager user name/Manager password</p>
-<p>在“修改Tomcat管理用户配置”中配置好的用户名和密码</p>
-</li>
-<li><p>Tomcat Url</p>
-<p>运程Tomcat的访问路径，如上图中的<a href="http://172.16.18.192:8080，插件通过这个地址将应用的war/ear包上传到Tomcat的webapps目录下">http://172.16.18.192:8080，插件通过这个地址将应用的war/ear包上传到Tomcat的webapps目录下</a></p>
-</li>
-<li><p>Add Container</p>
-<p>在这里可以继续增加其他的容器，这样就可以实现将应用同时部署到不同的容器中。</p>
-</li>
-</ul>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">void *malloc(size_t size);</span><br><span class="line"></span><br><span class="line">size_t fread(void *ptr, size_t size, size_t nmemb, FILE * stream);</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>另一个的主要用途是计算数组中元素的个数。</li>
+</ol>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void *memset(void *s, int c, sizeof(s));</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -916,7 +350,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/04/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E8%B4%A6%E5%8F%B7%E5%AF%86%E7%A0%81%E8%AE%BE%E7%BD%AE/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-size_t/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -930,7 +364,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2017/05/04/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E8%B4%A6%E5%8F%B7%E5%AF%86%E7%A0%81%E8%AE%BE%E7%BD%AE/" class="post-title-link" itemprop="url">Tomcat-账号密码设置</a>
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-size_t/" class="post-title-link" itemprop="url">C-类型-size_t</a>
         </h2>
 
         <div class="post-meta">
@@ -940,7 +374,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2017-05-04 16:53:19" itemprop="dateCreated datePublished" datetime="2017-05-04T16:53:19+08:00">2017-05-04</time>
+              <time title="创建时间：2017-07-26 14:15:42" itemprop="dateCreated datePublished" datetime="2017-07-26T14:15:42+08:00">2017-07-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -948,7 +382,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
                 </span>
             </span>
 
@@ -963,9 +397,562 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>用户名和密码可以到“Tomcat安装目录/conf/tomcat-users.xml”文件中进行查看。</p>
-<p>可以看到，默认情况下，Tomcat Manager的用户名和密码是注释掉的，即Tomcat Manager默认是禁用的。</p>
-<p><img src="/2017/05/04/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E8%B4%A6%E5%8F%B7%E5%AF%86%E7%A0%81%E8%AE%BE%E7%BD%AE/1.png" alt="1"></p>
+          <p>size_t是一些C/C++标准在stddef.h中定义的。这个类型足以用来表示对象的大小。</p>
+<p>size_t的真实类型与操作系统有关，在32位架构中被普遍定义为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef unsigned int size_t;</span><br></pre></td></tr></table></figure>
+
+<p>而在64位架构中被定义为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef unsigned long size_t;</span><br></pre></td></tr></table></figure>
+
+<p>size_t在32位架构上是4字节，在64位架构上是8字节，在不同架构上进行编译时需要注意这个问题。</p>
+<p>而int在不同架构下都是4字节，与size_t不同；且int为带符号数，size_t为无符号数。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E5%AE%BD%E5%AD%97%E7%AC%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E5%AE%BD%E5%AD%97%E7%AC%A6/" class="post-title-link" itemprop="url">C-类型-宽字符</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 12:47:20" itemprop="dateCreated datePublished" datetime="2017-07-26T12:47:20+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://c.biancheng.net/cpp/html/1069.html">http://c.biancheng.net/cpp/html/1069.html</a></p>
+<p>Unicode或者宽字符都没有改变char数据型态在C中的含义。char继续表示1个字节的储存空间，sizeof （char）继续返回1。理论上，C中1个字节可比8位长，但对我们大多数人来说，1个字节（也就是1个char）是8位宽。</p>
+<p>C中的宽字符基于wchar_t数据型态，它在几个表头文件包括WCHAR.H中都有定义，像这样：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef unsigned short wchar_t ;</span><br></pre></td></tr></table></figure>
+
+<p>因此，wchar_t数据型态与无符号短整数型态相同，都是16位宽。</p>
+<p>要定义包含一个宽字符的变量，可使用下面的语句：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wchar_t c = &#x27;A&#x27; ;</span><br></pre></td></tr></table></figure>
+
+<p>变量c是一个双字节值0x0041，是Unicode表示的字母A。（然而，因为Intel微处理器从最小的字节开始储存多字节数值，该字节实际上是以0x41、0x00的顺序保存在内存中。如果检查Unicode文字的计算机储存应注意这一点。）</p>
+<p>您还可定义指向宽字符串的指针：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wchar_t * p = L&quot;Hello!&quot; ;</span><br></pre></td></tr></table></figure>
+
+<p>注意紧接在第一个引号前面的大写字母L（代表「long」）。这将告诉编译器该字符串按宽字符保存－即每个字符占用2个字节。通常，指针变量p要占用4个字节，而字符串变量需要14个字节－每个字符需要2个字节，末尾的0还需要2个字节。</p>
+<p>同样，您还可以用下面的语句定义宽字符数组：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">static wchar_t a[] = L&quot;Hello!&quot; ;</span><br></pre></td></tr></table></figure>
+
+<p>该字符串也需要14个字节的储存空间，sizeof (a) 将返回14。索引数组a可得到单独的字符。a[1] 的值是宽字符「e」，或者0x0065。</p>
+<p>虽然看上去更像一个印刷符号，但第一个引号前面的L非常重要，并且在两个符号之间必须没有空格。只有带有L，编译器才知道您需要将字符串存为每个字符2字节。稍后，当我们看到使用宽字符串而不是变量定义时，您还会遇到第一个引号前面的L。幸运的是，如果忘记了包含L，C编译器通常会给提出警告或错误信息。</p>
+<p>您还可在单个字符文字前面使用L前缀，来表示它们应解释为宽字符。如下所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wchar_t c = L&#x27;A&#x27; ;</span><br></pre></td></tr></table></figure>
+
+<p>但通常这是不必要的，C编译器会对该字符进行扩充，使它成为宽字符。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%87%BD%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">C-函数</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 10:07:05" itemprop="dateCreated datePublished" datetime="2017-07-26T10:07:05+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="函数声明"><a href="#函数声明" class="headerlink" title="函数声明"></a>函数声明</h3><p>函数声明会告诉编译器函数名称及如何调用函数。函数的实际主体可以单独定义。<br>函数声明包括以下几个部分：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">return_type function_name( parameter list );</span><br></pre></td></tr></table></figure>
+<p>针对上面定义的函数 max()，以下是函数声明：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int max(int num1, int num2);</span><br></pre></td></tr></table></figure>
+<p>在函数声明中，参数的名称并不重要，只有参数的类型是必需的，因此下面也是有效的声明：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int max(int, int);</span><br></pre></td></tr></table></figure>
+<p>当您在一个源文件中定义函数且在另一个文件中调用函数时，函数声明是必需的。在这种情况下，您应该在调用函数的文件顶部声明函数。</p>
+<hr>
+<p>函数调用出现在函数定义之前，那么需要在调用前加以声明int max(int, int);</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    return max(2,3);</span><br><span class="line">&#125;</span><br><span class="line">int max(int a, int b)</span><br><span class="line">&#123;</span><br><span class="line">    return a &gt; b ? a : b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>函数调用出现在函数定义之后，加不加声明无所谓int max(int a, int b)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    return a &gt; b ? a : b;</span><br><span class="line">&#125;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    return max(2,3);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="函数分类"><a href="#函数分类" class="headerlink" title="函数分类"></a>函数分类</h3><p>根据函数能否被其他源文件调用，将函数区分为内部函数和外部函数。</p>
+<h4 id="内部函数"><a href="#内部函数" class="headerlink" title="内部函数"></a>内部函数</h4><p>如果一个函数只能被本文件中其他函数所调用，它称为内部函数。在定义内部函数时，在函数名和函数类型的前面加 static，即</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">static 类型名 函数名 （形参表）</span><br></pre></td></tr></table></figure>
+<p>例如，函数的首行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">static int max(int a,intb)</span><br></pre></td></tr></table></figure>
+<p>内部函数又称静态函数。使用内部函数，可以使函数的作用域只局限于所在文件。即使在不同的文件中有同名的内部函数，也互不干扰。提高了程序的可靠性。</p>
+<h4 id="外部函数"><a href="#外部函数" class="headerlink" title="外部函数"></a>外部函数</h4><p>如果在定义函数时，在函数的首部的最左端加关键字 extern，则此函数是外部函数，可供其它文件调用。</p>
+<p>如函数首部可以为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">extern int max (int a,intb)</span><br></pre></td></tr></table></figure>
+<p>C 语言规定，如果在定义函数时省略 extern，则默认为外部函数。</p>
+<p>在需要调用此函数的其他文件中，需要对此函数作声明（不要忘记，即使在本文件中调用一个函数，也要用函数原型来声明）。在对此函数作声明时，要加关键字 extern，表示该函数是在其他文件中定义的外部函数。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E5%AD%97%E7%AC%A6%E4%B8%B2-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E5%AD%98%E5%82%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E5%AD%97%E7%AC%A6%E4%B8%B2-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E5%AD%98%E5%82%A8/" class="post-title-link" itemprop="url">C-类型-字符串-字符串的存储</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 10:07:05" itemprop="dateCreated datePublished" datetime="2017-07-26T10:07:05+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="字符串的分类"><a href="#字符串的分类" class="headerlink" title="字符串的分类"></a>字符串的分类</h2><h3 id="单字节字符串"><a href="#单字节字符串" class="headerlink" title="单字节字符串"></a>单字节字符串</h3><p>由char数据类型组成的序列</p>
+<h3 id="宽字符串"><a href="#宽字符串" class="headerlink" title="宽字符串"></a>宽字符串</h3><p>由wchar_t数据类型组成的序列</p>
+<h2 id="内存格式"><a href="#内存格式" class="headerlink" title="内存格式"></a>内存格式</h2><p>长为n的字符串在内存中连续存放，每个字符存贮其ASCII码，占一个字节，共n个字节，最后填一个全0字节作为串的结束标志。空串也有一个字节，即只有结束标志字符<code>\0</code>。</p>
+<h2 id="字符串定义方式"><a href="#字符串定义方式" class="headerlink" title="字符串定义方式"></a>字符串定义方式</h2><h3 id="字符数组接受字符串"><a href="#字符数组接受字符串" class="headerlink" title="字符数组接受字符串"></a>字符数组接受字符串</h3><p>C语言中没有特定的字符串类型，我们通常是将字符串放在一个字符数组中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">char str[] = &quot;hello world&quot;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="字符指针接受字符串"><a href="#字符指针接受字符串" class="headerlink" title="字符指针接受字符串"></a>字符指针接受字符串</h3><p>除了字符数组，C语言还支持另外一种表示字符串的方法，就是直接使用一个字符指针指向字符串。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">char *str = &quot;hello world&quot;;</span><br></pre></td></tr></table></figure>
+
+<p>字符串中的所有字符在内存中是连续排列的，str 指向的是字符串的第 0 个字符；我们通常将第 0 个字符的地址称为字符串的首地址。字符串中每个字符的类型都是 <code>char</code>，所以 str 的类型也必须是 <code>char *</code>。</p>
+<h2 id="两种方式的区别"><a href="#两种方式的区别" class="headerlink" title="两种方式的区别"></a>两种方式的区别</h2><p>它们最根本的区别是在内存中的存储区域不一样，字符数组存储在全局数据区或栈区，第二种形式的字符串存储在常量区。全局数据区和栈区的字符串（也包括其他数据）有读取和写入的权限，而常量区的字符串（也包括其他数据）只有读取权限，没有写入权限。</p>
+<p>内存权限的不同导致的一个明显结果就是，字符数组在定义后可以读取和修改每个字符，而对于第二种形式的字符串，一旦被定义后就只能读取不能修改，任何对它的赋值都是错误的。</p>
+<p>我们将第二种形式的字符串称为字符串常量，意思很明显，常量只能读取不能写入。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int main()&#123;</span><br><span class="line">  char *str = &quot;Hello World!&quot;;</span><br><span class="line">  str = &quot;I love C!&quot;;  //正确</span><br><span class="line">  str[3] = &#x27;P&#x27;;  //错误</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-static/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-static/" class="post-title-link" itemprop="url">C-关键字-储存类-static</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-25 21:07:56" itemprop="dateCreated datePublished" datetime="2017-07-25T21:07:56+08:00">2017-07-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>static 存储类指示编译器在程序的生命周期内保持局部变量的存在，而不需要在每次它进入和离开作用域时进行创建和销毁。因此，使用 static 修饰局部变量可以在函数调用之间保持局部变量的值。</p>
+<p>static 修饰符也可以应用于全局变量。当 static 修饰全局变量时，会使变量的作用域限制在声明它的文件内。</p>
+<p>static 是全局变量的默认存储类，以下两个变量 (count 和 road) 都有一个 static 存储类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">static int Count;</span><br><span class="line">int Road;</span><br><span class="line"></span><br><span class="line">main()</span><br><span class="line">&#123;</span><br><span class="line">  printf(&quot;%d\n&quot;, Count);</span><br><span class="line">  printf(&quot;%d\n&quot;, Road);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-register/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-register/" class="post-title-link" itemprop="url">C-关键字-储存类-register</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-25 21:05:11" itemprop="dateCreated datePublished" datetime="2017-07-25T21:05:11+08:00">2017-07-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>register 存储类用于定义存储在寄存器中而不是 RAM 中的局部变量。这意味着变量的最大尺寸等于寄存器的大小（通常是一个词），且不能对它应用一元的 ‘&amp;’ 运算符（因为它没有内存位置）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   register int miles;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>寄存器只用于需要快速访问的变量，比如计数器。还应注意的是，定义 ‘register’ 并不意味着变量将被存储在寄存器中，它意味着变量可能存储在寄存器中，这取决于硬件和实现的限制。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-auto/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-auto/" class="post-title-link" itemprop="url">C-关键字-储存类-auto</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-25 21:03:00" itemprop="dateCreated datePublished" datetime="2017-07-25T21:03:00+08:00">2017-07-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>auto 存储类是所有局部变量默认的存储类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   int mount;</span><br><span class="line">   auto int month;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的实例定义了两个带有相同存储类的变量，auto 只能用在函数内，即 auto 只能修饰局部变量。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-extern/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-extern/" class="post-title-link" itemprop="url">C-关键字-储存类-extern</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-25 20:29:48" itemprop="dateCreated datePublished" datetime="2017-07-25T20:29:48+08:00">2017-07-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/xiaorenwu702/p/5739845.html">http://www.cnblogs.com/xiaorenwu702/p/5739845.html</a></p>
+<p>用C语言编写程序的时候，我们经常会遇到这样一种情况：希望在头文件中定义一个全局变量，然后包含到两个不同的c文件中，希望这个全局变量能在两个文件中共用。</p>
+<h3 id="举例说明"><a href="#举例说明" class="headerlink" title="举例说明"></a>举例说明</h3><p>项目文件夹project下有main.c、common.c和common.h三个文件，其中common.h文件分别#include在main.c和common.c文件中。现在希望声明一个字符型变量key，在main.c和common.c中公用。</p>
+<p>有人想，既然是想两个文件都用，那就在common.h中声明一个unsigned char key，然后由于包含关系，在main.c和common.c中都是可见的，所以就能共用了。</p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>这种想法其实是很多初学者都会想到的，想起来确实有道理，但是实际写出来，我们发现编译的时候编译器提示出错，一般提示大概都类似于：Error: L6200E: Symbol key multiply defined (by common.o and main.o). 也就是说编译器认为我们重复定义了key这个变量。这是因为#include命令就是原封不同的把头文件中的内容搬到#include的位置，所以相当于main.c和common.c中都执行了一次unsigned char key，而C语言中全局变量是项目内（或者叫工程内）可见的，这样就造成了一个项目中两个变量key，编译器就认为是重复定义。</p>
+<h3 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h3><p>使用extern关键字来声明变量为外部变量。具体说就是在其中一个c文件中定义一个全局变量key，然后在另一个要使用key这个变量的c文件中使用extern关键字声明一次，说明这个变量为外部变量，是在其他的c文件中定义的全局变量。请注意我这里的用词：定义和声明。例如在main.c文件中定义变量key，在common.c文件中声明key变量为外部变量，这样这两个文件中就能共享这个变量key了。</p>
+<p>main.c</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;common.h&quot;</span><br><span class="line">unsigned char key;</span><br></pre></td></tr></table></figure>
+
+<p>common.c</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;common.h&quot;</span><br><span class="line">extern unsigned char key;</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -984,7 +971,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/18/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/18/">18</a><span class="page-number current">19</span><a class="page-number" href="/page/20/">20</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/20/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/18/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/18/">18</a><span class="page-number current">19</span><a class="page-number" href="/page/20/">20</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/20/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1052,20 +1039,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

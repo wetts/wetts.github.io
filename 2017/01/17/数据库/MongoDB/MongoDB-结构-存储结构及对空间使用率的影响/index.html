@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="转自：http:&#x2F;&#x2F;www.mongoing.com&#x2F;blog&#x2F;file-storage 参考：http:&#x2F;&#x2F;blog.mlab.com&#x2F;2014&#x2F;01&#x2F;how-big-is-your-mongodb&#x2F; 数据库文件类型MongoDB 的数据库文件主要有 3 种：  journal 日志文件 namespace 表名文件 data 数据及索引文件  日志文件跟一些传统数据库不同，MongoDB 的日">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MongoDB-结构-存储结构及对空间使用率的影响">
+<meta property="og:url" content="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;www.mongoing.com&#x2F;blog&#x2F;file-storage 参考：http:&#x2F;&#x2F;blog.mlab.com&#x2F;2014&#x2F;01&#x2F;how-big-is-your-mongodb&#x2F; 数据库文件类型MongoDB 的数据库文件主要有 3 种：  journal 日志文件 namespace 表名文件 data 数据及索引文件  日志文件跟一些传统数据库不同，MongoDB 的日">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/Extents.png">
+<meta property="og:image" content="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/Record.png">
+<meta property="og:image" content="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/dataSize.png">
+<meta property="og:image" content="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/storageSize.png">
+<meta property="og:image" content="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/fileSize.png">
+<meta property="article:published_time" content="2017-01-17T08:23:37.000Z">
+<meta property="article:modified_time" content="2021-10-14T06:15:18.219Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="MongoDB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/Extents.png">
+
+<link rel="canonical" href="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MongoDB-结构-存储结构及对空间使用率的影响 | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MongoDB-结构-存储结构及对空间使用率的影响
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-17 16:23:37" itemprop="dateCreated datePublished" datetime="2017-01-17T16:23:37+08:00">2017-01-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>转自：<a target="_blank" rel="noopener" href="http://www.mongoing.com/blog/file-storage">http://www.mongoing.com/blog/file-storage</a></p>
+<p>参考：<a target="_blank" rel="noopener" href="http://blog.mlab.com/2014/01/how-big-is-your-mongodb/">http://blog.mlab.com/2014/01/how-big-is-your-mongodb/</a></p>
+<h2 id="数据库文件类型"><a href="#数据库文件类型" class="headerlink" title="数据库文件类型"></a>数据库文件类型</h2><p>MongoDB 的数据库文件主要有 3 种：</p>
+<ul>
+<li>journal 日志文件</li>
+<li>namespace 表名文件</li>
+<li>data 数据及索引文件</li>
+</ul>
+<h3 id="日志文件"><a href="#日志文件" class="headerlink" title="日志文件"></a>日志文件</h3><p>跟一些传统数据库不同，MongoDB 的日志文件只是用来在系统出现宕机时候恢复尚未来得及同步到硬盘的内存数据。日志文件会存放在一个分开的目录下面。启动时候 MongoDB 会自动预先创建 3 个每个为 1G 的日志文件（初始为空）。除非你真的有持续海量数据并发写入，一般来说 3 个 G 已经足够。</p>
+<h3 id="命名文件-dbname-ns"><a href="#命名文件-dbname-ns" class="headerlink" title="命名文件 dbname.ns"></a>命名文件 dbname.ns</h3><p>这个文件用来存储整个数据库的集合以及索引的名字。这个文件不大，默认 16M，可以存储 24000 个集合或者索引名以及那些集合和索引在数据文件中得具体位置。通过这个文件 MongoDB 可以知道从哪里去开始寻找或插入集合的数据或者索引数据。这个值可以通过参数调整至2G。</p>
+<h3 id="数据文件-dbname-0-dbname-1-…-dbname-n"><a href="#数据文件-dbname-0-dbname-1-…-dbname-n" class="headerlink" title="数据文件 dbname.0, dbname.1,… dbname.n"></a>数据文件 dbname.0, dbname.1,… dbname.n</h3><p>MongoDB 的数据以及索引都存放在一个或者多个 MongoDB 数据文件里。第一个数据文件会以“数据库名.0”命名，如 my-db.0。这个文件默认大小是 64M，在接近用完这个 64M 之前，MongoDB 会提前生成下一个数据文件如 my-db.1。数据文件的大小会 2 倍递增。第二个数据文件的大小为 128M，第三个为 256M。一直到了 2G 以后就会停止，一直按这个 2G 这个大小增加新的文件。</p>
+<hr>
+<p>当然 MongoDB还 会生成一些临时文件如 <code>_tmp</code> 和 <code>mongod.lock</code>等， 不过他们跟我们的讨论都没有太大相关性。</p>
+<h2 id="数据文件结构"><a href="#数据文件结构" class="headerlink" title="数据文件结构"></a>数据文件结构</h2><h3 id="Extent"><a href="#Extent" class="headerlink" title="Extent"></a>Extent</h3><p>在每一个数据文件内，MongoDB 把所存储的 BSON 文档的数据和 B 树索引组织到逻辑容器“Extent”里面。如下图所示（my-db.1 和 my-db.2 是数据库的两个数据文件）：</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/Extents.png" alt="Extent"></p>
+<ul>
+<li>一个文件可以有多个 Extent</li>
+<li>每一个 Extent 只会包含一个集合的数据或者索引</li>
+<li>同一个集合的数据或索引可以分布在多个 Extent 内。这几个 Extent 也可以分步于多个文件内</li>
+<li>同一个 Extent 不会又有数据又有索引</li>
+</ul>
+<h3 id="Record-记录"><a href="#Record-记录" class="headerlink" title="Record 记录"></a>Record 记录</h3><p>在每个 Extent 里面存放有多个”Record“, 每一个记录里包含一个记录头以及 MongoDB 的 BSON 文档，以及一些额外的 padding 空间。Padding 是 MongoDB 在插入记录时额外分配一些未用空间，这样将来文档变大的时候不至于需要把文档迁移到别处。 记录头以整个记录的大小开始，包括该记录自己的位置以及前一个记录和后一个记录的位置。可以想象成一个 Double Linked List。</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/Record.png" alt="Record"></p>
+<h2 id="数据库大小参数"><a href="#数据库大小参数" class="headerlink" title="数据库大小参数"></a>数据库大小参数</h2><p>在之前的基础上，我们可以来理解一下 db.stats() 里面关于空间大小参数的含义。</p>
+<h3 id="dataSize"><a href="#dataSize" class="headerlink" title="dataSize"></a>dataSize</h3><p>dataSize 是最接近真实数据大小的一个参数。你可以用来检查你的数据有多少。这个大小包括了数据库（或者集合）的每条记录的总和。注意每条记录除了 BSON 文档外还有 header 及 padding 这些额外开销。所以实际大小会比真正数据所占空间会稍大。</p>
+<p>当删除文档的时候，这个参数会相应变小因为它是所有文档数的大小总和。如果你的文档没有删除，只是文档内部的字段被删除或缩小，则不会对 dataSize 有影响。原因就是因为文档所在记录还在，并且整条记录所占空间并无改动，只不过记录内的未用空间变多了而已。</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/dataSize.png" alt="dataSize"></p>
+<h3 id="storageSize"><a href="#storageSize" class="headerlink" title="storageSize"></a>storageSize</h3><p>这个参数等于数据库或者某个集合所有用到的 Data Extents 的总和。注意这个数字会大于 dataSize 因为 Extent 里面会有一些删除文档之后留下来的碎片（deleted）。及时你的 storageSize 大出 dataSize 很多，这个也不一定就是很糟糕的情况。如果有新插入的文档小于或等于碎片的大小，MongoDB 会重新利用这个碎片来存储新的文档。不过在这之前这些碎片将一直会被保留在那里占用空间。由于这个原因，你删除文档的时候这个参数不会变小。</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/storageSize.png" alt="storageSize"></p>
+<p>碎片问题会因为运行的时间变长而变得严重。你可以通过 compact 命令来进行碎片清理或者通过新架一台从机复制所有数据，然后变成主节点的方式来解决这些碎片。</p>
+<h3 id="fileSize"><a href="#fileSize" class="headerlink" title="fileSize"></a>fileSize</h3><p>这个参数只在数据库上有效，指的是实际文件系统中用到的文件的大小。它包括所有的数据 Extents 的总和，索引 Extent 的总和，以及一些未被分配的空间。之前提到 MongoDB 会对数据库文件创建时候进行预分配，例如最小就是 64M，哪怕你只有几百个 KB 的数据。所以这个参数可能会比实际的数据大小会大不少。这些额外未用空间是用来保证 MongoDB 可以在新的数据写入时候快速的分配新的 Extent，避免引起磁盘空间分配引起的延迟。</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/fileSize.png" alt="fileSize"></p>
+<p>值得注意的是，当你删除文档，或甚至集合和索引，这个参数不会变小。换句话说，数据库所使用的硬盘空间只会上升（或者不变），而不会因为删除数据而变小。当然需要知道的是这并不就意味着浪费，只是说有很多预留空间而已。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MongoDB/" rel="tag"># MongoDB</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/01/14/%E5%B7%A5%E5%85%B7/git/github%E8%A2%AB%E5%A2%99%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86/" rel="prev" title="github被墙设置代理">
+      <i class="fa fa-chevron-left"></i> github被墙设置代理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-How%20can%20MongoDB%20dataSize%20be%20larger%20than%20storageSize/" rel="next" title="MongoDB-How can MongoDB dataSize be larger than storageSize?">
+      MongoDB-How can MongoDB dataSize be larger than storageSize? <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">数据库文件类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="nav-number">1.1.</span> <span class="nav-text">日志文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E5%90%8D%E6%96%87%E4%BB%B6-dbname-ns"><span class="nav-number">1.2.</span> <span class="nav-text">命名文件 dbname.ns</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6-dbname-0-dbname-1-%E2%80%A6-dbname-n"><span class="nav-number">1.3.</span> <span class="nav-text">数据文件 dbname.0, dbname.1,… dbname.n</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">数据文件结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Extent"><span class="nav-number">2.1.</span> <span class="nav-text">Extent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Record-%E8%AE%B0%E5%BD%95"><span class="nav-number">2.2.</span> <span class="nav-text">Record 记录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%A4%A7%E5%B0%8F%E5%8F%82%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">数据库大小参数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dataSize"><span class="nav-number">3.1.</span> <span class="nav-text">dataSize</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#storageSize"><span class="nav-number">3.2.</span> <span class="nav-text">storageSize</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fileSize"><span class="nav-number">3.3.</span> <span class="nav-text">fileSize</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'c3b97ff82b49a54a5e9d77e11ec010ba',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>

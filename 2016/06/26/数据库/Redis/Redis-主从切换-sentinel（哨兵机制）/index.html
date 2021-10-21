@@ -20,17 +20,17 @@
     var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="转自：http:&#x2F;&#x2F;www.cnblogs.com&#x2F;zhoujinyi&#x2F;p&#x2F;5569462.html 一概述Redis-Sentinel是Redis官方推荐的高可用性(HA)解决方案，当用Redis做Master-slave的高可用方案时，假如master宕机了，Redis本身(包括它的很多客户端)都没有实现自动进行主备切换，而Redis-sentinel本身也是一个独立运行的进程，它能监控多个m">
+  <meta name="description" content="转自：http:&#x2F;&#x2F;www.cnblogs.com&#x2F;zhoujinyi&#x2F;p&#x2F;5569462.html 一概述Redis-Sentinel 是 Redis 官方推荐的高可用性（HA）解决方案，当用 Redis 做 Master-slave 的高可用方案时，假如 master 宕机了，Redis 本身（包括它的很多客户端）都没有实现自动进行主备切换，而 Redis-sentinel 本身也是一个独立运">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Redis-主从切换-sentinel（哨兵机制）">
 <meta property="og:url" content="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/index.html">
 <meta property="og:site_name" content="Wetts&#39;s blog">
-<meta property="og:description" content="转自：http:&#x2F;&#x2F;www.cnblogs.com&#x2F;zhoujinyi&#x2F;p&#x2F;5569462.html 一概述Redis-Sentinel是Redis官方推荐的高可用性(HA)解决方案，当用Redis做Master-slave的高可用方案时，假如master宕机了，Redis本身(包括它的很多客户端)都没有实现自动进行主备切换，而Redis-sentinel本身也是一个独立运行的进程，它能监控多个m">
+<meta property="og:description" content="转自：http:&#x2F;&#x2F;www.cnblogs.com&#x2F;zhoujinyi&#x2F;p&#x2F;5569462.html 一概述Redis-Sentinel 是 Redis 官方推荐的高可用性（HA）解决方案，当用 Redis 做 Master-slave 的高可用方案时，假如 master 宕机了，Redis 本身（包括它的很多客户端）都没有实现自动进行主备切换，而 Redis-sentinel 本身也是一个独立运">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/1.png">
 <meta property="og:image" content="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/2.png">
 <meta property="article:published_time" content="2016-06-26T11:01:27.000Z">
-<meta property="article:modified_time" content="2021-07-18T16:57:34.582Z">
+<meta property="article:modified_time" content="2021-10-14T05:21:27.601Z">
 <meta property="article:author" content="Zhang Wetts">
 <meta property="article:tag" content="Redis">
 <meta property="article:tag" content="面试">
@@ -243,69 +243,73 @@
 
       
         <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/zhoujinyi/p/5569462.html">http://www.cnblogs.com/zhoujinyi/p/5569462.html</a></p>
-<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Redis-Sentinel是Redis官方推荐的高可用性(HA)解决方案，当用Redis做Master-slave的高可用方案时，假如master宕机了，Redis本身(包括它的很多客户端)都没有实现自动进行主备切换，而Redis-sentinel本身也是一个独立运行的进程，它能监控多个master-slave集群，发现master宕机后能进行自动切换。</p>
+<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Redis-Sentinel 是 Redis 官方推荐的高可用性（HA）解决方案，当用 Redis 做 Master-slave 的高可用方案时，假如 master 宕机了，Redis 本身（包括它的很多客户端）都没有实现自动进行主备切换，而 Redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。</p>
 <p>它的主要功能有以下几点</p>
 <ul>
-<li>不时地监控redis是否按照预期良好地运行;</li>
-<li>如果发现某个redis节点运行出现状况，能够通知另外一个进程(例如它的客户端);</li>
-<li>能够进行自动切换。当一个master节点不可用时，能够选举出master的多个slave(如果有超过一个slave的话)中的一个来作为新的master,其它的slave节点会将它所追随的master的地址改为被提升为master的slave的新地址。</li>
+<li>不时地监控 redis 是否按照预期良好地运行；</li>
+<li>如果发现某个 redis 节点运行出现状况，能够通知另外一个进程（例如它的客户端）；</li>
+<li>能够进行自动切换。当一个 master 节点不可用时，能够选举出 master 的多个 slave（如果有超过一个 slave 的话）中的一个来作为新的 master，其它的 slave 节点会将它所追随的 master 的地址改为被提升为 master 的 slave 的新地址。</li>
 </ul>
-<h2 id="Sentinel支持集群"><a href="#Sentinel支持集群" class="headerlink" title="Sentinel支持集群"></a>Sentinel支持集群</h2><p>很显然，只使用单个sentinel进程来监控redis集群是不可靠的，当sentinel进程宕掉后(sentinel本身也有单点问题，single-point-of-failure)整个集群系统将无法按照预期的方式运行。所以有必要将sentinel集群，这样有几个好处：</p>
+<h2 id="Sentinel-支持集群"><a href="#Sentinel-支持集群" class="headerlink" title="Sentinel 支持集群"></a>Sentinel 支持集群</h2><p>很显然，只使用单个 sentinel 进程来监控 redis 集群是不可靠的，当 sentinel 进程宕掉后（sentinel 本身也有单点问题，single-point-of-failure）整个集群系统将无法按照预期的方式运行。所以有必要将 sentinel 集群，这样有几个好处：</p>
 <ul>
-<li>即使有一些sentinel进程宕掉了，依然可以进行redis集群的主备切换；</li>
-<li>如果只有一个sentinel进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现redis集群的主备切换（单点问题）;</li>
-<li>如果有多个sentinel，redis的客户端可以随意地连接任意一个sentinel来获得关于redis集群中的信息。</li>
+<li>即使有一些 sentinel 进程宕掉了，依然可以进行 redis 集群的主备切换；</li>
+<li>如果只有一个 sentinel 进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现 redis 集群的主备切换（单点问题）;</li>
+<li>如果有多个 sentinel，redis 的客户端可以随意地连接任意一个 sentinel 来获得关于 redis 集群中的信息。</li>
 </ul>
-<h2 id="运行Sentinel"><a href="#运行Sentinel" class="headerlink" title="运行Sentinel"></a>运行Sentinel</h2><p>运行sentinel有两种方式：</p>
-<h3 id="第一种"><a href="#第一种" class="headerlink" title="第一种"></a>第一种</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-sentinel /path/to/sentinel.conf</span><br></pre></td></tr></table></figure>
-<h3 id="第二种"><a href="#第二种" class="headerlink" title="第二种"></a>第二种</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server /path/to/sentinel.conf --sentinel</span><br></pre></td></tr></table></figure>
-<p>以上两种方式，都必须指定一个sentinel的配置文件sentinel.conf，如果不指定，将无法启动sentinel。sentinel默认监听26379端口，所以运行前必须确定该端口没有被别的进程占用。</p>
-<h2 id="Sentinel的配置"><a href="#Sentinel的配置" class="headerlink" title="Sentinel的配置"></a>Sentinel的配置</h2><p>Redis源码包中包含了一个sentinel.conf文件作为sentinel的配置文件，配置文件自带了关于各个配置项的解释。典型的配置项如下所示：</p>
+<h2 id="运行-Sentinel"><a href="#运行-Sentinel" class="headerlink" title="运行 Sentinel"></a>运行 Sentinel</h2><p>运行 sentinel 有两种方式：</p>
+<ol>
+<li>```<br>redis-sentinel /path/to/sentinel.conf<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2. ```</span><br><span class="line">   redis-server /path/to/sentinel.conf --sentinel</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>以上两种方式，都必须指定一个 sentinel 的配置文件 sentinel.conf，如果不指定，将无法启动 sentinel。sentinel 默认监听 26379 端口，所以运行前必须确定该端口没有被别的进程占用。</p>
+<h2 id="Sentinel-的配置"><a href="#Sentinel-的配置" class="headerlink" title="Sentinel 的配置"></a>Sentinel 的配置</h2><p>Redis 源码包中包含了一个 sentinel.conf 文件作为 sentinel 的配置文件，配置文件自带了关于各个配置项的解释。典型的配置项如下所示：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 60000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br><span class="line">sentinel parallel-syncs mymaster 1</span><br><span class="line"></span><br><span class="line">sentinel monitor resque 192.168.1.3 6380 4</span><br><span class="line">sentinel down-after-milliseconds resque 10000</span><br><span class="line">sentinel failover-timeout resque 180000</span><br><span class="line">sentinel parallel-syncs resque 5</span><br></pre></td></tr></table></figure>
-<p>上面的配置项配置了两个名字分别为mymaster和resque的master，配置文件只需要配置master的信息就好啦，不用配置slave的信息，因为slave能够被自动检测到(master节点会有关于slave的消息)。需要注意的是，配置文件在sentinel运行期间是会被动态修改的，例如当发生主备切换时候，配置文件中的master会被修改为另外一个slave。这样，之后sentinel如果重启时，就可以根据这个配置来恢复其之前所监控的redis集群的状态。</p>
+
+<p>上面的配置项配置了两个名字分别为 mymaster 和 resque 的 master，配置文件只需要配置 master 的信息就好啦，不用配置 slave 的信息，因为 slave 能够被自动检测到（master 节点会有关于 slave 的消息）。需要注意的是，配置文件在 sentinel 运行期间是会被动态修改的，例如当发生主备切换时候，配置文件中的 master 会被修改为另外一个 slave。这样，之后 sentinel 如果重启时，就可以根据这个配置来恢复其之前所监控的 redis 集群的状态。</p>
 <p>接下来我们将一行一行地解释上面的配置项：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br></pre></td></tr></table></figure>
-<p>这一行代表sentinel监控的master的名字叫做mymaster,地址为127.0.0.1:6379，行尾最后的一个2代表什么意思呢？我们知道，网络是不可靠的，有时候一个sentinel会因为网络堵塞而误以为一个master redis已经死掉了，当sentinel集群式，解决这个问题的方法就变得很简单，只需要多个sentinel互相沟通来确认某个master是否真的死了，这个2代表，当集群中有2个sentinel认为master死了时，才能真正认为该master已经不可用了。（sentinel集群中各个sentinel也有互相通信，通过gossip协议）。</p>
+<p>这一行代表 sentinel 监控的 master 的名字叫做 mymaster，地址为 127.0.0.1:6379，行尾最后的一个 2 代表什么意思呢？我们知道，网络是不可靠的，有时候一个 sentinel 会因为网络堵塞而误以为一个 master redis 已经死掉了，当 sentinel 集群式，解决这个问题的方法就变得很简单，只需要多个 sentinel 互相沟通来确认某个 master 是否真的死了，这个 2 代表，当集群中有 2 个 sentinel 认为 master 死了时，才能真正认为该 master 已经不可用了。（sentinel 集群中各个 sentinel 也有互相通信，通过 gossip 协议）。</p>
 <p>除了第一行配置，我们发现剩下的配置都有一个统一的格式:</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel &lt;option_name&gt; &lt;master_name&gt; &lt;option_value&gt;</span><br></pre></td></tr></table></figure>
-<p>接下来我们根据上面格式中的option_name一个一个来解释这些配置项：</p>
+<p>接下来我们根据上面格式中的 option_name 一个一个来解释这些配置项：</p>
 <ul>
-<li><p>down-after-milliseconds</p>
-<p>sentinel会向master发送心跳PING来确认master是否存活，如果master在“一定时间范围”内不回应PONG 或者是回复了一个错误消息，那么这个sentinel会主观地(单方面地)认为这个master已经不可用了(subjectively down, 也简称为SDOWN)。而这个down-after-milliseconds就是用来指定这个“一定时间范围”的，单位是毫秒。</p>
-<p>  不过需要注意的是，这个时候sentinel并不会马上进行failover主备切换，这个sentinel还需要参考sentinel集群中其他sentinel的意见，如果超过某个数量的sentinel也主观地认为该master死了，那么这个master就会被客观地(注意哦，这次不是主观，是客观，与刚才的subjectively down相对，这次是objectively down，简称为ODOWN)认为已经死了。需要一起做出决定的sentinel数量在上一条配置中进行配置。</p>
-</li>
-<li><p>parallel-syncs</p>
-<p>在发生failover主备切换时，这个选项指定了最多可以有多少个slave同时对新的master进行同步，这个数字越小，完成failover所需的时间就越长，但是如果这个数字越大，就意味着越多的slave因为replication而不可用。可以通过将这个值设为 1 来保证每次只有一个slave处于不能处理命令请求的状态。</p>
-</li>
+<li>down-after-milliseconds<ul>
+<li>sentinel 会向 master 发送心跳 PING 来确认 master 是否存活，如果 master 在“一定时间范围”内不回应PONG 或者是回复了一个错误消息，那么这个 sentinel 会主观地（单方面地）认为这个 master 已经不可用了（subjectively down, 也简称为 SDOWN）。而这个 down-after-milliseconds 就是用来指定这个“一定时间范围”的，单位是毫秒。</li>
+<li>不过需要注意的是，这个时候 sentinel 并不会马上进行 failover 主备切换，这个 sentinel 还需要参考 sentinel 集群中其他 sentinel 的意见，如果超过某个数量的 sentinel 也主观地认为该 master 死了，那么这个 master 就会被客观地（注意哦，这次不是主观，是客观，与刚才的 subjectively down 相对，这次是 objectively down，简称为 ODOWN）认为已经死了。需要一起做出决定的 sentinel 数量在上一条配置中进行配置。</li>
 </ul>
-<p>其他配置项在sentinel.conf中都有很详细的解释。</p>
-<p>所有的配置都可以在运行时用命令SENTINEL SET command动态修改。</p>
+</li>
+<li>parallel-syncs<ul>
+<li>在发生 failover 主备切换时，这个选项指定了最多可以有多少个 slave 同时对新的 master 进行同步，这个数字越小，完成 failover 所需的时间就越长，但是如果这个数字越大，就意味着越多的 slave 因为 replication 而不可用。可以通过将这个值设为 1 来保证每次只有一个 slave 处于不能处理命令请求的状态。</li>
+</ul>
+</li>
+<li>其他配置项在 sentinel.conf 中都有很详细的解释。</li>
+</ul>
+<p>所有的配置都可以在运行时用命令 SENTINEL SET command 动态修改。</p>
 <hr>
 <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yswKnight/article/details/78158540">https://blog.csdn.net/yswKnight/article/details/78158540</a></p>
-<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="什么是哨兵机制"><a href="#什么是哨兵机制" class="headerlink" title="什么是哨兵机制?"></a>什么是哨兵机制?</h2><p>Redis的哨兵(sentinel) 系统用于管理多个 Redis 服务器,该系统执行以下三个任务:</p>
+<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="什么是哨兵机制"><a href="#什么是哨兵机制" class="headerlink" title="什么是哨兵机制?"></a>什么是哨兵机制?</h2><p>Redis 的哨兵（sentinel）系统用于管理多个 Redis 服务器，该系统执行以下三个任务:</p>
 <ol>
-<li>监控(Monitoring): 哨兵(sentinel) 会不断地检查你的Master和Slave是否运作正常。</li>
-<li>提醒(Notification):当被监控的某个 Redis出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。</li>
-<li>自动故障迁移(Automatic failover):当一个Master不能正常工作时，哨兵(sentinel) 会开始一次自动故障迁移操作,它会将失效Master的其中一个Slave升级为新的Master, 并让失效Master的其他Slave改为复制新的Master; 当客户端试图连接失效的Master时,集群也会向客户端返回新Master的地址,使得集群可以使用Master代替失效Master。</li>
+<li>监控（Monitoring）：哨兵（sentinel）会不断地检查你的 Master 和 Slave 是否运作正常。</li>
+<li>提醒（Notification）：当被监控的某个 Redis 出现问题时，哨兵（sentinel）可以通过 API 向管理员或者其他应用程序发送通知。</li>
+<li>自动故障迁移（Automatic failover）：当一个 Master 不能正常工作时，哨兵（sentinel）会开始一次自动故障迁移操作，它会将失效 Master 的其中一个 Slave 升级为新的 Master，并让失效 Master 的其他 Slave 改为复制新的 Master；当客户端试图连接失效的 Master 时，集群也会向客户端返回新 Master 的地址，使得集群可以使用 Master 代替失效 Master。</li>
 </ol>
-<p>哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程,这些进程使用流言协议(gossipprotocols)来接收关于Master是否下线的信息,并使用投票协议(agreement protocols)来决定是否执行自动故障迁移,以及选择哪个Slave作为新的Master。</p>
-<p>每个哨兵(sentinel) 会向其它哨兵(sentinel)、master、slave定时发送消息,以确认对方是否”活”着,如果发现对方在指定时间(可配置)内未回应,则暂时认为对方已挂(所谓的”主观认为宕机” Subjective Down,简称sdown).</p>
-<p>若“哨兵群”中的多数sentinel,都报告某一master没响应,系统才认为该master”彻底死亡”(即:客观上的真正down机,Objective Down,简称odown),通过一定的vote算法,从剩下的slave节点中,选一台提升为master,然后自动修改相关配置。</p>
-<p>虽然哨兵(sentinel) 释出为一个单独的可执行文件 redis-sentinel ,但实际上它只是一个运行在特殊模式下的 Redis 服务器，你可以在启动一个普通 Redis 服务器时通过给定 –sentinel 选项来启动哨兵(sentinel)。</p>
-<p>哨兵(sentinel) 的一些设计思路和zookeeper非常类似<br><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/1.png" alt="1"></p>
+<p>哨兵（sentinel）是一个分布式系统，你可以在一个架构中运行多个哨兵（sentinel）进程，这些进程使用流言协议（gossip protocols）来接收关于 Master 是否下线的信息，并使用投票协议（agreement protocols）来决定是否执行自动故障迁移，以及选择哪个 Slave 作为新的 Master。</p>
+<p>哨兵（sentinel）会向其它哨兵（sentinel）、master、slave 定时发送消息，以确认对方是否”活”着，如果发现对方在指定时间（可配置）内未回应，则暂时认为对方已挂（所谓的”主观认为宕机” Subjective Down，简称 sdown）.</p>
+<p>若“哨兵群”中的多数 sentinel，都报告某一 master 没响应，系统才认为该 master “彻底死亡”（即:客观上的真正down 机，Objective Down，简称 odown），通过一定的 vote 算法，从剩下的 slave 节点中，选一台提升为 master，然后自动修改相关配置。</p>
+<p>虽然哨兵（sentinel）释出为一个单独的可执行文件 redis-sentinel，但实际上它只是一个运行在特殊模式下的 Redis 服务器，你可以在启动一个普通 Redis 服务器时通过给定 <code>--sentinel</code> 选项来启动哨兵（sentinel）。</p>
+<p>哨兵（sentinel）的一些设计思路和 zookeeper 非常类似<br><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/1.png" alt="1"></p>
 <h2 id="哨兵模式的配置修改"><a href="#哨兵模式的配置修改" class="headerlink" title="哨兵模式的配置修改"></a>哨兵模式的配置修改</h2><p>实现步骤:</p>
 <ol>
-<li>拷贝到etc目录<ul>
+<li>拷贝到 etc 目录<ul>
 <li><code>cp sentinel.conf  /usr/local/redis/etc</code></li>
 </ul>
 </li>
-<li>修改sentinel.conf配置文件<ul>
+<li>修改 sentinel.conf 配置文件<ul>
 <li>sentinel monitor mymast  192.168.110.133 6379 1  #主节点 名称 IP 端口号 选举次数</li>
 <li><code>#配置主服务器的密码(如没设置密码，可以省略)</code></li>
 <li><code>sentinel auth-pass mymaster 123456</code></li>
 </ul>
 </li>
-<li>修改心跳检测 5000毫秒<ul>
+<li>修改心跳检测 5000 毫秒<ul>
 <li><code>sentinel down-after-milliseconds mymaster 5000</code></li>
 </ul>
 </li>
@@ -321,23 +325,23 @@
 </ol>
 <p>注意：</p>
 <ol>
-<li>当启动哨兵模式之后，如果你的master服务器宕机之后，哨兵自动会在从redis服务器里面 投票选举一个master主服务器出来；这个主服务器也可以进行读写操作！</li>
+<li>当启动哨兵模式之后，如果你的 master 服务器宕机之后，哨兵自动会在从 redis 服务器里面投票选举一个 master 主服务器出来；这个主服务器也可以进行读写操作！</li>
 <li>如果之前宕机的主服务器已经修好，可以正式运行了。那么这个服务器只能进行读的操作，会自动跟随由哨兵选举出来的新服务器！</li>
-<li>大家可以进入./redis-cli，输入info，查看你的状态信息；</li>
+<li>大家可以进入 <code>./redis-cli</code>，输入 info，查看你的状态信息；</li>
 </ol>
 <p><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/2.png" alt="2"></p>
-<h2 id="哨兵-Sentinel-总结"><a href="#哨兵-Sentinel-总结" class="headerlink" title="哨兵(Sentinel)总结"></a>哨兵(Sentinel)总结</h2><h3 id="Sentinel的作用："><a href="#Sentinel的作用：" class="headerlink" title="Sentinel的作用："></a>Sentinel的作用：</h3><ol>
+<h2 id="哨兵（sentinel）总结"><a href="#哨兵（sentinel）总结" class="headerlink" title="哨兵（sentinel）总结"></a>哨兵（sentinel）总结</h2><h3 id="Sentinel-的作用："><a href="#Sentinel-的作用：" class="headerlink" title="Sentinel 的作用："></a>Sentinel 的作用：</h3><ol>
 <li>Master 状态监测</li>
-<li>如果Master 异常，则会进行Master-slave 转换，将其中一个Slave作为Master，将之前的Master作为Slave </li>
-<li>Master-Slave切换后，master_redis.conf、slave_redis.conf和sentinel.conf的内容都会发生改变，即master_redis.conf中会多一行slaveof的配置，sentinel.conf的监控目标会随之调换 </li>
+<li>如果Master 异常，则会进行 Master-slave 转换，将其中一个 Slave 作为 Master，将之前的 Master 作为Slave </li>
+<li>Master-Slave 切换后，master_redis.conf、slave_redis.conf 和 sentinel.conf 的内容都会发生改变，即 master_redis.conf 中会多一行 slaveof 的配置，sentinel.conf 的监控目标会随之调换 </li>
 </ol>
-<h3 id="Sentinel的工作方式"><a href="#Sentinel的工作方式" class="headerlink" title="Sentinel的工作方式:"></a>Sentinel的工作方式:</h3><ol>
-<li>每个Sentinel以每秒钟一次的频率向它所知的Master，Slave以及其他 Sentinel 实例发送一个 PING 命令。</li>
+<h3 id="Sentinel-的工作方式"><a href="#Sentinel-的工作方式" class="headerlink" title="Sentinel 的工作方式:"></a>Sentinel 的工作方式:</h3><ol>
+<li>每个 Sentinel 以每秒钟一次的频率向它所知的 Master，Slave 以及其他 Sentinel 实例发送一个 PING 命令。</li>
 <li>如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel 标记为主观下线。 </li>
-<li>如果一个Master被标记为主观下线，则正在监视这个Master的所有 Sentinel 要以每秒一次的频率确认Master的确进入了主观下线状态。 </li>
-<li>当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认Master的确进入了主观下线状态， 则Master会被标记为客观下线 。</li>
-<li>在一般情况下， 每个 Sentinel 会以每 10 秒一次的频率向它已知的所有Master，Slave发送 INFO 命令 。</li>
-<li>当Master被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次 。</li>
+<li>如果一个 Master 被标记为主观下线，则正在监视这个 Master 的所有 Sentinel 要以每秒一次的频率确认 Master 的确进入了主观下线状态。 </li>
+<li>当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认 Master 的确进入了主观下线状态， 则 Master 会被标记为客观下线 。</li>
+<li>在一般情况下，每个 Sentinel 会以每 10 秒一次的频率向它已知的所有 Master，Slave发送 INFO 命令。</li>
+<li>当 Master 被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次 。</li>
 <li>若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 </li>
 <li>若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。</li>
 </ol>
@@ -360,8 +364,8 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E9%85%8D%E7%BD%AE/" rel="prev" title="Redis-主从配置">
-      <i class="fa fa-chevron-left"></i> Redis-主从配置
+    <a href="/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/" rel="prev" title="Lumen-问题-NotFoundHttpException">
+      <i class="fa fa-chevron-left"></i> Lumen-问题-NotFoundHttpException
     </a></div>
       <div class="post-nav-item">
     <a href="/2016/06/29/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E6%8C%81%E4%B9%85%E5%8C%96-AOF%E4%B8%8ERDB/" rel="next" title="Redis-持久化-AOF与RDB">
@@ -426,7 +430,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80"><span class="nav-number">1.</span> <span class="nav-text">一</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sentinel%E6%94%AF%E6%8C%81%E9%9B%86%E7%BE%A4"><span class="nav-number">1.2.</span> <span class="nav-text">Sentinel支持集群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8CSentinel"><span class="nav-number">1.3.</span> <span class="nav-text">运行Sentinel</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D"><span class="nav-number">1.3.1.</span> <span class="nav-text">第一种</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D"><span class="nav-number">1.3.2.</span> <span class="nav-text">第二种</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sentinel%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">1.4.</span> <span class="nav-text">Sentinel的配置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C"><span class="nav-number">2.</span> <span class="nav-text">二</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6"><span class="nav-number">2.1.</span> <span class="nav-text">什么是哨兵机制?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F%E7%9A%84%E9%85%8D%E7%BD%AE%E4%BF%AE%E6%94%B9"><span class="nav-number">2.2.</span> <span class="nav-text">哨兵模式的配置修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%A8%E5%85%B5-Sentinel-%E6%80%BB%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">哨兵(Sentinel)总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Sentinel%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9A"><span class="nav-number">2.3.1.</span> <span class="nav-text">Sentinel的作用：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sentinel%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F"><span class="nav-number">2.3.2.</span> <span class="nav-text">Sentinel的工作方式:</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80"><span class="nav-number">1.</span> <span class="nav-text">一</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sentinel-%E6%94%AF%E6%8C%81%E9%9B%86%E7%BE%A4"><span class="nav-number">1.2.</span> <span class="nav-text">Sentinel 支持集群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C-Sentinel"><span class="nav-number">1.3.</span> <span class="nav-text">运行 Sentinel</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sentinel-%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">1.4.</span> <span class="nav-text">Sentinel 的配置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C"><span class="nav-number">2.</span> <span class="nav-text">二</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6"><span class="nav-number">2.1.</span> <span class="nav-text">什么是哨兵机制?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F%E7%9A%84%E9%85%8D%E7%BD%AE%E4%BF%AE%E6%94%B9"><span class="nav-number">2.2.</span> <span class="nav-text">哨兵模式的配置修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%A8%E5%85%B5%EF%BC%88sentinel%EF%BC%89%E6%80%BB%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">哨兵（sentinel）总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Sentinel-%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9A"><span class="nav-number">2.3.1.</span> <span class="nav-text">Sentinel 的作用：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sentinel-%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%96%B9%E5%BC%8F"><span class="nav-number">2.3.2.</span> <span class="nav-text">Sentinel 的工作方式:</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -442,20 +446,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

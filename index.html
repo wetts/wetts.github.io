@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -202,7 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/" class="post-title-link" itemprop="url">Java-JVM-GC流程.md</a>
+            <a href="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/" class="post-title-link" itemprop="url">Java-JVM-GC流程.md</a>
         </h2>
 
         <div class="post-meta">
@@ -236,7 +236,7 @@
 
       
           <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/shuiyj/p/12640692.html">https://www.cnblogs.com/shuiyj/p/12640692.html</a></p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/1.png" alt="1"></p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/1.png" alt="1"></p>
 <h2 id="挤满新生代的最后一个对象"><a href="#挤满新生代的最后一个对象" class="headerlink" title="挤满新生代的最后一个对象"></a>挤满新生代的最后一个对象</h2><p>我们应当知道，新创建的对象一般会被分配在新生代中。常用的新生代的垃圾回收器是 ParNew 垃圾回收器，它按照 8:1:1 将新生代分成 Eden 区，以及两个 Survivor 区。</p>
 <p>某一时刻，我们创建的对象将 Eden 区全部挤满，这个对象就是「挤满新生代的最后一个对象」。此时，Minor GC 就触发了。</p>
 <h2 id="正式-Minor-GC-前的检查"><a href="#正式-Minor-GC-前的检查" class="headerlink" title="正式 Minor GC 前的检查"></a>正式 Minor GC 前的检查</h2><p>在正式 Minor GC 前，JVM 会先检查新生代中对象，是比老年代中剩余空间大还是小。<strong>为什么要做这样的检查呢？</strong>原因很简单，假如 Minor GC 之后 Survivor 区放不下剩余对象，这些对象就要进入到老年代，所以要提前检查老年代是不是够用。这样就有两种情况：</p>
@@ -264,24 +264,24 @@
 <hr>
 <p>转自：<a target="_blank" rel="noopener" href="https://www.modb.pro/db/26526">https://www.modb.pro/db/26526</a></p>
 <h2 id="堆内存结构"><a href="#堆内存结构" class="headerlink" title="堆内存结构"></a>堆内存结构</h2><p>我们以 Java 官方的 HotSpot JVM 为例，在描述 GC 过程前，先了解一下堆内存的结构。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/2.png" alt="2"><br>JVM 将堆内存分为了三部分：新生代(Young Generation)，老年代(Old Generation)，永久代(Permanent Generation)。其中新生代又分为三部分：伊甸园区(Eden)，和两个幸存区S0和S1。</p>
-<p>注：JDK1.8之后，Java官方的HotSpot JVM去掉了永久代，取而代之的是元数据区Metaspace。Metaspace使用的是本地内存，而不是堆内存，也就是说在默认情况下Metaspace的大小只与本地内存的大小有关。因此JDK1.8之后，就见不到java.lang.OutOfMemoryError: PermGen space这种由于永久代空间不足导致的内存溢出的问题了。</p>
-<h2 id="垃圾回收全过程"><a href="#垃圾回收全过程" class="headerlink" title="垃圾回收全过程"></a>垃圾回收全过程</h2><p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/3.png" alt="3"><br>新创建的对象会先被分配到到Eden区。JVM刚启动时，Eden区对象数量较少，两个Survivor区S0、S1几乎是空的。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/4.png" alt="4"><br>随着时间的推移，Eden区的对象越来越多。当Eden区放不下时(占用空间达到容量阈值)，新生代就会发生垃圾回收，我们称之为Minor GC或者Young GC。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/5.png" alt="5"><br>发生GC时，第一步会通过可达性分析算法找到可达对象。如上图，蓝色为可达对象，其他紫色为不可达对象。第二步，被标示的可达对象会被转移到S0(此时S0是From Survivor)，此时存活对象年龄加1，三个对象年龄都变为1。第三步，清除Eden区所有对象。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/6.png" alt="6"><br>GC后各区域对象占用情况，如上图所示。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/7.png" alt="7"><br>程序继续运行，Eden区再次达到容量阈值时，会再次发生GC。这时S0(From Survivor)已经有了对象。还是同样的步骤，通过可达性分析算法找到可达对象，然后再将Eden和S0中的可达对象转移到S1(To Survivor)，各存活对象年龄加1。最后将Eden和S0中的所有对象清除。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/8.png" alt="8"><br>GC后S0区域被清空。如上图所示。S0和S1发生了互换，S1变成了From Survivor，S0变成了To Survivor。</p>
-<p>注意，To Survivor区永远都为空。这实际上是垃圾回收算法-复制算法在年轻代的实际应用。把年轻代分为Eden，S0，S1三个区域，每次垃圾回收时把可达对象复制到S0或S1，然后再清除掉Eden和(S1或S0)中的所有对象。由于每次GC时，新生代的可达对象非常少(绝大部分对象要被回收掉)，一般不会超过新生代总体空间的10%，所以搜寻可达对象以及复制对象的成本都会非常低。而且这种复制的方式还能避免产生堆内存碎片，提高内存利用率。很多年轻代垃圾收集器都采用复制算法，如ParNew。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/9.png" alt="9"><br>在程序运行过程中，新生代GC会反复发生，长寿对象会在S0和S1之间反复交换，年龄也会越来越大，当对象达到年龄上限时，会被晋升到老年代。这个年龄上限默认是15，可以通过参数-XX:MaxTenuringThreshold设置。如下图，有些年轻代对象年龄达到了上限15，被转移到了老年代。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/10.png" alt="10"><br><strong>其他晋升方式</strong>。新生代对象晋升到老年代，除了根据年龄正常晋升外。为了提高JVM的性能，JVM设计者还考虑了其他晋升方式。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/11.png" alt="11"><br><strong>大对象直接晋升</strong>。大对象会跨过年轻代直接分配到老年代。可以通过-XX:PretenureSizeThreshold参数设置对象大小。如果参数被设置成5MB，超过5MB的大对象会直接分配到老年代。这样做的目的，是为了避免大对象在Eden区及两个Survivor区之间大量的内存复制，大对象的内存复制耗时比普通对象要高很多。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/2.png" alt="2"><br>JVM 将堆内存分为了三部分：新生代（Young Generation），老年代（Old Generation），永久代（Permanent Generation）。其中新生代又分为三部分：伊甸园区（Eden），和两个幸存区 S0 和 S1。</p>
+<p>注：JDK1.8 之后，Java 官方的 HotSpot JVM 去掉了永久代，取而代之的是元数据区 Metaspace。Metaspace 使用的是本地内存，而不是堆内存，也就是说在默认情况下 Metaspace 的大小只与本地内存的大小有关。因此 JDK1.8 之后，就见不到 java.lang.OutOfMemoryError: PermGen space 这种由于永久代空间不足导致的内存溢出的问题了。</p>
+<h2 id="垃圾回收全过程"><a href="#垃圾回收全过程" class="headerlink" title="垃圾回收全过程"></a>垃圾回收全过程</h2><p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/3.png" alt="3"><br>新创建的对象会先被分配到到 Eden 区。JVM 刚启动时，Eden 区对象数量较少，两个 Survivor 区 S0、S1 几乎是空的。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/4.png" alt="4"><br>随着时间的推移，Eden 区的对象越来越多。当 Eden 区放不下时（占用空间达到容量阈值），新生代就会发生垃圾回收，我们称之为 Minor GC 或者 Young GC。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/5.png" alt="5"><br>发生 GC 时，第一步会通过可达性分析算法找到可达对象。如上图，蓝色为可达对象，其他紫色为不可达对象。第二步，被标示的可达对象会被转移到 S0（此时 S0 是 From Survivor），此时存活对象年龄加 1，三个对象年龄都变为 1。第三步，清除 Eden 区所有对象。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/6.png" alt="6"><br>GC 后各区域对象占用情况，如上图所示。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/7.png" alt="7"><br>程序继续运行，Eden 区再次达到容量阈值时，会再次发生 GC。这时 S0（From Survivor）已经有了对象。还是同样的步骤，通过可达性分析算法找到可达对象，然后再将 Eden 和 S0 中的可达对象转移到 S1（To Survivor），各存活对象年龄加 1。最后将 Eden 和 S0 中的所有对象清除。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/8.png" alt="8"><br>GC 后 S0 区域被清空。如上图所示。S0 和 S1 发生了互换，S1 变成了 From Survivor，S0 变成了 To Survivor。</p>
+<p>注意，To Survivor 区永远都为空。这实际上是垃圾回收算法-复制算法在年轻代的实际应用。把年轻代分为 Eden、S0、S1 三个区域，每次垃圾回收时把可达对象复制到 S0 或 S1，然后再清除掉 Eden 和（S1 或 S0）中的所有对象。由于每次 GC 时，新生代的可达对象非常少（绝大部分对象要被回收掉），一般不会超过新生代总体空间的 10%，所以搜寻可达对象以及复制对象的成本都会非常低。而且这种复制的方式还能避免产生堆内存碎片，提高内存利用率。很多年轻代垃圾收集器都采用复制算法，如 ParNew。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/9.png" alt="9"><br>在程序运行过程中，新生代 GC 会反复发生，长寿对象会在 S0 和 S1 之间反复交换，年龄也会越来越大，当对象达到年龄上限时，会被晋升到老年代。这个年龄上限默认是 15，可以通过参数 -XX:MaxTenuringThreshold 设置。如下图，有些年轻代对象年龄达到了上限 15，被转移到了老年代。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/10.png" alt="10"><br><strong>其他晋升方式</strong>。新生代对象晋升到老年代，除了根据年龄正常晋升外。为了提高 JVM 的性能，JVM 设计者还考虑了其他晋升方式。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/11.png" alt="11"><br><strong>大对象直接晋升</strong>。大对象会跨过年轻代直接分配到老年代。可以通过 -XX:PretenureSizeThreshold 参数设置对象大小。如果参数被设置成 5MB，超过 5MB 的大对象会直接分配到老年代。这样做的目的，是为了避免大对象在Eden区及两个 Survivor 区之间大量的内存复制，大对象的内存复制耗时比普通对象要高很多。</p>
 <p>注意：PretenureSizeThreshold参数只对Serial和ParNew两种回收器有效。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/12.png" alt="12"><br><strong>动态对象年龄判定</strong>。如果在Survivor空间中相同年龄对象大小的总和大于Survivor空间的一半，年龄大于或等于该年龄的对象会直接进入老年代，而不用等到MaxTenuringThreshold中设置的年龄上限。上图，年龄为1的对象超过了Survivor空间的一半，所以这几个对象会直接进入老年代。</p>
-<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-GC%E6%B5%81%E7%A8%8B/13.png" alt="13"><br>实际上，上面对动态对象年龄判定的描述并不精确。上图的场景也会导致相关对象晋升到老年代。年龄为1的对象加上年龄为2的对象超过了半数，这时包括年龄为2的对象以及年龄更大的对象都会被晋升到老年代。所以上图中年龄为2和3的对象都会被晋升到老年代。</p>
-<p><strong>老年代垃圾回收</strong>。随着年轻代对象的不断晋升，老年代的对象变得越来越多，达到容量阈值后老年代也会发生垃圾回收，我们称之为Major GC或者Full GC，Full GC并不是全局GC，它只发生在老年代。</p>
-<p>虽然年轻代和老年代都会发生GC，但是每次GC的时间和成本却大不相同。由于老年代空间大小一般是年轻代的几倍，再加上老年代对象存活率很高，所以整个标记过程比较慢，GC成本也非常高。我们经常说的JVM调优，主要是为了尽量减少老年代Full GC的时间和频次。</p>
-<p>老年代垃圾回收器，很少使用复制算法，主要为了避免大量对象的内存复制带来的时间和空间上的开销，一般采用标记清除、标记整理算法，就地标记回收。例如，老年代垃圾收集器CMS就采用了标记清除算法。对于标记清除算法带来的内存碎片问题，CMS提供了两个参数做碎片整理，-XX:+UseCMSCompactAtFullCollection和-XX:CMSFullGCsBeforeCompaction。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/12.png" alt="12"><br><strong>动态对象年龄判定</strong>。如果在 Survivor 空间中相同年龄对象大小的总和大于 Survivor 空间的一半，年龄大于或等于该年龄的对象会直接进入老年代，而不用等到 MaxTenuringThreshold 中设置的年龄上限。上图，年龄为1的对象超过了 Survivor 空间的一半，所以这几个对象会直接进入老年代。</p>
+<p><img src="/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/13.png" alt="13"><br>实际上，上面对动态对象年龄判定的描述并不精确。上图的场景也会导致相关对象晋升到老年代。年龄为 1 的对象加上年龄为 2 的对象超过了半数，这时包括年龄为 2 的对象以及年龄更大的对象都会被晋升到老年代。所以上图中年龄为 2 和 3 的对象都会被晋升到老年代。</p>
+<p><strong>老年代垃圾回收</strong>。随着年轻代对象的不断晋升，老年代的对象变得越来越多，达到容量阈值后老年代也会发生垃圾回收，我们称之为 Major GC 或者 Full GC，Full GC 并不是全局 GC，它只发生在老年代。</p>
+<p>虽然年轻代和老年代都会发生GC，但是每次GC的时间和成本却大不相同。由于老年代空间大小一般是年轻代的几倍，再加上老年代对象存活率很高，所以整个标记过程比较慢，GC 成本也非常高。我们经常说的JVM调优，主要是为了尽量减少老年代Full GC的时间和频次。</p>
+<p>老年代垃圾回收器，很少使用复制算法，主要为了避免大量对象的内存复制带来的时间和空间上的开销，一般采用标记清除、标记整理算法，就地标记回收。例如，老年代垃圾收集器 CMS 就采用了标记清除算法。对于标记清除算法带来的内存碎片问题，CMS 提供了两个参数做碎片整理，-XX:+UseCMSCompactAtFullCollection和-XX:CMSFullGCsBeforeCompaction。</p>
 
       
     </div>
@@ -301,7 +301,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/11/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -315,7 +315,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/" class="post-title-link" itemprop="url">Java-JVM-三色标记法与读写屏障.md</a>
+            <a href="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/" class="post-title-link" itemprop="url">Java-JVM-三色标记法与读写屏障.md</a>
         </h2>
 
         <div class="post-meta">
@@ -359,14 +359,14 @@
 </ol>
 <p>本文着重来看下标记的部分。</p>
 <h2 id="三色标记法"><a href="#三色标记法" class="headerlink" title="三色标记法"></a>三色标记法</h2><h3 id="基本算法"><a href="#基本算法" class="headerlink" title="基本算法"></a>基本算法</h3><p>要找出存活对象，根据可达性分析，从GC Roots开始进行遍历访问，可达的则为存活对象：</p>
-<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/1.png" alt="1"><br>最终结果：A/D/E/F/G 可达</p>
+<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/1.png" alt="1"><br>最终结果：A/D/E/F/G 可达</p>
 <p>我们把遍历对象图过程中遇到的对象，按“是否访问过”这个条件标记成以下三种颜色：</p>
 <ul>
 <li>白色：尚未访问过。</li>
 <li>黑色：本对象已访问过，而且本对象 引用到 的其他对象 也全部访问过了。</li>
 <li>灰色：本对象已访问过，但是本对象 引用到 的其他对象 尚未全部访问完。全部访问后，会转换为黑色。</li>
 </ul>
-<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/2.webp" alt="2"><br>三色标记遍历过程</p>
+<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/2.webp" alt="2"><br>三色标记遍历过程</p>
 <p>假设现在有白、灰、黑三个集合（表示当前对象的颜色），其遍历访问过程为：</p>
 <ol>
 <li>初始时，所有对象都在 【白色集合】中；</li>
@@ -382,17 +382,17 @@
 <blockquote>
 <p>注：如果标记结束后对象仍为白色，意味着已经“找不到”该对象在哪了，不可能会再被重新引用。</p>
 </blockquote>
-<p>当Stop The World （以下简称 STW）时，对象间的引用 是不会发生变化的，可以轻松完成标记。</p>
+<p>当Stop The World （以下简称 STW）时，对象间的引用是不会发生变化的，可以轻松完成标记。</p>
 <p>而当需要支持并发标记时，即标记期间应用线程还在继续跑，<strong>对象间的引用可能发生变化，多标和漏标的情况就有可能发生</strong>。</p>
 <h3 id="多标-浮动垃圾"><a href="#多标-浮动垃圾" class="headerlink" title="多标-浮动垃圾"></a>多标-浮动垃圾</h3><p>假设已经遍历到E（变为灰色了），此时应用执行了 <code>objD.fieldE = null</code>：</p>
-<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/3.webp" alt="3"><br>D &gt; E 的引用断开</p>
+<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/3.webp" alt="3"><br>D &gt; E 的引用断开</p>
 <p>此刻之后，对象E/F/G是“应该”被回收的。然而因为<strong>E已经变为灰色</strong>了，其仍会被<strong>当作存活对象</strong>继续遍历下去。最终的结果是：这部分对象仍会被标记为存活，即<strong>本轮GC不会回收这部分内存</strong>。</p>
 <p>这部分本应该回收 但是 没有回收到的内存，被称之为“<strong>浮动垃圾</strong>”。浮动垃圾并不会影响应用程序的正确性，只是需要等到下一轮垃圾回收中才被清除。</p>
 <p>另外，针对并发标记开始后的<strong>新对象</strong>，通常的做法是直接全部<strong>当成黑色</strong>，本轮不会进行清除。这部分对象期间可能会变为垃圾，这也算是浮动垃圾的一部分。</p>
 <h3 id="漏标-读写屏障"><a href="#漏标-读写屏障" class="headerlink" title="漏标-读写屏障"></a>漏标-读写屏障</h3><p>假设GC线程已经遍历到E（变为灰色了），此时应用线程先执行了：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var G = objE.fieldG; </span><br><span class="line">objE.fieldG = null;  // 灰色E 断开引用 白色G </span><br><span class="line">objD.fieldG = G;  // 黑色D 引用 白色G</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/GC/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/4.webp" alt="4"><br>E &gt; G 断开，D引用 G</p>
+<p><img src="/2021/07/11/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E4%B8%8E%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C/4.webp" alt="4"><br>E &gt; G 断开，D引用 G</p>
 <p>此时切回GC线程继续跑，因为<strong>E已经没有对G的引用了，所以不会将G放到灰色集合</strong>；尽管因为D重新引用了G，但因为<strong>D已经是黑色</strong>了，不会再重新做遍历处理。</p>
 <p>最终导致的结果是：G会一直停留在白色集合中，<strong>最后被当作垃圾进行清除</strong>。这直接<strong>影响到了应用程序的正确性</strong>，是不可接受的。</p>
 <p>不难分析，漏标只有<strong>同时满足</strong>以下两个条件时才会发生：</p>
@@ -974,7 +974,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-CAS%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-CAS%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -988,7 +988,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-CAS%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Java-并发-CAS的工作原理.md</a>
+            <a href="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-CAS%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Java-并发-CAS的工作原理.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1041,7 +1041,7 @@
 <blockquote>
 <p>CAS 有 3 个操作数，内存值 V，旧的预期值 A，要修改的新值 B。当且仅当预期值 A 和内存值 V 相同时，将内存值 V 修改为 B，否则什么都不做。</p>
 </blockquote>
-<p><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-CAS%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/1.png" alt="1"></p>
+<p><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-CAS%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/1.png" alt="1"></p>
 <p>仔细看图，CAS原理就是这么简单，看源码加深一下印象。</p>
 <h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>基于 jdk1.8.0_20</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">private static final Unsafe unsafe = Unsafe.getUnsafe();</span><br><span class="line">private static final long valueOffset;</span><br><span class="line"></span><br><span class="line">static &#123;</span><br><span class="line">	try &#123;</span><br><span class="line">		valueOffset = unsafe.objectFieldOffset</span><br><span class="line">			(AtomicInteger.class.getDeclaredField(&quot;value&quot;));</span><br><span class="line">	&#125; catch (Exception ex) &#123; throw new Error(ex); &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private volatile int value;</span><br></pre></td></tr></table></figure>
@@ -1084,7 +1084,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1098,7 +1098,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" class="post-title-link" itemprop="url">Java-并发-ThreadLocal的应用场景和注意事项.md</a>
+            <a href="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/" class="post-title-link" itemprop="url">Java-并发-ThreadLocal的应用场景和注意事项.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1144,7 +1144,7 @@
 <p>然后将这个工具类用在多线程环境下</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">    ExecutorService service = Executors.newFixedThreadPool(20);</span><br><span class="line"></span><br><span class="line">    for (int i = 0; i &lt; 20; i++) &#123;</span><br><span class="line">        service.execute(()-&gt;&#123;</span><br><span class="line">            System.out.println(DateUtil.parse(&quot;2019-06-01 16:34:30&quot;));</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    service.shutdown();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>结果报异常了，因为部分线程获取的时间不对<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/1.png" alt="1"></p>
+<p>结果报异常了，因为部分线程获取的时间不对<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/1.png" alt="1"></p>
 <p>这个异常就不从源码的角度分析了，写一个小 Demo，理解了这个小 Demo，就理解了原因</p>
 <p>一个将数字加 10 的工具类</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public class NumUtil &#123;</span><br><span class="line"></span><br><span class="line">    public static int addNum = 0;</span><br><span class="line"></span><br><span class="line">    public static int add10(int num) &#123;</span><br><span class="line">        addNum = num;</span><br><span class="line">        try &#123;</span><br><span class="line">            TimeUnit.SECONDS.sleep(1);</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return addNum + 10;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -1167,7 +1167,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public class NumUtil &#123;</span><br><span class="line"></span><br><span class="line">    private static ThreadLocal&lt;Integer&gt; addNumThreadLocal = new ThreadLocal&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    public static int add10(int num) &#123;</span><br><span class="line">        addNumThreadLocal.set(num);</span><br><span class="line">        try &#123;</span><br><span class="line">            TimeUnit.SECONDS.sleep(1);</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return addNumThreadLocal.get() + 10;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>现在2个工具类都能正常使用了，这是为啥呢？</p>
-<h2 id="原理分析"><a href="#原理分析" class="headerlink" title="原理分析"></a>原理分析</h2><p>当多个线程同时读写同一共享变量时存在并发问题，如果不共享不就没有并发问题了，一个线程存一个自己的变量，类比原来好几个人玩同一个球，现在一个人一个球，就没有问题了，如何把变量存在线程上呢？其实 Thread 类内部已经有一个 Map 容器用来存变量了。它的大概结构如下所示<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/2.png" alt="2"></p>
+<h2 id="原理分析"><a href="#原理分析" class="headerlink" title="原理分析"></a>原理分析</h2><p>当多个线程同时读写同一共享变量时存在并发问题，如果不共享不就没有并发问题了，一个线程存一个自己的变量，类比原来好几个人玩同一个球，现在一个人一个球，就没有问题了，如何把变量存在线程上呢？其实 Thread 类内部已经有一个 Map 容器用来存变量了。它的大概结构如下所示<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/2.png" alt="2"></p>
 <p>ThreadLocalMap 是一个 Map，key 是 ThreadLocal，value 是 Object</p>
 <p>映射到源码就是如下所示：ThreadLocalMap 是 ThreadLocal 的一个静态内部类</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public class Thread implements Runnable &#123;</span><br><span class="line">    ThreadLocal.ThreadLocalMap threadLocals = null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -1184,7 +1184,7 @@
 <p>执行如下代码</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public class InfoUtil &#123;</span><br><span class="line"></span><br><span class="line">    private static ThreadLocal&lt;String&gt; nameInfo = new ThreadLocal&lt;&gt;();</span><br><span class="line">    private static ThreadLocal&lt;Integer&gt; ageInfo = new ThreadLocal&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    public static void setInfo(String name, Integer age) &#123;</span><br><span class="line">        nameInfo.set(name);</span><br><span class="line">        ageInfo.set(age);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static String getName() &#123;</span><br><span class="line">        return nameInfo.get();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        new Thread(() -&gt; &#123;</span><br><span class="line">            InfoUtil.setInfo(&quot;张三&quot;, 10);</span><br><span class="line">            // 张三</span><br><span class="line">            System.out.println(InfoUtil.getName());</span><br><span class="line">        &#125;, &quot;thread1&quot;).start();</span><br><span class="line">        new Thread(() -&gt; &#123;</span><br><span class="line">            InfoUtil.setInfo(&quot;李四&quot;, 20);</span><br><span class="line">            // 李四</span><br><span class="line">            System.out.println(InfoUtil.getName());</span><br><span class="line">        &#125;, &quot;thread2&quot;).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>变量的结构如下图<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/3.png" alt="3"></p>
+<p>变量的结构如下图<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-ThreadLocal%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/3.png" alt="3"></p>
 <h2 id="在线程级别传递变量"><a href="#在线程级别传递变量" class="headerlink" title="在线程级别传递变量"></a>在线程级别传递变量</h2><p>假设有如下一个场景，method1()调用method2()，method2()调用method3()，method3()调用method4()，method1()生成了一个变量想在method4()中使用，有如下2种解决办法</p>
 <ol>
 <li>method 2 3 4的参数列表上都写上method4想要的变量</li>
@@ -1227,7 +1227,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/10/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%B7%A5%E5%85%B7/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/10/%E8%AF%AD%E8%A8%80/Java/JVM/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1241,7 +1241,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%B7%A5%E5%85%B7/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/" class="post-title-link" itemprop="url">Java自带的调优工具（jps、jstat、jstack、jmap、jhat）.md</a>
+            <a href="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/JVM/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/" class="post-title-link" itemprop="url">Java自带的调优工具（jps、jstat、jstack、jmap、jhat）.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1292,7 +1292,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/# ps -ef | grep mrf-center | grep -v grep</span><br><span class="line">root     21711     1  1 14:47 pts/3    00:02:10 java -jar mrf-center.jar</span><br></pre></td></tr></table></figure>
 
 <p>得到进程 ID 为 21711，第二步找出该进程内最耗费 CPU 的线程，可以使用 <code>ps -Lfp pid</code> 或者 <code>ps -mp pid -o THREAD, tid, time</code> 或者 <code>top -Hp pid</code>，我这里用第三个，输出如下：</p>
-<p><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%B7%A5%E5%85%B7/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/1.png" alt="1"></p>
+<p><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/JVM/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/1.png" alt="1"></p>
 <p> TIME 列就是各个 Java 线程耗费的 CPU 时间，CPU 时间最长的是线程 ID 为 21742 的线程，用<br> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf &quot;%x\n&quot; 21742</span><br></pre></td></tr></table></figure><br>得到 21742 的十六进制值为 <code>54ee</code>，下面会用到。</p>
 <p>OK，下一步终于轮到 jstack 上场了，它用来输出进程 21711 的堆栈信息，然后根据线程 ID 的十六进制值 grep，如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/# jstack 21711 | grep 54ee</span><br><span class="line">&quot;PollIntervalRetrySchedulerThread&quot; prio=10 tid=0x00007f950043e000 nid=0x54ee in Object.wait() [0x00007f94c6eda000]</span><br></pre></td></tr></table></figure>
@@ -1307,7 +1307,7 @@
 
 <p>如果运行在 64 位 JVM 上，可能需要指定 <code>-J-d64</code> 命令选项参数。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jmap -permstat pid</span><br></pre></td></tr></table></figure>
-<p>打印进程的类加载器和类加载器加载的持久代对象信息，输出：类加载器名称、对象是否存活（不可靠）、对象地址、父类加载器、已加载的类大小等信息，如下图：<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%B7%A5%E5%85%B7/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/2.png" alt="2"></p>
+<p>打印进程的类加载器和类加载器加载的持久代对象信息，输出：类加载器名称、对象是否存活（不可靠）、对象地址、父类加载器、已加载的类大小等信息，如下图：<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/JVM/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/2.png" alt="2"></p>
 <p>使用 <code>jmap -heap pid</code> 查看进程堆内存使用情况，包括使用的 GC 算法、堆配置参数和各代中堆内存使用情况。比如下面的例子：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/# jmap -heap 21711</span><br><span class="line">Attaching to process ID 21711, please wait...</span><br><span class="line">Debugger attached successfully.</span><br><span class="line">Server compiler detected.</span><br><span class="line">JVM version is 20.10-b01</span><br><span class="line"></span><br><span class="line">using thread-local object allocation.</span><br><span class="line">Parallel GC with 4 thread(s)</span><br><span class="line"></span><br><span class="line">Heap Configuration:</span><br><span class="line">   MinHeapFreeRatio = 40</span><br><span class="line">   MaxHeapFreeRatio = 70</span><br><span class="line">   MaxHeapSize      = 2067791872 (1972.0MB)</span><br><span class="line">   NewSize          = 1310720 (1.25MB)</span><br><span class="line">   MaxNewSize       = 17592186044415 MB</span><br><span class="line">   OldSize          = 5439488 (5.1875MB)</span><br><span class="line">   NewRatio         = 2</span><br><span class="line">   SurvivorRatio    = 8</span><br><span class="line">   PermSize         = 21757952 (20.75MB)</span><br><span class="line">   MaxPermSize      = 85983232 (82.0MB)</span><br><span class="line"></span><br><span class="line">Heap Usage:</span><br><span class="line">PS Young Generation</span><br><span class="line">Eden Space:</span><br><span class="line">   capacity = 6422528 (6.125MB)</span><br><span class="line">   used     = 5445552 (5.1932830810546875MB)</span><br><span class="line">   free     = 976976 (0.9317169189453125MB)</span><br><span class="line">   84.78829520089286% used</span><br><span class="line">From Space:</span><br><span class="line">   capacity = 131072 (0.125MB)</span><br><span class="line">   used     = 98304 (0.09375MB)</span><br><span class="line">   free     = 32768 (0.03125MB)</span><br><span class="line">   75.0% used</span><br><span class="line">To Space:</span><br><span class="line">   capacity = 131072 (0.125MB)</span><br><span class="line">   used     = 0 (0.0MB)</span><br><span class="line">   free     = 131072 (0.125MB)</span><br><span class="line">   0.0% used</span><br><span class="line">PS Old Generation</span><br><span class="line">   capacity = 35258368 (33.625MB)</span><br><span class="line">   used     = 4119544 (3.9287033081054688MB)</span><br><span class="line">   free     = 31138824 (29.69629669189453MB)</span><br><span class="line">   11.683876009235595% used</span><br><span class="line">PS Perm Generation</span><br><span class="line">   capacity = 52428800 (50.0MB)</span><br><span class="line">   used     = 26075168 (24.867218017578125MB)</span><br><span class="line">   free     = 26353632 (25.132781982421875MB)</span><br><span class="line">   49.73443603515625% used</span><br><span class="line">   ....</span><br></pre></td></tr></table></figure>
 
@@ -1326,7 +1326,7 @@
 <p>dump 出来的文件可以用 MAT、VisualVM 等工具查看，这里用 jhat 查看：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/# jhat -port 9998 /tmp/dump.dat</span><br><span class="line">Reading from /tmp/dump.dat...</span><br><span class="line">Dump file created Tue Jan 28 17:46:14 CST 2014</span><br><span class="line">Snapshot read, resolving...</span><br><span class="line">Resolving 132207 objects...</span><br><span class="line">Chasing references, expect 26 dots..........................</span><br><span class="line">Eliminating duplicate references..........................</span><br><span class="line">Snapshot resolved.</span><br><span class="line">Started HTTP server on port 9998</span><br><span class="line">Server is ready.</span><br></pre></td></tr></table></figure>
 
-<p>注意如果 Dump 文件太大，可能需要加上 <code>-J-Xmx512m</code> 这种参数指定最大堆内存，即 <code>jhat -J-Xmx512m -port 9998 /tmp/dump.dat</code>。然后就可以在浏览器中输入 <code>主机地址:9998</code> 查看了：<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%B7%A5%E5%85%B7/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/3.png" alt="3"></p>
+<p>注意如果 Dump 文件太大，可能需要加上 <code>-J-Xmx512m</code> 这种参数指定最大堆内存，即 <code>jhat -J-Xmx512m -port 9998 /tmp/dump.dat</code>。然后就可以在浏览器中输入 <code>主机地址:9998</code> 查看了：<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/JVM/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/3.png" alt="3"></p>
 <p>上面红线框出来的部分大家可以自己去摸索下，最后一项支持 OQL（对象查询语言）。</p>
 <h3 id="jstat"><a href="#jstat" class="headerlink" title="jstat"></a>jstat</h3><p>JVM 统计监测工具。语法格式如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jstat [ generalOption | outputOptions vmid [interval[s|ms] [count]] ]</span><br></pre></td></tr></table></figure>
@@ -1334,7 +1334,7 @@
 <p>vmid 是 Java 虚拟机 ID，在 Linux/Unix 系统上一般就是进程 ID。interval 是采样时间间隔。count 是采样数目。比如下面输出的是 GC 信息，采样时间间隔为 250ms，采样数为 4：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">root@ubuntu:/# jstat -gc 21711 250 4</span><br><span class="line"> S0C    S1C    S0U    S1U      EC       EU        OC         OU       PC     PU    YGC     YGCT    FGC    FGCT     GCT   </span><br><span class="line">192.0  192.0   64.0   0.0    6144.0   1854.9   32000.0     4111.6   55296.0 25472.7    702    0.431   3      0.218    0.649</span><br><span class="line">192.0  192.0   64.0   0.0    6144.0   1972.2   32000.0     4111.6   55296.0 25472.7    702    0.431   3      0.218    0.649</span><br><span class="line">192.0  192.0   64.0   0.0    6144.0   1972.2   32000.0     4111.6   55296.0 25472.7    702    0.431   3      0.218    0.649</span><br><span class="line">192.0  192.0   64.0   0.0    6144.0   2109.7   32000.0     4111.6   55296.0 25472.7    702    0.431   3      0.218    0.649</span><br></pre></td></tr></table></figure>
 
-<p>要明白上面各列的意义，先看 JVM 堆内存布局：<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/%E8%99%9A%E6%8B%9F%E6%9C%BA/%E5%B7%A5%E5%85%B7/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/4.jpg" alt="4"></p>
+<p>要明白上面各列的意义，先看 JVM 堆内存布局：<br><img src="/2021/07/10/%E8%AF%AD%E8%A8%80/Java/JVM/Java%E8%87%AA%E5%B8%A6%E7%9A%84%E8%B0%83%E4%BC%98%E5%B7%A5%E5%85%B7%EF%BC%88jps%E3%80%81jstat%E3%80%81jstack%E3%80%81jmap%E3%80%81jhat%EF%BC%89/4.jpg" alt="4"></p>
 <p>可以看出：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">堆内存 = 年轻代 + 年老代 + 永久代</span><br><span class="line">年轻代 = Eden区 + 两个Survivor区（From和To）</span><br></pre></td></tr></table></figure>
 
@@ -1381,7 +1381,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/06/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1-%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/06/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1-%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1395,7 +1395,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/06/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1-%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96/" class="post-title-link" itemprop="url">Spring-框架设计-循环依赖.md</a>
+            <a href="/2021/06/04/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1-%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96/" class="post-title-link" itemprop="url">Spring-框架设计-循环依赖.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1500,7 +1500,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/06/03/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-Callable%E6%8E%A5%E5%8F%A3%E5%8F%8AFutrue%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/06/03/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-Callable%E6%8E%A5%E5%8F%A3%E5%8F%8AFutrue%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1514,7 +1514,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/06/03/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-Callable%E6%8E%A5%E5%8F%A3%E5%8F%8AFutrue%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">Java-多线程-Callable接口及Futrue接口详解.md</a>
+            <a href="/2021/06/03/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-Callable%E6%8E%A5%E5%8F%A3%E5%8F%8AFutrue%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">Java-多线程-Callable接口及Futrue接口详解.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1592,7 +1592,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/06/01/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-%E6%8E%A7%E5%88%B6%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/06/01/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-%E6%8E%A7%E5%88%B6%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1606,7 +1606,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2021/06/01/%E8%AF%AD%E8%A8%80/Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-%E6%8E%A7%E5%88%B6%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/" class="post-title-link" itemprop="url">Java-并发-控制多线程执行顺序.md</a>
+            <a href="/2021/06/01/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%B9%B6%E5%8F%91-%E6%8E%A7%E5%88%B6%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/" class="post-title-link" itemprop="url">Java-并发-控制多线程执行顺序.md</a>
         </h2>
 
         <div class="post-meta">
@@ -1799,7 +1799,7 @@
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1867,20 +1867,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

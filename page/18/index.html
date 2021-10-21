@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E5%AD%97%E7%AC%A6%E4%B8%B2-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E5%AD%98%E5%82%A8/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -202,7 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E5%AD%97%E7%AC%A6%E4%B8%B2-%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%84%E5%AD%98%E5%82%A8/" class="post-title-link" itemprop="url">C-类型-字符串-字符串的存储</a>
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">C-错误处理</a>
         </h2>
 
         <div class="post-meta">
@@ -212,7 +212,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2017-07-26 10:07:05" itemprop="dateCreated datePublished" datetime="2017-07-26T10:07:05+08:00">2017-07-26</time>
+              <time title="创建时间：2017-07-26 17:48:23" itemprop="dateCreated datePublished" datetime="2017-07-26T17:48:23+08:00">2017-07-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -235,20 +235,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="字符串的分类"><a href="#字符串的分类" class="headerlink" title="字符串的分类"></a>字符串的分类</h2><h3 id="单字节字符串"><a href="#单字节字符串" class="headerlink" title="单字节字符串"></a>单字节字符串</h3><p>由char数据类型组成的序列</p>
-<h3 id="宽字符串"><a href="#宽字符串" class="headerlink" title="宽字符串"></a>宽字符串</h3><p>由wchar_t数据类型组成的序列</p>
-<h2 id="内存格式"><a href="#内存格式" class="headerlink" title="内存格式"></a>内存格式</h2><p>长为n的字符串在内存中连续存放，每个字符存贮其ASCII码，占一个字节，共n个字节，最后填一个全0字节作为串的结束标志。空串也有一个字节，即只有结束标志字符<code>\0</code>。</p>
-<h2 id="字符串定义方式"><a href="#字符串定义方式" class="headerlink" title="字符串定义方式"></a>字符串定义方式</h2><h3 id="字符数组接受字符串"><a href="#字符数组接受字符串" class="headerlink" title="字符数组接受字符串"></a>字符数组接受字符串</h3><p>C语言中没有特定的字符串类型，我们通常是将字符串放在一个字符数组中。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">char str[] = &quot;hello world&quot;;</span><br></pre></td></tr></table></figure>
-
-<h3 id="字符指针接受字符串"><a href="#字符指针接受字符串" class="headerlink" title="字符指针接受字符串"></a>字符指针接受字符串</h3><p>除了字符数组，C语言还支持另外一种表示字符串的方法，就是直接使用一个字符指针指向字符串。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">char *str = &quot;hello world&quot;;</span><br></pre></td></tr></table></figure>
-
-<p>字符串中的所有字符在内存中是连续排列的，str 指向的是字符串的第 0 个字符；我们通常将第 0 个字符的地址称为字符串的首地址。字符串中每个字符的类型都是 <code>char</code>，所以 str 的类型也必须是 <code>char *</code>。</p>
-<h2 id="两种方式的区别"><a href="#两种方式的区别" class="headerlink" title="两种方式的区别"></a>两种方式的区别</h2><p>它们最根本的区别是在内存中的存储区域不一样，字符数组存储在全局数据区或栈区，第二种形式的字符串存储在常量区。全局数据区和栈区的字符串（也包括其他数据）有读取和写入的权限，而常量区的字符串（也包括其他数据）只有读取权限，没有写入权限。</p>
-<p>内存权限的不同导致的一个明显结果就是，字符数组在定义后可以读取和修改每个字符，而对于第二种形式的字符串，一旦被定义后就只能读取不能修改，任何对它的赋值都是错误的。</p>
-<p>我们将第二种形式的字符串称为字符串常量，意思很明显，常量只能读取不能写入。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int main()&#123;</span><br><span class="line">  char *str = &quot;Hello World!&quot;;</span><br><span class="line">  str = &quot;I love C!&quot;;  //正确</span><br><span class="line">  str[3] = &#x27;P&#x27;;  //错误</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <p>C 语言不提供对错误处理的直接支持，但是作为一种系统编程语言，它以返回值的形式允许您访问底层数据。在发生错误时，大多数的 C 或 UNIX 函数调用返回 1 或 NULL，同时会设置一个错误代码 errno，该错误代码是全局变量，表示在函数调用期间发生了错误。您可以在 <code>&lt;error.h&gt;</code> 头文件中找到各种各样的错误代码。</p>
+<p>所以，C 程序员可以通过检查返回值，然后根据返回值决定采取哪种适当的动作。开发人员应该在程序初始化时，把 errno 设置为 0，这是一种良好的编程习惯。0 值表示程序中没有错误。</p>
+<h3 id="errno、perror-和-strerror"><a href="#errno、perror-和-strerror" class="headerlink" title="errno、perror() 和 strerror()"></a>errno、perror() 和 strerror()</h3><p>C 语言提供了 perror() 和 strerror() 函数来显示与 errno 相关的文本消息。</p>
+<p>perror() 函数显示您传给它的字符串，后跟一个冒号、一个空格和当前 errno 值的文本表示形式。</p>
+<p>strerror() 函数，返回一个指针，指针指向当前 errno 值的文本表示形式。</p>
+<h3 id="程序退出状态"><a href="#程序退出状态" class="headerlink" title="程序退出状态"></a>程序退出状态</h3><p>通常情况下，程序成功执行完一个操作正常退出的时候会带有值 EXIT_SUCCESS。在这里，EXIT_SUCCESS 是宏，它被定义为 0。</p>
+<p>如果程序中存在一种错误情况，当您退出程序时，会带有状态值 EXIT_FAILURE，被定义为 -1。</p>
 
       
     </div>
@@ -268,7 +261,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-static/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%A4%B4%E6%96%87%E4%BB%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -282,7 +275,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-static/" class="post-title-link" itemprop="url">C-关键字-储存类-static</a>
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%A4%B4%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">C-头文件</a>
         </h2>
 
         <div class="post-meta">
@@ -292,7 +285,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2017-07-25 21:07:56" itemprop="dateCreated datePublished" datetime="2017-07-25T21:07:56+08:00">2017-07-25</time>
+              <time title="创建时间：2017-07-26 17:34:59" itemprop="dateCreated datePublished" datetime="2017-07-26T17:34:59+08:00">2017-07-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -315,10 +308,27 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>static 存储类指示编译器在程序的生命周期内保持局部变量的存在，而不需要在每次它进入和离开作用域时进行创建和销毁。因此，使用 static 修饰局部变量可以在函数调用之间保持局部变量的值。</p>
-<p>static 修饰符也可以应用于全局变量。当 static 修饰全局变量时，会使变量的作用域限制在声明它的文件内。</p>
-<p>static 是全局变量的默认存储类，以下两个变量 (count 和 road) 都有一个 static 存储类。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">static int Count;</span><br><span class="line">int Road;</span><br><span class="line"></span><br><span class="line">main()</span><br><span class="line">&#123;</span><br><span class="line">  printf(&quot;%d\n&quot;, Count);</span><br><span class="line">  printf(&quot;%d\n&quot;, Road);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <p>头文件是扩展名为 .h 的文件，包含了 C 函数声明和宏定义，被多个源文件中引用共享。有两种类型的头文件：程序员编写的头文件和编译器自带的头文件。</p>
+<h3 id="引用头文件的语法"><a href="#引用头文件的语法" class="headerlink" title="引用头文件的语法"></a>引用头文件的语法</h3><p>使用预处理指令 #include 可以引用用户和系统头文件。它的形式有以下两种：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;file&gt;</span><br></pre></td></tr></table></figure>
+<p>这种形式用于引用系统头文件。它在系统目录的标准列表中搜索名为 file 的文件。在编译源代码时，您可以通过 -I 选项把目录前置在该列表前。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;file&quot;</span><br></pre></td></tr></table></figure>
+<p>这种形式用于引用用户头文件。它在包含当前文件的目录中搜索名为 file 的文件。在编译源代码时，您可以通过 -I 选项把目录前置在该列表前。</p>
+<h3 id="引用头文件的操作"><a href="#引用头文件的操作" class="headerlink" title="引用头文件的操作"></a>引用头文件的操作</h3><p><code>#include</code> 指令会指示 C 预处理器浏览指定的文件作为输入。预处理器的输出包含了已经生成的输出，被引用文件生成的输出以及 #include 指令之后的文本输出。例如，如果您有一个头文件 header.h，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">char *test (void);</span><br></pre></td></tr></table></figure>
+<p>和一个使用了头文件的主程序 program.c，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int x;</span><br><span class="line">#include &quot;header.h&quot;</span><br><span class="line"></span><br><span class="line">int main (void)</span><br><span class="line">&#123;</span><br><span class="line">  puts (test ());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译器会看到如下的令牌流：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int x;</span><br><span class="line">char *test (void);</span><br><span class="line"></span><br><span class="line">int main (void)</span><br><span class="line">&#123;</span><br><span class="line">  puts (test ());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="只引用一次头文件"><a href="#只引用一次头文件" class="headerlink" title="只引用一次头文件"></a>只引用一次头文件</h3><p>如果一个头文件被引用两次，编译器会处理两次头文件的内容，这将产生错误。为了防止这种情况，标准的做法是把文件的整个内容放在条件编译语句中，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#ifndef HEADER_FILE</span><br><span class="line">#define HEADER_FILE</span><br><span class="line"></span><br><span class="line">the entire header file file</span><br><span class="line"></span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+<p>这种结构就是通常所说的包装器 <code>#ifndef</code>。当再次引用头文件时，条件为假，因为 HEADER_FILE 已定义。此时，预处理器会跳过文件的整个内容，编译器会忽略它。</p>
+<h3 id="有条件引用"><a href="#有条件引用" class="headerlink" title="有条件引用"></a>有条件引用</h3><p>有时需要从多个不同的头文件中选择一个引用到程序中。例如，需要指定在不同的操作系统上使用的配置参数。您可以通过一系列条件来实现这点，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#if SYSTEM_1</span><br><span class="line">   # include &quot;system_1.h&quot;</span><br><span class="line">#elif SYSTEM_2</span><br><span class="line">   # include &quot;system_2.h&quot;</span><br><span class="line">#elif SYSTEM_3</span><br><span class="line">   ...</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+<p>但是如果头文件比较多的时候，这么做是很不妥当的，预处理器使用宏来定义头文件的名称。这就是所谓的有条件引用。它不是用头文件的名称作为 <code>#include</code> 的直接参数，您只需要使用宏名称代替即可：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#define SYSTEM_H &quot;system_1.h&quot;</span><br><span class="line">...</span><br><span class="line">#include SYSTEM_H</span><br></pre></td></tr></table></figure>
+<p>SYSTEM_H 会扩展，预处理器会查找 system_1.h，就像 <code>#include</code> 最初编写的那样。SYSTEM_H 可通过 -D 选项被您的 Makefile 定义。</p>
 
       
     </div>
@@ -338,7 +348,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-register/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E9%A2%84%E5%A4%84%E7%90%86%E5%99%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -352,7 +362,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-register/" class="post-title-link" itemprop="url">C-关键字-储存类-register</a>
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E9%A2%84%E5%A4%84%E7%90%86%E5%99%A8/" class="post-title-link" itemprop="url">C-预处理器</a>
         </h2>
 
         <div class="post-meta">
@@ -362,7 +372,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2017-07-25 21:05:11" itemprop="dateCreated datePublished" datetime="2017-07-25T21:05:11+08:00">2017-07-25</time>
+              <time title="创建时间：2017-07-26 16:51:33" itemprop="dateCreated datePublished" datetime="2017-07-26T16:51:33+08:00">2017-07-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -385,438 +395,128 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>register 存储类用于定义存储在寄存器中而不是 RAM 中的局部变量。这意味着变量的最大尺寸等于寄存器的大小（通常是一个词），且不能对它应用一元的 ‘&amp;’ 运算符（因为它没有内存位置）。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   register int miles;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>寄存器只用于需要快速访问的变量，比如计数器。还应注意的是，定义 ‘register’ 并不意味着变量将被存储在寄存器中，它意味着变量可能存储在寄存器中，这取决于硬件和实现的限制。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-auto/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-auto/" class="post-title-link" itemprop="url">C-关键字-储存类-auto</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-25 21:03:00" itemprop="dateCreated datePublished" datetime="2017-07-25T21:03:00+08:00">2017-07-25</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>auto 存储类是所有局部变量默认的存储类。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   int mount;</span><br><span class="line">   auto int month;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>上面的实例定义了两个带有相同存储类的变量，auto 只能用在函数内，即 auto 只能修饰局部变量。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-extern/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/25/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-%E5%82%A8%E5%AD%98%E7%B1%BB-extern/" class="post-title-link" itemprop="url">C-关键字-储存类-extern</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-25 20:29:48" itemprop="dateCreated datePublished" datetime="2017-07-25T20:29:48+08:00">2017-07-25</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>参考：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/xiaorenwu702/p/5739845.html">http://www.cnblogs.com/xiaorenwu702/p/5739845.html</a></p>
-<p>用C语言编写程序的时候，我们经常会遇到这样一种情况：希望在头文件中定义一个全局变量，然后包含到两个不同的c文件中，希望这个全局变量能在两个文件中共用。</p>
-<h3 id="举例说明"><a href="#举例说明" class="headerlink" title="举例说明"></a>举例说明</h3><p>项目文件夹project下有main.c、common.c和common.h三个文件，其中common.h文件分别#include在main.c和common.c文件中。现在希望声明一个字符型变量key，在main.c和common.c中公用。</p>
-<p>有人想，既然是想两个文件都用，那就在common.h中声明一个unsigned char key，然后由于包含关系，在main.c和common.c中都是可见的，所以就能共用了。</p>
-<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>这种想法其实是很多初学者都会想到的，想起来确实有道理，但是实际写出来，我们发现编译的时候编译器提示出错，一般提示大概都类似于：Error: L6200E: Symbol key multiply defined (by common.o and main.o). 也就是说编译器认为我们重复定义了key这个变量。这是因为#include命令就是原封不同的把头文件中的内容搬到#include的位置，所以相当于main.c和common.c中都执行了一次unsigned char key，而C语言中全局变量是项目内（或者叫工程内）可见的，这样就造成了一个项目中两个变量key，编译器就认为是重复定义。</p>
-<h3 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h3><p>使用extern关键字来声明变量为外部变量。具体说就是在其中一个c文件中定义一个全局变量key，然后在另一个要使用key这个变量的c文件中使用extern关键字声明一次，说明这个变量为外部变量，是在其他的c文件中定义的全局变量。请注意我这里的用词：定义和声明。例如在main.c文件中定义变量key，在common.c文件中声明key变量为外部变量，这样这两个文件中就能共享这个变量key了。</p>
-<p>main.c</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;common.h&quot;</span><br><span class="line">unsigned char key;</span><br></pre></td></tr></table></figure>
-
-<p>common.c</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;common.h&quot;</span><br><span class="line">extern unsigned char key;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/18/%E5%B7%A5%E5%85%B7/Xcode/Xcode-C%E6%96%87%E4%BB%B6%E7%BC%96%E8%AF%91%E8%B7%AF%E5%BE%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/18/%E5%B7%A5%E5%85%B7/Xcode/Xcode-C%E6%96%87%E4%BB%B6%E7%BC%96%E8%AF%91%E8%B7%AF%E5%BE%84/" class="post-title-link" itemprop="url">Xcode-C文件编译路径</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-18 17:25:47" itemprop="dateCreated datePublished" datetime="2017-07-18T17:25:47+08:00">2017-07-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>路径：<code>/Users/tonyvicky/Library/Developer/Xcode/DerivedData</code></p>
-<p>修改路径：<code>File -&gt; Project Settings</code></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/04/%E5%B7%A5%E7%A8%8B/%E5%85%B6%E4%BB%96/%E5%A4%A7%E7%AB%AF%E6%A8%A1%E5%BC%8F%EF%BC%88big-endian%EF%BC%89%E4%B8%8E%E5%B0%8F%E7%AB%AF%E6%A8%A1%E5%BC%8F%EF%BC%88little-endian%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/04/%E5%B7%A5%E7%A8%8B/%E5%85%B6%E4%BB%96/%E5%A4%A7%E7%AB%AF%E6%A8%A1%E5%BC%8F%EF%BC%88big-endian%EF%BC%89%E4%B8%8E%E5%B0%8F%E7%AB%AF%E6%A8%A1%E5%BC%8F%EF%BC%88little-endian%EF%BC%89/" class="post-title-link" itemprop="url">大端模式（big-endian）与小端模式（little-endian）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-04 11:13:44" itemprop="dateCreated datePublished" datetime="2017-07-04T11:13:44+08:00">2017-07-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8E%9F%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">计算机原理</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zhaoshuzhaoshu/article/details/37600857/">https://blog.csdn.net/zhaoshuzhaoshu/article/details/37600857/</a></p>
-<h3 id="什么是大端-什么是小端"><a href="#什么是大端-什么是小端" class="headerlink" title="什么是大端,什么是小端"></a>什么是大端,什么是小端</h3><ul>
-<li>所谓的大端模式，是指数据的低位保存在内存的高地址中，而数据的高位保存在内存的低地址中；</li>
-<li>所谓的小端模式，是指数据的低位保存在内存的低地址中，而数据的高位保存在内存的高地址中。</li>
-</ul>
-<h3 id="为什么会有大小端"><a href="#为什么会有大小端" class="headerlink" title="为什么会有大小端"></a>为什么会有大小端</h3><p>为什么会有大小端模式之分呢？这是因为在计算机系统中，我们是以字节为单位的，每个地址单元都对应着一个字节，一个字节为 8bit。但是在 C 语言中除了 8bit 的 char 之外，还有 16bit 的 short 型，32bit 的 long 型（要看具体的编译器），另外，对于位数大于 8 位的处理器，例如 16 位或者 32 位的处理器，由于寄存器宽度大于一个字节，那么必然存在着一个如果将多个字节安排的问题。因此就导致了大端存储模式和小端存储模式。例如一个 16bit 的 short 型 x，在内存中的地址为 <code>0x0010</code>，x 的值为 <code>0x1122</code>，那么 <code>0x11</code> 为高字节，<code>0x22</code> 为低字节。对于大端模式，就将 <code>0x11</code> 放在低地址中，即 <code>0x0010</code> 中，<code>0x22</code> 放在高地址中，即 <code>0x0011</code> 中。小端模式，刚好相反。我们常用的 X86 结构是小端模式，而 KEIL C51 则为大端模式。很多的 ARM、DSP 都为小端模式。有些 ARM 处理器还可以由硬件来选择是大端模式还是小端模式。</p>
-<h3 id="大小端在内存中的存放方式举例"><a href="#大小端在内存中的存放方式举例" class="headerlink" title="大小端在内存中的存放方式举例:"></a>大小端在内存中的存放方式举例:</h3><p>例如，16bit 宽的数 <code>0x1234</code> 在 Little-endian 模式 CPU 内存中的存放方式（假设从地址 <code>0x4000</code> 开始存放）为：</p>
+          <p>C 预处理器不是编译器的组成部分，但是它是编译过程中一个单独的步骤。简言之，C 预处理器只不过是一个文本替换工具而已，它们会指示编译器在实际编译之前完成所需的预处理。我们将把 C 预处理器（C Preprocessor）简写为 CPP。</p>
+<p>所有的预处理器命令都是以井号（#）开头。它必须是第一个非空字符，为了增强可读性，预处理器指令应从第一列开始。下面列出了所有重要的预处理器指令：</p>
 <table>
 <thead>
 <tr>
-<th>内存地址</th>
-<th>0x4000</th>
-<th>0x4001</th>
+<th align="center">指令</th>
+<th align="center">描述</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>存放内容</td>
-<td>0x34</td>
-<td>0x12</td>
+<td align="center">#define</td>
+<td align="center">定义宏</td>
+</tr>
+<tr>
+<td align="center">#include</td>
+<td align="center">包含一个源代码文件</td>
+</tr>
+<tr>
+<td align="center">#undef</td>
+<td align="center">取消已定义的宏</td>
+</tr>
+<tr>
+<td align="center">#ifdef</td>
+<td align="center">如果宏已经定义，则返回真</td>
+</tr>
+<tr>
+<td align="center">#ifndef</td>
+<td align="center">如果宏没有定义，则返回真</td>
+</tr>
+<tr>
+<td align="center">#if</td>
+<td align="center">如果给定条件为真，则编译下面代码</td>
+</tr>
+<tr>
+<td align="center">#else</td>
+<td align="center">#if 的替代方案</td>
+</tr>
+<tr>
+<td align="center">#elif</td>
+<td align="center">如果前面的 #if 给定条件不为真，当前条件为真，则编译下面代码</td>
+</tr>
+<tr>
+<td align="center">#endif</td>
+<td align="center">结束一个 #if……#else 条件编译块</td>
+</tr>
+<tr>
+<td align="center">#error</td>
+<td align="center">当遇到标准错误时，输出错误消息</td>
+</tr>
+<tr>
+<td align="center">#pragma</td>
+<td align="center">使用标准化方法，向编译器发布特殊的命令到编译器中</td>
 </tr>
 </tbody></table>
-<p>而在 Big-endian 模式 CPU 内存中的存放方式则为：</p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define MAX_ARRAY_LENGTH 20</span><br></pre></td></tr></table></figure>
+<p>这个指令告诉 CPP 把所有的 MAX_ARRAY_LENGTH 替换为 20。使用 #define 定义常量来增强可读性。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &quot;myheader.h&quot;</span><br></pre></td></tr></table></figure>
+<p>这些指令告诉 CPP 从系统库中获取 stdio.h，并添加文本到当前的源文件中。下一行告诉 CPP 从本地目录中获取 myheader.h，并添加内容到当前的源文件中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#undef  FILE_SIZE</span><br><span class="line">#define FILE_SIZE 42</span><br></pre></td></tr></table></figure>
+<p>这个指令告诉 CPP 取消已定义的 FILE_SIZE，并定义它为 42。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#ifndef MESSAGE</span><br><span class="line">   #define MESSAGE &quot;You wish!&quot;</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+<p>这个指令告诉 CPP 只有当 MESSAGE 未定义时，才定义 MESSAGE。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#ifdef DEBUG</span><br><span class="line">   /* Your debugging statements here */</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+<p>这个指令告诉 CPP 如果定义了 DEBUG，则执行处理语句。在编译时，如果您向 gcc 编译器传递了 -DDEBUG 开关量，这个指令就非常有用。它定义了 DEBUG，您可以在编译期间随时开启或关闭调试。</p>
+<h3 id="预定义宏"><a href="#预定义宏" class="headerlink" title="预定义宏"></a>预定义宏</h3><p>ANSI C 定义了许多宏。在编程中您可以使用这些宏，但是不同直接修改这些预定义的宏。</p>
 <table>
 <thead>
 <tr>
-<th>内存地址</th>
-<th>0x4000</th>
-<th>0x4001</th>
+<th align="center">宏</th>
+<th align="center">描述</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>存放内容</td>
-<td>0x12</td>
-<td>0x34</td>
+<td align="center"><code>__DATE__</code></td>
+<td align="center">当前日期，一个以 “MMM DD YYYY” 格式表示的字符常量。</td>
 </tr>
-</tbody></table>
-<p>32bit 宽的数 <code>0x12345678</code> 在 Little-endian 模式 CPU 内存中的存放方式（假设从地址 <code>0x4000</code> 开始存放）为：</p>
-<table>
-<thead>
 <tr>
-<th>内存地址</th>
-<th>0x4000</th>
-<th>0x4001</th>
-<th>0x4002</th>
-<th>0x4003</th>
+<td align="center"><code>__TIME__</code></td>
+<td align="center">当前时间，一个以 “HH:MM:SS” 格式表示的字符常量。</td>
 </tr>
-</thead>
-<tbody><tr>
-<td>存放内容</td>
-<td>0x78</td>
-<td>0x56</td>
-<td>0x34</td>
-<td>0x12</td>
-</tr>
-</tbody></table>
-<p>而在 Big-endian 模式 CPU 内存中的存放方式则为：</p>
-<table>
-<thead>
 <tr>
-<th>内存地址</th>
-<th>0x4000</th>
-<th>0x4001</th>
-<th>0x4002</th>
-<th>0x4003</th>
+<td align="center"><code>__FILE__</code></td>
+<td align="center">这会包含当前文件名，一个字符串常量。</td>
 </tr>
-</thead>
-<tbody><tr>
-<td>存放内容</td>
-<td>0x12</td>
-<td>0x34</td>
-<td>0x56</td>
-<td>0x78</td>
+<tr>
+<td align="center"><code>__LINE__</code></td>
+<td align="center">这会包含当前行号，一个十进制常量。</td>
+</tr>
+<tr>
+<td align="center"><code>__STDC__</code></td>
+<td align="center">当编译器以 ANSI 标准编译时，则定义为 1。</td>
 </tr>
 </tbody></table>
-<h3 id="如何测试编译器是大端还是小端"><a href="#如何测试编译器是大端还是小端" class="headerlink" title="如何测试编译器是大端还是小端:"></a>如何测试编译器是大端还是小端:</h3><p>下面这段代码可以用来测试一下你的编译器是大端模式还是小端模式：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    short int x;</span><br><span class="line"></span><br><span class="line">    char x0,x1;</span><br><span class="line"></span><br><span class="line">    x=0x1122;</span><br><span class="line"></span><br><span class="line">    x0=((char *)&amp;x)[0];  //低地址单元</span><br><span class="line"></span><br><span class="line">    x1=((char *)&amp;x)[1];  //高地址单元</span><br><span class="line"></span><br><span class="line">    printf(&quot;x0=0x%x,x1=0x%x&quot;,x0,x1);// 若x0=0x11,则是大端; 若x0=0x22,则是小端......</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
+<h3 id="预处理器运算符"><a href="#预处理器运算符" class="headerlink" title="预处理器运算符"></a>预处理器运算符</h3><p>C 预处理器提供了下列的运算符来帮助您创建宏：</p>
+<h4 id="宏延续运算符（-）"><a href="#宏延续运算符（-）" class="headerlink" title="宏延续运算符（\）"></a>宏延续运算符（<code>\</code>）</h4><p>一个宏通常写在一个单行上。但是如果宏太长，一个单行容纳不下，则使用宏延续运算符（\）。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#define  message_for(a, b)  \</span><br><span class="line">    printf(#a &quot; and &quot; #b &quot;: We love you!\n&quot;)</span><br></pre></td></tr></table></figure>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+<h4 id="字符串常量化运算符（-）"><a href="#字符串常量化运算符（-）" class="headerlink" title="字符串常量化运算符（#）"></a>字符串常量化运算符（<code>#</code>）</h4><p>在宏定义中，当需要把一个宏的参数转换为字符串常量时，则使用字符串常量化运算符（#）。在宏中使用的该运算符有一个特定的参数或参数列表。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">#define  message_for(a, b)  \</span><br><span class="line">    printf(#a &quot; and &quot; #b &quot;: We love you!\n&quot;)</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">  message_for(Carole, Debra);</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当上面的代码被编译和执行时，它会产生下列结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Carole and Debra: We love you!</span><br></pre></td></tr></table></figure>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/06/03/%E8%AF%AD%E8%A8%80/Golang/Golang-API-io.ByteReader%E5%92%8Cio.ByteWriter%E6%8E%A5%E5%8F%A3/">
+<h4 id="标记粘贴运算符（-）"><a href="#标记粘贴运算符（-）" class="headerlink" title="标记粘贴运算符（##）"></a>标记粘贴运算符（<code>##</code>）</h4><p>宏定义内的标记粘贴运算符（##）会合并两个参数。它允许在宏定义中两个独立的标记被合并为一个标记。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">#define tokenpaster(n) printf(&quot;token&quot;#n&quot; = %d&quot;, token##n)</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">  int token34 = 40;</span><br><span class="line"></span><br><span class="line">  tokenpaster(34);</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当上面的代码被编译和执行时，它会产生下列结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">token34 = 40</span><br></pre></td></tr></table></figure>
+<p>这是怎么发生的，因为这个实例会从编译器产生下列的实际输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf (&quot;token34 = %d&quot;, token34);</span><br></pre></td></tr></table></figure>
+<p>这个实例演示了 token##n 会连接到 token34 中，在这里，我们使用了字符串常量化运算符（#）和标记粘贴运算符（##）。</p>
+<h4 id="defined-运算符"><a href="#defined-运算符" class="headerlink" title="defined() 运算符"></a>defined() 运算符</h4><p>预处理器 defined 运算符是用在常量表达式中的，用来确定一个标识符是否已经使用 #define 定义过。如果指定的标识符已定义，则值为真（非零）。如果指定的标识符未定义，则值为假（零）。下面的实例演示了 defined() 运算符的用法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">#if !defined (MESSAGE)</span><br><span class="line">   #define MESSAGE &quot;You wish!&quot;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">  printf(&quot;Here is the message: %s\n&quot;, MESSAGE);  </span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当上面的代码被编译和执行时，它会产生下列结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Here is the message: You wish!</span><br></pre></td></tr></table></figure>
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/06/03/%E8%AF%AD%E8%A8%80/Golang/Golang-API-io.ByteReader%E5%92%8Cio.ByteWriter%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Golang-API-io.ByteReader和io.ByteWriter接口</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-06-03 18:57:39" itemprop="dateCreated datePublished" datetime="2017-06-03T18:57:39+08:00">2017-06-03</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>bufio.Reader/Writer 分别实现了io.ByteReader和io.ByteWriter</li>
-<li>bytes.Buffer 同时实现了io.ByteReader和io.ByteWriter</li>
-<li>bytes.Reader 实现了io.ByteReader</li>
-<li>strings.Reader 实现了io.ByteReader</li>
-</ul>
+<h3 id="参数化的宏"><a href="#参数化的宏" class="headerlink" title="参数化的宏"></a>参数化的宏</h3><p>CPP 一个强大的功能是可以使用参数化的宏来模拟函数。例如，下面的代码是计算一个数的平方：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int square(int x) &#123;</span><br><span class="line">   return x * x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以使用宏重写上面的代码，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define square(x) ((x) * (x))</span><br></pre></td></tr></table></figure>
+<p>在使用带有参数的宏之前，必须使用 #define 指令定义。参数列表是括在圆括号内，且必须紧跟在宏名称的后边。宏名称和左圆括号之间不允许有空格。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">#define MAX(x,y) ((x) &gt; (y) ? (x) : (y))</span><br><span class="line"></span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">  printf(&quot;Max between 20 and 10 is %d\n&quot;, MAX(10, 20));  </span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当上面的代码被编译和执行时，它会产生下列结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Max between 20 and 10 is 20</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -836,7 +536,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/06/03/%E8%AF%AD%E8%A8%80/Golang/Golang-API-io.Reader%E5%92%8Cio.Writer%E6%8E%A5%E5%8F%A3/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E6%96%87%E4%BB%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -850,7 +550,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2017/06/03/%E8%AF%AD%E8%A8%80/Golang/Golang-API-io.Reader%E5%92%8Cio.Writer%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Golang-API-io.Reader和io.Writer接口</a>
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E6%96%87%E4%BB%B6/" class="post-title-link" itemprop="url">C-API-文件</a>
         </h2>
 
         <div class="post-meta">
@@ -860,7 +560,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2017-06-03 18:31:02" itemprop="dateCreated datePublished" datetime="2017-06-03T18:31:02+08:00">2017-06-03</time>
+              <time title="创建时间：2017-07-26 16:35:24" itemprop="dateCreated datePublished" datetime="2017-07-26T16:35:24+08:00">2017-07-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -868,7 +568,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
                 </span>
             </span>
 
@@ -883,24 +583,284 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <ul>
-<li>os.File 同时实现了io.Reader和io.Writer</li>
-<li>strings.Reader 实现了io.Reader</li>
-<li>bufio.Reader/Writer 分别实现了io.Reader和io.Writer</li>
-<li>bytes.Buffer 同时实现了io.Reader和io.Writer</li>
-<li>bytes.Reader 实现了io.Reader</li>
-<li>compress/gzip.Reader/Writer 分别实现了io.Reader和io.Writer</li>
-<li>crypto/cipher.StreamReader/StreamWriter 分别实现了io.Reader和io.Writer</li>
-<li>crypto/tls.Conn 同时实现了io.Reader和io.Writer</li>
-<li>encoding/csv.Reader/Writer 分别实现了io.Reader和io.Writer</li>
-<li>mime/multipart.Part 实现了io.Reader</li>
-</ul>
-<p>除此之外，io包本身也有这两个接口的实现类型。如：</p>
+          <h3 id="打开文件"><a href="#打开文件" class="headerlink" title="打开文件"></a>打开文件</h3><p>可以使用 fopen() 函数来创建一个新的文件或者打开一个已有的文件，这个调用会初始化类型 FILE 的一个对象，类型 FILE 包含了所有用来控制流的必要的信息。下面是这个函数调用的原型：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FILE *fopen(const char * filename, const char * mode );</span><br></pre></td></tr></table></figure>
+<p>在这里，filename 是字符串，用来命名文件，访问模式 mode 的值可以是下列值中的一个：</p>
+<table>
+<thead>
+<tr>
+<th align="center">模式</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">r</td>
+<td align="center">打开一个已有的文本文件，允许读取文件。</td>
+</tr>
+<tr>
+<td align="center">w</td>
+<td align="center">打开一个文本文件，允许写入文件。如果文件不存在，则会创建一个新文件。在这里，您的程序会从文件的开头写入内容。</td>
+</tr>
+<tr>
+<td align="center">a</td>
+<td align="center">打开一个文本文件，以追加模式写入文件。如果文件不存在，则会创建一个新文件。在这里，您的程序会在已有的文件内容中追加内容。</td>
+</tr>
+<tr>
+<td align="center">r+</td>
+<td align="center">打开一个文本文件，允许读写文件。</td>
+</tr>
+<tr>
+<td align="center">w+</td>
+<td align="center">打开一个文本文件，允许读写文件。如果文件已存在，则文件会被截断为零长度，如果文件不存在，则会创建一个新文件。</td>
+</tr>
+<tr>
+<td align="center">a+</td>
+<td align="center">打开一个文本文件，允许读写文件。如果文件不存在，则会创建一个新文件。读取会从文件的开头开始，写入则只能是追加模式。</td>
+</tr>
+</tbody></table>
+<p>如果处理的是二进制文件，则需使用下面的访问模式来取代上面的访问模式：</p>
+<blockquote>
+<p>“rb”, “wb”, “ab”, “rb+”, “r+b”, “wb+”, “w+b”, “ab+”, “a+b”</p>
+</blockquote>
+<h3 id="关闭文件"><a href="#关闭文件" class="headerlink" title="关闭文件"></a>关闭文件</h3><p>使用 fclose() 函数。函数的原型如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int fclose( FILE *fp );</span><br></pre></td></tr></table></figure>
+<p>如果成功关闭文件，fclose() 函数返回零，如果关闭文件时发生错误，函数返回 EOF。这个函数实际上，会清空缓冲区中的数据，关闭文件，并释放用于该文件的所有内存。EOF 是一个定义在头文件 stdio.h 中的常量。</p>
+<p>C 标准库提供了各种函数来按字符或者以固定长度字符串的形式读写文件。</p>
+<h3 id="写入文件"><a href="#写入文件" class="headerlink" title="写入文件"></a>写入文件</h3><p>下面是把字符写入到流中的最简单的函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int fputc( int c, FILE *fp );</span><br></pre></td></tr></table></figure>
+<p>函数 <code>fputc()</code> 把参数 c 的字符值写入到 fp 所指向的输出流中。如果写入成功，它会返回写入的字符，如果发生错误，则会返回 EOF。您可以使用下面的函数来把一个以 <code>\0</code> 结尾的字符串写入到流中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int fputs( const char *s, FILE *fp );</span><br></pre></td></tr></table></figure>
+<p>函数 <code>fputs()</code> 把字符串 s 写入到 fp 所指向的输出流中。如果写入成功，它会返回一个非负值，如果发生错误，则会返回 EOF。您也可以使用 <code>int fprintf(FILE *fp, const char *format, ...)</code> 函数来写把一个字符串写入到文件中。</p>
+<h3 id="读取文件"><a href="#读取文件" class="headerlink" title="读取文件"></a>读取文件</h3><p>下面是从文件读取单个字符的最简单的函数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int fgetc( FILE * fp );</span><br></pre></td></tr></table></figure>
+<p><code>fgetc()</code> 函数从 fp 所指向的输入文件中读取一个字符。返回值是读取的字符，如果发生错误则返回 EOF。下面的函数允许您从流中读取一个字符串：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">char *fgets( char *buf, int n, FILE *fp );</span><br></pre></td></tr></table></figure>
+<p>函数 <code>fgets()</code> 从 fp 所指向的输入流中读取 n - 1 个字符。它会把读取的字符串复制到缓冲区 buf，并在最后追加一个 <code>\0</code> 字符来终止字符串。</p>
+<p>如果这个函数在读取最后一个字符之前就遇到一个换行符 ‘\n’ 或文件的末尾 EOF，则只会返回读取到的字符，包括换行符。您也可以使用 <code>int fscanf(FILE *fp, const char *format, ...)</code> 函数来从文件中读取字符串，但是在遇到第一个空格字符时，它会停止读取。</p>
+<h3 id="二进制-I-O-函数"><a href="#二进制-I-O-函数" class="headerlink" title="二进制 I/O 函数"></a>二进制 I/O 函数</h3><p>下面两个函数用于二进制输入和输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);</span><br><span class="line"></span><br><span class="line">size_t fwrite(const void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);</span><br></pre></td></tr></table></figure>
+<p>这两个函数都是用于存储块的读写 - 通常是数组或结构体。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95-%E9%80%92%E5%BD%92-%E5%B0%BE%E9%80%92%E5%BD%92/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E7%AE%97%E6%B3%95/%E7%AE%97%E6%B3%95-%E9%80%92%E5%BD%92-%E5%B0%BE%E9%80%92%E5%BD%92/" class="post-title-link" itemprop="url">算法-递归-尾递归</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 16:28:38" itemprop="dateCreated datePublished" datetime="2017-07-26T16:28:38+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>如果一个函数中所有递归形式的调用都出现在函数的末尾，我们称这个递归函数是尾递归的。当递归调用是整个函数体中最后执行的语句且它的返回值不属于表达式的一部分时，这个递归调用就是尾递归。尾递归函数的特点是在回归过程中不用做任何操作，这个特性很重要，因为大多数现代的编译器会利用这种特点自动生成优化的代码。</p>
+<p>线性递归：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">long Rescuvie(long n) &#123;</span><br><span class="line">  return (n == 1) ? 1 : n * Rescuvie(n - 1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>尾递归：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">long TailRescuvie(long n, long a) &#123;</span><br><span class="line">  return (n == 1) ? a : TailRescuvie(n - 1, a * n);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">long TailRescuvie(long n) &#123;</span><br><span class="line">  return (n == 0) ? 1 : TailRescuvie(n, 1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="各语言中尾递归优化"><a href="#各语言中尾递归优化" class="headerlink" title="各语言中尾递归优化"></a>各语言中尾递归优化</h3><p>因为Python，Java，Pascal等等无法在语言中实现尾递归优化(Tail Call Optimization, TCO)，所以采用了for, while, goto等特殊结构代替recursive的表述。</p>
+<p>C语言可以自动尾递归优化。</p>
+<p>在没有尾递归优化的语言，如java, python中，鼓励用迭代iteration来改写尾递归；在有尾递归优化的语言如Erlang中，鼓励用尾递归来改写其他形式的递归。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E8%BE%93%E5%85%A5%E5%92%8C%E8%BE%93%E5%87%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E8%BE%93%E5%85%A5%E5%92%8C%E8%BE%93%E5%87%BA/" class="post-title-link" itemprop="url">C-API-输入和输出</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 16:00:21" itemprop="dateCreated datePublished" datetime="2017-07-26T16:00:21+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="标准文件"><a href="#标准文件" class="headerlink" title="标准文件"></a>标准文件</h3><p>C 语言把所有的设备都当作文件。所以设备（比如显示器）被处理的方式与文件相同。</p>
+<h3 id="getchar-amp-putchar-函数"><a href="#getchar-amp-putchar-函数" class="headerlink" title="getchar() &amp; putchar() 函数"></a>getchar() &amp; putchar() 函数</h3><p><code>int getchar(void)</code> 函数从屏幕读取下一个可用的字符，并把它返回为一个整数。这个函数在同一个时间内只会读取一个单一的字符。您可以在循环内使用这个方法，以便从屏幕上读取多个字符。</p>
+<p><code>int putchar(int c)</code> 函数把字符输出到屏幕上，并返回相同的字符。这个函数在同一个时间内只会输出一个单一的字符。您可以在循环内使用这个方法，以便在屏幕上输出多个字符。</p>
+<h3 id="gets-amp-puts-函数"><a href="#gets-amp-puts-函数" class="headerlink" title="gets() &amp; puts() 函数"></a>gets() &amp; puts() 函数</h3><p><code>char *gets(char *s)</code> 函数从 stdin 读取一行到 s 所指向的缓冲区，直到一个终止符或 EOF。</p>
+<p><code>int puts(const char *s)</code> 函数把字符串 s 和一个尾随的换行符写入到 stdout。</p>
+<h3 id="scanf-和-printf-函数"><a href="#scanf-和-printf-函数" class="headerlink" title="scanf() 和 printf() 函数"></a>scanf() 和 printf() 函数</h3><p><code>int scanf(const char *format, ...)</code> 函数从标准输入流 stdin 读取输入，并根据提供的 format 来浏览输入。</p>
+<p><code>int printf(const char *format, ...)</code> 函数把输出写入到标准输出流 stdout ，并根据提供的格式产生输出。</p>
+<p>format 可以是一个简单的常量字符串，但是您可以分别指定 %s、%d、%c、%f 等来输出或读取字符串、整数、字符或浮点数。还有许多其他可用的格式选项，可以根据需要使用。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%8C%BA%E5%88%AB-typedef%E5%92%8C#define/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%8C%BA%E5%88%AB-typedef%E5%92%8C#define/" class="post-title-link" itemprop="url">C-区别-typedef和#define</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 15:49:13" itemprop="dateCreated datePublished" datetime="2017-07-26T15:49:13+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><code>#define</code> 是 C 指令，用于为各种数据类型定义别名，与 typedef 类似，但是它们有以下几点不同：</p>
 <ul>
-<li>实现了Reader的类型：LimitedReader、PipeReader、SectionReader</li>
-<li>实现了Writer的类型：PipeWriter</li>
+<li>typedef 仅限于为类型定义符号名称，#define 不仅可以为类型定义别名，也能为数值定义别名，比如您可以定义 1 为 ONE。</li>
+<li>typedef 是由编译器执行解释的，#define 语句是由预编译器进行处理的。</li>
 </ul>
-<p>以上类型中，常用的类型有：os.File、strings.Reader、bufio.Reader/Writer、bytes.Buffer、bytes.Reader</p>
 
       
     </div>
@@ -920,7 +880,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/29/%E8%AF%AD%E8%A8%80/Golang/Golang-%E8%AF%AD%E6%B3%95-%E7%BB%93%E6%9E%84%E4%BD%93%E4%B8%8E%E7%BB%93%E6%9E%84%E4%BD%93%E6%8C%87%E9%92%88%E6%89%80%E6%8B%A5%E6%9C%89%E7%9A%84%E6%96%B9%E6%B3%95/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-typedef/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -934,7 +894,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2017/05/29/%E8%AF%AD%E8%A8%80/Golang/Golang-%E8%AF%AD%E6%B3%95-%E7%BB%93%E6%9E%84%E4%BD%93%E4%B8%8E%E7%BB%93%E6%9E%84%E4%BD%93%E6%8C%87%E9%92%88%E6%89%80%E6%8B%A5%E6%9C%89%E7%9A%84%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">Golang-语法-结构体与结构体指针所拥有的方法</a>
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%85%B3%E9%94%AE%E5%AD%97-typedef/" class="post-title-link" itemprop="url">C-关键字-typedef</a>
         </h2>
 
         <div class="post-meta">
@@ -944,7 +904,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2017-05-29 09:57:25" itemprop="dateCreated datePublished" datetime="2017-05-29T09:57:25+08:00">2017-05-29</time>
+              <time title="创建时间：2017-07-26 15:43:15" itemprop="dateCreated datePublished" datetime="2017-07-26T15:43:15+08:00">2017-07-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -952,7 +912,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
                 </span>
             </span>
 
@@ -967,12 +927,176 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>假设T是struct，那么Go里面遵循下面几个原则：</p>
-<ol>
-<li>T的方法集仅拥有 T Receiver 方法。</li>
-<li><code>*T</code> 方法集则包含全部方法 <code>(T + *T)</code>。</li>
-<li>如果结构的实例x是“可被寻址的”，且&amp;x的方法集中包含方法m，则x.m()为(&amp;x).m()的速记（快捷方式）</li>
-</ol>
+          <p>C 语言提供了 typedef 关键字，您可以使用它来为类型取一个新的名字。</p>
+<p>下面的实例为单字节数字定义了一个术语 BYTE：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef unsigned char BYTE;</span><br></pre></td></tr></table></figure>
+
+<p>按照惯例，定义时会大写字母，以便提醒用户类型名称是一个象征性的缩写，但您也可以使用小写字母。</p>
+<p>也可以使用 typedef 来为用户自定义的数据类型取一个新的名字。例如，您可以对结构体使用 typedef 来定义一个新的数据类型名字，然后使用这个新的数据类型来直接定义结构变量。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line"></span><br><span class="line">typedef struct Books</span><br><span class="line">&#123;</span><br><span class="line">  char  title[50];</span><br><span class="line">  char  author[50];</span><br><span class="line">  char  subject[100];</span><br><span class="line">  int   book_id;</span><br><span class="line">&#125; Book;</span><br><span class="line"></span><br><span class="line">int main( )</span><br><span class="line">&#123;</span><br><span class="line">  Book book;</span><br><span class="line"></span><br><span class="line">  strcpy( book.title, &quot;C 教程&quot;);</span><br><span class="line">  strcpy( book.author, &quot;Runoob&quot;);</span><br><span class="line">  strcpy( book.subject, &quot;编程语言&quot;);</span><br><span class="line">  book.book_id = 12345;</span><br><span class="line"></span><br><span class="line">  printf( &quot;书标题 : %s\n&quot;, book.title);</span><br><span class="line">  printf( &quot;书作者 : %s\n&quot;, book.author);</span><br><span class="line">  printf( &quot;书类目 : %s\n&quot;, book.subject);</span><br><span class="line">  printf( &quot;书 ID : %d\n&quot;, book.book_id);</span><br><span class="line"></span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E5%85%B1%E5%90%8C%E4%BD%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E5%85%B1%E5%90%8C%E4%BD%93/" class="post-title-link" itemprop="url">C-类型-共同体</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 15:30:08" itemprop="dateCreated datePublished" datetime="2017-07-26T15:30:08+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>共用体是一种特殊的数据类型，允许您在相同的内存位置存储不同的数据类型。您可以定义一个带有多成员的共用体，但是任何时候只能有一个成员带有值。共用体提供了一种使用相同的内存位置的有效方式。</p>
+<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>为了定义共用体，您必须使用 union 语句，方式与定义结构类似。union 语句定义了一个新的数据类型，带有多个成员。union 语句的格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">union [union tag]</span><br><span class="line">&#123;</span><br><span class="line">  member definition;</span><br><span class="line">  member definition;</span><br><span class="line">  ...</span><br><span class="line">  member definition;</span><br><span class="line">&#125; [one or more union variables];</span><br></pre></td></tr></table></figure>
+<p>union tag 是可选的，每个 member definition 是标准的变量定义，比如 int i; 或者 float f; 或者其他有效的变量定义。在共用体定义的末尾，最后一个分号之前，您可以指定一个或多个共用体变量，这是可选的。</p>
+<h2 id="访问共用体成员"><a href="#访问共用体成员" class="headerlink" title="访问共用体成员"></a>访问共用体成员</h2><p>为了访问共用体的成员，我们使用成员访问运算符（<code>.</code>）。成员访问运算符是共用体变量名称和我们要访问的共用体成员之间的一个句号。您可以使用 union 关键字来定义共用体类型的变量。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E7%BB%93%E6%9E%84%E4%BD%93-%E4%BD%8D%E5%9F%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E7%B1%BB%E5%9E%8B-%E7%BB%93%E6%9E%84%E4%BD%93-%E4%BD%8D%E5%9F%9F/" class="post-title-link" itemprop="url">C-类型-结构体-位域</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-26 15:03:54" itemprop="dateCreated datePublished" datetime="2017-07-26T15:03:54+08:00">2017-07-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>有些信息在存储时，并不需要占用一个完整的字节，而只需占几个或一个二进制位。例如在存放一个开关量时，只有 0 和 1 两种状态，用 1 位二进位即可。为了节省存储空间，并使处理简便，C 语言又提供了一种数据结构，称为”位域”或”位段”。</p>
+<p>所谓”位域”是把一个字节中的二进位划分为几个不同的区域，并说明每个区域的位数。每个域有一个域名，允许在程序中按域名进行操作。这样就可以把几个不同的对象用一个字节的二进制位域来表示。</p>
+<p>典型的实例：</p>
+<ul>
+<li>用 1 位二进位存放一个开关量时，只有 0 和 1 两种状态。</li>
+<li>读取外部文件格式——可以读取非标准的文件格式。例如：9 位的整数。</li>
+</ul>
+<h2 id="位域的定义和位域变量的说明"><a href="#位域的定义和位域变量的说明" class="headerlink" title="位域的定义和位域变量的说明"></a>位域的定义和位域变量的说明</h2><p>位域定义与结构定义相仿，其形式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct 位域结构名</span><br><span class="line">&#123;</span><br><span class="line">  位域列表</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>其中位域列表的形式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">类型说明符 位域名 : 位域长度</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct bs&#123;</span><br><span class="line">  int a:8;</span><br><span class="line">  int b:2;</span><br><span class="line">  int c:6;</span><br><span class="line">&#125;data;</span><br></pre></td></tr></table></figure>
+<p>说明 data 为 bs 变量，共占两个字节。其中位域 a 占 8 位，位域 b 占 2 位，位域 c 占 6 位。</p>
+<p>对于位域的定义尚有以下几点说明：</p>
+<ul>
+<li><p>一个位域必须存储在同一个字节中，不能跨两个字节。如一个字节所剩空间不够存放另一位域时，应从下一单元起存放该位域。也可以有意使某位域从下一单元开始。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct bs&#123;</span><br><span class="line">  unsigned int a:4;</span><br><span class="line">  unsigned int  :4;    /* 空域 */</span><br><span class="line">  unsigned int b:4;    /* 从下一单元开始存放 */</span><br><span class="line">  unsigned int c:4</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>由于位域不允许跨两个字节，因此位域的长度不能大于一个字节的长度，也就是说不能超过8位二进位。如果最大长度大于计算机的整数字长，一些编译器可能会允许域的内存重叠，另外一些编译器可能会把大于一个域的部分存储在下一个字中。</p>
+</li>
+<li><p>位域可以是无名位域，这时它只用来作填充或调整位置。无名的位域是不能使用的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct k&#123;</span><br><span class="line">  int a:1;</span><br><span class="line">  int  :2;    /* 该 2 位不能使用 */</span><br><span class="line">  int b:3;</span><br><span class="line">  int c:2;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>位域的使用和结构成员的使用相同，其一般形式为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">位域变量名.位域名</span><br><span class="line">位域变量名-&gt;位域名</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -991,7 +1115,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/17/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><span class="page-number current">18</span><a class="page-number" href="/page/19/">19</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/19/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/17/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/17/">17</a><span class="page-number current">18</span><a class="page-number" href="/page/19/">19</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/19/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1059,20 +1183,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

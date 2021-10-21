@@ -188,7 +188,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E5%8E%9F%E7%90%86-SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -202,7 +202,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">CAS实现SSO单点登录原理</a>
+            <a href="/2014/10/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E5%8E%9F%E7%90%86-SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">SpringMVC-原理-SpringMVC工作原理</a>
         </h2>
 
         <div class="post-meta">
@@ -212,193 +212,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-12-13 14:29:55" itemprop="dateCreated datePublished" datetime="2014-12-13T14:29:55+08:00">2014-12-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%99%BB%E9%99%86/" itemprop="url" rel="index"><span itemprop="name">登陆</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="CAS-简介"><a href="#CAS-简介" class="headerlink" title="CAS 简介"></a>CAS 简介</h2><h3 id="What-is-CAS-？"><a href="#What-is-CAS-？" class="headerlink" title="What is CAS ？"></a>What is CAS ？</h3><p>CAS （ Central Authentication Service ） 是 Yale 大学发起的一个企业级的、开源的项目，旨在为 Web 应用系统提供一种可靠的单点登录解决方法（属于 Web SSO ）。</p>
-<p>CAS 开始于 2001 年， 并在 2004 年 12 月正式成为 JA-SIG 的一个项目。</p>
-<h3 id="主要特性"><a href="#主要特性" class="headerlink" title="主要特性"></a>主要特性</h3><ol>
-<li>开源的、多协议的 SSO 解决方案； Protocols ： Custom Protocol 、 CAS 、 OAuth 、 OpenID、 RESTful API 、 SAML1.1 、 SAML2.0 等。</li>
-<li>支持多种认证机制： Active Directory 、 JAAS 、 JDBC 、 LDAP 、 X.509 Certificates 等；</li>
-<li>安全策略：使用票据（ Ticket ）来实现支持的认证协议；</li>
-<li>支持授权：可以决定哪些服务可以请求和验证服务票据（ Service Ticket ）；</li>
-<li>提供高可用性：通过把认证过的状态数据存储在 TicketRegistry 组件中，这些组件有很多支持分布式环境的实现，如： BerkleyDB 、 Default 、 EhcacheTicketRegistry 、 JDBCTicketRegistry 、JBOSS TreeCache 、 JpaTicketRegistry 、 MemcacheTicketRegistry 等；</li>
-<li>支持多种客户端： Java 、 .Net 、 PHP 、 Perl 、 Apache, uPortal 等。</li>
-</ol>
-<p> </p>
-<h2 id="SSO-单点登录原理"><a href="#SSO-单点登录原理" class="headerlink" title="SSO 单点登录原理"></a>SSO 单点登录原理</h2><p>本文内容主要针对 Web SSO 。</p>
-<h3 id="什么是SSO"><a href="#什么是SSO" class="headerlink" title="什么是SSO"></a>什么是SSO</h3><p>单点登录（ Single Sign-On , 简称 SSO ）是目前比较流行的服务于企业业务整合的解决方案之一， SSO 使得在多个应用系统中，用户只需要 登录一次 就可以访问所有相互信任的应用系统。</p>
-<h3 id="SSO-原理"><a href="#SSO-原理" class="headerlink" title="SSO 原理"></a>SSO 原理</h3><h4 id="SSO-体系中的角色"><a href="#SSO-体系中的角色" class="headerlink" title="SSO 体系中的角色"></a>SSO 体系中的角色</h4><p>一般 SSO 体系主要角色有三种：</p>
-<ol>
-<li>User （多个）</li>
-<li>Web 应用（多个）</li>
-<li>SSO 认证中心（ 1 个 ）</li>
-</ol>
-<h4 id="SSO-实现模式的原则"><a href="#SSO-实现模式的原则" class="headerlink" title="SSO 实现模式的原则"></a>SSO 实现模式的原则</h4><p>SSO 实现模式一般包括以下三个原则：</p>
-<ol>
-<li>所有的认证登录都在 SSO 认证中心进行；</li>
-<li>SSO 认证中心通过一些方法来告诉 Web 应用当前访问用户究竟是不是已通过认证的用户；</li>
-<li>SSO 认证中心和所有的 Web 应用建立一种信任关系，也就是说 web 应用必须信任认证中心。（单点信任）</li>
-</ol>
-<h4 id="SSO-主要实现方式"><a href="#SSO-主要实现方式" class="headerlink" title="SSO 主要实现方式"></a>SSO 主要实现方式</h4><p>SSO 的主要实现方式有：</p>
-<ol>
-<li>共享 cookies</li>
-</ol>
-<p>  基于共享同域的 cookie 是 Web 刚开始阶段时使用的一种方式，它利用浏览同域名之间自动传递 cookies 机制，实现两个域名之间系统令牌传递问题；另外，关于跨域问题，虽然 cookies本身不跨域，但可以利用它实现跨域的 SSO 。如：代理、暴露 SSO 令牌值等。</p>
-<p>  缺点：不灵活而且有不少安全隐患，已经被抛弃。</p>
-<ol start="2">
-<li>Broker-based( 基于经纪人 )</li>
-</ol>
-<p>  这种技术的特点就是，有一个集中的认证和用户帐号管理的服务器。经纪人给被用于进一步请求的电子身份存取。中央数据库的使用减少了管理的代价，并为认证提供一个公共和独立的 “第三方 “ 。例如 Kerberos 、 Sesame 、 IBM KryptoKnight （凭证库思想 ) 等。 Kerberos 是由麻省理工大学发明的安全认证服务，已经被 UNIX 和 Windows 作为默认的安全认证服务集成进操作系统。</p>
-<ol start="3">
-<li>Agent-based （基于代理人）</li>
-</ol>
-<p>  在这种解决方案中，有一个自动地为不同的应用程序认证用户身份的代理程序。这个代理程序需要设计有不同的功能。比如，它可以使用口令表或加密密钥来自动地将认证的负担从用户移开。代理人被放在服务器上面，在服务器的认证系统和客户端认证方法之间充当一个 “ 翻译 “ 。例如 SSH 等。</p>
-<ol start="4">
-<li>Token-based</li>
-</ol>
-<p>  例如 SecureID,WebID ，现在被广泛使用的口令认证，比如 FTP 、邮件服务器的登录认证，这是一种简单易用的方式，实现一个口令在多种应用当中使用。</p>
-<ol start="5">
-<li><p>基于网关</p>
-</li>
-<li><p>基于 SAML</p>
-</li>
-</ol>
-<p>  SAML(Security Assertion Markup Language ，安全断言标记语言）的出现大大简化了 SSO ，并被OASIS 批准为 SSO 的执行标准 。开源组织 OpenSAML 实现了 SAML 规范。
- </p>
-<h2 id="CAS-的基本原理"><a href="#CAS-的基本原理" class="headerlink" title="CAS 的基本原理"></a>CAS 的基本原理</h2><h3 id="结构体系"><a href="#结构体系" class="headerlink" title="结构体系"></a>结构体系</h3><p>从结构体系看， CAS 包括两部分： CAS Server 和 CAS Client 。</p>
-<h4 id="CAS-Server"><a href="#CAS-Server" class="headerlink" title="CAS Server"></a>CAS Server</h4><p>CAS Server 负责完成对用户的认证工作 , 需要独立部署 , CAS Server 会处理用户名 / 密码等凭证 (Credentials) 。</p>
-<h4 id="CAS-Client"><a href="#CAS-Client" class="headerlink" title="CAS Client"></a>CAS Client</h4><p>负责处理对客户端受保护资源的访问请求，需要对请求方进行身份认证时，重定向到 CAS Server 进行认证。（原则上，客户端应用不再接受任何的用户名密码等 Credentials ）。</p>
-<p>CAS Client 与受保护的客户端应用部署在一起，以 Filter 方式保护受保护的资源。</p>
-<h3 id="CAS-原理和协议"><a href="#CAS-原理和协议" class="headerlink" title="CAS 原理和协议"></a>CAS 原理和协议</h3><h4 id="基础模式"><a href="#基础模式" class="headerlink" title="基础模式"></a>基础模式</h4><p>基础模式 SSO 访问流程主要有以下步骤：</p>
-<ol>
-<li>访问服务： SSO 客户端发送请求访问应用系统提供的服务资源。</li>
-<li>定向认证： SSO 客户端会重定向用户请求到 SSO 服务器。</li>
-<li>用户认证：用户身份认证。</li>
-<li>发放票据： SSO 服务器会产生一个随机的 Service Ticket 。</li>
-<li>验证票据： SSO 服务器验证票据 Service Ticket 的合法性，验证通过后，允许客户端访问服务。</li>
-<li>传输用户信息： SSO 服务器验证票据通过后，传输用户认证结果信息给客户端。</li>
-</ol>
-<p>下面是 CAS 最基本的协议过程：</p>
-<p><img src="/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/%E5%9F%BA%E7%A1%80%E5%8D%8F%E8%AE%AE%E5%9B%BE.png" alt="基础协议图"></p>
-<p>如上图： CAS Client 与受保护的客户端应用部署在一起，以 Filter 方式保护 Web 应用的受保护资源，过滤从客户端过来的每一个 Web 请求，同时， CAS Client 会分析 HTTP 请求中是否包含请求 Service Ticket( ST 上图中的 Ticket) ，如果没有，则说明该用户是没有经过认证的；于是 CAS Client 会重定向用户请求到 CAS Server （ Step 2 ），并传递 Service （要访问的目的资源地址）。 Step 3 是用户认证过程，如果用户提供了正确的 Credentials ， CAS Server 随机产生一个相当长度、唯一、不可伪造的 Service Ticket ，并缓存以待将来验证，并且重定向用户到 Service 所在地址（附带刚才产生的 Service Ticket ） , 并为客户端浏览器设置一个 Ticket Granted Cookie （ TGC ） ； CAS Client 在拿到 Service 和新产生的 Ticket 过后，在 Step 5 和 Step6 中与 CAS Server 进行身份核实，以确保 Service Ticket 的合法性。</p>
-<p>在该协议中，所有与 CAS Server 的交互均采用 SSL 协议，以确保 ST 和 TGC 的安全性。协议工作过程中会有 2 次重定向 的过程。但是 CAS Client 与 CAS Server 之间进行 Ticket 验证的过程对于用户是透明的（使用 HttpsURLConnection ）。</p>
-<p>CAS 请求认证时序图如下</p>
-<p><img src="/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/CAS%E8%AF%B7%E6%B1%82%E8%AE%A4%E8%AF%81%E6%97%B6%E5%BA%8F%E5%9B%BE.png" alt="CAS请求认证时序图"></p>
-<h4 id="CAS-如何实现-SSO"><a href="#CAS-如何实现-SSO" class="headerlink" title="CAS 如何实现 SSO"></a>CAS 如何实现 SSO</h4><p>当用户访问另一个应用的服务再次被重定向到 CAS Server 的时候， CAS Server 会主动获到这个 TGC cookie ，然后做下面的事情：</p>
-<ol>
-<li>如果 User 持有 TGC 且其还没失效，那么就走基础协议图的 Step4 ，达到了 SSO 的效果；</li>
-<li>如果 TGC 失效，那么用户还是要重新认证 ( 走基础协议图的 Step3) 。</li>
-</ol>
-<p> </p>
-<h4 id="CAS-代理模式"><a href="#CAS-代理模式" class="headerlink" title="CAS 代理模式"></a>CAS 代理模式</h4><p>该模式形式为用户访问 App1 ， App1 又依赖于 App2 来获取一些信息，如： User –&gt;App1 –&gt;App2。</p>
-<p>这种情况下，假设 App2 也是需要对 User 进行身份验证才能访问，那么，为了不影响用户体验（过多的重定向导致 User 的 IE 窗口不停地闪动 ) ， CAS 引入了一种 Proxy 认证机制，即 CAS Client 可以代理用户去访问其它 Web 应用。</p>
-<p>代理的前提是需要 CAS Client 拥有用户的身份信息 ( 类似凭据 ) 。之前我们提到的 TGC 是用户持有对自己身份信息的一种凭据，这里的 PGT 就是 CAS Client 端持有的对用户身份信息的一种凭据。凭借 TGC ， User 可以免去输入密码以获取访问其它服务的 Service Ticket ，所以，这里凭借 PGT ， Web 应用可以代理用户去实现后端的认证，而 无需前端用户的参与 。</p>
-<p>下面为代理应用（ helloService ）获取 PGT 的过程： （注： PGTURL 用于表示一个 Proxy 服务，是一个回调链接； PGT 相当于代理证； PGTIOU 为取代理证的钥匙，用来与 PGT 做关联关系；）</p>
-<p>如上面的 CAS Proxy 图所示， CAS Client 在基础协议之上，在验证 ST 时提供了一个额外的PGT URL( 而且是 SSL 的入口 ) 给 CAS Server ，使得 CAS Server 可以通过 PGT URL 提供一个 PGT 给 CAS Client 。</p>
-<p>CAS Client 拿到了 PGT(PGTIOU-85 … ..ti2td) ，就可以通过 PGT 向后端 Web 应用进行认证。</p>
-<p>下面是代理认证和提供服务的过程：</p>
-<p><img src="/2014/12/13/%E5%B7%A5%E7%A8%8B/%E6%A8%A1%E5%9E%8B&%E6%9E%B6%E6%9E%84/CAS%E5%AE%9E%E7%8E%B0SSO%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95%E5%8E%9F%E7%90%86/%E8%AE%A4%E8%AF%81%E5%9B%BE.png" alt="认证图"></p>
-<p>如上图所示， Proxy 认证与普通的认证其实差别不大， Step1 ， 2 与基础模式的 Step1,2 几乎一样，唯一不同的是， Proxy 模式用的是 PGT 而不是 TGC ，是 Proxy Ticket （ PT ）而不是 Service Ticket 。
- </p>
-<h4 id="辅助说明"><a href="#辅助说明" class="headerlink" title="辅助说明"></a>辅助说明</h4><p>CAS 的 SSO 实现方式可简化理解为： 1 个 Cookie 和 N 个 Session 。 CAS Server 创建 cookie ，在所有应用认证时使用，各应用通过创建各自的 Session 来标识用户是否已登录。</p>
-<p>用户在一个应用验证通过后，以后用户在同一浏览器里访问此应用时，客户端应用中的过滤器会在 session 里读取到用户信息，所以就不会去 CAS Server 认证。如果在此浏览器里访问别的 web 应用时，客户端应用中的过滤器在 session 里读取不到用户信息，就会去 CAS Server 的 login 接口认证，但这时 CAS Server 会读取到浏览器传来的 cookie （ TGC ），所以 CAS Server 不会要求用户去登录页面登录，只是会根据 service 参数生成一个 Ticket ，然后再和 web 应用做一个验证 ticket 的交互而已。</p>
-<h3 id="术语解释"><a href="#术语解释" class="headerlink" title="术语解释"></a>术语解释</h3><p>CAS 系统中设计了 5 中票据： TGC 、 ST 、 PGT 、 PGTIOU 、 PT 。</p>
-<ul>
-<li>Ticket-granting cookie(TGC) ：存放用户身份认证凭证的 cookie ，在浏览器和 CAS Server 间通讯时使用，并且只能基于安全通道传输（ Https ），是 CAS Server 用来明确用户身份的凭证；</li>
-<li>Service ticket(ST) ：服务票据，服务的惟一标识码 , 由 CAS Server 发出（ Http 传送），通过客户端浏览器到达业务服务器端；一个特定的服务只能有一个惟一的 ST ；</li>
-<li>Proxy-Granting ticket （ PGT ）：由 CAS Server 颁发给拥有 ST 凭证的服务， PGT 绑定一个用户的特定服务，使其拥有向 CAS Server 申请，获得 PT 的能力；</li>
-<li>Proxy-Granting Ticket I Owe You （ PGTIOU ） : 作用是将通过凭证校验时的应答信息由 CAS Server 返回给 CAS Client ，同时，与该 PGTIOU 对应的 PGT 将通过回调链接传给 Web 应用。 Web 应用负责维护 PGTIOU 与 PGT 之间映射关系的内容表；</li>
-<li>Proxy Ticket (PT) ：是应用程序代理用户身份对目标程序进行访问的凭证；</li>
-</ul>
-<p> <br>其它说明如下：</p>
-<ul>
-<li>Ticket Granting ticket(TGT) ：票据授权票据，由 KDC 的 AS 发放。即获取这样一张票据后，以后申请各种其他服务票据 (ST) 便不必再向 KDC 提交身份认证信息 (Credentials) ；</li>
-<li>Authentication service(AS) ——— 认证用服务，索取 Credentials ，发放 TGT ；</li>
-<li>Ticket-granting service (TGS) ——— 票据授权服务，索取 TGT ，发放 ST ；</li>
-<li>KDC( Key Distribution Center ) ———- 密钥发放中心；</li>
-</ul>
-<p> </p>
-<h2 id="CAS-安全性"><a href="#CAS-安全性" class="headerlink" title="CAS 安全性"></a>CAS 安全性</h2><p>CAS 的安全性仅仅依赖于 SSL 。使用的是 secure cookie 。</p>
-<h3 id="TGC-PGT-安全性"><a href="#TGC-PGT-安全性" class="headerlink" title="TGC/PGT 安全性"></a>TGC/PGT 安全性</h3><p>对于一个 CAS 用户来说，最重要是要保护它的 TGC ，如果 TGC 不慎被 CAS Server 以外的实体获得， Hacker 能够找到该 TGC ，然后冒充 CAS 用户访问 所有 授权资源。 PGT 的角色跟 TGC 是一样的。</p>
-<p>从基础模式可以看出， TGC 是 CAS Server 通过 SSL 方式发送给终端用户，因此，要截取 TGC 难度非常大，从而确保 CAS 的安全性。<br>TGT 的存活周期默认为 120 分钟。</p>
-<h3 id="ST-PT-安全性"><a href="#ST-PT-安全性" class="headerlink" title="ST/PT 安全性"></a>ST/PT 安全性</h3><p>ST （ Service Ticket ）是通过 Http 传送的，因此网络中的其他人可以 Sniffer 到其他人的 Ticket 。CAS 通过以下几方面来使 ST 变得更加安全（事实上都是可以配置的）：</p>
-<ol>
-<li>ST 只能使用一次</li>
-</ol>
-<p>  CAS 协议规定，无论 Service Ticket 验证是否成功， CAS Server 都会清除服务端缓存中的该 Ticket ，从而可以确保一个 Service Ticket 不被使用两次。</p>
-<ol start="2">
-<li>ST 在一段时间内失效</li>
-</ol>
-<p>  CAS 规定 ST 只能存活一定的时间，然后 CAS Server 会让它失效。默认有效时间为 5 分钟。</p>
-<ol start="3">
-<li>ST 是基于随机数生成的</li>
-</ol>
-<p>  ST 必须足够随机，如果 ST 生成规则被猜出， Hacker 就等于绕过 CAS 认证，直接访问 对应的服务。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/30/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-notify()%E5%92%8CnotifyAll()%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/11/30/%E8%AF%AD%E8%A8%80/Java/API/%E5%85%B6%E4%BB%96/Java-API-notify()%E5%92%8CnotifyAll()%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Java-API-Java中的Copy-On-Write容器</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-11-30 12:30:01" itemprop="dateCreated datePublished" datetime="2014-11-30T12:30:01+08:00">2014-11-30</time>
+              <time title="创建时间：2014-10-27 13:09:41" itemprop="dateCreated datePublished" datetime="2014-10-27T13:09:41+08:00">2014-10-27</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -421,229 +235,14 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/armyao/archive/2010/12/27/1917989.html">http://www.cnblogs.com/armyao/archive/2010/12/27/1917989.html</a></p>
-<ul>
-<li><p>notifyAll使所有原来在该对象上等待被notify的线程统统退出wait的状态，变成等待该对象上的锁，一旦该对象被解锁，他们就会去竞争。</p>
-</li>
-<li><p>notify则文明得多他只是选择一个wait状态线程进行通知，并使它获得该对象上的锁，但不惊动其他同样在等待被该对象notify的线程们，当第一个线程运行完毕以后释放对象上的锁此时如果该对象没有再次使用notify语句，则即便该对象已经空闲，其他wait状态等待的线程由于没有得到该对象的通知，继续处在wait状态，直到这个对象发出一个notify或notifyAll，它们等待的是被notify或notifyAll，而不是锁。</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E7%94%A8%E6%B3%95-#{}%E5%92%8C${}%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/11/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Mybatis/Mybatis-%E7%94%A8%E6%B3%95-#%7B%7D%E5%92%8C$%7B%7D%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Mybatis-用法-#{}和${}的区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-11-27 13:47:24" itemprop="dateCreated datePublished" datetime="2014-11-27T13:47:24+08:00">2014-11-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Mybatis/" itemprop="url" rel="index"><span itemprop="name">Mybatis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>#{}相当于jdbc中的preparedstatement，预编译</li>
-<li>${}是输出变量的值，sql拼接</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/25/%E8%AF%AD%E8%A8%80/web/Web-Cookie%E5%92%8CSession/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/11/25/%E8%AF%AD%E8%A8%80/web/Web-Cookie%E5%92%8CSession/" class="post-title-link" itemprop="url">Web-Cookie和Session</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-11-25 19:17:39" itemprop="dateCreated datePublished" datetime="2014-11-25T19:17:39+08:00">2014-11-25</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Web/" itemprop="url" rel="index"><span itemprop="name">Web</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/19786827/answer/28752144">https://www.zhihu.com/question/19786827/answer/28752144</a></p>
+          <p><img src="/2014/10/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E5%8E%9F%E7%90%86-SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.png" alt="SpringMVC工作原理"></p>
+<p>上面的是springMVC的工作原理图：</p>
 <ol>
-<li>由于HTTP协议是无状态的协议，所以服务端需要记录用户的状态时，就需要用某种机制来识具体的用户，这个机制就是Session.典型的场景比如购物车，当你点击下单按钮时，由于HTTP协议无状态，所以并不知道是哪个用户操作的，所以服务端要为特定的用户创建了特定的Session，用用于标识这个用户，并且跟踪用户，这样才知道购物车里面有几本书。这个Session是保存在服务端的，有一个唯一标识。在服务端保存Session的方法很多，内存、数据库、文件都有。集群的时候也要考虑Session的转移，在大型的网站，一般会有专门的Session服务器集群，用来保存用户会话，这个时候 Session 信息都是放在内存的，使用一些缓存服务比如Memcached之类的来放 Session。</li>
-<li>思考一下服务端如何识别特定的客户？这个时候Cookie就登场了。每次HTTP请求的时候，客户端都会发送相应的Cookie信息到服务端。实际上大多数的应用都是用 Cookie 来实现Session跟踪的，第一次创建Session的时候，服务端会在HTTP协议中告诉客户端，需要在 Cookie 里面记录一个Session ID，以后每次请求把这个会话ID发送到服务器，我就知道你是谁了。有人问，如果客户端的浏览器禁用了 Cookie 怎么办？一般这种情况下，会使用一种叫做URL重写的技术来进行会话跟踪，即每次HTTP交互，URL后面都会被附加上一个诸如 sid=xxxxx 这样的参数，服务端据此来识别用户。</li>
-<li>Cookie其实还可以用在一些方便用户的场景下，设想你某次登陆过一个网站，下次登录的时候不想再次输入账号了，怎么办？这个信息可以写到Cookie里面，访问网站的时候，网站页面的脚本可以读取这个信息，就自动帮你把用户名给填了，能够方便一下用户。这也是Cookie名称的由来，给用户的一点甜头。</li>
-</ol>
-<h3 id="Cookie"><a href="#Cookie" class="headerlink" title="Cookie"></a>Cookie</h3><p>Cookie是客户端保存用户信息的一种机制，用来记录用户的一些信息，也是实现Session的一种方式。</p>
-<h3 id="Session"><a href="#Session" class="headerlink" title="Session"></a>Session</h3><p>Session是在服务端保存的一个数据结构，用来跟踪用户的状态，这个数据可以保存在集群、数据库、文件中。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-ORACLE%E4%B8%ADROWNUM/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/11/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-ORACLE%E4%B8%ADROWNUM/" class="post-title-link" itemprop="url">Oracle-ORACLE中ROWNUM</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-11-13 20:29:44" itemprop="dateCreated datePublished" datetime="2014-11-13T20:29:44+08:00">2014-11-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="ORACLE-中-ROWNUM"><a href="#ORACLE-中-ROWNUM" class="headerlink" title="ORACLE 中 ROWNUM"></a>ORACLE 中 ROWNUM</h1><hr>
-<p>假设某个表 t1(c1) 有 20 条记录。  </p>
-<p>如果用 select rownum,c1 from t1 where rownum &lt; 10, 只要是用小于号，查出来的结果很容易地与一般理解在概念上能达成一致，应该不会有任何疑问的。  </p>
+<li>客户端发出一个http请求给web服务器，web服务器对http请求进行解析，如果匹配DispatcherServlet的请求映射路径（在web.xml中指定），web容器将请求转交给DispatcherServlet.</li>
+<li>DipatcherServlet接收到这个请求之后将根据请求的信息（包括URL、Http方法、请求报文头和请求参数Cookie等）以及HandlerMapping的配置找到处理请求的处理器（Handler）。</li></ol>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2014/11/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-ORACLE%E4%B8%ADROWNUM/#more" rel="contents">
+              <a class="btn" href="/2014/10/27/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E5%8E%9F%E7%90%86-SpringMVC%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -667,7 +266,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/06/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E7%8E%AF%E5%A2%83-profile%E3%80%81bashrc%E3%80%81bash_profile%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%81%94%E7%B3%BB/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/23/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E4%B8%8EWebservice%E5%8C%BA%E5%88%AB%E4%B8%8E%E8%81%94%E7%B3%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -681,7 +280,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/11/06/%E7%B3%BB%E7%BB%9F&%E6%9C%8D%E5%8A%A1%E5%99%A8/Linux/Linux-%E7%8E%AF%E5%A2%83-profile%E3%80%81bashrc%E3%80%81bash_profile%E4%B9%8B%E9%97%B4%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%81%94%E7%B3%BB/" class="post-title-link" itemprop="url">Linux-环境-profile、bashrc、bash_profile之间的区别和联系</a>
+            <a href="/2014/10/23/%E8%AF%AD%E8%A8%80/Java/JavaEE/%E5%85%B6%E4%BB%96/Servlet%E4%B8%8EWebservice%E5%8C%BA%E5%88%AB%E4%B8%8E%E8%81%94%E7%B3%BB/" class="post-title-link" itemprop="url">Servlet与WebService区别与联系</a>
         </h2>
 
         <div class="post-meta">
@@ -691,7 +290,243 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-11-06 12:03:27" itemprop="dateCreated datePublished" datetime="2014-11-06T12:03:27+08:00">2014-11-06</time>
+              <time title="创建时间：2014-10-23 13:27:41" itemprop="dateCreated datePublished" datetime="2014-10-23T13:27:41+08:00">2014-10-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.360doc.com/content/13/0415/10/11253639_278358312.shtml">http://www.360doc.com/content/13/0415/10/11253639_278358312.shtml</a></p>
+<h2 id="Servelt与WebService的异同："><a href="#Servelt与WebService的异同：" class="headerlink" title="Servelt与WebService的异同："></a>Servelt与WebService的异同：</h2><h3 id="请求："><a href="#请求：" class="headerlink" title="请求："></a>请求：</h3><p>客户端访问一个服务器的url，只需要发送简单的httprequest即可。   </p>
+<ul>
+<li>但servlet只能接受一个简单的http请求；   </li>
+<li>而WebService是可以发送一个xml作为其请求内容。   </li>
+</ul>
+<h3 id="传输："><a href="#传输：" class="headerlink" title="传输："></a>传输：</h3><ul>
+<li>servlet使用http协议传输数据。   </li>
+<li>ws使用固定的XML格式封装成soap消息，可以使用http作为底层数据传输，但并不局限于http协议。   </li>
+</ul>
+<h3 id="返回结果："><a href="#返回结果：" class="headerlink" title="返回结果："></a>返回结果：</h3><ul>
+<li>servlet返回的是html页面；   </li>
+<li>ws返回的可以是复杂对象甚至使用附件或者mutidata的2进制文件。   </li>
+</ul>
+<h3 id="部署："><a href="#部署：" class="headerlink" title="部署："></a>部署：</h3><ul>
+<li>servlet需要遵守j2ee的Web   Application规范部署的应用服务器上，如tomcat,weblogic，websphere；   </li>
+<li>WebService则需要有WSDL文件来部署服务，或者使用UDDI注册。   </li>
+</ul>
+<h3 id="优势："><a href="#优势：" class="headerlink" title="优势："></a>优势：</h3><ul>
+<li>WebService的跨平台特性是servlet不能比的；   </li>
+<li>而servlet相对来说速度上的优势也是不可忽视的</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E4%BE%8B%E5%AD%90-%E4%BB%A3%E7%A0%81%E4%B8%AD%E5%8A%A0%E8%BD%BDApplicationContext.xml%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/10/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E4%BE%8B%E5%AD%90-%E4%BB%A3%E7%A0%81%E4%B8%AD%E5%8A%A0%E8%BD%BDApplicationContext.xml%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E5%BC%8F/" class="post-title-link" itemprop="url">Spring-例子-代码中加载ApplicationContext.xml文件的方式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-10-22 15:13:25" itemprop="dateCreated datePublished" datetime="2014-10-22T15:13:25+08:00">2014-10-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、利用ClassPathXmlApplicationContext-可以从classpath中读取XML文件"><a href="#一、利用ClassPathXmlApplicationContext-可以从classpath中读取XML文件" class="headerlink" title="一、利用ClassPathXmlApplicationContext,可以从classpath中读取XML文件"></a>一、利用ClassPathXmlApplicationContext,可以从classpath中读取XML文件</h2><h4 id="1-读取一个文件"><a href="#1-读取一个文件" class="headerlink" title="1. 读取一个文件"></a>1. 读取一个文件</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ApplicationContext context = new ClassPathXmlApplicationContext(&quot;applicationContext.xml&quot;);</span><br><span class="line">UserDao userDao = (UserDao)context.getBean(&quot;userDao&quot;);</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2014/10/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E4%BE%8B%E5%AD%90-%E4%BB%A3%E7%A0%81%E4%B8%AD%E5%8A%A0%E8%BD%BDApplicationContext.xml%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/18/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E9%97%AE%E9%A2%98-%E6%8E%A5%E6%94%B6POST%E8%A1%A8%E5%8D%95%E8%AF%B7%E6%B1%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/10/18/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E9%97%AE%E9%A2%98-%E6%8E%A5%E6%94%B6POST%E8%A1%A8%E5%8D%95%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">SpringMVC-问题-接收POST表单请求</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-10-18 09:07:29" itemprop="dateCreated datePublished" datetime="2014-10-18T09:07:29+08:00">2014-10-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>前段时间遇到一个问题，在spring mvc 服务端接收post请求时，通过html 表单提交的时候，服务端能够接收到参数的值。但是使用httpclient4.3构造post请求，却无法接收到参数的值。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2014/10/18/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E9%97%AE%E9%A2%98-%E6%8E%A5%E6%94%B6POST%E8%A1%A8%E5%8D%95%E8%AF%B7%E6%B1%82/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/14/%E5%B7%A5%E5%85%B7/vim/vi%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/10/14/%E5%B7%A5%E5%85%B7/vim/vi%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">vi常用命令</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-10-14 17:29:48" itemprop="dateCreated datePublished" datetime="2014-10-14T17:29:48+08:00">2014-10-14</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -714,26 +549,99 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="etc-profile"><a href="#etc-profile" class="headerlink" title="/etc/profile"></a><code>/etc/profile</code></h2><p>此文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行。并从 /etc/profile.d 目录的配置文件中搜集 shell 的设置。</p>
-<p>英文描述为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># /etc/profile</span><br><span class="line"># System wide environment and startup programs, for login setup # Functions and aliases go in /etc/bashrc</span><br><span class="line"># It&#x27;s NOT a good idea to change this file unless you know what you # are doing. It&#x27;s much better to create a custom.sh shell script in # /etc/profile.d/ to make custom changes to your environment, as this # will prevent the need for merging in future updates.</span><br></pre></td></tr></table></figure>
-<p>所以如果你有对/etc/profile有修改的话必须得重启你的修改才会生效，此修改对每个用户都生效。</p>
-<h2 id="etc-bashrc"><a href="#etc-bashrc" class="headerlink" title="/etc/bashrc"></a><code>/etc/bashrc</code></h2><p>为每一个运行 bash shell 的用户执行此文件。当 bash shell 被打开时，该文件被读取。</p>
-<p>英文描述为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># /etc/bashrc</span><br><span class="line"># System wide functions and aliases # Environment stuff goes in /etc/profile</span><br><span class="line"># It&#x27;s NOT a good idea to change this file unless you know what you # are doing. It&#x27;s much better to create a custom.sh shell script in # /etc/profile.d/ to make custom changes to your environment, as this # will prevent the need for merging in future updates.</span><br></pre></td></tr></table></figure>
-<p>如果你想对所有的使用 bash 的用户修改某个配置并在以后打开的 bash 都生效的话可以修改这个文件，修改这个文件不用重启，重新打开一个bash即可生效。</p>
-<h2 id="bash-profile"><a href="#bash-profile" class="headerlink" title="~/.bash_profile"></a><code>~/.bash_profile</code></h2><p>每个用户都可使用该文件输入专用于自己使用的 shell 信息，当用户登录时，该文件仅仅执行一次！默认情况下，他设置一些环境变量，执行用户的 .bashrc 文件。</p>
-<p>此文件类似于 /etc/profile，也是需要需要重启才会生效，/etc/profile 对所有用户生效，~/.bash_profile 只对当前用户生效。</p>
-<h2 id="bashrc"><a href="#bashrc" class="headerlink" title="~/.bashrc"></a><code>~/.bashrc</code></h2><p>该文件包含专用于你的 bash shell 的 bash 信息，当登录时以及每次打开新的 shell 时，该文件被读取.（每个用户都有一个 .bashrc 文件，在用户目录下）</p>
-<p>此文件类似于 /etc/bashrc，不需要重启生效，重新打开一个 bash 即可生效，/etc/bashrc 对所有用户新打开的 bash 都生效，但 ~/.bashrc 只对当前用户新打开的 bash 生效。</p>
-<h2 id="bash-logout"><a href="#bash-logout" class="headerlink" title="~/.bash_logout"></a><code>~/.bash_logout</code></h2><p>当每次退出系统（退出 bash shell）时，执行该文件.</p>
-<hr>
-<p>另外，/etc/profile 中设定的变量（全局）的可以作用于任何用户，而 ~/.bashrc 等中设定的变量（局部）只能继承 /etc/profile 中的变量，他们是“父子”关系。</p>
-<ul>
-<li>~/.bash_profile 是交互式 login 方式进入 bash 运行的；</li>
-<li>~/.bashrc 是交互式 non-login 方式进入 bash 运行的；</li>
+          <h3 id="移动"><a href="#移动" class="headerlink" title="移动"></a>移动</h3><ul>
+<li><p><code>k</code>：上</p>
+</li>
+<li><p><code>j</code>：下</p>
+</li>
+<li><p><code>h</code>：左</p>
+</li>
+<li><p><code>l</code>：右</p>
+</li>
+<li><p><code>0</code>：将游标放在一行的开始</p>
+</li>
+<li><p><code>$</code>：将游标放在一行的结尾</p>
+</li>
+<li><p><code>w</code>：将游标移动到下一个单词</p>
+</li>
+<li><p><code>W</code>：和w功能相同，只是不计算标点符号。</p>
+</li>
+<li><p><code>b</code>：将游标移动到前一个单词</p>
+</li>
+<li><p><code>B</code>：和b功能相同，只是不计算标点符号。</p>
+</li>
+<li><p><code>(</code>：将游标放在当前句子的开始处</p>
+</li>
+<li><p><code>)</code>：酱油表放在下一句的开始处</p>
+</li>
+<li><p><code>Ctrl + F</code>：向前滚动一屏</p>
+</li>
+<li><p><code>Ctrl + B</code>：向后滚动一屏</p>
+</li>
+<li><p><code>Ctrl + G</code>：确定游标的当前位置，会将游标的行号和字符位置显示在屏幕下方。</p>
+</li>
+<li><p><code>G</code>：将游标放在文件的最后一行上</p>
+</li>
+<li><p><code>xG</code>：表示游标所要移动到的行号</p>
+</li>
+<li><p><code>:x</code>：表示将游标放在x所制定的行上</p>
+</li>
+<li><p><code>Shift + g</code> 或者 <code>:$</code>：跳到文件最后一行</p>
+</li>
+<li><p><code>gg</code> 或者 <code>:0</code>：跳到文件第一行</p>
+</li>
 </ul>
-<p>通常二者设置大致相同，所以通常前者会调用后者。</p>
+<h3 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a>搜索</h3><ul>
+<li><code>/input</code> 搜索从光标所在处之后的input。</li>
+<li><code>?input</code> 搜索从光标所在处之前的input。</li>
+</ul>
+<p>如果正在搜索的字符存在多个实例，那么用户可以在每个实例的后面输入一个小写n，从而沿同一个方向搜索（向前或者向后），或者输入一个大写N，以便沿着当前的搜索的相反方向进行搜索。</p>
+<h3 id="退出"><a href="#退出" class="headerlink" title="退出"></a>退出</h3><ul>
+<li>q退出</li>
+<li>q!强制退出</li>
+<li>qw退出并保存</li>
+</ul>
+<h3 id="编辑"><a href="#编辑" class="headerlink" title="编辑"></a>编辑</h3><h4 id="撤销"><a href="#撤销" class="headerlink" title="撤销"></a>撤销</h4><ul>
+<li><code>u</code>：撤销操作</li>
+<li><code>ctrl + r</code>：恢复撤销</li>
+</ul>
+<h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><ul>
+<li><code>i</code>：在当前的游标位置之前插入文本</li>
+<li><code>I</code>：在当前行的开始处插入文本</li>
+<li><code>a</code>：在当前的游标位置之后插入文本</li>
+<li><code>A</code>：在当前行的结尾处插入文本</li>
+<li><code>o</code>：在游标位置的下面为文本条目创建一个新行</li>
+<li><code>O</code>：在游标位置的上面为文本条目创建一个新行</li>
+</ul>
+<h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h4><ul>
+<li><code>x</code>：删除游标所在位置的字符。如果命令前有数字n，那么将删除从游标所在位置开始的后n个字符。</li>
+<li><code>X</code>：删除游标位置前面的字符。如果命令前有数字n，那么将删除从游标所在位置开始的前n个字符。</li>
+<li><code>dw</code>：从当前的游标位置开始删除，一直到下一个单词为止（或者是多个单词，如果命令前有数字）。</li>
+<li><code>D</code>：从游标位置开始删除，一直到当前行结束。</li>
+<li><code>dd</code>：删除游标所在的行</li>
+</ul>
+<h4 id="修改"><a href="#修改" class="headerlink" title="修改"></a>修改</h4><ul>
+<li><code>cc</code>：删除当前行的内容，保留用户输入的文本</li>
+<li><code>cw</code>：修改游标所在的单词，修改范围是从游标位置一直到单词结束。该命令还是的用户进入插入模式。</li>
+<li><code>r</code>：替换游标所在的字符。完成替换之后，vi将返回命令模式。</li>
+<li><code>R</code>：覆盖从游标当前所在的字符开始的多个字符。必需按Esc停止覆盖。</li>
+<li><code>s</code>：用输入字符替换当前字符。完成后，用户任然处于插入状态下。</li>
+<li><code>S</code>：删除游标所在的行并用新文本替换。输入新文本后，vi任然保持在插入模式下。</li>
+</ul>
+<h4 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h4><ul>
+<li><code>yy</code>：单行复制</li>
+<li><code>nyy</code>：n行复制</li>
+<li><code>yw</code>：拖动（复制）当前单词，拖动的范围是从游标所在的单词一直到单词结尾</li>
+</ul>
+<h4 id="粘贴"><a href="#粘贴" class="headerlink" title="粘贴"></a>粘贴</h4><ul>
+<li><code>p</code>：在光标下一行粘贴</li>
+<li><code>P</code>：在光标上一行粘贴</li>
+</ul>
+<h4 id="高级命令"><a href="#高级命令" class="headerlink" title="高级命令"></a>高级命令</h4><ul>
+<li><code>J</code>：将当前行与它下面的行合并到一起</li>
+</ul>
+<hr>
+<p>由于终端窗口大小不同，新行从什么地方开始可能会令人混淆。新行从*后开始。<br>在命令模式下使用set nu选项可以为新行添加编号。<br>删除行编号的命令是set nonu。</p>
 
       
     </div>
@@ -753,7 +661,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-%E5%A4%8D%E5%88%B6%E8%A1%A8/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/10/08/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E6%A6%82%E5%BF%B5-%E8%A1%A8%E7%A9%BA%E9%97%B4%E5%92%8C%E4%B8%B4%E6%97%B6%E8%A1%A8%E7%A9%BA%E9%97%B4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -767,7 +675,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/11/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-%E5%A4%8D%E5%88%B6%E8%A1%A8/" class="post-title-link" itemprop="url">Oracle-语法-复制表</a>
+            <a href="/2014/10/08/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E6%A6%82%E5%BF%B5-%E8%A1%A8%E7%A9%BA%E9%97%B4%E5%92%8C%E4%B8%B4%E6%97%B6%E8%A1%A8%E7%A9%BA%E9%97%B4/" class="post-title-link" itemprop="url">Oracle-概念-表空间和临时表空间</a>
         </h2>
 
         <div class="post-meta">
@@ -777,7 +685,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-11-05 12:33:32" itemprop="dateCreated datePublished" datetime="2014-11-05T12:33:32+08:00">2014-11-05</time>
+              <time title="创建时间：2014-10-08 09:17:44" itemprop="dateCreated datePublished" datetime="2014-10-08T09:17:44+08:00">2014-10-08</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -801,10 +709,10 @@
 
       
           <ul>
-<li>直接建相同的表<code>create table students_backup as select * from students;</code></li>
-<li>直接建相同的表结构<code>create table students_backup as select * from students where 1=2;</code></li>
-<li>如果建好了表<code>insert into students_backup select * from students;</code></li>
+<li>表空间：此空间是用来进行数据存储的（表、function、存储过程等），所以是实际物理存储区域。</li>
+<li>临时表空间：主要用途是在数据库进行排序运算（如创建索引、order by 及 group by、distinct、union/intersect/minus/、sort-merge 及 join、analyze 命令）、管理索引（如创建索 引、IMP 进行数据导入）、访问视图等操作时提供临时的运算空间，当运算完成之后系统会自动清理。</li>
 </ul>
+<p>备注：因为用途不同所以才有了区分，实际上数据库都是有默认临时空间的，但实际应用中很难满足需求，所以才需要自己创建临时空间。</p>
 
       
     </div>
@@ -824,7 +732,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/09/30/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B-%E5%9C%A8Spring%E5%AE%B9%E5%99%A8%E5%88%9D%E5%A7%8B%E5%8C%96bean%E5%92%8C%E9%94%80%E6%AF%81%E5%89%8D%E6%89%80%E5%81%9A%E7%9A%84%E6%93%8D%E4%BD%9C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -838,7 +746,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">UML类图几种关系的总结</a>
+            <a href="/2014/09/30/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B-%E5%9C%A8Spring%E5%AE%B9%E5%99%A8%E5%88%9D%E5%A7%8B%E5%8C%96bean%E5%92%8C%E9%94%80%E6%AF%81%E5%89%8D%E6%89%80%E5%81%9A%E7%9A%84%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Spring-运行流程-在Spring容器初始化bean和销毁前所做的操作</a>
         </h2>
 
         <div class="post-meta">
@@ -848,106 +756,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-11-03 14:27:25" itemprop="dateCreated datePublished" datetime="2014-11-03T14:27:25+08:00">2014-11-03</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/UML/" itemprop="url" rel="index"><span itemprop="name">UML</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在UML类图中，常见的有以下几种关系:泛化（Generalization）,实现（Realization）,关联（Association）,聚合（Aggregation）,组合(Composition)，依赖(Dependency)</p>
-<h3 id="泛化-Generalization"><a href="#泛化-Generalization" class="headerlink" title="泛化(Generalization)"></a>泛化(Generalization)</h3><p>【泛化关系】：是一种继承关系,它指定了子类如何特化父类的所有特征和行为例如：老虎是动物的一种.</p>
-<p>【箭头指向】：带三角箭头的实线，箭头指向父类</p>
-<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E6%B3%9B%E5%8C%96.png" alt="泛化"></p>
-<h3 id="实现（Realization"><a href="#实现（Realization" class="headerlink" title="实现（Realization)"></a>实现（Realization)</h3><p>【实现关系】：是一种类与接口的关系，表示类是接口所有特征和行为的实现</p>
-<p>【箭头指向】：带三角箭头的虚线，箭头指向接口</p>
-<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E5%AE%9E%E7%8E%B0.png" alt="实现"></p>
-<h3 id="关联（Association）"><a href="#关联（Association）" class="headerlink" title="关联（Association）"></a>关联（Association）</h3><p>【关联关系】：是一种拥有的关系,它使一个类知道另一个类的属性和方法；如：老师与学生，丈夫与妻子<br>关联可以是双向的，也可以是单向的。双向的关联可以有两个箭头或者没有箭头，单向的关联有一个箭头。</p>
-<p>【代码体现】：成员变量</p>
-<p>【箭头及指向】：带普通箭头的实心线，指向被拥有者</p>
-<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E5%85%B3%E8%81%94.png" alt="关联"></p>
-<p>上图中，老师与学生是双向关联，老师有多名学生，学生也可能有多名老师。但学生与某课程间的关系为单向关联，一名学生可能要上多门课程，课程是个抽象的东西他不拥有学生。</p>
-<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E5%85%B3%E8%81%942.png" alt="关联2"></p>
-<p>上图为自身关联：</p>
-<h3 id="聚合（Aggregation）"><a href="#聚合（Aggregation）" class="headerlink" title="聚合（Aggregation）"></a>聚合（Aggregation）</h3><p>【聚合关系】：是整体与部分的关系.如车和轮胎是整体和部分的关系.</p>
-<p>聚合关系是关联关系的一种，是强的关联关系；关联和聚合在语法上无法区分，必须考察具体的逻辑关系。</p>
-<p>【代码体现】：成员变量</p>
-<p>【箭头及指向】：带空心菱形的实心线，菱形指向整体</p>
-<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E8%81%9A%E5%90%88.png" alt="聚合"></p>
-<h3 id="组合-Composition"><a href="#组合-Composition" class="headerlink" title="组合(Composition)"></a>组合(Composition)</h3><p>【组合关系】：是整体与部分的关系.没有公司就不存在部门</p>
-<p>组合关系是关联关系的一种，是比聚合关系还要强的关系，它要求普通的聚合关系中代表整体的对象负责代表部分的对象的生命周期</p>
-<p>【代码体现】：成员变量</p>
-<p>【箭头及指向】：带实心菱形的实线，菱形指向整体</p>
-<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E7%BB%84%E5%90%88.png" alt="组合"></p>
-<h3 id="依赖-Dependency"><a href="#依赖-Dependency" class="headerlink" title="依赖(Dependency)"></a>依赖(Dependency)</h3><p>【依赖关系】：是一种使用的关系,所以要尽量不使用双向的互相依赖。</p>
-<p>【代码表现】：局部变量、方法的参数或者对静态方法的调用</p>
-<p>【箭头及指向】：带箭头的虚线，指向被使用者</p>
-<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E4%BE%9D%E8%B5%96.png" alt="依赖"></p>
-<hr>
-<p>各种关系的强弱顺序：</p>
-<p><strong>泛化= 实现&gt; 组合&gt; 聚合&gt; 关联&gt; 依赖</strong></p>
-<p>下面这张UML图，比较形象地展示了各种类图关系：</p>
-<p><img src="/2014/11/03/%E5%B7%A5%E7%A8%8B/%E5%9B%BE/UML%E7%B1%BB%E5%9B%BE%E5%87%A0%E7%A7%8D%E5%85%B3%E7%B3%BB%E7%9A%84%E6%80%BB%E7%BB%93/%E4%B8%BE%E4%BE%8B.png" alt="举例"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/03/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E7%94%A8%E6%B3%95-SpringMVC%E7%9A%84%E5%87%A0%E7%A7%8D%E8%BF%94%E5%9B%9E%E6%96%B9%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2014/11/03/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6&%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/SpringMVC-%E7%94%A8%E6%B3%95-SpringMVC%E7%9A%84%E5%87%A0%E7%A7%8D%E8%BF%94%E5%9B%9E%E6%96%B9%E5%BC%8F/" class="post-title-link" itemprop="url">SpringMVC-用法-SpringMVC的几种返回方式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2014-11-03 14:03:17" itemprop="dateCreated datePublished" datetime="2014-11-03T14:03:17+08:00">2014-11-03</time>
+              <time title="创建时间：2014-09-30 21:12:31" itemprop="dateCreated datePublished" datetime="2014-09-30T21:12:31+08:00">2014-09-30</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -970,8 +779,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line">package com.boventech.learning.controller;</span><br><span class="line"></span><br><span class="line">import java.util.HashMap;</span><br><span class="line">import java.util.Map;</span><br><span class="line"></span><br><span class="line">import org.springframework.stereotype.Controller;</span><br><span class="line">import org.springframework.ui.Model;</span><br><span class="line">import org.springframework.web.bind.annotation.RequestMapping;</span><br><span class="line">import org.springframework.web.bind.annotation.RequestMethod;</span><br><span class="line">import org.springframework.web.bind.annotation.RequestParam;</span><br><span class="line">import org.springframework.web.bind.annotation.ResponseBody;</span><br><span class="line">import org.springframework.web.servlet.ModelAndView;</span><br><span class="line"></span><br><span class="line">import com.boventech.learning.entity.User;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * MVCReturn</span><br><span class="line"> * @author peng.xia</span><br><span class="line"> *</span><br><span class="line"> */</span><br><span class="line">@Controller</span><br><span class="line">@RequestMapping(&quot;/MVCReturn&quot;)</span><br><span class="line">public class SpringMVCReturnController &#123;</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value=&quot;/index1&quot;,method=RequestMethod.GET)</span><br><span class="line">    public ModelAndView index()&#123;</span><br><span class="line">        ModelAndView modelAndView = new ModelAndView(&quot;/user/index&quot;);</span><br><span class="line">        modelAndView.addObject(&quot;name&quot;, &quot;xxx&quot;);</span><br><span class="line">        return modelAndView;</span><br><span class="line">    &#125;</span><br><span class="line">    //对于ModelAndView构造函数可以指定返回页面的名称，也可以通过setViewName方法来设置所需要跳转的页面；</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value=&quot;/index2&quot;,method=RequestMethod.GET)</span><br><span class="line">    public ModelAndView index2()&#123;</span><br><span class="line">        ModelAndView modelAndView = new ModelAndView();</span><br><span class="line">        modelAndView.addObject(&quot;name&quot;, &quot;xxx&quot;);</span><br><span class="line">        modelAndView.setViewName(&quot;/user/index&quot;);</span><br><span class="line">        return modelAndView;</span><br><span class="line">    &#125;</span><br><span class="line">    //返回的是一个包含模型和视图的ModelAndView对象；</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * Model一个模型对象，</span><br><span class="line">     * 主要包含spring封装好的model和modelMap,以及java.util.Map，</span><br><span class="line">     * 当没有视图返回的时候视图名称将由requestToViewNameTranslator决定；</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    @RequestMapping(value=&quot;/index3&quot;,method=RequestMethod.GET)</span><br><span class="line">    public Map&lt;String, String&gt; index3()&#123;</span><br><span class="line">        Map&lt;String, String&gt; map = new HashMap&lt;String, String&gt;();</span><br><span class="line">        map.put(&quot;1&quot;, &quot;1&quot;);</span><br><span class="line">        //map.put相当于request.setAttribute方法</span><br><span class="line">        return map;</span><br><span class="line">    &#125;</span><br><span class="line">    //响应的view应该也是该请求的view。等同于void返回。</span><br><span class="line"></span><br><span class="line">    //返回String</span><br><span class="line">    //通过model进行使用</span><br><span class="line">    @RequestMapping(value=&quot;/index4&quot;,method = RequestMethod.GET)</span><br><span class="line">    public String index(Model model) &#123;</span><br><span class="line">        String retVal = &quot;user/index&quot;;</span><br><span class="line">        User user = new User();</span><br><span class="line">        user.setName(&quot;XXX&quot;);</span><br><span class="line">        model.addAttribute(&quot;user&quot;, user);</span><br><span class="line">        return retVal;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //通过配合@ResponseBody来将内容或者对象作为HTTP响应正文返回（适合做即时校验）；</span><br><span class="line">    @RequestMapping(value = &quot;/valid&quot;, method = RequestMethod.GET)</span><br><span class="line">    @ResponseBody</span><br><span class="line">    public String valid(@RequestParam(value = &quot;userId&quot;, required = false) Integer userId,</span><br><span class="line">            @RequestParam(value = &quot;name&quot;) String name) &#123;</span><br><span class="line">        return String.valueOf(true);</span><br><span class="line">    &#125;</span><br><span class="line">    //返回字符串表示一个视图名称，这个时候如果需要在渲染视图的过程中需要模型的话，就可以给处理器添加一个模型参数，然后在方法体往模型添加值就可以了，</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @RequestMapping(method=RequestMethod.GET)</span><br><span class="line">    public void index5()&#123;</span><br><span class="line">        ModelAndView modelAndView = new ModelAndView();</span><br><span class="line">        modelAndView.addObject(&quot;xxx&quot;, &quot;xxx&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    //返回的结果页面还是：/type</span><br><span class="line">    //这个时候我们一般是将返回结果写在了HttpServletResponse 中了，如果没写的话，</span><br><span class="line">    //spring就会利用RequestToViewNameTranslator 来返回一个对应的视图名称。如果这个时候需要模型的话，处理方法和返回字符串的情况是相同的。</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+          <h1 id="关于在spring-容器初始化-bean-和销毁前所做的操作定义方式有三种："><a href="#关于在spring-容器初始化-bean-和销毁前所做的操作定义方式有三种：" class="headerlink" title="关于在spring  容器初始化 bean 和销毁前所做的操作定义方式有三种："></a>关于在spring  容器初始化 bean 和销毁前所做的操作定义方式有三种：</h1><ol>
+<li>通过@PostConstruct 和 @PreDestroy 方法实现初始化和销毁bean之前进行的操作</li>
+<li>通过 在xml中定义init-method 和 destory-method方法</li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2014/09/30/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B-%E5%9C%A8Spring%E5%AE%B9%E5%99%A8%E5%88%9D%E5%A7%8B%E5%8C%96bean%E5%92%8C%E9%94%80%E6%AF%81%E5%89%8D%E6%89%80%E5%81%9A%E7%9A%84%E6%93%8D%E4%BD%9C/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -990,7 +808,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/11/03/%E5%B7%A5%E5%85%B7/Eclipse/Eclipse-45%E7%A7%92%E5%90%AF%E5%8A%A8%E6%97%B6%E9%97%B4%E4%BF%AE%E6%94%B9/">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/09/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-%E9%80%9A%E8%BF%87@Value%E6%B3%A8%E8%A7%A3%E8%AF%BB%E5%8F%96.properties%E9%85%8D%E7%BD%AE%E5%86%85%E5%AE%B9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -1004,7 +822,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2014/11/03/%E5%B7%A5%E5%85%B7/Eclipse/Eclipse-45%E7%A7%92%E5%90%AF%E5%8A%A8%E6%97%B6%E9%97%B4%E4%BF%AE%E6%94%B9/" class="post-title-link" itemprop="url">Eclipse-45秒启动时间修改</a>
+            <a href="/2014/09/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-%E9%80%9A%E8%BF%87@Value%E6%B3%A8%E8%A7%A3%E8%AF%BB%E5%8F%96.properties%E9%85%8D%E7%BD%AE%E5%86%85%E5%AE%B9/" class="post-title-link" itemprop="url">Spring-注解-通过@Value注解读取.properties配置内容</a>
         </h2>
 
         <div class="post-meta">
@@ -1014,7 +832,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2014-11-03 12:51:22" itemprop="dateCreated datePublished" datetime="2014-11-03T12:51:22+08:00">2014-11-03</time>
+              <time title="创建时间：2014-09-22 08:13:19" itemprop="dateCreated datePublished" datetime="2014-09-22T08:13:19+08:00">2014-09-22</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1022,7 +840,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
                 </span>
             </span>
 
@@ -1037,12 +855,159 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>Eclipse启动Tomcat时，默认配置的启动超时时长为45秒。假若项目启动超过45秒将会报错。 两种解决方法：</p>
-<p> 1. 改<code>XML eclipse\workspace\.metadata\.plugins\org.eclipse.wst.server.core\servers.xml  start-timeout=&quot;45&quot;</code>  </p>
-<ol start="2">
-<li>双击Servers视图中的对应的Server，打开Server的属性界面，右边有个Timeouts，把里面的45改大些</li>
-</ol>
-<p><img src="/2014/11/03/%E5%B7%A5%E5%85%B7/Eclipse/Eclipse-45%E7%A7%92%E5%90%AF%E5%8A%A8%E6%97%B6%E9%97%B4%E4%BF%AE%E6%94%B9/1.png" alt="1"></p>
+          <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@Controller</span><br><span class="line">@RequestMapping(&quot;/value&quot;)</span><br><span class="line">public class ValuePropertyController extends ApplicationController&#123;</span><br><span class="line"></span><br><span class="line">    @Value(&quot;#&#123;configProperties[&#x27;jdbc.jdbcUrl&#x27;]&#125;&quot;)</span><br><span class="line">    private String jdbcUrl;</span><br><span class="line"></span><br><span class="line">    @RequestMapping</span><br><span class="line">    public String value()&#123;</span><br><span class="line">        System.out.println(jdbcUrl);</span><br><span class="line">        return &quot;&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2014/09/22/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E7%94%A8%E6%B3%95/Spring-%E6%B3%A8%E8%A7%A3-%E9%80%9A%E8%BF%87@Value%E6%B3%A8%E8%A7%A3%E8%AF%BB%E5%8F%96.properties%E9%85%8D%E7%BD%AE%E5%86%85%E5%AE%B9/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/09/20/%E8%AF%AD%E8%A8%80/web/jQuery-%E6%8F%90%E4%BA%A4%E8%A1%A8%E5%8D%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/09/20/%E8%AF%AD%E8%A8%80/web/jQuery-%E6%8F%90%E4%BA%A4%E8%A1%A8%E5%8D%95/" class="post-title-link" itemprop="url">jQuery-提交表单</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-09-20 08:55:57" itemprop="dateCreated datePublished" datetime="2014-09-20T08:55:57+08:00">2014-09-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/jQuery/" itemprop="url" rel="index"><span itemprop="name">jQuery</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>表单提交方法有三种，主要说下第三种</p>
+<ol>
+<li>用form自带属性action提交</li>
+<li>用jquery提交：$(“#formid”).submit()</li>
+<li>用ajax提交</li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2014/09/20/%E8%AF%AD%E8%A8%80/web/jQuery-%E6%8F%90%E4%BA%A4%E8%A1%A8%E5%8D%95/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2014/09/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/%E5%AE%9E%E4%BE%8B%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2014/09/18/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Oracle%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A/%E5%AE%9E%E4%BE%8B%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/" class="post-title-link" itemprop="url">Oracle从入门到精通-实例启动的加载过程</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2014-09-18 17:53:32" itemprop="dateCreated datePublished" datetime="2014-09-18T17:53:32+08:00">2014-09-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>当Oracle实例在正常启动时，系统首先要访问的是初始化参数文件spfile，然后Oracle为系统全局区（SGA）分配内存。这是，Oracle实例处于安装状态，并且控制文件处于打开状态；接下来Oracle会自动读出“控制文件”中的所有数据文件和日志文件的信息，并打开当前数据库中所有的数据文件和所有的日志文件以供用户访问。</p>
 
       
     </div>
@@ -1061,7 +1026,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/65/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/65/">65</a><span class="page-number current">66</span><a class="page-number" href="/page/67/">67</a><span class="space">&hellip;</span><a class="page-number" href="/page/70/">70</a><a class="extend next" rel="next" href="/page/67/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/65/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/65/">65</a><span class="page-number current">66</span><a class="page-number" href="/page/67/">67</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="extend next" rel="next" href="/page/67/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1129,20 +1094,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">694</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">67</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">343</span>
+        <span class="site-state-item-count">349</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

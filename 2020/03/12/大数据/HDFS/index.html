@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wetts.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="HDFS（Hadoop Distributed File System，Hadoop 分布式文件系统） 相关概念块在传统的文件系统中，为了提高磁盘读写效率，一般以数据块为单位，而不是以字节为单位。比如，机械式硬盘（磁盘的一种）包含了磁头和转动部件，在读取数据时有一个寻道的过程，通过转动盘片和移动磁头的位置，来找到数据在机械式硬盘中的存储位置，然后才能进行读写。在 I&#x2F;O 开销中，机械式硬盘的寻址时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HDFS">
+<meta property="og:url" content="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/index.html">
+<meta property="og:site_name" content="Wetts&#39;s blog">
+<meta property="og:description" content="HDFS（Hadoop Distributed File System，Hadoop 分布式文件系统） 相关概念块在传统的文件系统中，为了提高磁盘读写效率，一般以数据块为单位，而不是以字节为单位。比如，机械式硬盘（磁盘的一种）包含了磁头和转动部件，在读取数据时有一个寻道的过程，通过转动盘片和移动磁头的位置，来找到数据在机械式硬盘中的存储位置，然后才能进行读写。在 I&#x2F;O 开销中，机械式硬盘的寻址时">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/%E7%AC%AC%E4%BA%8C%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9%E5%B7%A5%E4%BD%9C%E8%BF%87%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/HDFS%E7%9A%84%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/HDFS%E6%95%B0%E6%8D%AE%E5%9D%97%E5%A4%9A%E5%89%AF%E6%9C%AC%E5%AD%98%E5%82%A8.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/HDFS%E8%AF%BB%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B.png">
+<meta property="og:image" content="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/HDFS%E5%86%99%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B.png">
+<meta property="article:published_time" content="2020-03-12T06:21:34.000Z">
+<meta property="article:modified_time" content="2021-10-14T12:02:26.987Z">
+<meta property="article:author" content="Zhang Wetts">
+<meta property="article:tag" content="Hadoop">
+<meta property="article:tag" content="HDFS">
+<meta property="article:tag" content="大数据">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.png">
+
+<link rel="canonical" href="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>HDFS | Wetts's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Wetts's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wetts" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HDFS
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-12 14:21:34" itemprop="dateCreated datePublished" datetime="2020-03-12T14:21:34+08:00">2020-03-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>HDFS（Hadoop Distributed File System，Hadoop 分布式文件系统）</p>
+<h2 id="相关概念"><a href="#相关概念" class="headerlink" title="相关概念"></a>相关概念</h2><h3 id="块"><a href="#块" class="headerlink" title="块"></a>块</h3><p>在传统的文件系统中，为了提高磁盘读写效率，一般以数据块为单位，而不是以字节为单位。比如，机械式硬盘（磁盘的一种）包含了磁头和转动部件，在读取数据时有一个寻道的过程，通过转动盘片和移动磁头的位置，来找到数据在机械式硬盘中的存储位置，然后才能进行读写。在 I/O 开销中，机械式硬盘的寻址时间是最耗时的部分，一旦找到第条记录，剩下的顺序读取效率是非常高的。因此，以块为单位读写数据，可以把磁盘寻道时间分摊到大量数据中。</p>
+<p>HDFS 也同样采用了块的概念，默认的一个块大小是 64 MB。</p>
+<p>当客户端需要访问一个文件时，首先从名称节点获得组成这个文件的数据块的位置列表，然后根据位置列表获取实际存储各个数据块的数据节点的位置，最后数据节点根据数据块信息在本地 Linux 文件系统中找到对应的文件，并把数据返回给客户端。</p>
+<h3 id="名称节点"><a href="#名称节点" class="headerlink" title="名称节点"></a>名称节点</h3><p>名称节点（NameNode）负责管理分布式文件系统的命名空间（Namespace），保存了两个核心的数据结构，即 FsImage 和 EditLog。</p>
+<ul>
+<li>FsImage：维护文件系统树以及文件树中所有的文件和文件夹的元数据。</li>
+<li>EditLog：记录了所有针对文件的创建、删除、重命名等操作。</li>
+</ul>
+<p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.png" alt="名称节点的数据结构"></p>
+<p>名称节点记录了每个文件中各个块所在的数据节点的位置信息，但是并不持久化存储这些信息，而是在系统每次启动时扫描所有数据节点重构得到这些信息。</p>
+<h3 id="数据节点"><a href="#数据节点" class="headerlink" title="数据节点"></a>数据节点</h3><p>数据节点（DataNode）是分布式文件系统HDFS的工作节点，负责数据的存储和读取，会根据客户端或者名称节点的调度来进行数据的存储和检索，并且向名称节点定期发送自己所存储的块的列表。每个数据节点中的数据会被保存在各自节点的本地Linux文件系统中。</p>
+<h3 id="第二名称节点"><a href="#第二名称节点" class="headerlink" title="第二名称节点"></a>第二名称节点</h3><p>在名称节点运行期间，HDFS会不断发生更新操作，这些更新操作都是直接被写人到 EditLog 文件，因此 EditLog 文件也会逐渐变大。在名称节点运行期间，不断变大的 EditLog 文件通常对于系统性能不会产生显著影响，但是当名称节点重启时，需要将 FsImage 加载到内存中，然后逐条执行 EditLog 中的记录，使得 FsImage 保持最新。可想而知，如果 EditLog 很大，就会导致整个过程变得非常缓慢，使得名称节点在启动过程中长期处于“安全模式”，无法正常对外提供写操作，影响了用户的使用。</p>
+<p>为了有效解决 EditLog 逐渐变大带来的问题，HDFS 在设计中采用了第二名称节点（Secondary NameNode）。第二名称节点是 HDFS 架构的一个重要组成部分，具有两个方面的功能：</p>
+<ul>
+<li>首先，可以完成 EditLog 与 Fslmage 的合并操作，减小 EditLog 文件大小，缩短名称节点重启时间；</li>
+<li>其次，可以作为名称节点的“检查点”，保存名称节点中的元数据信息。</li>
+</ul>
+<p>具体如下：</p>
+<ol>
+<li>EditLog 与 Fslmage 的合并操作。每隔一段时间，第二名称节点会和名称节点通信，请求其停止使用 EditLog 文件（这里假设这个时刻为 t），暂时将新到达的写操作添加到一个新的文件 EditLog.new 中。然后，第二名称节点把名称节点中的 FsImage 文件和 EditLog 文件拉回到本地，再加载到内存中；对二者执行合并操作，即在内存中逐条执行 EditLog 中的操作，使得 FsImage 保持最新。合并结束后，第二名称节点会把合并后得到的最新的 FsImage 文件发送到名称节点。名称节点收到后，会用最新的 FsImage 文件去替换旧的 FsImage 文件，同时用 EditLog.new 文件去替换 EditLog 文件（这里假设这个时刻为 t2），从而减小了，EditLog 文件的大小。</li>
+<li>作为名称节点的“检查点”。从上面的合并过程可以看出，第二名称节点会定期和名称节点通信，从名称节点获取 FsImage 文件和 EditLog 文件，执行合并操作得到新的 FsImage 文件。从这个角度来讲，第二名称节点相当于为名称节点设置了一个“检查点”，周期性地备份名称节点中的元数据信息，当名称节点发生故障时，就可以用第二名称节点中记录的元数据信息进行系统恢复。但是，在第二名称节点上合并操作得到的新的 FsImage 文件是合并操作发生时（即 t1 时刻）HDFS 记录的元数据信息，并没有包含 t1 时刻和 t2 时刻期间发生的更新操作，如果名称节点在 t1 时刻和 t2 时刻期间发生故障，系统就会丢失部分元数据信息，在 HDFS 的设计中，也并不支持把系统直接切换到第二名称节点，因此从这个角度来讲，第二名称节点只是起到了名称节点的“检查点”作用，并不能起到“热备份”作用。即使有了第二名称节点的存在，当名称节点发生故障时，系统还是有可能会丢失部分元数据信息的。</li>
+</ol>
+<p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/%E7%AC%AC%E4%BA%8C%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9%E5%B7%A5%E4%BD%9C%E8%BF%87%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="第二名称节点工作过程示意图"></p>
+<h2 id="HDFS-体系结构"><a href="#HDFS-体系结构" class="headerlink" title="HDFS 体系结构"></a>HDFS 体系结构</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/HDFS%E7%9A%84%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84.png" alt="HDFS的体系结构"></p>
+<h3 id="HDFS-命名控件管理"><a href="#HDFS-命名控件管理" class="headerlink" title="HDFS 命名控件管理"></a>HDFS 命名控件管理</h3><p>HDFS 的命名空间包含目录、文件和块。命名空间管理是指命名空间支持对 HDFS 中的目录、文件和块做类似文件系统的创建、修改、删除等基本操作。在当前的 HDFS 体系结构中，在整个 HDFS 集群中只有一个命名空间，并且只有唯一一个名称节点，该节点负责对这个命名空间进行管理。</p>
+<p>HDFS 使用的是传统的分级文件体系，因此用户可以像使用普通文件系统样，创建、删除目录和文件，在目录间转移文件、重命名文件等。但是，HDFS 还没有实现磁盘配额和文件访问权限等功能，也不支持文件的硬连接和软连接（快捷方式）。</p>
+<h3 id="通信协议"><a href="#通信协议" class="headerlink" title="通信协议"></a>通信协议</h3><p>HDFS 是一个部署在集群上的分布式文件系统，因此很多数据需要通过网络进行传输。所有的 HDFS 通信协议都是构建在 TCP/IP 协议基础之上的。客户端通过一个可配置的端口向名称节点主动发起 TCP 连，并使用客户端协议与名称节点进行交互。名称节点和数据节点之间则使用数据节点协议进行交互。客户端与数据节点的交互是通过 RPC（Remote Procedure Call）来实现的。在设计上，名称节点不会主动发起 RPC，而是响应来自客户端和数据节点的 RPC 请求。</p>
+<h3 id="HDFS-体系结构的局限性"><a href="#HDFS-体系结构的局限性" class="headerlink" title="HDFS 体系结构的局限性"></a>HDFS 体系结构的局限性</h3><p>HDFS只设置唯一一个名称节点，这样做虽然大大简化了系统设计，但也带来了一些明显的局限性，具体如下。</p>
+<ol>
+<li>命名空间的限制。名称节点是保存在内存中的，因此名称节点能够容纳对象（文件、块）的个数会受到内存空间大小的限制。</li>
+<li>性能的瓶颈。整个分布式文件系统的吞吐量受限于单个名称节点的吞吐量。</li>
+<li>隔离问题。由于集群中只有一个名称节点，只有一个命名空间，因此无法对不同应用程序进行隔离。</li>
+<li>集群的可用性。一旦这个唯一的名称节点发生故障，会导致整个集群变得不可用。</li>
+</ol>
+<h2 id="HDFS-的存储原理"><a href="#HDFS-的存储原理" class="headerlink" title="HDFS 的存储原理"></a>HDFS 的存储原理</h2><h3 id="数据的冗余存储"><a href="#数据的冗余存储" class="headerlink" title="数据的冗余存储"></a>数据的冗余存储</h3><p>HDFS 采用了多副本方式对数据进行冗余存储，通常一个数据块的多个副本会被分布到不同的数据节点上。</p>
+<p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/HDFS%E6%95%B0%E6%8D%AE%E5%9D%97%E5%A4%9A%E5%89%AF%E6%9C%AC%E5%AD%98%E5%82%A8.png" alt="HDFS数据块多副本存储"></p>
+<p>多副本方式具有以下 3 个优点：</p>
+<ol>
+<li>加快数据传输速度。当多个客户端需要同时访问同个文件时，可以让各个客户端分别从不同的数据块副本中读取数据，这就大大加快了数据传输速度。</li>
+<li>容易检查数据错误。HDFS 的数据节点之间通过网络传输数据，采用多个副本可以很容易判断数据传输是否出错。</li>
+<li>保证数据的可靠性。即使某个数据节点出现故障失效，也不会造成数据丢失。</li>
+</ol>
+<h3 id="数据存取策略"><a href="#数据存取策略" class="headerlink" title="数据存取策略"></a>数据存取策略</h3><h4 id="数据存放"><a href="#数据存放" class="headerlink" title="数据存放"></a>数据存放</h4><p>HDFS 默认的冗余复制因子是 3，每一个文件块会被同时保存到 3 个地方，其中，有两份副本放在同一个机架的不同机器上面，第三个副本放在不同机架的机器上面，这样既可以保证机架发生异常时的数据恢复，也可以提高数据读写性能（同机架内带宽高）。一般而言，HDFS 副本的放置策略如下：</p>
+<ol>
+<li>如果是在集群内发起写操作请求，则把第一个副本放置在发起写操作请求的数据节点上，实现就近写入数据。如果是来自集群外部的写操作请求，则从集群内部挑选一台磁盘不太满、CPU 不太忙的数据节点，作为第一个副本的存放地。</li>
+<li>第二个副本会被放置在与第一个副本不同的机架的数据节点上。</li>
+<li>第三个副本会被放置在与第一个副本相同的机架的其他节点上。</li>
+<li>如果还有更多的副本，则继续从集群中随机选择数据节点进行存放。</li>
+</ol>
+<h4 id="数据读取"><a href="#数据读取" class="headerlink" title="数据读取"></a>数据读取</h4><p>HDFS 提供了一个 API 可以确定一个数据节点所属的机架 ID，客户端也可以调用 API 获取自已所属的机架 ID。当客户端读取数据时，从名称节点获得数据块不同副本的存放位置列表，列表中包含了副本所在的数据节点，可以调用 API 来确定客户端和这些数据节点所属的机架 ID。当发现某个数据块副本对应的机架 ID 和客户端对应的机架 ID 相同时，就优先选择该副本读取数据，如果没有发现，就随机选择-个副本读取数据。</p>
+<h4 id="数据复制"><a href="#数据复制" class="headerlink" title="数据复制"></a>数据复制</h4><p>HDFS 的数据复制采用了流水线复制的策略，大大提高了数据复制过程的效率。当客户端要往 HDFS 中写入一个文件时，这个文件会首先被写入本地，并被切分成若千个块，每个块的大小是由 HDFS 的设定值来决定的。每个块都向 HDFS 集群中的名称节点发起写请求，名称节点会根据系统中各个数据节点的使用情况，选择一个数据节点列表返回给客户端，然后客户端就把数据首先写入列表中的第一个数据节点，同时把列表传给第一个数据节点，当第一个数据节点接收到 4 KB 数据的时候，写入本地，并且向列表中的第二个数据节点发起连接请求，把自己已经接收到的 4 KB 数据和列表传给第二个数据节点，当第二个数据节点接收到 4 KB 数据的时候，写人本地，并且向列表中的第三个数据节点发起连接请求，依次类推，列表中的多个数据节点形成一条数据复制的流水线。最后，当文件写完的时候，数据复制也同时完成。</p>
+<h3 id="数据错误与恢复"><a href="#数据错误与恢复" class="headerlink" title="数据错误与恢复"></a>数据错误与恢复</h3><h4 id="名称节点出错"><a href="#名称节点出错" class="headerlink" title="名称节点出错"></a>名称节点出错</h4><p>Hadoop 采用两种机制来确保名称节点的安全：</p>
+<ul>
+<li>第一，把名称节点上的元数据信息同步存储到其他文件系统（比如远程挂载的网络文件系统 NFS）中；</li>
+<li>第二，运行一个第二名称节点，当名称节点宕机以后，可以把第二名称节点作为一种弥补措施，利用第二名称节点中的元数据信息进行系统恢复。</li>
+</ul>
+<h4 id="数据节点出错"><a href="#数据节点出错" class="headerlink" title="数据节点出错"></a>数据节点出错</h4><p>每个数据节点会定期向名称节点发送“心跳”信息，向名称节点报告自己的状态。当数据节点发生故障，或者网络发生断网时，名称节点就无法收到来自一些数据节点的“心跳”信息，这时这些数据节点就会被标记为“宕机”，节点上面的所有数据都会被标记为“不可读”，名称节点不会再给它们发送任何 IO 请求。</p>
+<p>这时，有可能出现一种情形，即由于些数据节点的不可用，会导致一些数据块的副本数量小于冗余因子。名称节点会定期检查这种情况，一旦发现某个数据块的副本数量小于冗余因子，就会启动数据冗余复制，为它生成新的副本。HDFS 与其他分布式文件系统的最大区别就是可以调整冗余数据的位置。</p>
+<h4 id="数据出错"><a href="#数据出错" class="headerlink" title="数据出错"></a>数据出错</h4><p>网络传输和磁盘错误等因素都会造成数据错误。客户端在读取到数据后，会采用 md5 和 sha1 对数据块进行校验，以确定读取到正确的数据。在文件被创建时，客户端就会对每一个文件块进行信息摘录，并把这些信息写人同一个路径的隐藏文件里面。当客户端读取文件的时候，会先读取该信息文件，然后利用该信息文件对每个读取的数据块进行校验，如果校验出错，客户端就会请求到另外一个数据节点读取该文件块，并且向名称节点报告这个文件块有错误，名称节点会定期检查并且重新复制这个块。</p>
+<h2 id="HDFS-的数据读写过程"><a href="#HDFS-的数据读写过程" class="headerlink" title="HDFS 的数据读写过程"></a>HDFS 的数据读写过程</h2><h3 id="读数据的过程"><a href="#读数据的过程" class="headerlink" title="读数据的过程"></a>读数据的过程</h3><p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/HDFS%E8%AF%BB%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B.png" alt="HDFS读数据的过程"></p>
+<h3 id="写数据的过程"><a href="#写数据的过程" class="headerlink" title="写数据的过程"></a>写数据的过程</h3><p><img src="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/HDFS/HDFS%E5%86%99%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B.png" alt="HDFS写数据的过程"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Hadoop/" rel="tag"># Hadoop</a>
+              <a href="/tags/HDFS/" rel="tag"># HDFS</a>
+              <a href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/" rel="tag"># 大数据</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/07/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%85%B6%E4%BB%96/%E6%95%B0%E6%8D%AE%E5%BA%93-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5/" rel="prev" title="数据库-索引优化策略.md">
+      <i class="fa fa-chevron-left"></i> 数据库-索引优化策略.md
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS/" rel="next" title="HDFS">
+      HDFS <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">相关概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9D%97"><span class="nav-number">1.1.</span> <span class="nav-text">块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9"><span class="nav-number">1.2.</span> <span class="nav-text">名称节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%8A%82%E7%82%B9"><span class="nav-number">1.3.</span> <span class="nav-text">数据节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9"><span class="nav-number">1.4.</span> <span class="nav-text">第二名称节点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">HDFS 体系结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HDFS-%E5%91%BD%E5%90%8D%E6%8E%A7%E4%BB%B6%E7%AE%A1%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text">HDFS 命名控件管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.3.</span> <span class="nav-text">通信协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HDFS-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">2.4.</span> <span class="nav-text">HDFS 体系结构的局限性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS-%E7%9A%84%E5%AD%98%E5%82%A8%E5%8E%9F%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">HDFS 的存储原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%9A%84%E5%86%97%E4%BD%99%E5%AD%98%E5%82%A8"><span class="nav-number">3.1.</span> <span class="nav-text">数据的冗余存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%AD%98%E5%8F%96%E7%AD%96%E7%95%A5"><span class="nav-number">3.2.</span> <span class="nav-text">数据存取策略</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%AD%98%E6%94%BE"><span class="nav-number">3.2.1.</span> <span class="nav-text">数据存放</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%8F%96"><span class="nav-number">3.2.2.</span> <span class="nav-text">数据读取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%A4%8D%E5%88%B6"><span class="nav-number">3.2.3.</span> <span class="nav-text">数据复制</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%94%99%E8%AF%AF%E4%B8%8E%E6%81%A2%E5%A4%8D"><span class="nav-number">3.3.</span> <span class="nav-text">数据错误与恢复</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%8D%E7%A7%B0%E8%8A%82%E7%82%B9%E5%87%BA%E9%94%99"><span class="nav-number">3.3.1.</span> <span class="nav-text">名称节点出错</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E8%8A%82%E7%82%B9%E5%87%BA%E9%94%99"><span class="nav-number">3.3.2.</span> <span class="nav-text">数据节点出错</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%87%BA%E9%94%99"><span class="nav-number">3.3.3.</span> <span class="nav-text">数据出错</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS-%E7%9A%84%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99%E8%BF%87%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">HDFS 的数据读写过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B"><span class="nav-number">4.1.</span> <span class="nav-text">读数据的过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%99%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B"><span class="nav-number">4.2.</span> <span class="nav-text">写数据的过程</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Zhang Wetts"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Zhang Wetts</p>
+  <div class="site-description" itemprop="description">Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wetts" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wetts" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhang.wetts@163.com" title="E-Mail → mailto:zhang.wetts@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang Wetts</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'bcb6beee50dc107f2302',
+      clientSecret: '83c970c495dee2157b53b5f83c31871156810bb9',
+      repo        : 'wetts.github.io',
+      owner       : 'wetts',
+      admin       : ['wetts'],
+      id          : 'ffdc366de91f9e4347325f986d6d2ed4',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+</html>
