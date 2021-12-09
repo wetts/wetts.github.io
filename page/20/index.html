@@ -804,6 +804,87 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-%E4%BD%BF%E7%94%A8vendor%E7%AE%A1%E7%90%86Golang%E9%A1%B9%E7%9B%AE%E4%BE%9D%E8%B5%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-%E4%BD%BF%E7%94%A8vendor%E7%AE%A1%E7%90%86Golang%E9%A1%B9%E7%9B%AE%E4%BE%9D%E8%B5%96/" class="post-title-link" itemprop="url">Golang-包管理-使用vendor管理Golang项目依赖</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-05-16 19:55:34" itemprop="dateCreated datePublished" datetime="2017-05-16T19:55:34+08:00">2017-05-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.tuicool.com/articles/NjMzIbJ">http://www.tuicool.com/articles/NjMzIbJ</a></p>
+<p>我们在项目中除了大量的使用Python外，也大量的使用了Golang构建高效基础运行服务。在使用Golang过程中，我们发现Golang程序缺少依赖库版本功能是一个非常令人头大的问题：某些依赖在某个commit之后发生了API变更之后，如果不修改代码很难兼容，然而开发者之间很有可能因为参与的时间不同，导致执行 go get 命令获取的版本不同，而导致在不同电脑上出现编译不通过问题。同时，在多个程序中，如果使用的commit版本不同，也可能会导致程序编译过程中出现不同的问题。</p>
+<p>在之前，我们解决这个问题有两个方案，一种是拆解 go get 命令的执行，首先创建对应依赖目录，利用git命令切换至指定的commit，然后执行 go install 命令。另外一种比较省事的方法是使用 godep 工具，这里就不做过多介绍了，具体可以参考文档或者搜索中文教程。</p>
+<p>在Golang1.5之后，Go提供了 GO15VENDOREXPERIMENT 环境变量，用于将go build时的应用路径搜索调整成为 当前项目目录/vendor 目录方式。通过这种形式，我们可以实现类似于 godep 方式的项目依赖管理。不过起码在程序编译过程中，再也无需在其他端部署一个 godep 工具。</p>
+<p>在使用之前，需要安装一个辅助工具（如果Golang自改一个就好了）： <code>go get -u -v github.com/kardianos/govendor</code> 。</p>
+<p>下面，我们用一个例子来说明。首先有一个名为 vendorproj 的项目。假如只有一个文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">    &quot;github.com/yeeuu/echoic&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    e := echoic.New()</span><br><span class="line">    e.SetDebug(true)</span><br><span class="line">    e.Run(&quot;127.0.0.1:4321&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行一下命令就可以生成vendor文件夹：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ govendor init</span><br><span class="line">$ ls</span><br><span class="line">main.go    vendor</span><br><span class="line">$ cd vendor/</span><br><span class="line">$ ls</span><br><span class="line">vendor.json</span><br></pre></td></tr></table></figure>
+<p>这个 vendor.json 会类似 godep 工具中的描述文件版本的功能。接下来，需要执行命令将当前应用必须的文件包含进来</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ govendor add +external</span><br></pre></td></tr></table></figure>
+<p>如果需要更新或移除，可以参考一下工具的具体文档使用 update 或者 remove 命令即可。这样会在vendor目录下将必须的编译文件移入进来（注意：测试所需依赖并不包含，依赖项目的测试文件也不会包含）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ ls</span><br><span class="line">github.com  golang.org  vendor.json</span><br><span class="line">$ cat vendor.json</span><br><span class="line">&#123;</span><br><span class="line">    &quot;comment&quot;: &quot;&quot;,</span><br><span class="line">    &quot;ignore&quot;: &quot;test&quot;,</span><br><span class="line">    &quot;package&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;path&quot;: &quot;github.com/yeeuu/echoic&quot;,</span><br><span class="line">            &quot;revision&quot;: &quot;a7d6994f92e2dc60cff071ae38b204fbd4bd2a3f&quot;,</span><br><span class="line">            &quot;revisionTime&quot;: &quot;2015-12-18T11:14:29+08:00&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;path&quot;: &quot;golang.org/x/net/context&quot;,</span><br><span class="line">            &quot;revision&quot;: &quot;1d9fd3b8333e891c0e7353e1adcfe8a612573033&quot;,</span><br><span class="line">            &quot;revisionTime&quot;: &quot;2015-11-13T15:40:13-08:00&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line">$ cd github.com/yeeuu/echoic</span><br><span class="line">$ ls</span><br><span class="line">LICENSE     context.go  group.go    router.go</span><br><span class="line">README.md   echoic.go   response.go</span><br></pre></td></tr></table></figure>
+<p>通过设置环境变量 <code>GO15VENDOREXPERIMENT=1</code> 使用vendor文件夹构建文件。可以选择 <code>export GO15VENDOREXPERIMENT=1</code> 或者干脆 <code>GO15VENDOREXPERIMENT=1 go build</code> 执行编译。</p>
+<p>通过这种方式就可以保证程序能够实现类似Python中Virtualenv的模式，实现不同程序使用不同版本依赖的目的。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-Glide/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -884,87 +965,6 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">glide.lock:</span><br><span class="line">    hash: 18e3b9c2f5c11f3268b22ebdbea09636c5cae28e78f0011578f455c485e9d214</span><br><span class="line">    updated: 2016-05-18T23:43:15.8217224+08:00</span><br><span class="line">    imports:</span><br><span class="line">    - name: github.com/go-ole/go-ole</span><br><span class="line">      version: 572eabb84c424e76a0d39d31510dd7dfd62f70b2</span><br><span class="line">    - name: github.com/mattn/go-adodb</span><br><span class="line">      version: 452cccbbcfb7906b3cbc512992557c1083e1011b</span><br><span class="line">    devImports: []</span><br></pre></td></tr></table></figure>
 <p>B同学：拉去项目，执行 glide install，会自动下载对应的包</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>使用glide的好处是，每个项目都采用各自独立的包，而且可以很好的控制包的版本，这在团队开发中尤其重要。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-%E4%BD%BF%E7%94%A8vendor%E7%AE%A1%E7%90%86Golang%E9%A1%B9%E7%9B%AE%E4%BE%9D%E8%B5%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/05/16/%E8%AF%AD%E8%A8%80/Golang/Golang-%E5%8C%85%E7%AE%A1%E7%90%86-%E4%BD%BF%E7%94%A8vendor%E7%AE%A1%E7%90%86Golang%E9%A1%B9%E7%9B%AE%E4%BE%9D%E8%B5%96/" class="post-title-link" itemprop="url">Golang-包管理-使用vendor管理Golang项目依赖</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-05-16 19:55:34" itemprop="dateCreated datePublished" datetime="2017-05-16T19:55:34+08:00">2017-05-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/golang/" itemprop="url" rel="index"><span itemprop="name">golang</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.tuicool.com/articles/NjMzIbJ">http://www.tuicool.com/articles/NjMzIbJ</a></p>
-<p>我们在项目中除了大量的使用Python外，也大量的使用了Golang构建高效基础运行服务。在使用Golang过程中，我们发现Golang程序缺少依赖库版本功能是一个非常令人头大的问题：某些依赖在某个commit之后发生了API变更之后，如果不修改代码很难兼容，然而开发者之间很有可能因为参与的时间不同，导致执行 go get 命令获取的版本不同，而导致在不同电脑上出现编译不通过问题。同时，在多个程序中，如果使用的commit版本不同，也可能会导致程序编译过程中出现不同的问题。</p>
-<p>在之前，我们解决这个问题有两个方案，一种是拆解 go get 命令的执行，首先创建对应依赖目录，利用git命令切换至指定的commit，然后执行 go install 命令。另外一种比较省事的方法是使用 godep 工具，这里就不做过多介绍了，具体可以参考文档或者搜索中文教程。</p>
-<p>在Golang1.5之后，Go提供了 GO15VENDOREXPERIMENT 环境变量，用于将go build时的应用路径搜索调整成为 当前项目目录/vendor 目录方式。通过这种形式，我们可以实现类似于 godep 方式的项目依赖管理。不过起码在程序编译过程中，再也无需在其他端部署一个 godep 工具。</p>
-<p>在使用之前，需要安装一个辅助工具（如果Golang自改一个就好了）： <code>go get -u -v github.com/kardianos/govendor</code> 。</p>
-<p>下面，我们用一个例子来说明。首先有一个名为 vendorproj 的项目。假如只有一个文件：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">    &quot;github.com/yeeuu/echoic&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    e := echoic.New()</span><br><span class="line">    e.SetDebug(true)</span><br><span class="line">    e.Run(&quot;127.0.0.1:4321&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>执行一下命令就可以生成vendor文件夹：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ govendor init</span><br><span class="line">$ ls</span><br><span class="line">main.go    vendor</span><br><span class="line">$ cd vendor/</span><br><span class="line">$ ls</span><br><span class="line">vendor.json</span><br></pre></td></tr></table></figure>
-<p>这个 vendor.json 会类似 godep 工具中的描述文件版本的功能。接下来，需要执行命令将当前应用必须的文件包含进来</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ govendor add +external</span><br></pre></td></tr></table></figure>
-<p>如果需要更新或移除，可以参考一下工具的具体文档使用 update 或者 remove 命令即可。这样会在vendor目录下将必须的编译文件移入进来（注意：测试所需依赖并不包含，依赖项目的测试文件也不会包含）。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ ls</span><br><span class="line">github.com  golang.org  vendor.json</span><br><span class="line">$ cat vendor.json</span><br><span class="line">&#123;</span><br><span class="line">    &quot;comment&quot;: &quot;&quot;,</span><br><span class="line">    &quot;ignore&quot;: &quot;test&quot;,</span><br><span class="line">    &quot;package&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;path&quot;: &quot;github.com/yeeuu/echoic&quot;,</span><br><span class="line">            &quot;revision&quot;: &quot;a7d6994f92e2dc60cff071ae38b204fbd4bd2a3f&quot;,</span><br><span class="line">            &quot;revisionTime&quot;: &quot;2015-12-18T11:14:29+08:00&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;path&quot;: &quot;golang.org/x/net/context&quot;,</span><br><span class="line">            &quot;revision&quot;: &quot;1d9fd3b8333e891c0e7353e1adcfe8a612573033&quot;,</span><br><span class="line">            &quot;revisionTime&quot;: &quot;2015-11-13T15:40:13-08:00&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line">$ cd github.com/yeeuu/echoic</span><br><span class="line">$ ls</span><br><span class="line">LICENSE     context.go  group.go    router.go</span><br><span class="line">README.md   echoic.go   response.go</span><br></pre></td></tr></table></figure>
-<p>通过设置环境变量 <code>GO15VENDOREXPERIMENT=1</code> 使用vendor文件夹构建文件。可以选择 <code>export GO15VENDOREXPERIMENT=1</code> 或者干脆 <code>GO15VENDOREXPERIMENT=1 go build</code> 执行编译。</p>
-<p>通过这种方式就可以保证程序能够实现类似Python中Virtualenv的模式，实现不同程序使用不同版本依赖的目的。</p>
 
       
     </div>
@@ -1235,5 +1235,5 @@
   
 
 
-<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0}});</script></body>
 </html>

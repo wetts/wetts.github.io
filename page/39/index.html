@@ -240,15 +240,38 @@
 <ul>
 <li>Docker Client 是用户界面，它支持用户与Docker Daemon之间通信。</li>
 <li>Docker Daemon运行于主机上，处理服务请求。</li>
-<li>Docker Index是中央registry，支持拥有公有与私有访问权限的Docker容器镜像的备份。</li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/10/17/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E4%BB%8B%E7%BB%8D/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+<li>Docker Index是中央registry，支持拥有公有与私有访问权限的Docker容器镜像的备份。</li>
+</ul>
+<p>三个基本要素分别是：</p>
+<ul>
+<li>Docker Containers负责应用程序的运行，包括操作系统、用户添加的文件以及元数据。</li>
+<li>Docker Images是一个只读模板，用来运行Docker容器。</li>
+<li>DockerFile是文件指令集，用来说明如何自动创建Docker镜像。</li>
+</ul>
+<p>在讨论Docker组件和基本要素如何交互之前，让我们来谈谈Docker的支柱。Docker使用以下操作系统的功能来提高容器技术效率：</p>
+<ul>
+<li>Namespaces 充当隔离的第一级。确保一个容器中运行一个进程而且不能看到或影响容器外的其它进程。</li>
+<li>Control Groups是LXC的重要组成部分，具有资源核算与限制的关键功能。</li>
+<li>UnionFS（文件系统）作为容器的构建块。为了支持Docker的轻量级以及速度快的特性，它创建了用户层。</li>
+</ul>
+<h2 id="如何把它们放在一起"><a href="#如何把它们放在一起" class="headerlink" title="如何把它们放在一起"></a>如何把它们放在一起</h2><p>运行任何应用程序，都需要有两个基本步骤：</p>
+<ol>
+<li>构建一个镜像。</li>
+<li>运行容器。</li>
+</ol>
+<p>这些步骤都是从<code>Docker Client</code>的命令开始的。<code>Docker Client</code>使用的是Docker二进制文件。在基础层面上，<code>Docker Client</code>会告诉<code>Docker Daemon</code>需要创建的镜像以及需要在容器内运行的命令。当Daemon接收到创建镜像的信号后，会进行如下操作：</p>
+<h3 id="第1步：构建镜像"><a href="#第1步：构建镜像" class="headerlink" title="第1步：构建镜像"></a>第1步：构建镜像</h3><p>如前所述，<code>Docker Image</code>是一个构建容器的只读模板，它包含了容器启动所需的所有信息，包括运行程序和配置数据。<br>每个镜像都源于一个基本的镜像，然后根据Dockerfile中的指令创建模板。对于每个指令，在镜像上创建一个新的层面。</p>
+<p>一旦镜像创建完成，就可以将它们推送到中央registry：<code>Docker Index</code>，以供他人使用。然而，<code>Docker Index</code>为镜像提供了两个级别的访问权限：公有访问和私有访问。你可以将镜像存储在私有仓库，Docker官网有私有仓库的套餐可以供你选择。总之，公有仓库是可搜索和可重复使用的，而私有仓库只能给那些拥有访问权限的成员使用。<code>Docker Client</code>可用于<code>Docker Index</code>内的镜像搜索。</p>
+<h3 id="第2步：运行容器"><a href="#第2步：运行容器" class="headerlink" title="第2步：运行容器"></a>第2步：运行容器</h3><p>运行容器源于我们在第一步中创建的镜像。当容器被启动后，一个读写层会被添加到镜像的顶层。当分配到合适的网络和IP地址后，需要的应用程序就可以在容器中运行了。</p>
+<hr>
+<p>我们可以发现我们常说的“ubuntu”镜像其实不是一个镜像名称，而是代表了一个名为ubuntu的Repository，同时在这个Repository下面有一系列打了tag的Image，Image的标记是一个GUID，为了方便也可以通过Repository:tag来引用。</p>
+<p>那么Registry又是什么呢？Registry存储镜像数据，并且提供拉取和上传镜像的功能。Registry中镜像是通过Repository来组织的，而每个Repository又包含了若干个Image。</p>
+<ul>
+<li>Registry包含一个或多个Repository</li>
+<li>Repository包含一个或多个Image</li>
+<li>Image用GUID表示，有一个或多个Tag与之关联</li>
+</ul>
+
       
     </div>
 
@@ -1316,5 +1339,5 @@
   
 
 
-<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0}});</script></body>
 </html>

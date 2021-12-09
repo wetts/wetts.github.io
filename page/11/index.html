@@ -3429,11 +3429,15 @@ return &quot;from try&quot;;
 <li>描述了领域中的一件东西，将不同的相关属性组合成了一个概念整体，当度量和描述改变时，可以用另外一个值对象予以替换，属性判等、固定不变</li>
 </ul>
 </li>
+<li>服务<ul>
+<li>标识的是在领域对象之外的操作与行为，接受用户的请求和执行某些操作</li>
+</ul>
+</li>
 <li>聚合<ul>
 <li>实体和值对象会形成聚合，每个聚合一般是在一个事物中操作，一般都有持久化操作。聚合中，根实体的生命周期决定了聚合整体的生命周期</li>
 </ul>
 </li>
-<li>工厂和仓库</li>
+<li>工厂（Facotry）和仓库（Repository）</li>
 </ul>
 </li>
 </ul>
@@ -5044,6 +5048,283 @@ return &quot;from try&quot;;
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" class="post-title-link" itemprop="url">接口-0-知识点汇总.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-01 12:10:14" itemprop="dateCreated datePublished" datetime="2019-09-01T12:10:14+08:00">2019-09-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="接口设计"><a href="#接口设计" class="headerlink" title="接口设计"></a>接口设计</h2><ul>
+<li><p>遇到的问题</p>
+<ul>
+<li><p><strong>高并发下如何保证接口的幂等性？</strong></p>
+<ul>
+<li>幂等性定义<ul>
+<li>幂等性就是同一个操作执行多次，产生的效果一样。如 http 的 get 请求、数据库的 select 请求就是幂等的。</li>
+<li>如提交订单、扣款等接口都要保证幂等性，不然会造成重复创建订单、重复扣款</li>
+</ul>
+</li>
+<li>解决方法<ul>
+<li>前端保证幂等性的方法<ul>
+<li>按钮只能点击一次<ul>
+<li>用户点击按钮后将按钮置灰，或者显示 loading 状态</li>
+</ul>
+</li>
+<li>RPG 模式<ul>
+<li>即 Post-Redirect-Get，当客户提交表单后，去执行一个客户端的重定向，转到提交成功页面。避免用户按 F5 刷新导致的重复提交，也能消除按浏览器后退键导致的重复提交问题。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>后端保证幂等性的方法<ul>
+<li>使用唯一索引<ul>
+<li>对业务唯一的字段加上唯一索引，这样当数据重复时，插入数据库会抛异常</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E5%94%AF%E4%B8%80%E7%B4%A2%E5%BC%95.jpg" alt="接口幂等性_唯一索引"></li>
+</ul>
+</li>
+<li>状态机幂等<ul>
+<li>如果业务上需要修改订单状态，例如订单状态有待支付，支付中，支付成功，支付失败。设计时最好只支持状态的单向改变。这样在更新的时候就可以加上条件，多次调用也只会执行一次。例如想把订单状态更新为支持成功，则之前的状态必须为支付中。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E7%8A%B6%E6%80%81%E6%9C%BA.jpg" alt="接口幂等性_状态机"></li>
+</ul>
+</li>
+<li>悲观锁<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E6%82%B2%E8%A7%82%E9%94%81.jpg" alt="接口幂等性_悲观锁"></li>
+</ul>
+</li>
+<li>乐观锁<ul>
+<li>步骤<ol>
+<li>查询数据获得版本号</li>
+<li>通过版本号去更新，版本号匹配则更新，版本号不匹配则不更新</li>
+</ol>
+</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E4%B9%90%E8%A7%82%E9%94%81.jpg" alt="接口幂等性_乐观锁"></li>
+</ul>
+</li>
+<li>防重表<ul>
+<li>增加一个防重表，业务唯一的 id 作为唯一索引，如订单号，当想针对订单做一系列操作时，可以向防重表中插入一条记录，插入成功，执行后续操作，插入失败，则不执行后续操作。本质上可以看成是基于 MySQL 实现的分布式锁。根据业务场景决定执行成功后，是否删除防重表中对应的数据。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E9%98%B2%E9%87%8D%E8%A1%A8.jpg" alt="接口幂等性_防重表"></li>
+</ul>
+</li>
+<li>select+insert<ul>
+<li>先查询一下有没有符合要求的数据，如果没有再执行插入。没有并发的系统中可以保证幂等性，高并发下不要用这种方法，也会造成数据的重复插入。我一般做消息幂等的时候就是先 select，有数据直接返回，没有数据加分布式锁进行 insert 操作。</li>
+</ul>
+</li>
+<li>分布式锁<ul>
+<li>执行方法时，先根据业务唯一的 id 获取分布式锁，获取成功，则执行，失败则不执行。分布式锁可以基于 Redis、zookeeper、MySQL 来实现。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81.jpg" alt="接口幂等性_分布式锁"></li>
+</ul>
+</li>
+<li>全局唯一号<ul>
+<li>通过 source（来源）+ seq（序列号）来判断请求是否重复，重复则直接返回请求重复提交，否则执行。如当多个三方系统调用服务的时候，就可以采用这种方式。</li>
+</ul>
+</li>
+<li>获取 token<ul>
+<li>该方案跟之前的所有方案都有点不一样，需要两次请求才能完成一次业务操作。</li>
+<li>步骤<ol>
+<li>第一次请求获取 token<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E8%8E%B7%E5%8F%96token_1.jpg" alt="接口幂等性_获取token_1"></li>
+</ul>
+</li>
+<li>第二次请求带着这个 token，完成业务操作。<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E8%8E%B7%E5%8F%96token_2.jpg" alt="接口幂等性_获取token_2"></li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>多版本共存</p>
+<ul>
+<li><p>解决方案</p>
+<ul>
+<li><p>Header 版本控制</p>
+<ul>
+<li><p>此方法需要客户端将指示资源版本的自定义 Header 添加到请求中，如果省略了此 Header，按默认值（一般是最新版）处理。</p>
+</li>
+<li><p>```</p>
+<h1 id="Request"><a href="#Request" class="headerlink" title="Request"></a>Request</h1><p>GET <a target="_blank" rel="noopener" href="http://adventure-works.com/customers/3">http://adventure-works.com/customers/3</a><br>Custom-Header: api-version=1</p>
+<h1 id="Response"><a href="#Response" class="headerlink" title="Response"></a>Response</h1><p>HTTP/1.1 200 OK<br>Content-Type: application/json; charset=utf-8</p>
+<p>{“id”:3,”name”:”Contoso LLC”,”address”:”1 Microsoft Way Redmond WA 98053”}</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">  - 优点：纯粹的版本控制机制，符合 RESTful API「每个资源使用唯一的URI定位」的原则</span><br><span class="line">  - 缺点：不直观，无法支持表单直接调用（众所周知 HTML 表单是不能添加自定义 Header 的），缓存不友好（不能认为同一 URI/查询字符串指向的是相同数据，因此难以缓存）</span><br><span class="line">- 媒体类型版本控制</span><br><span class="line">  - 通常，Accept 标头的用途是由客户端指定响应的正文是 XML、JSON或其他格式。但是，可以定义包括以下信息的自定义媒体类型：该信息使客户端应用程序可以指示它所需的资源版本。</span><br><span class="line">  - ```</span><br><span class="line">    # Request</span><br><span class="line">    GET http://adventure-works.com/customers/3 HTTP/1.1</span><br><span class="line">    Accept: application/vnd.adventure-works.v1+json</span><br></pre></td></tr></table></figure></li>
+<li><p>服务端负责处理 Accept 标头并尽可能采用该值（可以在 Accept 标头中指定多种格式，在这种情况下，服务端在其中选择最适合的格式用于响应正文）。返回结果中的 Content-Type 标头确认响应正文中的数据格式：</p>
+</li>
+<li><p>```</p>
+<h1 id="Response-1"><a href="#Response-1" class="headerlink" title="Response"></a>Response</h1><p>Content-Type: application/vnd.company.myapp-v3+xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- URI 版本控制</span><br><span class="line">  - ```</span><br><span class="line">    # Request</span><br><span class="line">    GET http://adventure-works.com/v2/customers/3</span><br></pre></td></tr></table></figure></li>
+<li><p>优点：直观，缓存友好，支持表单直接调用</p>
+</li>
+<li><p>缺点：不符合「每个资源使用唯一的URI定位」的原则</p>
+</li>
+</ul>
+</li>
+<li><p>查询字符串版本控制</p>
+<ul>
+<li><pre><code># Request
+GET http://adventure-works.com/customers/3?version=2
+</code></pre>
+</li>
+<li>优点：直观，缓存友好，支持表单直接调用，符合「每个资源使用唯一的URI定位」的原则</li>
+<li>缺点：某些较旧的 Web 浏览器和代理不会缓存在 URI 中包含字符串的请求的响应，这会对性能产生影响</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>如何保证 API 接口数据安全？</strong></p>
+<ol>
+<li>登陆验证</li>
+<li>权限验证</li>
+<li>HTTPS</li>
+<li>接口签名<ul>
+<li>签名流程<ul>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%AE%89%E5%85%A8%E6%80%A7_%E7%AD%BE%E5%90%8D%E6%B5%81%E7%A8%8B.png" alt="接口安全性_签名流程"></li>
+</ul>
+</li>
+<li>签名规则<ul>
+<li>线下分配 appid 和 appsecret，针对不同的调用方分配不同的 appid 和 appsecret<ul>
+<li>appSecret 的作用主要是区分不同客户端 app。并且利用获取到的 appSecret 参与到 sign 签名，保证了客户端的请求签名是由我们后台控制的，我们可以为不同的客户端颁发不同的 appSecret。</li>
+</ul>
+</li>
+<li>加入 timestamp（时间戳），5 分钟内数据有效</li>
+<li>加入临时流水号 nonce（防止重复提交），至少为 10 位。针对查询接口，流水号只用于日志落地，便于后期日志核查。针对办理类接口需校验流水号在有效期内的唯一性，以避免重复请求。</li>
+<li>加入签名字段 signature，所有数据的签名信息。</li>
+</ul>
+</li>
+<li>客户端签名生成<ul>
+<li>所有动态参数 = 请求头部分 + 请求 URL 地址 + 请求 Request 参数 + 请求 Body<ul>
+<li>上面的动态参数以 key-value 的格式存储，并以 key 值正序排序，进行拼接</li>
+</ul>
+</li>
+<li>最后拼接的字符串再拼接 appSecret</li>
+<li>拼接成一个字符串，然后做md5不可逆加密<ul>
+<li><code>signature = DigestUtils.md5DigestAsHex(sortParamsMap + appSecret)</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>服务端签名验证<ul>
+<li>验证流程<ol>
+<li>验证必须的头部参数</li>
+<li>获取头部参数，request 参数，Url 请求路径，请求体 Body，把这些值放入 SortMap 中进行排序</li>
+<li>对 SortMap 里面的值进行拼接</li>
+<li>对拼接的值进行加密，生成 sign</li>
+<li>把生成的 sign 和前端传入的 sign 进行比较，如果不相同就返回错误</li>
+</ol>
+</li>
+<li>附加功能<ul>
+<li>可以通过对请求的 timestamp 进行时间验证，如果大于 10 分钟表示此链接已经超时，防止别人来到这个链接去请求。</li>
+<li>利用 nonce 参数，防止重复提交</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h2><ul>
+<li>计数器（固定窗口）算法<ul>
+<li>计数器算法是使用计数器在周期内累加访问次数，当达到设定的限流值时，触发限流策略。下一个周期开始时，进行清零，重新计数。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88%E5%9B%BA%E5%AE%9A%E7%AA%97%E5%8F%A3%EF%BC%89%E7%AE%97%E6%B3%95_1.png" alt="限流算法_计数器（固定窗口）算法_1"></li>
+<li>这个算法通常用于QPS限流和统计总访问量，对于秒级以上的时间周期来说，会存在一个非常严重的问题，那就是临界问题。<ul>
+<li>假设 1min 内服务器的负载能力为 100，因此一个周期的访问量限制在 100，然而在第一个周期的最后 5 秒和下一个周期的开始 5 秒时间段内，分别涌入 100 的访问量，虽然没有超过每个周期的限制量，但是整体上 10 秒内已达到 200 的访问量，已远远超过服务器的负载能力，由此可见，计数器算法方式限流对于周期比较长的限流，存在很大的弊端。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88%E5%9B%BA%E5%AE%9A%E7%AA%97%E5%8F%A3%EF%BC%89%E7%AE%97%E6%B3%95_2.png" alt="限流算法_计数器（固定窗口）算法_2"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>滑动窗口算法<ul>
+<li>滑动窗口算法是将时间周期分为 N 个小周期，分别记录每个小周期内访问次数，并且根据时间滑动删除过期的小周期。<ul>
+<li>假设时间周期为 1min，将 1min 再分为 2 个小周期，统计每个小周期的访问数量，则第一个时间周期内，访问数量为 75，第二个时间周期内，访问数量为 100，超过 100 的访问则被限流掉了。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E7%AE%97%E6%B3%95.png" alt="限流算法_滑动窗口算法"></li>
+</ul>
+</li>
+<li>当滑动窗口的格子划分的越多，那么滑动窗口的滚动就越平滑，限流的统计就会越精确。</li>
+<li>此算法可以很好的解决固定窗口算法的临界问题。</li>
+</ul>
+</li>
+<li>漏桶算法<ul>
+<li>漏桶算法是访问请求到达时直接放入漏桶，如当前容量已达到上限（限流值），则进行丢弃（触发限流策略）。漏桶以固定的速率进行释放访问请求（即请求通过），直到漏桶为空。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E6%BC%8F%E6%A1%B6%E7%AE%97%E6%B3%95.png" alt="限流算法_漏桶算法"></li>
+</ul>
+</li>
+<li>令牌桶算法<ul>
+<li>令牌桶算法是程序以 r（r=时间周期/限流值）的速度向令牌桶中增加令牌，直到令牌桶满，请求到达时向令牌桶请求令牌，如获取到令牌则通过请求，否则触发限流策略。</li>
+<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95.png" alt="限流算法_令牌桶算法"></li>
+<li>Google 开源工具包 Guava 提供了限流工具类 RateLimiter，该类基于令牌桶算法来完成限流，非常易于使用。</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E5%B7%A5%E7%A8%8B%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -5408,283 +5689,6 @@ return &quot;from try&quot;;
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" class="post-title-link" itemprop="url">接口-0-知识点汇总.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-09-01 12:10:14" itemprop="dateCreated datePublished" datetime="2019-09-01T12:10:14+08:00">2019-09-01</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="接口设计"><a href="#接口设计" class="headerlink" title="接口设计"></a>接口设计</h2><ul>
-<li><p>遇到的问题</p>
-<ul>
-<li><p><strong>高并发下如何保证接口的幂等性？</strong></p>
-<ul>
-<li>幂等性定义<ul>
-<li>幂等性就是同一个操作执行多次，产生的效果一样。如 http 的 get 请求、数据库的 select 请求就是幂等的。</li>
-<li>如提交订单、扣款等接口都要保证幂等性，不然会造成重复创建订单、重复扣款</li>
-</ul>
-</li>
-<li>解决方法<ul>
-<li>前端保证幂等性的方法<ul>
-<li>按钮只能点击一次<ul>
-<li>用户点击按钮后将按钮置灰，或者显示 loading 状态</li>
-</ul>
-</li>
-<li>RPG 模式<ul>
-<li>即 Post-Redirect-Get，当客户提交表单后，去执行一个客户端的重定向，转到提交成功页面。避免用户按 F5 刷新导致的重复提交，也能消除按浏览器后退键导致的重复提交问题。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>后端保证幂等性的方法<ul>
-<li>使用唯一索引<ul>
-<li>对业务唯一的字段加上唯一索引，这样当数据重复时，插入数据库会抛异常</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E5%94%AF%E4%B8%80%E7%B4%A2%E5%BC%95.jpg" alt="接口幂等性_唯一索引"></li>
-</ul>
-</li>
-<li>状态机幂等<ul>
-<li>如果业务上需要修改订单状态，例如订单状态有待支付，支付中，支付成功，支付失败。设计时最好只支持状态的单向改变。这样在更新的时候就可以加上条件，多次调用也只会执行一次。例如想把订单状态更新为支持成功，则之前的状态必须为支付中。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E7%8A%B6%E6%80%81%E6%9C%BA.jpg" alt="接口幂等性_状态机"></li>
-</ul>
-</li>
-<li>悲观锁<ul>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E6%82%B2%E8%A7%82%E9%94%81.jpg" alt="接口幂等性_悲观锁"></li>
-</ul>
-</li>
-<li>乐观锁<ul>
-<li>步骤<ol>
-<li>查询数据获得版本号</li>
-<li>通过版本号去更新，版本号匹配则更新，版本号不匹配则不更新</li>
-</ol>
-</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E4%B9%90%E8%A7%82%E9%94%81.jpg" alt="接口幂等性_乐观锁"></li>
-</ul>
-</li>
-<li>防重表<ul>
-<li>增加一个防重表，业务唯一的 id 作为唯一索引，如订单号，当想针对订单做一系列操作时，可以向防重表中插入一条记录，插入成功，执行后续操作，插入失败，则不执行后续操作。本质上可以看成是基于 MySQL 实现的分布式锁。根据业务场景决定执行成功后，是否删除防重表中对应的数据。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E9%98%B2%E9%87%8D%E8%A1%A8.jpg" alt="接口幂等性_防重表"></li>
-</ul>
-</li>
-<li>select+insert<ul>
-<li>先查询一下有没有符合要求的数据，如果没有再执行插入。没有并发的系统中可以保证幂等性，高并发下不要用这种方法，也会造成数据的重复插入。我一般做消息幂等的时候就是先 select，有数据直接返回，没有数据加分布式锁进行 insert 操作。</li>
-</ul>
-</li>
-<li>分布式锁<ul>
-<li>执行方法时，先根据业务唯一的 id 获取分布式锁，获取成功，则执行，失败则不执行。分布式锁可以基于 Redis、zookeeper、MySQL 来实现。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81.jpg" alt="接口幂等性_分布式锁"></li>
-</ul>
-</li>
-<li>全局唯一号<ul>
-<li>通过 source（来源）+ seq（序列号）来判断请求是否重复，重复则直接返回请求重复提交，否则执行。如当多个三方系统调用服务的时候，就可以采用这种方式。</li>
-</ul>
-</li>
-<li>获取 token<ul>
-<li>该方案跟之前的所有方案都有点不一样，需要两次请求才能完成一次业务操作。</li>
-<li>步骤<ol>
-<li>第一次请求获取 token<ul>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E8%8E%B7%E5%8F%96token_1.jpg" alt="接口幂等性_获取token_1"></li>
-</ul>
-</li>
-<li>第二次请求带着这个 token，完成业务操作。<ul>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%B9%82%E7%AD%89%E6%80%A7_%E8%8E%B7%E5%8F%96token_2.jpg" alt="接口幂等性_获取token_2"></li>
-</ul>
-</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>多版本共存</p>
-<ul>
-<li><p>解决方案</p>
-<ul>
-<li><p>Header 版本控制</p>
-<ul>
-<li><p>此方法需要客户端将指示资源版本的自定义 Header 添加到请求中，如果省略了此 Header，按默认值（一般是最新版）处理。</p>
-</li>
-<li><p>```</p>
-<h1 id="Request"><a href="#Request" class="headerlink" title="Request"></a>Request</h1><p>GET <a target="_blank" rel="noopener" href="http://adventure-works.com/customers/3">http://adventure-works.com/customers/3</a><br>Custom-Header: api-version=1</p>
-<h1 id="Response"><a href="#Response" class="headerlink" title="Response"></a>Response</h1><p>HTTP/1.1 200 OK<br>Content-Type: application/json; charset=utf-8</p>
-<p>{“id”:3,”name”:”Contoso LLC”,”address”:”1 Microsoft Way Redmond WA 98053”}</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">  - 优点：纯粹的版本控制机制，符合 RESTful API「每个资源使用唯一的URI定位」的原则</span><br><span class="line">  - 缺点：不直观，无法支持表单直接调用（众所周知 HTML 表单是不能添加自定义 Header 的），缓存不友好（不能认为同一 URI/查询字符串指向的是相同数据，因此难以缓存）</span><br><span class="line">- 媒体类型版本控制</span><br><span class="line">  - 通常，Accept 标头的用途是由客户端指定响应的正文是 XML、JSON或其他格式。但是，可以定义包括以下信息的自定义媒体类型：该信息使客户端应用程序可以指示它所需的资源版本。</span><br><span class="line">  - ```</span><br><span class="line">    # Request</span><br><span class="line">    GET http://adventure-works.com/customers/3 HTTP/1.1</span><br><span class="line">    Accept: application/vnd.adventure-works.v1+json</span><br></pre></td></tr></table></figure></li>
-<li><p>服务端负责处理 Accept 标头并尽可能采用该值（可以在 Accept 标头中指定多种格式，在这种情况下，服务端在其中选择最适合的格式用于响应正文）。返回结果中的 Content-Type 标头确认响应正文中的数据格式：</p>
-</li>
-<li><p>```</p>
-<h1 id="Response-1"><a href="#Response-1" class="headerlink" title="Response"></a>Response</h1><p>Content-Type: application/vnd.company.myapp-v3+xml</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- URI 版本控制</span><br><span class="line">  - ```</span><br><span class="line">    # Request</span><br><span class="line">    GET http://adventure-works.com/v2/customers/3</span><br></pre></td></tr></table></figure></li>
-<li><p>优点：直观，缓存友好，支持表单直接调用</p>
-</li>
-<li><p>缺点：不符合「每个资源使用唯一的URI定位」的原则</p>
-</li>
-</ul>
-</li>
-<li><p>查询字符串版本控制</p>
-<ul>
-<li><pre><code># Request
-GET http://adventure-works.com/customers/3?version=2
-</code></pre>
-</li>
-<li>优点：直观，缓存友好，支持表单直接调用，符合「每个资源使用唯一的URI定位」的原则</li>
-<li>缺点：某些较旧的 Web 浏览器和代理不会缓存在 URI 中包含字符串的请求的响应，这会对性能产生影响</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p><strong>如何保证 API 接口数据安全？</strong></p>
-<ol>
-<li>登陆验证</li>
-<li>权限验证</li>
-<li>HTTPS</li>
-<li>接口签名<ul>
-<li>签名流程<ul>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E6%8E%A5%E5%8F%A3%E5%AE%89%E5%85%A8%E6%80%A7_%E7%AD%BE%E5%90%8D%E6%B5%81%E7%A8%8B.png" alt="接口安全性_签名流程"></li>
-</ul>
-</li>
-<li>签名规则<ul>
-<li>线下分配 appid 和 appsecret，针对不同的调用方分配不同的 appid 和 appsecret<ul>
-<li>appSecret 的作用主要是区分不同客户端 app。并且利用获取到的 appSecret 参与到 sign 签名，保证了客户端的请求签名是由我们后台控制的，我们可以为不同的客户端颁发不同的 appSecret。</li>
-</ul>
-</li>
-<li>加入 timestamp（时间戳），5 分钟内数据有效</li>
-<li>加入临时流水号 nonce（防止重复提交），至少为 10 位。针对查询接口，流水号只用于日志落地，便于后期日志核查。针对办理类接口需校验流水号在有效期内的唯一性，以避免重复请求。</li>
-<li>加入签名字段 signature，所有数据的签名信息。</li>
-</ul>
-</li>
-<li>客户端签名生成<ul>
-<li>所有动态参数 = 请求头部分 + 请求 URL 地址 + 请求 Request 参数 + 请求 Body<ul>
-<li>上面的动态参数以 key-value 的格式存储，并以 key 值正序排序，进行拼接</li>
-</ul>
-</li>
-<li>最后拼接的字符串再拼接 appSecret</li>
-<li>拼接成一个字符串，然后做md5不可逆加密<ul>
-<li><code>signature = DigestUtils.md5DigestAsHex(sortParamsMap + appSecret)</code></li>
-</ul>
-</li>
-</ul>
-</li>
-<li>服务端签名验证<ul>
-<li>验证流程<ol>
-<li>验证必须的头部参数</li>
-<li>获取头部参数，request 参数，Url 请求路径，请求体 Body，把这些值放入 SortMap 中进行排序</li>
-<li>对 SortMap 里面的值进行拼接</li>
-<li>对拼接的值进行加密，生成 sign</li>
-<li>把生成的 sign 和前端传入的 sign 进行比较，如果不相同就返回错误</li>
-</ol>
-</li>
-<li>附加功能<ul>
-<li>可以通过对请求的 timestamp 进行时间验证，如果大于 10 分钟表示此链接已经超时，防止别人来到这个链接去请求。</li>
-<li>利用 nonce 参数，防止重复提交</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h2><ul>
-<li>计数器（固定窗口）算法<ul>
-<li>计数器算法是使用计数器在周期内累加访问次数，当达到设定的限流值时，触发限流策略。下一个周期开始时，进行清零，重新计数。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88%E5%9B%BA%E5%AE%9A%E7%AA%97%E5%8F%A3%EF%BC%89%E7%AE%97%E6%B3%95_1.png" alt="限流算法_计数器（固定窗口）算法_1"></li>
-<li>这个算法通常用于QPS限流和统计总访问量，对于秒级以上的时间周期来说，会存在一个非常严重的问题，那就是临界问题。<ul>
-<li>假设 1min 内服务器的负载能力为 100，因此一个周期的访问量限制在 100，然而在第一个周期的最后 5 秒和下一个周期的开始 5 秒时间段内，分别涌入 100 的访问量，虽然没有超过每个周期的限制量，但是整体上 10 秒内已达到 200 的访问量，已远远超过服务器的负载能力，由此可见，计数器算法方式限流对于周期比较长的限流，存在很大的弊端。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88%E5%9B%BA%E5%AE%9A%E7%AA%97%E5%8F%A3%EF%BC%89%E7%AE%97%E6%B3%95_2.png" alt="限流算法_计数器（固定窗口）算法_2"></li>
-</ul>
-</li>
-</ul>
-</li>
-<li>滑动窗口算法<ul>
-<li>滑动窗口算法是将时间周期分为 N 个小周期，分别记录每个小周期内访问次数，并且根据时间滑动删除过期的小周期。<ul>
-<li>假设时间周期为 1min，将 1min 再分为 2 个小周期，统计每个小周期的访问数量，则第一个时间周期内，访问数量为 75，第二个时间周期内，访问数量为 100，超过 100 的访问则被限流掉了。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E7%AE%97%E6%B3%95.png" alt="限流算法_滑动窗口算法"></li>
-</ul>
-</li>
-<li>当滑动窗口的格子划分的越多，那么滑动窗口的滚动就越平滑，限流的统计就会越精确。</li>
-<li>此算法可以很好的解决固定窗口算法的临界问题。</li>
-</ul>
-</li>
-<li>漏桶算法<ul>
-<li>漏桶算法是访问请求到达时直接放入漏桶，如当前容量已达到上限（限流值），则进行丢弃（触发限流策略）。漏桶以固定的速率进行释放访问请求（即请求通过），直到漏桶为空。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E6%BC%8F%E6%A1%B6%E7%AE%97%E6%B3%95.png" alt="限流算法_漏桶算法"></li>
-</ul>
-</li>
-<li>令牌桶算法<ul>
-<li>令牌桶算法是程序以 r（r=时间周期/限流值）的速度向令牌桶中增加令牌，直到令牌桶满，请求到达时向令牌桶请求令牌，如获取到令牌则通过请求，否则触发限流策略。</li>
-<li><img src="/2019/09/01/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E6%8E%A5%E5%8F%A3-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/%E9%99%90%E6%B5%81%E7%AE%97%E6%B3%95_%E4%BB%A4%E7%89%8C%E6%A1%B6%E7%AE%97%E6%B3%95.png" alt="限流算法_令牌桶算法"></li>
-<li>Google 开源工具包 Guava 提供了限流工具类 RateLimiter，该类基于令牌桶算法来完成限流，非常易于使用。</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -5871,5 +5875,5 @@ GET http://adventure-works.com/customers/3?version=2
   
 
 
-<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.7}});</script></body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0}});</script></body>
 </html>
