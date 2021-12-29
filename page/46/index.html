@@ -188,6 +188,166 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/RESTful%20API%20%E8%AE%BE%E8%AE%A1%E6%8C%87%E5%8D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/RESTful%20API%20%E8%AE%BE%E8%AE%A1%E6%8C%87%E5%8D%97/" class="post-title-link" itemprop="url">RESTful API 设计指南</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-02-26 16:13:22" itemprop="dateCreated datePublished" datetime="2016-02-26T16:13:22+08:00">2016-02-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index"><span itemprop="name">接口</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2014/05/restful_api.html">http://www.ruanyifeng.com/blog/2014/05/restful_api.html</a></p>
+<h2 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h2><p>API与用户的通信协议，总是使用HTTPs协议。</p>
+<h2 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h2><p>应该尽量将API部署在专用域名之下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://api.example.com</span><br></pre></td></tr></table></figure>
+<p>如果确定API很简单，不会有进一步扩展，可以考虑放在主域名下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://example.org/api/</span><br></pre></td></tr></table></figure>
+
+<h2 id="版本（Versioning）"><a href="#版本（Versioning）" class="headerlink" title="版本（Versioning）"></a>版本（Versioning）</h2><p>应该将API的版本号放入URL。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://api.example.com/v1/</span><br></pre></td></tr></table></figure>
+<p>另一种做法是，将版本号放在HTTP头信息中，但不如放入URL方便和直观。Github采用这种做法。</p>
+<h2 id="路径（Endpoint）"><a href="#路径（Endpoint）" class="headerlink" title="路径（Endpoint）"></a>路径（Endpoint）</h2><p>路径又称”终点”（endpoint），表示API的具体网址。</p>
+<p>在RESTful架构中，每个网址代表一种资源（resource），所以网址中不能有动词，只能有名词，而且所用的名词往往与数据库的表格名对应。一般来说，数据库中的表都是同种记录的”集合”（collection），所以API中的名词也应该使用复数。</p>
+<p>举例来说，有一个API提供动物园（zoo）的信息，还包括各种动物和雇员的信息，则它的路径应该设计成下面这样。</p>
+<ul>
+<li><code>https://api.example.com/v1/zoos</code></li>
+<li><code>https://api.example.com/v1/animals</code></li>
+<li><code>https://api.example.com/v1/employees</code></li>
+</ul>
+<h2 id="HTTP动词"><a href="#HTTP动词" class="headerlink" title="HTTP动词"></a>HTTP动词</h2><p>对于资源的具体操作类型，由HTTP动词表示。</p>
+<p>常用的HTTP动词有下面五个（括号里是对应的SQL命令）。</p>
+<ul>
+<li>GET（SELECT）：从服务器取出资源（一项或多项）。</li>
+<li>POST（CREATE）：在服务器新建一个资源。</li>
+<li>PUT（UPDATE）：在服务器更新资源（客户端提供改变后的完整资源）。</li>
+<li>PATCH（UPDATE）：在服务器更新资源（客户端提供改变的属性）。</li>
+<li>DELETE（DELETE）：从服务器删除资源。</li>
+</ul>
+<p>还有两个不常用的HTTP动词。</p>
+<ul>
+<li>HEAD：获取资源的元数据。</li>
+<li>OPTIONS：获取信息，关于资源的哪些属性是客户端可以改变的。</li>
+</ul>
+<p>下面是一些例子。</p>
+<ul>
+<li>GET /zoos：列出所有动物园</li>
+<li>POST /zoos：新建一个动物园</li>
+<li>GET /zoos/ID：获取某个指定动物园的信息</li>
+<li>PUT /zoos/ID：更新某个指定动物园的信息（提供该动物园的全部信息）</li>
+<li>PATCH /zoos/ID：更新某个指定动物园的信息（提供该动物园的部分信息）</li>
+<li>DELETE /zoos/ID：删除某个动物园</li>
+<li>GET /zoos/ID/animals：列出某个指定动物园的所有动物</li>
+<li>DELETE /zoos/ID/animals/ID：删除某个指定动物园的指定动物</li>
+</ul>
+<h2 id="过滤信息（Filtering）"><a href="#过滤信息（Filtering）" class="headerlink" title="过滤信息（Filtering）"></a>过滤信息（Filtering）</h2><p>如果记录数量很多，服务器不可能都将它们返回给用户。API应该提供参数，过滤返回结果。</p>
+<p>下面是一些常见的参数。</p>
+<ul>
+<li>?limit=10：指定返回记录的数量</li>
+<li>?offset=10：指定返回记录的开始位置。</li>
+<li>?page=2&amp;per_page=100：指定第几页，以及每页的记录数。</li>
+<li>?sortby=name&amp;order=asc：指定返回结果按照哪个属性排序，以及排序顺序。</li>
+<li>?animal_type_id=1：指定筛选条件</li>
+</ul>
+<p>参数的设计允许存在冗余，即允许API路径和URL参数偶尔有重复。比如，GET /zoo/ID/animals 与 GET /animals?zoo_id=ID 的含义是相同的。</p>
+<h2 id="状态码（Status-Codes）"><a href="#状态码（Status-Codes）" class="headerlink" title="状态码（Status Codes）"></a>状态码（Status Codes）</h2><p>服务器向用户返回的状态码和提示信息，常见的有以下一些（方括号中是该状态码对应的HTTP动词）。</p>
+<ul>
+<li><code>200 OK - [GET]</code>：服务器成功返回用户请求的数据，该操作是幂等的（Idempotent）。</li>
+<li><code>201 CREATED - [POST/PUT/PATCH]</code>：用户新建或修改数据成功。</li>
+<li><code>202 Accepted - [*]</code>：表示一个请求已经进入后台排队（异步任务）</li>
+<li><code>204 NO CONTENT - [DELETE]</code>：用户删除数据成功。</li>
+<li><code>400 INVALID REQUEST - [POST/PUT/PATCH]</code>：用户发出的请求有错误，服务器没有进行新建或修改数据的操作，该操作是幂等的。</li>
+<li><code>401 Unauthorized - [*]</code>：表示用户没有权限（令牌、用户名、密码错误）。</li>
+<li><code>403 Forbidden - [*]</code>：表示用户得到授权（与401错误相对），但是访问是被禁止的。</li>
+<li><code>404 NOT FOUND - [*]</code>：用户发出的请求针对的是不存在的记录，服务器没有进行操作，该操作是幂等的。</li>
+<li><code>406 Not Acceptable - [GET]</code>：用户请求的格式不可得（比如用户请求JSON格式，但是只有XML格式）。</li>
+<li><code>410 Gone -[GET]</code>：用户请求的资源被永久删除，且不会再得到的。</li>
+<li><code>422 Unprocesable entity - [POST/PUT/PATCH]</code>：当创建一个对象时，发生一个验证错误。</li>
+<li><code>500 INTERNAL SERVER ERROR - [*]</code>：服务器发生错误，用户将无法判断发出的请求是否成功。</li>
+</ul>
+<p>状态码的完全列表参见这里。</p>
+<h2 id="错误处理（Error-handling）"><a href="#错误处理（Error-handling）" class="headerlink" title="错误处理（Error handling）"></a>错误处理（Error handling）</h2><p>如果状态码是4xx，就应该向用户返回出错信息。一般来说，返回的信息中将error作为键名，出错信息作为键值即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    error: &quot;Invalid API key&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="返回结果"><a href="#返回结果" class="headerlink" title="返回结果"></a>返回结果</h2><p>针对不同操作，服务器向用户返回的结果应该符合以下规范。</p>
+<ul>
+<li>GET /collection：返回资源对象的列表（数组）</li>
+<li>GET /collection/resource：返回单个资源对象</li>
+<li>POST /collection：返回新生成的资源对象</li>
+<li>PUT /collection/resource：返回完整的资源对象</li>
+<li>PATCH /collection/resource：返回完整的资源对象</li>
+<li>DELETE /collection/resource：返回一个空文档</li>
+</ul>
+<h2 id="Hypermedia-API"><a href="#Hypermedia-API" class="headerlink" title="Hypermedia API"></a>Hypermedia API</h2><p>RESTful API最好做到Hypermedia，即返回结果中提供链接，连向其他API方法，使得用户不查文档，也知道下一步应该做什么。</p>
+<p>比如，当用户向api.example.com的根目录发出请求，会得到这样一个文档。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;link&quot;: &#123;</span><br><span class="line">  &quot;rel&quot;:   &quot;collection https://www.example.com/zoos&quot;,</span><br><span class="line">  &quot;href&quot;:  &quot;https://api.example.com/zoos&quot;,</span><br><span class="line">  &quot;title&quot;: &quot;List of zoos&quot;,</span><br><span class="line">  &quot;type&quot;:  &quot;application/vnd.yourformat+json&quot;</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码表示，文档中有一个link属性，用户读取这个属性就知道下一步该调用什么API了。rel表示这个API与当前网址的关系（collection关系，并给出该collection的网址），href表示API的路径，title表示API的标题，type表示返回类型。</p>
+<p>Hypermedia API的设计被称为HATEOAS。Github的API就是这种设计，访问api.github.com会得到一个所有可用API的网址列表。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;current_user_url&quot;: &quot;https://api.github.com/user&quot;,</span><br><span class="line">  &quot;authorizations_url&quot;: &quot;https://api.github.com/authorizations&quot;,</span><br><span class="line">  // ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从上面可以看到，如果想获取当前用户的信息，应该去访问api.github.com/user，然后就得到了下面结果。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;message&quot;: &quot;Requires authentication&quot;,</span><br><span class="line">  &quot;documentation_url&quot;: &quot;https://developer.github.com/v3&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码表示，服务器给出了提示信息，以及文档的网址。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ol>
+<li>API的身份认证应该使用 OAuth 2.0 框架。</li>
+<li>服务器返回的数据格式，应该尽量使用 JSON，避免使用 XML。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/02/26/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/App%E5%90%8E%E7%AB%AF%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1api/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -984,130 +1144,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/12/06/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/12/06/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Tomcat/Tomcat-%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">Tomcat-内存设置详解</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-12-06 16:03:57" itemprop="dateCreated datePublished" datetime="2015-12-06T16:03:57+08:00">2015-12-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://elf8848.iteye.com/blog/378805">http://elf8848.iteye.com/blog/378805</a></p>
-<h2 id="常见的Java内存溢出有以下三种："><a href="#常见的Java内存溢出有以下三种：" class="headerlink" title="常见的Java内存溢出有以下三种："></a>常见的Java内存溢出有以下三种：</h2><h3 id="java-lang-OutOfMemoryError-Java-heap-space-—-JVM-Heap（堆）溢出"><a href="#java-lang-OutOfMemoryError-Java-heap-space-—-JVM-Heap（堆）溢出" class="headerlink" title="java.lang.OutOfMemoryError: Java heap space —-JVM Heap（堆）溢出"></a>java.lang.OutOfMemoryError: Java heap space —-JVM Heap（堆）溢出</h3><p>JVM在启动的时候会自动设置JVM Heap的值，其初始空间(即-Xms)是物理内存的1/64，最大空间(-Xmx)是物理内存的1/4。</p>
-<p>可以利用JVM提供的-Xmn -Xms -Xmx等选项可进行设置。Heap的大小是Young Generation 和Tenured Generaion 之和。</p>
-<p>在JVM中如果98％的时间是用于GC，且可用的Heap size 不足2％的时候将抛出此异常信息。</p>
-<p>解决方法：手动设置JVM Heap（堆）的大小。  </p>
-<h3 id="java-lang-OutOfMemoryError-PermGen-space-—-PermGen-space溢出。"><a href="#java-lang-OutOfMemoryError-PermGen-space-—-PermGen-space溢出。" class="headerlink" title="java.lang.OutOfMemoryError: PermGen space  —- PermGen space溢出。"></a>java.lang.OutOfMemoryError: PermGen space  —- PermGen space溢出。</h3><p>PermGen space的全称是Permanent Generation space，是指内存的永久保存区域。</p>
-<p>为什么会内存溢出，这是由于这块内存主要是被JVM存放Class和Meta信息的，Class在被Load的时候被放入PermGen space区域，它和存放Instance的Heap区域不同,sun的 GC不会在主程序运行期对PermGen space进行清理，所以如果你的APP会载入很多CLASS的话，就很可能出现PermGen space溢出。</p>
-<p>解决方法： 手动设置MaxPermSize大小</p>
-<h3 id="java-lang-StackOverflowError-—-栈溢出"><a href="#java-lang-StackOverflowError-—-栈溢出" class="headerlink" title="java.lang.StackOverflowError   —- 栈溢出"></a>java.lang.StackOverflowError   —- 栈溢出</h3><p>栈溢出了，JVM依然是采用栈式的虚拟机，这个和C和Pascal都是一样的。函数的调用过程都体现在堆栈和退栈上了。<br>调用构造函数的 “层”太多了，以致于把栈区溢出了。</p>
-<p>通常来讲，一般栈区远远小于堆区的，因为函数调用过程往往不会多于上千层，而即便每个函数调用需要 1K的空间(这个大约相当于在一个C函数内声明了256个int类型的变量)，那么栈区也不过是需要1MB的空间。通常栈的大小是1－2MB的。</p>
-<p>通常递归也不要递归的层次过多，很容易溢出。</p>
-<p>解决方法：修改程序。</p>
-<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>在生产环境中tomcat内存设置不好很容易出现jvm内存溢出。</p>
-<h3 id="linux下的tomcat："><a href="#linux下的tomcat：" class="headerlink" title="linux下的tomcat："></a>linux下的tomcat：</h3><p>修改<code>TOMCAT_HOME/bin/catalina.sh</code>位置<code>cygwin=false</code>前。<code>JAVA_OPTS=&quot;-server -Xms256m -Xmx512m -XX:PermSize=64M -XX:MaxPermSize=128m&quot;</code>。</p>
-<h3 id="如果tomcat-5-注册成了windows服务，以services方式启动的，则需要修改注册表中的相应键值。"><a href="#如果tomcat-5-注册成了windows服务，以services方式启动的，则需要修改注册表中的相应键值。" class="headerlink" title="如果tomcat 5 注册成了windows服务，以services方式启动的，则需要修改注册表中的相应键值。"></a>如果tomcat 5 注册成了windows服务，以services方式启动的，则需要修改注册表中的相应键值。</h3><p>修改注册表<code>HKEY_LOCAL_MACHINE\SOFTWARE\Apache Software Foundation\Tomcat Service Manager\Tomcat5\Parameters\Java</code>，右侧的<code>Options</code>原值为<code>-Dcatalina.home=&quot;C:\ApacheGroup\Tomcat 5.0&quot; -Djava.endorsed.dirs=&quot;C:\ApacheGroup\Tomcat 5.0\common\endorsed&quot; -Xrs</code>加入<code>-Xms256m -Xmx512m</code>，重起tomcat服务,设置生效。</p>
-<h3 id="如果tomcat-6-注册成了windows服务，或者windows2003下用tomcat的安装版"><a href="#如果tomcat-6-注册成了windows服务，或者windows2003下用tomcat的安装版" class="headerlink" title="如果tomcat 6 注册成了windows服务，或者windows2003下用tomcat的安装版"></a>如果tomcat 6 注册成了windows服务，或者windows2003下用tomcat的安装版</h3><p>在<code>/bin/tomcat6w.exe</code>里修改就可以了。</p>
-<h3 id="如果要在myeclipse中启动tomcat，上述的修改就不起作用了，可如下设置："><a href="#如果要在myeclipse中启动tomcat，上述的修改就不起作用了，可如下设置：" class="headerlink" title="如果要在myeclipse中启动tomcat，上述的修改就不起作用了，可如下设置："></a>如果要在myeclipse中启动tomcat，上述的修改就不起作用了，可如下设置：</h3><p><code>Myeclipse-&gt;preferences-&gt;myeclipse-&gt;servers-&gt;tomcat-&gt;tomcat×.×-&gt;JDK</code>面板中的<code>Optional Java VM arguments</code>中添加：<code>-Xms256m -Xmx512m -XX:PermSize=64M -XX:MaxPermSize=128m</code></p>
-<h2 id="jvm参数说明："><a href="#jvm参数说明：" class="headerlink" title="jvm参数说明："></a>jvm参数说明：</h2><ul>
-<li><p><code>-server</code>:一定要作为第一个参数，在多个CPU时性能佳</p>
-</li>
-<li><p><code>-Xms</code>：Java Heap初始大小。默认是物理内存的1/64。</p>
-</li>
-<li><p><code>-Xmx</code>：Java Heap最大值。建议均设为物理内存的一半。不可超过物理内存。</p>
-</li>
-<li><p><code>-XX:PermSize</code>：设定内存的永久保存区初始大小，缺省值为64M。（我用visualvm.exe查看的）</p>
-</li>
-<li><p><code>-XX:MaxPermSize</code>：设定内存的永久保存区最大大小，缺省值为64M。（我用visualvm.exe查看的）</p>
-</li>
-<li><p><code>-XX:SurvivorRatio=2</code>：生还者池的大小,默认是2，如果垃圾回收变成了瓶颈，您可以尝试定制生成池设置。</p>
-</li>
-<li><p><code>-XX:NewSize</code>：新生成的池的初始大小。缺省值为2M。</p>
-</li>
-<li><p><code>-XX:MaxNewSize</code>：新生成的池的最大大小。缺省值为32M。</p>
-</li>
-</ul>
-<p>如果 JVM 的堆大小大于 1GB，则应该使用值：<code>-XX:newSize=640m -XX:MaxNewSize=640m -XX:SurvivorRatio=16</code>，或者将堆的总大小的 50% 到 60% 分配给新生成的池。调大新对象区，减少Full GC次数。</p>
-<ul>
-<li><p><code>+XX:AggressiveHeap</code>会使得 Xms没有意义。这个参数让jvm忽略Xmx参数,疯狂地吃完一个G物理内存,再吃尽一个G的swap。</p>
-</li>
-<li><p><code>-Xss</code>：每个线程的Stack大小，“-Xss 15120” 这使得JBoss每增加一个线程（thread)就会立即消耗15M内存，而最佳值应该是128K,默认值好像是512k.</p>
-</li>
-<li><p><code>-verbose:gc</code>：现实垃圾收集信息</p>
-</li>
-<li><p><code>-Xloggc:gc.log</code>：指定垃圾收集日志文件</p>
-</li>
-<li><p><code>-Xmn</code>：young generation的heap大小，一般设置为Xmx的3、4分之一</p>
-</li>
-<li><p><code>-XX:+UseParNewGC</code>：缩短minor收集的时间</p>
-</li>
-<li><p><code>-XX:+UseConcMarkSweepGC</code>：缩短major收集的时间 此选项在Heap Size 比较大而且Major收集时间较长的情况下使用更合适。</p>
-</li>
-<li><p><code>-XX:userParNewGC</code>：可用来设置并行收集【多CPU】</p>
-</li>
-<li><p><code>-XX:ParallelGCThreads</code>：可用来增加并行度【多CPU】</p>
-</li>
-<li><p><code>-XX:UseParallelGC</code>：设置后可以使用并行清除收集器【多CPU】</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1179,7 +1215,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">681</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1192,7 +1228,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-count">350</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

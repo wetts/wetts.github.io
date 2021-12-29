@@ -188,6 +188,132 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">Oracle-用法-select...for update使用方法.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-11-07 14:38:07" itemprop="dateCreated datePublished" datetime="2016-11-07T14:38:07+08:00">2016-11-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zwl156135995/article/details/51445862">https://blog.csdn.net/zwl156135995/article/details/51445862</a></p>
+<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><p>作用：</p>
+<p>select for update 是为了在查询时，避免其他用户以该表进行插入，修改或删除等操作，造成表的不一致性。</p>
+<p>给你举几个例子：</p>
+<ul>
+<li>select * from t for update 会等待行锁释放之后，返回查询结果。</li>
+<li>select * from t for update nowait 不等待行锁释放，提示锁冲突，不返回结果</li>
+<li>select * from t for update wait 5 等待5秒，若行锁仍未释放，则提示锁冲突，不返回结果</li>
+<li>select * from t for update skip locked 查询返回查询结果，但忽略有行锁的记录</li>
+</ul>
+<p>SELECT…FOR UPDATE 语句的语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">　　SELECT ... FOR UPDATE [OF column_list][WAIT n|NOWAIT][SKIP LOCKED];</span><br><span class="line">其中：</span><br><span class="line">　　OF 子句用于指定即将更新的列，即锁定行上的特定列。</span><br><span class="line">　　WAIT 子句指定等待其他用户释放锁的秒数，防止无限期的等待。</span><br></pre></td></tr></table></figure>
+
+<p>“使用FOR UPDATE WAIT”子句的优点如下：</p>
+<ol>
+<li>防止无限期地等待被锁定的行；</li>
+<li>允许应用程序中对锁的等待时间进行更多的控制。</li>
+<li>对于交互式应用程序非常有用，因为这些用户不能等待不确定</li>
+<li>若使用了 skip locked，则可以越过锁定的行，不会报告由 wait n 引发的‘资源忙’异常报告</li>
+</ol>
+<p>补充几点：</p>
+<p>分成两类：加锁范围子句和加锁行为子句</p>
+<ul>
+<li>加锁范围子句：在 select…for update 之后，可以使用 of 子句选择对 select 的特定数据表进行加锁操作。默认情况下，不使用 of 子句表示在 select 所有的数据表中加锁</li>
+<li>加锁行为子句：当我们进行 for update 的操作时，与普通 select 存在很大不同。一般 select 是不需要考虑数据是否被锁定，最多根据多版本一致读的特性读取之前的版本。加入 for update 之后，Oracle 就要求启动一个新事务，尝试对数据进行加锁。如果当前已经被加锁，默认的行为必然是 block 等待。使用 nowait 子句的作用就是避免进行等待，当发现请求加锁资源被锁定未释放的时候，直接报错返回。</li>
+</ul>
+<p>在日常中，我们对 for update 的使用还是比较普遍的，特别是在如 pl/sql developer 中手工修改数据。此时只是觉得方便，而对 for update 真正的含义缺乏理解。</p>
+<p>For update 是 Oracle 提供的手工提高锁级别和范围的特例语句。Oracle 的锁机制是目前各类型数据库锁机制中比较优秀的。所以，Oracle 认为一般不需要用户和应用直接进行锁的控制和提升。甚至认为死锁这类锁相关问题的出现场景，大都与手工提升锁有关。</p>
+<p>所以，Oracle 并不推荐使用 for update 作为日常开发使用。而且，在平时开发和运维中，使用了 for update 却忘记提交，会引起很多锁表故障。那么，什么时候需要使用 for update？就是那些需要业务层面数据独占时，可以考虑使用 for update。场景上，比如火车票订票，在屏幕上显示邮票，而真正进行出票时，需要重新确定一下这个数据没有被其他客户端修改。所以，在这个确认过程中，可以使用 for update。这是统一的解决方案方案问题，需要前期有所准备。</p>
+<hr>
+<p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Victor_Cindy1/article/details/78142956">https://blog.csdn.net/Victor_Cindy1/article/details/78142956</a></p>
+<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。"><a href="#问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。" class="headerlink" title="问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。"></a>问题是：如果多线程之下同时查询一条数据查不到，则去插入，插入的时候也是多线程插入。</h2><p><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/1.png" alt="1"><br>所以想到用 select for update 来控制不允许多线程插入（其实这种方式并没有解决问题）</p>
+<h2 id="先来了解几个名词"><a href="#先来了解几个名词" class="headerlink" title="先来了解几个名词"></a>先来了解几个名词</h2><ul>
+<li>statement：一个 SQL 语句。 </li>
+<li>session：一个由 ORACLE 用户产生的连接，一个用户能产生多个 SESSION，但相互之间是独立的。 </li>
+<li>transaction：所有的改动都能划分到 transaction 里，一个 transaction 包含一个或多个 SQL。当一个 SESSION 建立的时候就是个 TRANSACTION 开始的时刻，此后 transaction 的开始和结束由 DCL 控制，也就是每个 COMMIT/ROLLBACK 都标示着一个 transaction 的结束。 </li>
+</ul>
+<h2 id="用法介绍："><a href="#用法介绍：" class="headerlink" title="用法介绍："></a>用法介绍：</h2><p>select … for update 会 LOCK 相应的 ROW。 </p>
+<p>只有一个 TRANSACTION 可以 LOCK 相应的行，也就是说如果一个 ROW 已经 LOCKED 了，那就不能被其他 TRANSACTION 所 LOCK 了。 </p>
+<p>LOCK 由 statement 产生但却由 TRANSACTION 结尾（commit，rollback），也就是说一个 SQL 完成后 LOCK 还会存在，只有在 COMMIT/ROLLBACK 后才会师释放。</p>
+<p>使用这个行锁的情况一般是对并发的情况要求比较高的时候，需要锁住某行进行一些更新语句之后进行释放，再让其他 transaction 去操作。很好的利用了这点解决了并发的问题。数据库中锁类型：有两种基本的锁类型，排它锁（Exclusive Locks，即 X 锁）和共享锁（Share Locks，即 S 锁）。当数据对象被加上排它锁时，其他的事务不能对它读取和修改。加了共享锁的数据对象可以被其他事务读取，但不能修改。数据库利用这两种基本的锁类型来对数据库的事务进行并发控制。</p>
+<h3 id="Oracle-给-Select-结果集加锁，Skip-Locked（跳过加锁行获得可以加锁的结果集）"><a href="#Oracle-给-Select-结果集加锁，Skip-Locked（跳过加锁行获得可以加锁的结果集）" class="headerlink" title="Oracle 给 Select 结果集加锁，Skip Locked（跳过加锁行获得可以加锁的结果集）"></a>Oracle 给 Select 结果集加锁，Skip Locked（跳过加锁行获得可以加锁的结果集）</h3><h3 id="for-update-后面还可以跟着-OF-cols-NOWAIT"><a href="#for-update-后面还可以跟着-OF-cols-NOWAIT" class="headerlink" title="for update 后面还可以跟着 [OF cols] [NOWAIT]"></a>for update 后面还可以跟着 <code>[OF cols] [NOWAIT]</code></h3><p>of 的使用主要是针对多表关联的时候，如果不使用of，对两个表涉及到的行都将锁住，使用of可以指定锁定哪个表，</p>
+<p>例如：<code>select a.MOBILE,b.NAME from  connector a,student b where a.STU_ID=b.ID and a.MOBILE=&#39;13937134399&#39; for updata of a.MOBILE  </code></p>
+<p>这样的话student表中对应的行是不加锁的，对connector一个表中行加锁，不使用两个表都加锁。</p>
+<p><code>[NOWAIT]</code>的使用是当锁冲突的时候提示的情况：</p>
+<p>当有 LOCK 冲突时会提示错误并结束 STATEMENT 而不是在那里等待。返回错误是 “ORA-00054: resource busy and acquire with NOWAIT specified”，如果不使用就会一直等待，直到锁释放之后执行。在页面上调试的时候由于异常处理不好，把数据锁住了没有提交，也没有 rollback，遇到这样的情况的时候可以通过以下方式解决：</p>
+<p>—–查看被锁对象的序列号、sid</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SELECT o.owner,o.object_name,o.object_type,s.sid,s.serial# </span><br><span class="line">FROM v$locked_object l,dba_objects o,v$session s </span><br><span class="line">WHERE l.object_id=o.object_id </span><br><span class="line">AND l.session_id=s.sid </span><br><span class="line">ORDER BY o.object_id,xidusn DESC</span><br><span class="line">/</span><br><span class="line">------利用sid 和序列号删除</span><br><span class="line">alter system kill session &#x27;243,10265&#x27;;</span><br><span class="line">243是sid 10265是序列号</span><br></pre></td></tr></table></figure>
+
+<h2 id="效果图演示"><a href="#效果图演示" class="headerlink" title="效果图演示"></a>效果图演示</h2><p>开两个窗口：</p>
+<ol>
+<li><p>第一个窗口用 select for update 查询<br><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/2.png" alt="2"></p>
+</li>
+<li><p>在另一个窗口用同样的语句查询，会显示一直在查询…说明被 block 了<br><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/3.png" alt="3"></p>
+</li>
+<li><p>点击第一个窗口里的提交事务按钮，另一个窗口可以立刻获取查询结果<br><img src="/2016/11/07/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E7%94%A8%E6%B3%95-select...for%20update%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/4.png" alt="4"></p>
+</li>
+</ol>
+<p>继续回到我们开始提出的问题，为什么用 for update 不可以避免多线程插入的问题，因为：select for update 只能针对已经存在的数据进行加排他锁，如果查询的数据是 null，根本就不存在所谓的锁了。其中之一的解决办法是：加上唯一性约束条件。我们就给 OPEN_UID 和 LOGIN_TYPE 一起加唯一性约束 unique。所以数据库会保证只有一个唯一确定的记录，当两个请求同时向数据库插入相同的 OPEN_UID 和 LOGIN_TYPE 时，会采用抢占式插入，谁先插入其他方就不能再插入数据。</p>
+<p>就会报唯一约束的异常：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">### </span><br><span class="line">### ### Error updating database.  Cause: java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br><span class="line">### The error occurred while setting parameters</span><br><span class="line">### SQL: insert into SL$THIRD_LOGIN (OPEN_UID, REQUEST_SOURCE, LOGIN_TYPE, BIND_AID, NICK_NAME, ACCESS_TOKEN, EXPIRES_IN, UNION_ID)     values (      ?,       ?,       ?,       ?,          ?,          ?,          ?,         ?       )</span><br><span class="line">### Cause: java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br><span class="line">; SQL []; ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br><span class="line">; nested exception is java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br><span class="line">... 86 more</span><br><span class="line">Caused by: java.sql.SQLIntegrityConstraintViolationException: ORA-00001: unique constraint (SLPROD.SYS_C0019132) violated</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/04/%E8%AF%AD%E8%A8%80/Java/JDK/Java8/Java-API-JDK8%E4%B8%AD%E7%9A%84%E6%97%B6%E9%97%B4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1052,94 +1178,14 @@
 <li>方法2需要额外学习使用第三方工具。</li>
 </ul>
 <p>所以大多数情况最好还是使用Docker原生方法，Docker目前主要提供了Docker exec和 Docker attach两个命令。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/10/17/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E5%91%BD%E4%BB%A4%E5%8C%BA%E5%88%AB-exec%E5%92%8Cattach/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
+<h3 id="attach"><a href="#attach" class="headerlink" title="attach"></a>attach</h3><p>Docker attach可以attach到一个已经运行的容器的stdin，然后进行命令执行的动作。</p>
+<p>但是需要注意的是，如果从这个stdin中exit，会导致容器的停止。</p>
+<p>连续ctrl+p, ctrl+q可以de-attach容器。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost temp]# docker ps</span><br><span class="line">CONTAINER ID        IMAGE                       COMMAND             CREATED              STATUS              PORTS               NAMES</span><br><span class="line">2327e7eab0ed        busybox:buildroot-2014.02   &quot;/bin/sh&quot;           About a minute ago   Up About a minute                       bb2</span><br><span class="line">[root@localhost temp]# docker attach bb2</span><br><span class="line">/ # ls</span><br><span class="line">bin      dev      etc      home     lib      lib64    linuxrc  media    mnt      opt      proc     root     run      sbin     sys      tmp      usr      var</span><br><span class="line">/ # pwd</span><br><span class="line">/</span><br><span class="line">/ #</span><br></pre></td></tr></table></figure>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+<h3 id="exec"><a href="#exec" class="headerlink" title="exec"></a>exec</h3><p>使用-it参数时，则和我们平常操作console界面类似。而且也不会像attach方式因为退出，导致整个容器退出。</p>
+<p>如果只使用-t参数，则可以看到一个console窗口，但是执行命令会发现由于没有获得stdin的输出，无法看到命令执行情况。</p>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/10/17/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E5%91%BD%E4%BB%A4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/10/17/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">Docker-命令</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-10-17 22:24:57" itemprop="dateCreated datePublished" datetime="2016-10-17T22:24:57+08:00">2016-10-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><ul>
-<li><p>查看docker基础信息</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker info</span><br></pre></td></tr></table></figure></li>
-<li><p>查看容器的root用户密码</p>
-</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs &lt;容器名orID&gt; 2&gt;&amp;1 | grep &#x27;^User: &#x27; | tail -n1</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/10/17/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Docker/Docker-%E5%91%BD%E4%BB%A4/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
       
     </div>
 
@@ -1225,7 +1271,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">681</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1238,7 +1284,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-count">350</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

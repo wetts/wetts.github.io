@@ -188,6 +188,125 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%E4%B8%BA%E4%BD%95%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%9E%9A%E4%B8%BE%E8%A7%A3%E5%86%B3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%E4%B8%BA%E4%BD%95%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%9E%9A%E4%B8%BE%E8%A7%A3%E5%86%B3/" class="post-title-link" itemprop="url">Java-设计模式-单例模式问题为何可以通过枚举解决.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-13 21:30:07" itemprop="dateCreated datePublished" datetime="2021-05-13T21:30:07+08:00">2021-05-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/call-me-pengye/p/11214435.html">https://www.cnblogs.com/call-me-pengye/p/11214435.html</a></p>
+<p>首先我们都知道 enum 默认继承了 java.lang.Enum 类并实现了 java.lang.Seriablizable 和 java.lang.Comparable 两个接口。接下来我们将依次说明枚举是如何防止这三种方式对单例的破环</p>
+<h2 id="克隆"><a href="#克隆" class="headerlink" title="克隆"></a>克隆</h2><p>一个普通的类要是clone必须实现 java.lang.Cloneable 接口，重写 clone() 方法，同理我们来看看枚举能否也是一样<br><img src="/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%E4%B8%BA%E4%BD%95%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%9E%9A%E4%B8%BE%E8%A7%A3%E5%86%B3/1.png" alt="1"></p>
+<p>我们可以看到 enum 是不被允许重写 clone()，因为 Enum 类已经将 clone() 方法定义为 final 了，并且 Enum 在使用 clone() 时直接抛出异常，如下图，这就是枚举为什么能防止克隆破环的原因，它根本就不允许克隆<br><img src="/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%E4%B8%BA%E4%BD%95%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%9E%9A%E4%B8%BE%E8%A7%A3%E5%86%B3/2.png" alt="2"></p>
+<h2 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class DestroySingleton &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //通过反射获取</span><br><span class="line">        Constructor&lt;Singleton&gt; constructor = Singleton.class.getDeclaredConstructor();</span><br><span class="line">        constructor.setAccessible(true);</span><br><span class="line">        Singleton reflex = constructor.newInstance();</span><br><span class="line">        System.out.println(&quot;reflex的hashCode:&quot;+reflex.hashCode());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们先来看一下反射实现的主要步骤：首先通过 class 的 getDeclaredConstructor() 获取到反射对象的构造器，然后通过 newInstance() 调用其构造方法获取对象，getDeclaredConstructor() 主要是通过 getConstructor0() 来获取构造器，具体代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@CallerSensitive</span><br><span class="line">public Constructor&lt;T&gt; getDeclaredConstructor(Class&lt;?&gt;... parameterTypes)</span><br><span class="line">    throws NoSuchMethodException, SecurityException &#123;</span><br><span class="line">    checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);</span><br><span class="line">    return getConstructor0(parameterTypes, Member.DECLARED);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 getConstructor0 中，他会先调用 privateGetDeclaredConstructors 方法去获取；具体代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">private Constructor&lt;T&gt; getConstructor0(Class&lt;?&gt;[] parameterTypes,int which) throws NoSuchMethodException</span><br><span class="line">    &#123;</span><br><span class="line">        Constructor&lt;T&gt;[] constructors = privateGetDeclaredConstructors((which == Member.PUBLIC));</span><br><span class="line">        for (Constructor&lt;T&gt; constructor : constructors) &#123;</span><br><span class="line">            if (arrayContentsEq(parameterTypes,constructor.getParameterTypes())) &#123;</span><br><span class="line">                return getReflectionFactory().copyConstructor(constructor);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        throw new NoSuchMethodException(getName() + &quot;.&lt;init&gt;&quot; + argumentTypesToString(parameterTypes));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 privateGetDeclaredConstructors() 中 publicOnly 的值是 false，ReflectionData 的 publicConstructors 和 declaredConstructors 都是 null；而 privateGetDeclaredConstructors() 中真正决定 <code>Constructor&lt;T&gt;[]</code> 的代码是 getDeclaredConstructors0(publicOnly)。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">private Constructor&lt;T&gt;[] privateGetDeclaredConstructors(boolean publicOnly) &#123;</span><br><span class="line">        checkInitted();</span><br><span class="line">        Constructor&lt;T&gt;[] res;</span><br><span class="line">        ReflectionData&lt;T&gt; rd = reflectionData();</span><br><span class="line">        if (rd != null) &#123;</span><br><span class="line">            res = publicOnly ? rd.publicConstructors : rd.declaredConstructors;</span><br><span class="line">            if (res != null) return res;</span><br><span class="line">        &#125;</span><br><span class="line">        // No cached value available; request value from VM</span><br><span class="line">        if (isInterface()) &#123;</span><br><span class="line">            @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">            Constructor&lt;T&gt;[] temporaryRes = (Constructor&lt;T&gt;[]) new Constructor&lt;?&gt;[0];</span><br><span class="line">            res = temporaryRes;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            res = getDeclaredConstructors0(publicOnly);</span><br><span class="line">        &#125;</span><br><span class="line">        if (rd != null) &#123;</span><br><span class="line">            if (publicOnly) &#123;</span><br><span class="line">                rd.publicConstructors = res;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                rd.declaredConstructors = res;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return res;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在得到 <code>Constructor&lt;T&gt;[]</code> 后回到 getConstructor0() 将依次对其进行轮询判断，找到合适的 Constructor 并交由 ReflectionFactory 工厂 copy 出一个 Constructor。其中轮询的判断条件由 parameterTypes 和 constructor.getParameterTypes() 决定，parameterTypes 是个空数组；普通类的 constructor.getParameterTypes() 得出的结果也是空数组，而枚举产生的数组为:<code>[class java.lang.String, int]</code>；接着就交由 arrayContentsEq() 执行，并返回一个 boolean值。</p>
+<p>arrayContentsEq 具体代码如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">private static boolean arrayContentsEq(Object[] a1, Object[] a2) &#123;</span><br><span class="line">        if (a1 == null) &#123;</span><br><span class="line">            return a2 == null || a2.length == 0;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if (a2 == null) &#123;</span><br><span class="line">            return a1.length == 0;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if (a1.length != a2.length) &#123;</span><br><span class="line">            return false;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        for (int i = 0; i &lt; a1.length; i++) &#123;</span><br><span class="line">            if (a1[i] != a2[i]) &#123;</span><br><span class="line">                return false;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>普通类在 arrayContentsEq() 中所有的 if 和 for 都通不过，最后直接返回 true；而枚举类则会因为 <code>a1.length != a2.length</code>（注：a2.length的之为2）条件成立而返回 false。于是普通类接着执行 <code>return getReflectionFactory().copyConstructor(constructor);</code> 而枚举类则直接抛出异常 <code>throw new NoSuchMethodException(getName() + &quot;.&lt;init&gt;&quot; + argumentTypesToString(parameterTypes));</code> 具体错误信息如下：</p>
+<blockquote>
+<p>Exception in thread “main” java.lang.NoSuchMethodException: designPatterns.singleton.useenum.Singleton.<init>()<br>　　　　 at java.lang.Class.getConstructor0(Class.java:3082)<br>　　　　 at java.lang.Class.getDeclaredConstructor(Class.java:2178)<br>　　　　 at designPatterns.singleton.useenum.DestroySingleton.main(DestroySingleton.java:18)</init></p>
+</blockquote>
+<p>从控制台输出的信息来看 parameterTypes 的确是一个空对象，但是为什么给出 init() 的 NoSuchMethodException 异常。这就是为什么枚举不能通过反射实例化的原因之一，另一个原因就是：在获取到类构造器后通过 newInstance() 来实例化前，枚举是无法通过</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if( (clazz.getModifiers() &amp; Modifier.ENUM) != 0 )</span><br></pre></td></tr></table></figure>
+<p>条件判断的，具体代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@CallerSensitive</span><br><span class="line">    public T newInstance(Object ... initargs)</span><br><span class="line">        throws InstantiationException, IllegalAccessException,</span><br><span class="line">               IllegalArgumentException, InvocationTargetException</span><br><span class="line">    &#123;</span><br><span class="line">        if (!override) &#123;</span><br><span class="line">            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) &#123;</span><br><span class="line">                Class&lt;?&gt; caller = Reflection.getCallerClass();</span><br><span class="line">                checkAccess(caller, clazz, null, modifiers);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        if ((clazz.getModifiers() &amp; Modifier.ENUM) != 0)</span><br><span class="line">            throw new IllegalArgumentException(&quot;Cannot reflectively create enum objects&quot;);</span><br><span class="line">        ConstructorAccessor ca = constructorAccessor;   // read volatile</span><br><span class="line">        if (ca == null) &#123;</span><br><span class="line">            ca = acquireConstructorAccessor();</span><br><span class="line">        &#125;</span><br><span class="line">        @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">        T inst = (T) ca.newInstance(initargs);</span><br><span class="line">        return inst;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public class CreateClassBySerialized &#123;</span><br><span class="line">    </span><br><span class="line">    @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">    public static &lt;T extends Serializable&gt; T createClassBySerialized(T  t) throws IOException, ClassNotFoundException&#123;</span><br><span class="line">        ByteArrayOutputStream bos = new ByteArrayOutputStream();</span><br><span class="line">        ObjectOutputStream oos = new ObjectOutputStream(bos);</span><br><span class="line">        oos.writeObject(t);</span><br><span class="line">        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());</span><br><span class="line">        ObjectInputStream ois = new ObjectInputStream(bis);</span><br><span class="line">        T object = (T) ois.readObject();</span><br><span class="line">        if (ois != null)    ois.close();</span><br><span class="line">        if (bis != null) bis.close();</span><br><span class="line">        if (oos != null) oos.close();</span><br><span class="line">        if (bos != null) bos.close();</span><br><span class="line">        return object;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">public class DestroySingleton &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //通过序列化，反序列化获取</span><br><span class="line">        Singleton serialize = CreateClassBySerialized.createClassBySerialized(Singleton.getInstance());</span><br><span class="line">        System.out.println(&quot;serialize的hashCode:&quot;+serialize.hashCode());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先我们先来看看为什么添加 readResolve() 方法就能防止序列化对单例的破环。关键的代码就是在 readObject() 里的 readObject0() 实现的，readObject() 具体代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public final Object readObject() throws IOException, ClassNotFoundException&#123;</span><br><span class="line">     if (enableOverride) &#123;</span><br><span class="line">         return readObjectOverride();</span><br><span class="line">     &#125;</span><br><span class="line">     // if nested read, passHandle contains handle of enclosing object</span><br><span class="line">     int outerHandle = passHandle;</span><br><span class="line">     try &#123;</span><br><span class="line">         Object obj = readObject0(false);</span><br><span class="line">         handles.markDependency(outerHandle, passHandle);</span><br><span class="line">         ClassNotFoundException ex = handles.lookupException(passHandle);</span><br><span class="line">         if (ex != null) &#123;</span><br><span class="line">             throw ex;</span><br><span class="line">         &#125;</span><br><span class="line">         if (depth == 0) &#123;</span><br><span class="line">             vlist.doCallbacks();</span><br><span class="line">         &#125;</span><br><span class="line">         return obj;</span><br><span class="line">     &#125; finally &#123;</span><br><span class="line">         passHandle = outerHandle;</span><br><span class="line">         if (closed &amp;&amp; depth == 0) &#123;</span><br><span class="line">             clear();</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>而 readObject0() 对类的实现体现在 switch 选择器上：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">switch (tc) &#123;</span><br><span class="line">    case TC_NULL:</span><br><span class="line">        return readNull();</span><br><span class="line">    case TC_REFERENCE:</span><br><span class="line">        return readHandle(unshared);</span><br><span class="line">    case TC_CLASS:</span><br><span class="line">        return readClass(unshared);</span><br><span class="line">    case TC_CLASSDESC:</span><br><span class="line">    case TC_PROXYCLASSDESC:</span><br><span class="line">        return readClassDesc(unshared);</span><br><span class="line">    case TC_STRING:</span><br><span class="line">    case TC_LONGSTRING:</span><br><span class="line">        return checkResolve(readString(unshared));</span><br><span class="line">    case TC_ARRAY:</span><br><span class="line">        return checkResolve(readArray(unshared));</span><br><span class="line">    case TC_ENUM:</span><br><span class="line">        return checkResolve(readEnum(unshared));</span><br><span class="line">    case TC_OBJECT:</span><br><span class="line">        return checkResolve(readOrdinaryObject(unshared));</span><br><span class="line">    case TC_EXCEPTION:</span><br><span class="line">        IOException ex = readFatalException();</span><br><span class="line">        throw new WriteAbortedException(&quot;writing aborted&quot;, ex);</span><br><span class="line">    case TC_BLOCKDATA:</span><br><span class="line">    case TC_BLOCKDATALONG:</span><br><span class="line">        if (oldMode) &#123;</span><br><span class="line">            bin.setBlockDataMode(true);</span><br><span class="line">            bin.peek();             // force header read</span><br><span class="line">            throw new OptionalDataException(bin.currentBlockRemaining());</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            throw new StreamCorruptedException(&quot;unexpected block data&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    case TC_ENDBLOCKDATA:</span><br><span class="line">        if (oldMode) &#123;</span><br><span class="line">            throw new OptionalDataException(true);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            throw new StreamCorruptedException(&quot;unexpected end of block data&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    default:</span><br><span class="line">        throw new StreamCorruptedException(String.format(&quot;invalid type code: %02X&quot;, tc));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>tc 值不同，类的实现方式也不同；普通类(TC_OBJECT)由 readOrdinaryObject(unshared) 来实现，枚举类(TC_ENUM)由 readOrdinaryObject(unshared) 来实现。</p>
+<p>readOrdinaryObject(unshared) 决定了类是通过构造器实现还是通过 readResolve() 来实现</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">if (obj != null &amp;&amp; handles.lookupException(passHandle) == null &amp;&amp; desc.hasReadResolveMethod())</span><br><span class="line">&#123;</span><br><span class="line">    Object rep = desc.invokeReadResolve(obj);</span><br><span class="line">    if (unshared &amp;&amp; rep.getClass().isArray()) &#123;</span><br><span class="line">        rep = cloneArray(rep);</span><br><span class="line">    &#125;</span><br><span class="line">    if (rep != obj) &#123;</span><br><span class="line">        // Filter the replacement object</span><br><span class="line">        if (rep != null) &#123;</span><br><span class="line">            if (rep.getClass().isArray()) &#123;</span><br><span class="line">                filterCheck(rep.getClass(), Array.getLength(rep));</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                filterCheck(rep.getClass(), -1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        handles.setObject(passHandle, obj = rep);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 desc.hasReadResolveMethod() 就是来用判断是否有 readResolve()</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">boolean hasReadResolveMethod() &#123;</span><br><span class="line">    requireInitialized();</span><br><span class="line">    return (readResolveMethod != null);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果不存在 readResolve() 则 readResolveMethod 为 null，反之则为 readResolve() 对应的 Method 对象（我这儿的是 private java.lang.Object designPatterns.singleton.doublecheck.Singleton.readResolve() ）。于是乎就执行 desc.invokeReadResolve(obj) 代码，通过 Method.invoke 执行 readResolve() 方法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Object invokeReadResolve(Object obj) throws IOException, UnsupportedOperationException</span><br><span class="line">&#123;</span><br><span class="line">    requireInitialized();</span><br><span class="line">    if (readResolveMethod != null) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            return readResolveMethod.invoke(obj, (Object[]) null);</span><br><span class="line">        &#125; catch (InvocationTargetException ex) &#123;</span><br><span class="line">            Throwable th = ex.getTargetException();</span><br><span class="line">            if (th instanceof ObjectStreamException) &#123;</span><br><span class="line">                throw (ObjectStreamException) th;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                throwMiscException(th);</span><br><span class="line">                throw new InternalError(th);  // never reached</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (IllegalAccessException ex) &#123;</span><br><span class="line">            // should not occur, as access checks have been suppressed</span><br><span class="line">            throw new InternalError(ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        throw new UnsupportedOperationException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@CallerSensitive</span><br><span class="line">public Object invoke(Object obj, Object... args) throws IllegalAccessException, IllegalArgumentException,InvocationTargetException</span><br><span class="line">&#123;</span><br><span class="line">    if (!override) &#123;</span><br><span class="line">        if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) &#123;</span><br><span class="line">            Class&lt;?&gt; caller = Reflection.getCallerClass();</span><br><span class="line">            checkAccess(caller, clazz, obj, modifiers);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    MethodAccessor ma = methodAccessor;             // read volatile</span><br><span class="line">    if (ma == null) &#123;</span><br><span class="line">        ma = acquireMethodAccessor();</span><br><span class="line">    &#125;</span><br><span class="line">    return ma.invoke(obj, args);                   // readResolve最终执行处&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样就得到了我们的静态 singleton，实现单例模式。而在实现枚举的 readEnum() 方法中，枚举的实现是通过调用 java.lang.Enum的 静态方法 valueOf 来实现的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public static &lt;T extends Enum&lt;T&gt;&gt; T valueOf(Class&lt;T&gt; enumType,String name) &#123;</span><br><span class="line">        T result = enumType.enumConstantDirectory().get(name);</span><br><span class="line">        if (result != null)</span><br><span class="line">            return result;</span><br><span class="line">        if (name == null)</span><br><span class="line">            throw new NullPointerException(&quot;Name is null&quot;);</span><br><span class="line">        throw new IllegalArgumentException(</span><br><span class="line">            &quot;No enum constant &quot; + enumType.getCanonicalName() + &quot;.&quot; + name);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>enumType.enumConstantDirectory() 返回的对象是继承了枚举常量的 hashMap，其中 key 键是枚举常量名字，value 键是常量枚举对象本身；当它拿到枚举类中全部的枚举后，再其轮询将每一个枚举常量存入 hashMap 中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">Map&lt;String, T&gt; enumConstantDirectory() &#123;</span><br><span class="line">        if (enumConstantDirectory == null) &#123;</span><br><span class="line">            T[] universe = getEnumConstantsShared();</span><br><span class="line">            if (universe == null)</span><br><span class="line">                throw new IllegalArgumentException(</span><br><span class="line">                    getName() + &quot; is not an enum type&quot;);</span><br><span class="line">            Map&lt;String, T&gt; m = new HashMap&lt;&gt;(2 * universe.length);</span><br><span class="line">            for (T constant : universe)</span><br><span class="line">                m.put(((Enum&lt;?&gt;)constant).name(), constant);</span><br><span class="line">            enumConstantDirectory = m;</span><br><span class="line">        &#125;</span><br><span class="line">        return enumConstantDirectory;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//getEnumConstantsShared()就是获取到的一个个枚举对象</span><br><span class="line">T[] getEnumConstantsShared() &#123;</span><br><span class="line">        if (enumConstants == null) &#123;</span><br><span class="line">            if (!isEnum()) return null;</span><br><span class="line">            try &#123;</span><br><span class="line">                final Method values = getMethod(&quot;values&quot;);</span><br><span class="line">                java.security.AccessController.doPrivileged(</span><br><span class="line">                    new java.security.PrivilegedAction&lt;Void&gt;() &#123;</span><br><span class="line">                        public Void run() &#123;</span><br><span class="line">                                values.setAccessible(true);</span><br><span class="line">                                return null;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;);</span><br><span class="line">                @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">                T[] temporaryConstants = (T[])values.invoke(null);</span><br><span class="line">                enumConstants = temporaryConstants;</span><br><span class="line">            &#125;</span><br><span class="line">            // These can happen when users concoct enum-like classes</span><br><span class="line">            // that don&#x27;t comply with the enum spec.</span><br><span class="line">            catch (InvocationTargetException | NoSuchMethodException |</span><br><span class="line">                   IllegalAccessException ex) &#123; return null; &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return enumConstants;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>当我们拿到枚举的 hashMap 后，通过 get(name) 方法获取对应的枚举然后层层返回。代码中实现枚举的入口代码是 Enum.valueOf((Class)cl, name)，这样实现的现过其实就是 EnumClass.name(我代码的体现是Singleton.INSTANCE)，这样来看的话无论是 EnumClass.name 获取对象，还是 Enum.valueOf((Class)cl, name) 获取对象，它们得到的都是同一个对象，这其实就是枚举保持单例的原理。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%EF%BC%88%E5%8F%8D%E5%B0%84%E3%80%81%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1151,103 +1270,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/" class="post-title-link" itemprop="url">Java-多线程-线程状态转换图.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-02-11 15:23:36" itemprop="dateCreated datePublished" datetime="2021-02-11T15:23:36+08:00">2021-02-11</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/95242525">https://blog.csdn.net/zzti_erlie/article/details/95242525</a></p>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>简易的线程状态如下图<br><img src="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/1.png" alt="1"></p>
-<p>Java Thread线程内部有一个枚举内部类State，定义了Java语言线程状态的枚举值</p>
-<ul>
-<li>NEW（初始化状态）</li>
-<li>RUNNABLE （可运行/运行状态）</li>
-<li>BLOCKED（阻塞状态）</li>
-<li>WAITING （无时限等待）</li>
-<li>TIMED_WAITING（有时限等待）</li>
-<li>TERMINATED（终止状态）</li>
-</ul>
-<p>Java 将操作系统层面的阻塞状态细分为 BLOCK，WAITING，TIMED_WAITING 三种状态</p>
-<p><strong>NEW：新建状态，线程被创建但未启动的状态</strong>。创建线程有三种方式</p>
-<ul>
-<li>继承Thread类</li>
-<li>实现Runnable接口</li>
-<li>实现Callable接口</li>
-</ul>
-<p>我们最常用的是通过实现接口这种方式，Runnable 和 Callable 接口的区别如下</p>
-<ul>
-<li>Runnable 无法获取返回值，而 Callable 可以获取返回值</li>
-<li>Runnable 无法抛出异常，而 Callable可以抛出异常</li>
-</ul>
-<p><strong>RUNNABLE（就绪状态）：调用start之后运行之前的状态</strong><br><strong>RUNNING（运行状态）：线程正在运行</strong><br><strong>BLOCKED（阻塞状态）：进入以下状态，有以下几种情况</strong></p>
-<ul>
-<li>BLOCK（同步阻塞）：锁被其他线程占用，如等待进入 synchronized 方法或者代码块</li>
-<li>WAITING（主动阻塞）：执行Object.wait()，Thread.join() 等</li>
-<li>TIMED_WAITING（等待阻塞）：执行 Object.wait(long)，Thread.sleep(long) 等</li>
-</ul>
-<p><strong>DEAD（终止状态）：线程执行完毕</strong></p>
-<p>最后将各种方法补充到线程状态图上<br><img src="/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/2.png" alt="2"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1319,7 +1341,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">681</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1332,7 +1354,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-count">350</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

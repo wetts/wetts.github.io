@@ -188,6 +188,727 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/" class="post-title-link" itemprop="url">Java-框架、相关技术-0-知识点汇总</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-26 15:28:58" itemprop="dateCreated datePublished" datetime="2019-08-26T15:28:58+08:00">2019-08-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="框架"><a href="#框架" class="headerlink" title="框架"></a>框架</h2><h3 id="Spring"><a href="#Spring" class="headerlink" title="Spring"></a>Spring</h3><h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li>控制反转（IOC）<ul>
+<li>注入方式<ul>
+<li>构造器注入</li>
+<li>setter 注入方式</li>
+<li>注解注入</li>
+<li>接口注入</li>
+</ul>
+</li>
+<li>循环依赖<ul>
+<li>singletonObjects：第一级缓存，里面放置的是实例化好的单例对象；</li>
+<li>earlySingletonObjects：第二级缓存，里面存放的是提前曝光的单例对象；</li>
+<li>singletonFactories：第三级缓存，里面存放的是要被实例化的对象的对象工厂</li>
+<li>注入步骤<ul>
+<li>创建 bean 的时候 Spring 首先从一级缓存 singletonObjects 中获取。</li>
+<li>如果获取不到，并且对象正在创建中，就再从二级缓存 earlySingletonObjects 中获取。</li>
+<li>如果还是获取不到就从三级缓存 singletonFactories 中取。（Bean 调用构造函数进行实例化后，即使属性还未填充，就可以通过三级缓存向外提前暴露依赖的引用值（提前曝光），根据对象引用能定位到堆中的对象，其原理是基于 Java的 引用传递），取到后从三级缓存移动到了二级缓存完全初始化之后将自己放入到一级缓存中供其他使用。</li>
+</ul>
+</li>
+<li>因为加入 singletonFactories 三级缓存的前提是执行了构造器，所以构造器的循环依赖没法解决。<ul>
+<li>构造器循环依赖解决办法<ul>
+<li>在构造函数中使用 @Lazy 注解延迟加载。在注入依赖时，先注入代理对象，当首次使用时再创建对象。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>面向切面编程（AOP）<ul>
+<li>名词<ul>
+<li>切面（Aspect）：切面是通知和切点的结合。通知和切点共同定义了切面的全部内容。 在 Spring AOP 中，切面可以使用通用类（基于模式的风格） 或者在普通类中以 @AspectJ 注解来实现。</li>
+<li>连接点（Join point）：指方法，在 Spring AOP 中，一个连接点总是代表一个方法的执行。应用可能有数以千计的时机应用通知。这些时机被称为连接点。连接点是在应用执行过程中能够插入切面的一个点。这个点可以是调用方法时、抛出异常时、甚至修改一个字段时。切面代码可以利用这些点插入到应用的正常流程之中，并添加新的行为。<ul>
+<li><strong>Spring 只支持方法级别的连接点</strong><ul>
+<li>因为 Spring 基于动态代理，所以 Spring 只支持方法连接点。Spring 缺少对字段连接点的支持，而且它不支持构造器连接点。方法之外的连接点拦截功能，我们可以利用 Aspect 来补充。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通知（Advice）：在 AOP 术语中，切面的工作被称为通知。<ul>
+<li>5 种类型的通知<ul>
+<li>前置通知（Before）：在目标方法被调用之前调用通知功能；</li>
+<li>后置通知（After）：在目标方法完成之后调用通知，此时不会关心方法的输出是什么；</li>
+<li>返回通知（After-returning）：在目标方法成功执行之后调用通知；</li>
+<li>异常通知（After-throwing）：在目标方法抛出异常后调用通知；</li>
+<li>环绕通知（Around）：通知包裹了被通知的方法，在被通知的方法调用之前和调用之后执行自定义的行为。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>切入点（Pointcut）：切点的定义会匹配通知所要织入的一个或多个连接点。我们通常使用明确的类和方法名称，或是利用正则表达式定义所匹配的类和方法名称来指定这些切点。</li>
+<li>引入（Introduction）：引入允许我们向现有类添加新方法或属性。</li>
+<li>目标对象（Target Object）：被一个或者多个切面（aspect）所通知（advise）的对象。它通常是一个代理对象。也有人把它叫做被通知（adviced）对象。 既然 Spring AOP 是通过运行时代理实现的，这个对象永远是一个被代理（proxied）对象。</li>
+<li>织入（Weaving）：织入是把切面应用到目标对象并创建新的代理对象的过程。在目标对象的生命周期里有多少个点可以进行织入<ul>
+<li>编译期：切面在目标类编译时被织入。AspectJ 的织入编译器是以这种方式织入切面的。</li>
+<li>类加载期：切面在目标类加载到 JVM 时被织入。需要特殊的类加载器，它可以在目标类被引入应用之前增强该目标类的字节码。AspectJ5 的加载时织入就支持以这种方式织入切面。</li>
+<li>运行期：切面在应用运行的某个时刻被织入。一般情况下，在织入切面时，AOP 容器会为目标对象动态地创建一个代理对象。SpringAOP 就是以这种方式织入切面。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通过动态代理方式实现<ul>
+<li>JDK 动态代理<ul>
+<li>实现原理<ul>
+<li>通过实现 InvocationHandlet 接口创建自己的调用处理器；</li>
+<li>通过为 Proxy 类指定 ClassLoader 对象和一组 interface 来创建动态代理；</li>
+<li>通过反射机制获取动态代理类的构造函数，其唯一参数类型就是调用处理器接口类型；</li>
+<li>通过构造函数创建动态代理类实例，构造时调用处理器对象作为参数参入；</li>
+</ul>
+</li>
+<li>是面向接口的代理模式，如果被代理目标没有接口那么 Spring 也无能为力，Spring 通过 Java 的反射机制生产被代理接口的新的匿名实现类，重写了其中 AOP 的增强方法。</li>
+</ul>
+</li>
+<li>CGLib 动态代理<ul>
+<li>Spring 在运行期间通过 CGlib 继承要被动态代理的类，重写父类的方法，实现 AOP 面向切面编程呢。CGLib 动态代理是通过字节码底层继承要代理类来实现（如果被代理类被 final 关键字所修饰，那么会失败）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>配置 AOP 执行顺序<ul>
+<li>通过实现 org.springframework.core.Ordered 接口</li>
+<li>通过 <code>@Order()</code> 注解</li>
+<li>通过配置文件配置</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Spring-容器"><a href="#Spring-容器" class="headerlink" title="Spring 容器"></a>Spring 容器</h4><ul>
+<li><p>基础组件</p>
+<ul>
+<li><p>BeanFactory</p>
+<ul>
+<li>Spring 底层容器，定义了最基本的容器功能</li>
+<li>BeanFactory 位于整个容器类体系结构的顶端，其基本实现类为 DefaultListableBeanFactory。之所以称其为核心容器，是因为该类容器实现 IOC 的核心功能：比如配置文件的加载解析，Bean 依赖的注入以及生命周期的管理等。BeanFactory 作为 Spring 框架的基础设施，面向 Spring 框架本身，一般不会被用户直接使用。</li>
+</ul>
+</li>
+<li><p>ApplicationContext</p>
+<ul>
+<li><p>扩展于 BeanFactory，拥有更丰富的功能。例如：添加事件发布机制、父子级容器，一般都是直接使用 ApplicationContext。</p>
+</li>
+<li><p>通常译为应用上下文，不过称其为应用容器可能更形象些。它在 BeanFactory 提供的核心 IOC 功能之上作了扩展。通常 ApplicationContext 的实现类内部都持有一个 BeanFactory 的实例，IOC 容器的核心功能会交由它去完成。而 ApplicationContext 本身，则专注于在应用层对 BeanFactory 作扩展，比如提供对国际化的支持，支持框架级的事件监听机制以及增加了很多对应用环境的适配等。ApplicationContext 面向的是使用 Spring 框架的开发者。开发中经常使用的 ClassPathXmlApplicationContext 就是典型的 Spring 的应用容器，也是要进行解读的 IOC 容器。</p>
+</li>
+<li><p>相关类</p>
+<ul>
+<li><p>AbstractApplicationContext</p>
+<ul>
+<li><p>ApplicationContext 接口的抽象实现类，能够自动检测并注册各种后置处理器（PostProcessor）和事件监听器（Listener），以模板方法模式定义了一些容器的通用方法，比如启动容器的真正方法 <code>refresh()</code> 就是在该类中定义的。</p>
+</li>
+<li><p><code>refresh()</code> 方法</p>
+<ul>
+<li><p>```<br>@Override<br>public void refresh() throws BeansException, IllegalStateException {<br>  synchronized (this.startupShutdownMonitor) {</p>
+<pre><code>  // Prepare this context for refreshing.
+  // 准备，记录容器的启动时间 startupDate，标记容器为激活，初始化上下文环境如文件路径信息，验证必填属性是否填写
+  prepareRefresh();
+
+  // Tell the subclass to refresh the internal bean factory.
+  // 这步比较重要（解析），告诉子类去刷新 bean 工厂，这步完成后配置文件就解析成一个个 bean 定义，注册到 BeanFactory（但是未被初始化，仅将信息写到了 beanDefination 的 map 中）
+  ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+
+  // Prepare the bean factory for use in this context.
+  // 设置 beanFactory 类加载器，添加多个 beanPostProcesser
+  prepareBeanFactory(beanFactory);
+
+  try &#123;
+    // Allows post-processing of the bean factory in context subclasses.
+    // 允许子类上下文中对 beanFactory 做后期处理
+    postProcessBeanFactory(beanFactory);
+
+    // Invoke factory processors registered as beans in the context.
+    // 调用 BeanFactoryPostProcessor 各个实现类的方法
+    invokeBeanFactoryPostProcessors(beanFactory);
+
+    // Register bean processors that intercept bean creation.
+    // 注册 BeanPostProcessor 的实现类，注意看和 BeanFactoryPostProcessor 的区别
+    // 此接口两个方法: postProcessBeforeInitialization 和 postProcessAfterInitialization
+    // 两个方法分别在 Bean 初始化之前和初始化之后得到执行。注意，到这里 Bean 还没初始化
+    registerBeanPostProcessors(beanFactory);
+
+    // Initialize message source for this context.
+    //初始化 ApplicationContext 的 MessageSource
+    initMessageSource();
+
+    // Initialize event multicaster for this context.
+    // 初始化 ApplicationContext 事件广播器
+    initApplicationEventMulticaster();
+
+    // Initialize other special beans in specific context subclasses.
+    // 初始化子类特殊 bean（钩子方法）
+    onRefresh();
+
+    // Check for listener beans and register them.
+    // 注册事件监听器
+    registerListeners();
+
+    // Instantiate all remaining (non-lazy-init) singletons.
+    // 初始化所有 singleton bean
+    finishBeanFactoryInitialization(beanFactory);
+
+    // Last step: publish corresponding event.
+    // 广播事件，ApplicationContext 初始化完成
+    finishRefresh();
+  &#125;
+
+  catch (BeansException ex) &#123;
+    if (logger.isWarnEnabled()) &#123;
+        logger.warn(&quot;Exception encountered during context initialization - &quot; +
+              &quot;cancelling refresh attempt: &quot; + ex);
+    &#125;
+
+    // Destroy already created singletons to avoid dangling resources.
+    destroyBeans();
+
+    // Reset &#39;active&#39; flag.
+    cancelRefresh(ex);
+
+    // Propagate exception to caller.
+    throw ex;
+  &#125;
+
+  finally &#123;
+    // Reset common introspection caches in Spring&#39;s core, since we
+    // might not ever need metadata for singleton beans anymore...
+    resetCommonCaches();
+  &#125;
+</code></pre>
+<p>  }<br>}</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line">      - AbstractRefreshableApplicationContext</span><br><span class="line">        - 继承 AbstractApplicationContext 的抽象类。内部持有一个 DefaultListableBeanFactory 的实例，使得继承 AbstractRefreshableApplicationContext 的 Spring 的应用容器内部默认有一个 Spring 的核心容器，那么 Spring 容器的一些核心功能就可以委托给内部的核心容器去完成。</span><br><span class="line">        - AbstractRefreshableApplicationContext 在内部定义了创建、销毁以及刷新核心容器 BeanFactory 的方法。</span><br><span class="line">      - ClassPathXmlApplicationContext</span><br><span class="line">        - 最常用的 Spring 的应用容器之一。在启动时会加载类路径下的 xml 文件作为容器的配置信息。</span><br><span class="line">      - BeanFactoryPostProcessor</span><br><span class="line">        - 实现该接口，可以在 Spring 的 bean 创建之前，修改 bean 的定义属性。也就是说，Spring 允许 BeanFactoryPostProcessor 在容器实例化任何其它 bean 之前读取配置元数据，并可以根据需要进行修改，例如可以把 bean 的 scope 从 singleton 改为 prototype，也可以把 property 的值给修改掉。可以同时配置多个 BeanFactoryPostProcessor，并通过设置&#x27;order&#x27;属性来控制各个 BeanFactoryPostProcessor 的执行次序。</span><br><span class="line">        - BeanFactoryPostProcessor 是在 spring 容器加载了 bean 的定义文件之后，在 bean 实例化之前执行的。接口方法的入参是 ConfigurrableListableBeanFactory，使用该参数，可以获取到相关 bean 的定义信息。</span><br><span class="line">        - Spring 中，有内置的一些 BeanFactoryPostProcessor 实现类，常用的有：</span><br><span class="line">          - org.springframework.beans.factory.config.PropertyPlaceholderConfigurer</span><br><span class="line">          - org.springframework.beans.factory.config.PropertyOverrideConfigurer</span><br><span class="line">          - org.springframework.beans.factory.config.CustomEditorConfigurer：用来注册自定义的属性编辑器</span><br><span class="line">      - BeanPostProcessor</span><br><span class="line">        - BeanPostProcessor，可以在 Spring 容器实例化 bean 之后，在执行 bean 的初始化方法前后，添加一些自己的处理逻辑。</span><br><span class="line">        - 这里说的初始化方法，指的是下面两种：</span><br><span class="line">          - bean 实现了 InitializingBean 接口，对应的方法为 afterPropertiesSet</span><br><span class="line">          - 在 bean 定义的时候，通过 init-method 设置的方法</span><br><span class="line">        - BeanPostProcessor 是在 Spring 容器加载了 bean 的定义文件并且实例化 bean 之后执行的。BeanPostProcessor 的执行顺序是在 BeanFactoryPostProcessor 之后。</span><br><span class="line">        - Spring中，有内置的一些 BeanPostProcessor 实现类，例如：</span><br><span class="line">          - org.springframework.context.annotation.CommonAnnotationBeanPostProcessor：支持 @Resource 注解的注入</span><br><span class="line">          - org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor：支持 @Required 注解的注入</span><br><span class="line">          - org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor：支持 @Autowired 注解的注入</span><br><span class="line">          - org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor：支持 @PersistenceUnit 和 @PersistenceContext 注解的注入</span><br><span class="line">          - org.springframework.context.support.ApplicationContextAwareProcessor：用来为 bean 注入 ApplicationContext 等容器对象</span><br><span class="line">  - Resource</span><br><span class="line">    - bean 配置文件，一般为 xml 文件。可以理解为保存 bean 信息的文件。</span><br><span class="line">  - BeanDefinition</span><br><span class="line">    - BeanDefinition 定义了 bean 的基本信息，根据它来创造 bean。</span><br><span class="line">- 容器启动步骤</span><br><span class="line">  - ![Spring_容器启动的整个流程](Java-框架、相关技术-0-知识点汇总/Spring_容器启动的整个流程.png)</span><br><span class="line">  1. 资源定位：找到配置文件</span><br><span class="line">  2. BeanDefinition 载入和解析</span><br><span class="line">  3. BeanDefinition 注册</span><br><span class="line">  4. bean 的实例化和依赖注入</span><br><span class="line">- BeanFactory</span><br><span class="line">  - BeanFactory 定义的标准处理顺序</span><br><span class="line">    1. BeanNameAware&#x27;s setBeanName</span><br><span class="line">    2. BeanClassLoaderAware&#x27;s setBeanClassLoader</span><br><span class="line">    3. BeanFactoryAware&#x27;s setBeanFactory</span><br><span class="line">    4. ResourceLoaderAware&#x27;s setResourceLoader (only applicable when running in an application context)</span><br><span class="line">    5. ApplicationEventPublisherAware&#x27;s setApplicationEventPublisher (only applicable when running in an application context)</span><br><span class="line">    6. MessageSourceAware&#x27;s setMessageSource (only applicable when running in an application context)</span><br><span class="line">    7. ApplicationContextAware&#x27;s setApplicationContext (only applicable when running in an application context)</span><br><span class="line">    8. ServletContextAware&#x27;s setServletContext (only applicable when running in a web application context)</span><br><span class="line">    9. postProcessBeforeInitialization methods of BeanPostProcessors</span><br><span class="line">    10. InitializingBean&#x27;s afterPropertiesSet</span><br><span class="line">    11. a custom init-method definition</span><br><span class="line">    12. postProcessAfterInitialization methods of BeanPostProcessors</span><br><span class="line">    - 第 9 点和 12 点是通过 BeanPostProccessor 接口进行处理的</span><br><span class="line">    - 第 10 点是通过 InitializingBean 接口去实现的</span><br><span class="line">  - BeanFactory 关闭的处理顺序</span><br><span class="line">    1. DisposableBean&#x27;s destroy</span><br><span class="line">    2. a custom destroy-method definition</span><br><span class="line"></span><br><span class="line">#### Spring 事件监听机制</span><br><span class="line">- 说明</span><br><span class="line">  - 事件监听机制可以理解为是一种观察者模式，有数据发布者（事件源）和数据接受者（监听器）；</span><br><span class="line">  - 在 Java 中，事件对象都是继承 java.util.EventObject 对象，事件监听器都是 java.util.EventListener 实例；</span><br><span class="line">  - EventObject 对象不提供默认构造器，需要外部传递 source 参数，即用于记录并跟踪事件的来源；</span><br><span class="line">- Spring 事件</span><br><span class="line">  - Spring 事件对象为 ApplicationEvent，继承 EventObject</span><br><span class="line">  - Spring 事件监听器为 ApplicationListener，继承 EventListener</span><br><span class="line">- 实现 Spring 事件监听有两种方式：</span><br><span class="line">  - 面向接口编程，实现 ApplicationListener 接口；</span><br><span class="line">  - 基于注解驱动，@EventListener（Spring 自定义的注解）；</span><br><span class="line">- Spring 自带的监听器</span><br><span class="line">  - ContextLoaderListener</span><br><span class="line">    - 在启动 Web 容器时，自动装配 Spring applicationContext.xml 的配置信息。</span><br><span class="line">    - 因为它实现了 ServletContextListener 这个接口，在 web.xml 配置这个监听器，启动容器时，就会默认执行它实现的方法。在 ContextLoaderListener 中关联了 ContextLoader 这个类，所以整个加载配置过程由 ContextLoader 来完成。</span><br><span class="line">  - RequestContextListener</span><br><span class="line">    - Spring2.0 中新增了三个 web 作用域：request、session、global session，如果希望 web 容器中的某个 bean 具有新的作用域，除了在 bean 中配置相应的 scope 属性外，还需要在容器中进行额外的初始化配置。</span><br><span class="line"></span><br><span class="line">#### SpringMVC</span><br><span class="line">- MVC 模式代表 Model-View-Controller（模型-视图-控制器）模式。</span><br><span class="line">- 原理</span><br><span class="line">  - ![SpringMVC_请求处理的流程](Java-框架、相关技术-0-知识点汇总/SpringMVC_请求处理的流程.png)</span><br><span class="line">  - 执行流程</span><br><span class="line">    - 用户向服务器发送请求，请求会到 DispatcherServlet，DispatcherServlet 对请求 URL 进行解析，得到请求资源标识符（URI），然后根据该 URI，调用 HandlerMapping 获得该 Handler 配置的所有相关的对象（包括一个 Handler 处理器对象、多个 HandlerInterceptor 拦截器对象），最后以 HandlerExecutionChain 对象的形式返回。</span><br><span class="line">    - DispatcherServlet 根据获得的 Handler，选择一个合适的 HandlerAdapter。提取 Request 中的模型数据，填充 Handler 入参，开始执行 Handler（Controller）。 在填充 Handler 的入参过程中，根据你的配置，Spring 将帮你做一些额外的工作：</span><br><span class="line">      - HttpMessageConveter： 将请求消息（如 Json、xml 等数据）转换成一个对象，将对象转换为指定的响应信息</span><br><span class="line">      - 数据转换：对请求消息进行数据转换。如 String 转换成 Integer、Double 等</span><br><span class="line">      - 数据格式化：对请求消息进行数据格式化。 如将字符串转换成格式化数字或格式化日期等</span><br><span class="line">      - 数据验证： 验证数据的有效性（长度、格式等），验证结果存储到 BindingResult 或 Error 中</span><br><span class="line">    - Handler 执行完成后，向 DispatcherServlet 返回一个 ModelAndView 对象；根据返回的 ModelAndView，选择一个适合的 ViewResolver 返回给 DispatcherServlet；ViewResolver 结合 Model 和 View，来渲染视图，最后将渲染结果返回给客户端。</span><br><span class="line"></span><br><span class="line">#### 注解</span><br><span class="line">- 注入相关</span><br><span class="line">  - @Qualifier</span><br><span class="line">    - 用处：当一个接口有多个实现的时候，为了指名具体调用哪个类的实现。</span><br><span class="line">  - @Resource</span><br><span class="line">    - 可以通过 byName 和 byType 的方式注入，默认先按 byName 的方式进行匹配，如果匹配不到，再按 byType 的方式进行匹配。</span><br><span class="line">    - 由 JSR-250 提供</span><br><span class="line">  - @Autowired</span><br><span class="line">    - 按 byType 方式注入，如果按 byType 冲突或找不到的话可以用 @Qualifier 来找 byName</span><br><span class="line">    - 由 spring 提供</span><br><span class="line">  - @Inject</span><br><span class="line">    - 由 JSR-330 提供</span><br><span class="line">    - 注意</span><br><span class="line">      - 使用前需要导入 jar 包——javax.inject；</span><br><span class="line">      - 支持 @Primary 注解，而且因为没有精确匹配，@Primary 的优先级最高；</span><br><span class="line">      - 不支持 required=false，即不能注入 null，如果找不到组件肯定报错；</span><br><span class="line">      - 默认按照属性名跟 bean 的名称匹配查找，如果不存在，再按类型匹配查找。</span><br><span class="line"></span><br><span class="line">#### 事务</span><br><span class="line">- 事务传播机制</span><br><span class="line">  - PROPAGATION_REQUIRED：如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常⻅的选择。 </span><br><span class="line">  - PROPAGATION_SUPPORTS：支持当前事务，如果当前没有事务，就以非事务方式执行。 </span><br><span class="line">  - PROPAGATION_MANDATORY：使用当前的事务，如果当前没有事务，就抛出异常。 </span><br><span class="line">  - PROPAGATION_REQUIRES_NEW：新建事务，如果当前存在事务，把当前事务挂起。 </span><br><span class="line">  - PROPAGATION_NOT_SUPPORTED：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。</span><br><span class="line">  - PROPAGATION_NEVER：以非事务方式执行，如果当前存在事务，则抛出异常。 </span><br><span class="line">  - PROPAGATION_NESTED：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行。与 PROPAGATION_REQUIRED 类似的操作。</span><br><span class="line">- 事务原理</span><br><span class="line">  - Spring 在扫描 bean 的时候会扫描方法上是否包含 @Transactional 注解，如果包含，Spring 会为这个 bean 动态地生成一个子类（即代理类，proxy），代理类是继承原来那个 bean 的。此时，当这个有注解的方法被调用的时候，实际上是由代理类来调用的，代理类在调用之前就会启动 transaction。</span><br><span class="line">    - ```</span><br><span class="line">      @Service</span><br><span class="line">      class A&#123;</span><br><span class="line">          @Transactinal</span><br><span class="line">          method b()&#123;...&#125;</span><br><span class="line">          </span><br><span class="line">          method a()&#123;    //标记1</span><br><span class="line">              b();</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      </span><br><span class="line">      //Spring扫描注解后，创建了另外一个代理类，并为有注解的方法插入一个startTransaction()方法：</span><br><span class="line">      class proxy$A&#123;</span><br><span class="line">          A objectA = new A();</span><br><span class="line">          method b()&#123;    //标记2</span><br><span class="line">              startTransaction();</span><br><span class="line">              objectA.b();</span><br><span class="line">          &#125;</span><br><span class="line">      </span><br><span class="line">          method a()&#123;    //标记3</span><br><span class="line">              objectA.a();    //由于a()没有注解，所以不会启动transaction，而是直接调用A的实例的a()方法</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>@Transactional 注解事务不生效的情况</p>
+<ul>
+<li>数据库<ul>
+<li>事务生效的前提是你的数据源得支持事务，比如 mysql 的 MyISAM 引擎就不支持事务，而 Innodb 支持事务</li>
+</ul>
+</li>
+<li>类内部访问<ul>
+<li>在一个 Service 内部，事务方法之间的嵌套调用，普通方法和事务方法之间的嵌套调用，都不会开启新的事务。<ul>
+<li>非事务方法 A 调用事务方法 B，方法 B 事务不生效<ul>
+<li>因为 spring 采用动态代理机制来实现事务控制，而动态代理最终都是要调用原始对象的，而原始对象在去调用方法时，是不会再触发代理了</li>
+</ul>
+</li>
+<li>在事务方法 A 中调用另外一个事务方法 B，被调用方法 B 的事务没起作用<ul>
+<li>spring 是通过代理代管理事务的，当在第一个方法 insertUser1 内直接调用 insertUser2 的时候 ，insertUser2 上的事务是不会起作用的（也就是 insertUser2 是没有开启事务）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>私有方法<ul>
+<li>在私有方法上，添加 @Transactional 注解也不会生效，私有方法外部不能访问，所以只能内部访问，上面的 case 不生效，这个当然也不生效了</li>
+</ul>
+</li>
+<li>异常不匹配<ul>
+<li>@Transactional 注解默认处理运行时异常，即只有抛出运行时异常时，才会触发事务回滚，否则并不会如</li>
+</ul>
+</li>
+<li>多线程<ul>
+<li>在标记事务的方法内部，另起子线程执行 db 操作，此时事务同样不会生效</li>
+</ul>
+</li>
+<li>传播属性<ul>
+<li>几种传播方式是不走事务执行的</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Bean"><a href="#Bean" class="headerlink" title="Bean"></a>Bean</h4><ul>
+<li>Bean 的作用域<ul>
+<li>singleton : bean 在每个 Spring ioc 容器中只有一个实例。</li>
+<li>prototype：一个 bean 的定义可以有多个实例。</li>
+<li>request：每次 http 请求都会创建一个 bean，该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+<li>session：在一个 HTTP Session 中，一个 bean 定义对应一个实例。该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+<li>global-session：在一个全局的 HTTP Session 中，一个 bean 定义对应一个实例。该作用域仅在基于 web 的 Spring ApplicationContext 情形下有效。</li>
+</ul>
+</li>
+<li>Bean 的生命周期<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Spring_bean%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg" alt="Spring_bean的生命周期"></li>
+</ul>
+<ol>
+<li>Spring 启动，查找并加载需要被 Spring 管理的 Bean，进行 Bean 的实例化</li>
+<li>Bean 实例化后对将 Bean 的引入和值注入到 Bean 的属性中</li>
+<li>如果 Bean 实现了 BeanNameAware 接口的话，Spring 将 Bean 的 Id 传递给 setBeanName() 方法</li>
+<li>如果 Bean 实现了 BeanFactoryAware 接口的话，Spring 将调用 setBeanFactory() 方法，将 BeanFactory 容器实例传入</li>
+<li>如果 Bean 实现了 ApplicationContextAware 接口的话，Spring 将调用 Bean 的 setApplicationContext() 方法，将 Bean 所在应用上下文引用传入进来。</li>
+<li>如果 Bean 实现了 BeanPostProcessor 接口，Spring 就将调用他们的 postProcessBeforeInitialization() 方法。</li>
+<li>如果 Bean 实现了 InitializingBean 接口，Spring 将调用他们的 afterPropertiesSet() 方法。类似的，如果 Bean 使用 init-method 声明了初始化方法，该方法也会被调用</li>
+<li>如果 Bean 实现了 BeanPostProcessor 接口，Spring 就将调用他们的 postProcessAfterInitialization() 方法。</li>
+<li>此时，Bean 已经准备就绪，可以被应用程序使用了。他们将一直驻留在应用上下文中，直到应用上下文被销毁。</li>
+<li>如果 Bean 实现了 DisposableBean 接口，Spring 将调用它的 destory() 接口方法，同样，如果 Bean 使用了 destory-method 声明销毁方法，该方法也会被调用。</li>
+</ol>
+</li>
+<li>获取 bean 流程<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Java_Spring_%E8%8E%B7%E5%8F%96bean%E6%B5%81%E7%A8%8B.JPG" alt="Java_Spring_获取bean流程"></li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>Spring 框架中的单例 bean 是线程安全的吗？</strong><ul>
+<li>不是，Spring 框架中的单例 bean 不是线程安全的。</li>
+<li>spring 中的 bean 默认是单例模式，spring 框架并没有对单例 bean 进行多线程的封装处理。</li>
+<li>实际上大部分时候 spring bean 无状态的（比如 dao 类），所有某种程度上来说 bean 也是安全的，但如果 bean 有状态的话（比如 view model 对象），那就要开发者自己去保证线程安全了，最简单的就是改变 bean 的作用域，把“singleton”变更为“prototype”，这样请求 bean 相当于 <code>new Bean()</code> 了，所以就可以保证线程安全了。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h4><ul>
+<li>application.yml 中的 MySQL 密码可以通过第三方包加密（jasypt）</li>
+</ul>
+<h4 id="相关问题"><a href="#相关问题" class="headerlink" title="相关问题"></a>相关问题</h4><ul>
+<li><strong>Spring 框架中都用到了哪些设计模式？</strong><ul>
+<li>工厂模式：BeanFactory 就是简单工厂模式的体现，用来创建对象的实例；</li>
+<li>单例模式：Bean 默认为单例模式。</li>
+<li>代理模式：Spring 的 AOP 功能用到了 JDK 的动态代理和 CGLIB 字节码生成技术；</li>
+<li>模板方法：用来解决代码重复的问题。比如：RestTemplate, JmsTemplate, JpaTemplate。</li>
+<li>观察者模式：定义对象键一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都会得到通知被制动更新，如 Spring 中 listener 的实现 ApplicationListener。</li>
+</ul>
+</li>
+<li><strong>Spring BeanFactory 与 FactoryBean 的区别</strong><ul>
+<li>BeanFactory<ul>
+<li>BeanFactory，以 Factory 结尾，表示它是一个工厂类（接口），用于管理 Bean 的一个工厂。在 Spring 中，BeanFactory 是 IOC 容器的核心接口，它的职责包括：实例化、定位、配置应用程序中的对象及建立这些对象间的依赖。</li>
+<li>Spring 为我们提供了许多易用的 BeanFactory 实现，XmlBeanFactory 就是常用的一个，该实现将以 XML 方式描述组成应用的对象及对象间的依赖关系。XmlBeanFactory 类将持有此 XML 配置元数据，并用它来构建一个完全可配置的系统或应用。</li>
+</ul>
+</li>
+<li>FactoryBean<ul>
+<li>以 Bean 结尾，表示它是一个 Bean，不同于普通 Bean 的是：它是实现了 <code>FactoryBean&lt;T&gt;</code> 接口的 Bean，根据该 Bean 的 ID 从 BeanFactory 中获取的实际上是 FactoryBean 的 <code>getObject()</code> 返回的对象，而不是 FactoryBean 本身，如果要获取F actoryBean 对象，请在 id 前面加一个 &amp; 符号来获取。</li>
+<li>例如自己实现一个 FactoryBean，功能：用来代理一个对象，对该对象的所有方法做一个拦截，在调用前后都输出一行 LOG，模仿 ProxyFactoryBean 的功能。</li>
+</ul>
+</li>
+<li>BeanFactory 是个 Factory，也就是 IOC 容器或对象工厂，FactoryBean 是个 Bean。在 Spring 中，所有的 Bean 都是由 BeanFactory（也就是 IOC 容器）来进行管理的。但对 FactoryBean 而言，这个 Bean 不是简单的 Bean，而是一个能生产或者修饰对象生成的工厂 Bean，它的实现与设计模式中的工厂模式和修饰器模式类似。</li>
+</ul>
+</li>
+<li><strong>如何指定 bean 的初始化顺序？</strong><ul>
+<li>构造方法依赖<ul>
+<li>是最简单也是最常见的使用姿势，但是在使用时，需要注意循环依赖等问题。</li>
+<li>bean 的注入方式之中，有一个就是通过构造方法来注入，借助这种方式，我们可以解决有优先级要求的 bean 之间的初始化顺序。</li>
+<li>虽然这种方式比较直观简单，但是有几个限制<ul>
+<li>需要有注入关系，如 CDemo2 通过构造方法注入到 CDemo1 中，如果需要指定两个没有注入关系的 bean 之间优先级，则不太合适（比如我希望某个 bean 在所有其他的 Bean 初始化之前执行）</li>
+<li>循环依赖问题，如过上面的 CDemo2 的构造方法有一个 CDemo1 参数，那么循环依赖产生，应用无法启动</li>
+</ul>
+</li>
+<li>另外一个需要注意的点是，在构造方法中，不应有复杂耗时的逻辑，会拖慢应用的启动时间</li>
+</ul>
+</li>
+<li>@DependOn 注解<ul>
+<li>这是一个专用于解决 bean 的依赖问题，当一个 bean 需要在另一个 bean 初始化之后再初始化时，可以使用这个注解</li>
+<li>在使用这个注解的时候，有一点需要特别注意，它能控制 bean 的实例化顺序，但是 bean 的初始化操作（如构造 bean 实例之后，调用 @PostConstruct 注解的初始化方法）顺序则不能保证<ul>
+<li>完整的 bean 创建，分成了两块顺序<ul>
+<li>实例化（调用构造方法）</li>
+<li>初始化（注入依赖属性，调用 @PostConstruct 方法）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BeanPostProcessor 扩展<ul>
+<li>非典型的使用方式，如非必要，请不要用这种方式来控制 bean 的加载顺序</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Spring 如何统计 bean 的数量？</strong><ul>
+<li>通过实现 BeanFactoryPostProcessor 接口，调用 ConfigurableListableBeanFactory 的 <code>getBeanDefinitionCount()</code> 方法。</li>
+</ul>
+</li>
+</ul>
+<h3 id="SpringBoot"><a href="#SpringBoot" class="headerlink" title="SpringBoot"></a>SpringBoot</h3><ul>
+<li>maven<ul>
+<li>spring-boot-starter-parent<ul>
+<li>通过这个作为 parent，可以继承其中定义的配置、各项依赖以及版本号</li>
+<li>在本项目中添加依赖时，可以省略版本号</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="MyBatis"><a href="#MyBatis" class="headerlink" title="MyBatis"></a>MyBatis</h3><ul>
+<li>介绍<ul>
+<li>MyBatis 是一款优秀的持久层框架，它支持定制化 SQL、存储过程以及高级映射。MyBatis 避免了几乎所有的 JDBC 代码和手动设置参数以及获取结果集。MyBatis 可以使用简单的 XML 或注解来配置和映射原生类型、接口和 Java 的 POJO（Plain Old Java Objects，普通老式 Java 对象）为数据库中的记录。</li>
+</ul>
+</li>
+<li>语法<ul>
+<li><code>#&#123;&#125;</code> 和 <code>$&#123;&#125;</code><ul>
+<li><code>#&#123;&#125;</code>：使用的是预编译，对应 JBDC 中的 PreparedStatement</li>
+<li><code>$&#123;&#125;</code>：不会修改或者转义字符换，直接输出变量值<ul>
+<li>会引发 SQL 注入问题</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>SqlSession<ul>
+<li>SqlSession 是 Mybatis 最重要的构建之一，可以简单的认为 Mybatis 一系列的配置目的是生成类似 JDBC 生成的 Connection 对象的 SqlSession 对象，这样才能与数据库开启“沟通”，通过 SqlSession 可以实现增删改查（当然现在更加推荐是使用 Mapper 接口形式）。</li>
+</ul>
+</li>
+<li>工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/MyBatis_%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="MyBatis_工作原理"></li>
+</ul>
+<ol>
+<li>读取 MyBatis 配置文件：mybatis-config.xml 为 MyBatis 的全局配置文件，配置了 MyBatis 的运行环境等信息，例如数据库连接信息。</li>
+<li>加载映射文件。映射文件即 SQL 映射文件，该文件中配置了操作数据库的 SQL 语句，需要在 MyBatis 配置文件 mybatis-config.xml 中加载。mybatis-config.xml 文件可以加载多个映射文件，每个文件对应数据库中的一张表。</li>
+<li>构造会话工厂：通过 MyBatis 的环境等配置信息构建会话工厂 SqlSessionFactory。</li>
+<li>创建会话对象：由会话工厂创建 SqlSession 对象，该对象中包含了执行 SQL 语句的所有方法。</li>
+<li>Executor 执行器：MyBatis 底层定义了一个 Executor 接口来操作数据库，它将根据 SqlSession 传递的参数动态地生成需要执行的 SQL 语句，同时负责查询缓存的维护。</li>
+<li>MappedStatement 对象：在 Executor 接口的执行方法中有一个 MappedStatement 类型的参数，该参数是对映射信息的封装，用于存储要映射的 SQL 语句的 id、参数等信息。</li>
+<li>输入参数映射：输入参数类型可以是 Map、List 等集合类型，也可以是基本数据类型和 POJO 类型。输入参数映射过程类似于 JDBC 对 preparedStatement 对象设置参数的过程。</li>
+<li>输出结果映射：输出结果类型可以是 Map、 List 等集合类型，也可以是基本数据类型和 POJO 类型。输出结果映射过程类似于 JDBC 对结果集的解析过程。</li>
+</ol>
+</li>
+<li>一级缓存与二级缓存<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/MyBatis_%E7%BC%93%E5%AD%98.jpg" alt="MyBatis_缓存"></li>
+<li>一级缓存<ul>
+<li>该级缓存默认开启，不能关闭；</li>
+<li>该级缓存为 SqlSession 级别的缓存，也称为本地缓存；</li>
+<li>以下 4 种情况将会导致该级缓存失效：<ul>
+<li>在不同 SqlSession 中查询数据；</li>
+<li>相同 SqlSession 中查询数据，但查询条件不同</li>
+<li>相同 SqlSession 中查询数据，但两次查询之间执行了增删改操作</li>
+<li>同 SqlSession 中查询数据，但第二次查询前，程序调用 SqlSession 对象 <code>clearCache()</code> 方法手动清除了一级缓存</li>
+</ul>
+</li>
+<li>原理<ul>
+<li>第一次发出一个查询 sql，sql 查询结果写入 sqlsession 的一级缓存中，缓存使用的数据结构是一个 map。<ul>
+<li>key：MapperID+offset+limit+Sql+所有的入参</li>
+<li>value：用户信息</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>二级缓存<ul>
+<li>该级缓存默认不开启，但如果使用二级缓存需要在每个 XML 映射文件中添加 <code>&lt;cache&gt;&lt;/cache&gt;</code> 以配置该级缓存（相应实体类要序列化）。二级缓存可以通过在全局配置文件配置 setting 标签来关闭该级缓存。<ul>
+<li>如果这样配置的话，很多其他的配置就会被默认进行，如：<ul>
+<li>映射文件所有的 select 语句会被缓存</li>
+<li>映射文件的所有的 insert、update 和 delete 语句会刷新缓存</li>
+<li>缓存会使用默认的 Least Recently Used（LRU，最近最少使用原则）的算法来回收缓存空间</li>
+<li>根据时间表，比如 No Flush Interval，（CNFI，没有刷新间隔），缓存不会以任何时间顺序来刷新</li>
+<li>缓存会存储列表集合或对象（无论查询方法返回什么）的 1024 个引用</li>
+<li>缓存会被视为是 read/write（可读/可写）的缓存，意味着对象检索不是共享的，而且可以很安全的被调用者修改，不干扰其他调用者或县城所作的潜在修改</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>该级缓存为 namespace 级别的缓存</li>
+<li>工作机制：通过 SqlSession 查询数据，这些数据将会放到当前会话的一级缓存中；如果当前会话关闭，则一级缓存中的数据会被保存到二级缓存中，此后新的 SqlSession 将从二级缓存中查找数据；</li>
+<li>select 标签的 useCache 属性用于设置是否使用二级缓存；insert、update、delete 或 select 标签均有 flushCache 属性，其中增删改默认true，即 sql 执行以后，会同时清空一级和二级缓存，查询默认 false。</li>
+<li>为了提高扩展性，MyBatis 定义了 Cache 缓存接口，可以通过实现该缓存接口自定义二级缓存</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Mybatis 的分页原理<ul>
+<li>Mybatis 使用 RowBounds 对象进行分页，它是针对 ResultSet 结果集执行的内存分页，而非物理分页，可以在 sql 内直接书写带有物理分页的参数来完成物理分页功能，也可以使用分页插件来完成物理分页。</li>
+<li>分页插件的原理就是使用 MyBatis 提供的插件接口，实现自定义插件，在插件的拦截方法内，拦截待执行的 SQL，然后根据设置的 dialect（方言），和设置的分页参数，重写 SQL，生成带有分页语句的 SQL，执行重写后的 SQL，从而实现分页。</li>
+</ul>
+</li>
+<li>相关问题<ul>
+<li><strong>Mybatis 为什么出现？为什么不是直接使用 jdbc？</strong><ul>
+<li>JDBC 操作数据库的步骤<ul>
+<li>注册驱动；</li>
+<li>获取数据库连接；</li>
+<li>拼接sql语句，设置sql参数；</li>
+<li>执行sql语句；</li>
+<li>sql返回结果；</li>
+<li>执行语句和数据库连接；</li>
+</ul>
+</li>
+<li>直接用 JDBC 每次都要做大量的相同的操作，并且还要对执行 sql 语句过程中所出现的各种异常和资源释放进行处理，而真正涉及到业务功能的代码其实很少，这明显影响了效率。</li>
+<li>再有就是当你接收数据库返回的结果集的时候，需要赋值给程序中的实体，使用 JDBC 需要你手动写代码去遍历每一条记录赋值给对应的实体 list 集合中，使用 JDBC 意味着需要更多的代码来提取结果并将它们映射到对象实例中，</li>
+<li><strong>MyBatis 避免了几乎所有的 JDBC 代码和手动设置参数以及获取结果集。</strong></li>
+</ul>
+</li>
+<li><strong>通常一个 Xml 映射文件，都会写一个 Dao 接口与之对应，请问，这个 Dao 接口的工作原理是什么？Dao 接口里的方法，参数不同时，方法能重载吗？</strong><ul>
+<li>Dao 接口，就是人们常说的 Mapper 接口，接口的全限名，就是映射文件中的 namespace 的值，接口的方法名，就是映射文件中 MappedStatement 的 id 值，接口方法内的参数，就是传递给 sql 的参数。Mapper 接口是没有实现类的，当调用接口方法时，接口全限名+方法名拼接字符串作为 key 值，可唯一定位一个 MappedStatement，举例：com.mybatis3.mappers.StudentDao.findStudentById，可以唯一找到 namespace 为 com.mybatis3.mappers.StudentDao 下面 id = findStudentById 的 MappedStatement。在 Mybatis 中，每一个 <code>&lt;select&gt;</code>、<code>&lt;insert&gt;</code>、<code>&lt;update&gt;</code>、<code>&lt;delete&gt;</code>标签，都会被解析为一个 MappedStatement 对象。</li>
+<li>Dao 接口里的方法，是不能重载的，因为是全限名+方法名的保存和寻找策略。</li>
+<li>Dao 接口的工作原理是 JDK 动态代理，Mybatis 运行时会使用 JDK 动态代理为 Dao 接口生成代理 proxy 对象，代理对象 proxy 会拦截接口方法，转而执行 MappedStatement 所代表的 sql，然后将 sql 执行结果返回。</li>
+</ul>
+</li>
+<li><strong>简述 MyBatis 的插件运行原理，以及如何编写一个插件？</strong><ul>
+<li>Mybatis 仅可以编写针对 ParameterHandler、ResultSetHandler、StatementHandler、Executor 这 4 种接口的插件，Mybatis 使用 JDK  的动态代理，为需要拦截的接口生成代理对象以实现接口方法拦截功能，每当执行这 4 种接口对象的方法时，就会进入拦截方法，具体就是 InvocationHandler 的 <code>invoke()</code> 方法，当然，只会拦截那些你指定需要拦截的方法。实现 Mybatis 的 Interceptor 接口并复写 <code>intercept()</code> 方法，然后在给插件编写注解，指定要拦截哪一个接口的哪些方法即可，记住，还需要在配置文件中配置你编写的插件。<ul>
+<li>StatementHandler<ul>
+<li>StatementHandler 是数据库会话器，专门用来处理数据库会话的。StatementHandler 内运用了适配器模式和策略模式的思想</li>
+</ul>
+</li>
+<li>ResultSetHandler<ul>
+<li>ResultHandler 是一个结果处理器，StatementHandler 完成了查询之后，最终就是通过 ResultHandler 来实现结果集映射，ResultSetHandler 接口中只定义了3个方法用来处理结果。</li>
+<li>ResultHandler 也默认提供了一个实现类：DefaultResultSetHandler。一般我们平常用的最多的就是通过 handleResultSets 来实现结果集转换。</li>
+</ul>
+</li>
+<li>ParameterHandler<ul>
+<li>ParameterHandler 是一个参数处理器，主要是用来对预编译语句进行参数设置的，只有一个默认实现类 DefaultParameterHandler。</li>
+<li>ParameterHandler 中只定义了两个方法，一个获取参数，一个设置参数。</li>
+</ul>
+</li>
+<li>Executor<ul>
+<li>Executor 就是真正用来执行 Sql 语句的对象，我们调用 SqlSession 中的方法，最终实际上都是通过 Executor 来完成的。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="ShardingSphere-JDBC"><a href="#ShardingSphere-JDBC" class="headerlink" title="ShardingSphere-JDBC"></a>ShardingSphere-JDBC</h3><ul>
+<li>Apache ShardingSphere 是一套开源的分布式数据库解决方案组成的生态圈，它由 JDBC、Proxy 和 Sidecar（规划中）这 3 款既能够独立部署，又支持混合部署配合使用的产品组成。它们均提供标准化的数据水平扩展、分布式事务和分布式治理等功能，可适用于如 Java 同构、异构语言、云原生等各种多样化的应用场景。</li>
+</ul>
+<h3 id="Netty"><a href="#Netty" class="headerlink" title="Netty"></a>Netty</h3><ul>
+<li>介绍<ul>
+<li>Netty 是一个 基于 NIO 的 client-server（客户端服务器）框架，使用它可以快速简单地开发网络应用程序。</li>
+<li>它极大地简化并优化了 TCP 和 UDP 套接字服务器等网络编程，并且性能以及安全性等很多方面甚至都要更好。</li>
+<li>支持多种协议，如 FTP、SMTP、HTTP 以及各种二进制和基于文本的传统协议。</li>
+<li>很多开源项目比如我们常用的 Dubbo、RocketMQ、ElasticSearch、gRPC 等等都用到了 Netty。</li>
+</ul>
+</li>
+<li>本质：JBoss 做的一个 Jar 包</li>
+<li>目的：快速开发高性能、高可靠性的网络服务器和客户端程序</li>
+<li>优点<ul>
+<li>统一的 API，支持多种传输类型，阻塞和非阻塞的。</li>
+<li>简单而强大的线程模型。</li>
+<li>自带编解码器解决 TCP 粘包/拆包问题。</li>
+<li>自带各种协议栈。</li>
+<li>真正的无连接数据包套接字支持。</li>
+<li>比直接使用 Java 核心 API 有更高的吞吐量、更低的延迟、更低的资源消耗和更少的内存复制。</li>
+<li>安全性不错，有完整的 SSL/TLS 以及 StartTLS 支持。</li>
+<li>社区活跃</li>
+<li>成熟稳定，经历了大型项目的使用和考验，而且很多开源项目都使用到了 Netty， 比如我们经常接触的 Dubbo、RocketMQ 等等。</li>
+</ul>
+</li>
+<li>应用场景<ul>
+<li>作为 RPC 框架的网络通信工具<ul>
+<li>我们在分布式系统中，不同服务节点之间经常需要相互调用，这个时候就需要 RPC 框架了。不同服务节点之间的通信是如何做的呢？可以使用 Netty 来做。比如我调用另外一个节点的方法的话，至少是要让对方知道我调用的是哪个类中的哪个方法以及相关参数吧！</li>
+</ul>
+</li>
+<li>实现一个自己的 HTTP 服务器<ul>
+<li>通过 Netty 我们可以自己实现一个简单的 HTTP 服务器，这个大家应该不陌生。说到 HTTP 服务器的话，作为 Java 后端开发，我们一般使用 Tomcat 比较多。一个最基本的 HTTP 服务器可要以处理常见的 HTTP Method 的请求，比如 POST 请求、GET 请求等等。</li>
+</ul>
+</li>
+<li>实现一个即时通讯系统 <ul>
+<li>使用 Netty 我们可以实现一个可以聊天类似微信的即时通讯系统。</li>
+</ul>
+</li>
+<li>实现消息推送系统<ul>
+<li>市面上有很多消息推送系统都是基于 Netty 来做的。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>架构<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E6%9E%B6%E6%9E%84%E5%9B%BE.jpg" alt="Netty_架构图"><ul>
+<li>绿色的部分 Core 核心模块，包括零拷贝、API 库、可扩展的事件模型。</li>
+<li>橙色部分 Protocol Support 协议支持，包括 Http 协议、webSocket、SSL（安全套接字协议）、谷歌 Protobuf 协议、zlib/gzip 压缩与解压缩、Large File Transfer 大文件传输等等。</li>
+<li>红色的部分 Transport Services 传输服务，包括 Socket、Datagram、Http Tunnel 等等。</li>
+</ul>
+</li>
+<li>构成部分<ul>
+<li>Channel<ul>
+<li>NIO 基本结构，代表一个用于连接到实体如硬件设备、文件、网络套接字或程序组件，能否执行一个或多个不同的 I/O 操作的开放连接。</li>
+<li>比较常用的 Channel 接口实现类是 NioServerSocketChannel（服务端）和 NioSocketChannel（客户端），这两个 Channel 可以和 BIO 编程模型中的 ServerSocket 以及 Socket 两个概念对应上。Netty 的 Channel 接口所提供的 API，大大地降低了直接使用 Socket 类的复杂性。</li>
+</ul>
+</li>
+<li>Future<ul>
+<li>提供了另一种通知应用操作已经完成的方式，这个对象作为一个一步操作结果的占位符，他将在将来的某个时候完成并提交结果。</li>
+<li>Netty 提供自己的实现，ChannelFuture，用于执行异步操作时使用。每个 Netty 的 outbound I/O 操作都会返回一个 ChannelFuture，这样就不会阻塞，这便是 Netty 所谓的“自底向上的异步和事件驱动”。相关实现的步骤如下：<ol>
+<li>异步连接到远程对等节点，调用立即返回并提供 ChannelFuture；</li>
+<li>操作完成后通知注册一个 ChannelFutureListener；</li>
+<li>当 <code>operationComplete()</code> 调用时检查操作的状态；</li>
+<li>如果成功就创建一个 ByteBuf 来保存数据；</li>
+<li>异步发送数据到远程，再次返回 ChannelFuture；</li>
+<li>如果有一个错误则抛出 Throwable，描述错误原因。</li>
+</ol>
+</li>
+<li>相关类<ul>
+<li>ChannelFuture<ul>
+<li>Netty 是异步非阻塞的，所有的 I/O 操作都为异步的。</li>
+<li>因此，我们不能立刻得到操作是否执行成功，但是，你可以通过 ChannelFuture 接口的 <code>addListener()</code> 方法注册一个 ChannelFutureListener，当操作执行成功或者失败时，监听就会自动触发返回结果。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Event 和 Handle<ul>
+<li>Netty 使用不同的事件来通知我们更改的状态或操作的状态，这使我们能够根据发声的事件触发适当的行为。</li>
+<li>这些行为可能包括：日志、数据转换、流控制、应用程序逻辑，由于 Netty 是一个网络框架，事件很清晰的跟入栈或出出站数据流相关，因为一些事件可能触发的传入的数据或状态的变化包括：活动或非活动连接、数据的读取、用户事件、错误，出站事件是由于在未来操作将触发的一个动作，这些包括：打开或关闭一个连接到远程、写或冲刷数据到 socket。</li>
+<li>每个事件都可以分配给用户实现处理程序类的方法，这些范例可直接转换为应用程序构建块。</li>
+<li>Netty 的 ChannelHandler 是各种处理程序的基本抽象，每个处理器实例就是一个回调，用于执行各种事件的响应。</li>
+<li>相关类<ul>
+<li>ChannelHandler<ul>
+<li>ChannelHandler 是消息的具体处理器。他负责处理读写操作、客户端连接等事情。</li>
+</ul>
+</li>
+<li>ChannelPipeline<ul>
+<li>ChannelPipeline 为 ChannelHandler 的链，提供了一个容器并定义了用于沿着链传播入站和出站事件流的 API 。当 Channel 被创建时，它会被自动地分配到它专属的 ChannelPipeline。</li>
+<li>我们可以在 ChannelPipeline 上通过 <code>addLast()</code> 方法添加一个或者多个 ChannelHandler ，因为一个数据或者事件可能会被多个 Handler 处理。当一个 ChannelHandler 处理完之后就将数据交给下一个 ChannelHandler 。</li>
+</ul>
+</li>
+<li>EventLoop<ul>
+<li>EventLoop 定义了 Netty 的核心抽象，用于处理连接的生命周期中所发生的事件。</li>
+<li>EventLoop 的主要作用实际就是负责监听网络事件并调用事件处理器进行相关 I/O 操作的处理。</li>
+<li>Channel 为 Netty 网络操作（读写等操作）抽象类，EventLoop 负责处理注册到其上的 Channel 处理 I/O 操作，两者配合参与 I/O 操作。</li>
+</ul>
+</li>
+<li>EventLoopGroup<ul>
+<li>EventLoopGroup 包含多个 EventLoop（每一个 EventLoop 通常内部包含一个线程），上面我们已经说了 EventLoop 的主要作用实际就是负责监听网络事件并调用事件处理器进行相关 I/O 操作的处理。</li>
+<li>并且 EventLoop 处理的 I/O 事件都将在它专有的 Thread 上被处理，即 Thread 和 EventLoop 属于 1 : 1 的关系，从而保证线程安全。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>Bootstrap 和 ServerBootstrap<ul>
+<li>Bootstrap 是客户端的启动引导类/辅助类</li>
+<li>ServerBootstrap 客户端的启动引导类/辅助类</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 的线程模型<ul>
+<li>对于网络请求一般可以分为两个处理阶段，一是接收请求任务，二是处理网络请求。根据不同阶段处理方式分为以下几种线程模型：<ul>
+<li>串行化处理模型<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B_%E4%B8%B2%E8%A1%8C%E5%8C%96%E5%A4%84%E7%90%86%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型_串行化处理模型"></li>
+<li>这个模型中用一个线程来处理网络请求连接和任务处理，当 worker 接受到一个任务之后，就立刻进行处理，也就是说任务接受和任务处理是在同一个 worker 线程中进行的，没有进行区分。这样做存在一个很大的问题是，必须要等待某个 task 处理完成之后，才能接受处理下一个 task。</li>
+<li>因此可以把接收任务和处理任务两个阶段分开处理，一个线程接收任务，放入任务队列，另外的线程异步处理任务队列中的任务。</li>
+</ul>
+</li>
+<li>并行化处理模型<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B_%E5%B9%B6%E8%A1%8C%E5%8C%96%E5%A4%84%E7%90%86%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型_并行化处理模型"></li>
+<li>由于任务处理一般比较缓慢，会导致任务队列中任务积压长时间得不到处理，这时可以使用线程池来处理。可以通过为每个线程维护一个任务队列来改进这种模型。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 具体线程模型<ul>
+<li>Reactor 模式基于事件驱动，采用多路复用将事件分发给相应的 Handler 处理，非常适合处理海量 IO 的场景。</li>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B.jpg" alt="Netty_线程模型"></li>
+<li>每个 NioEventLoop 都绑定了一个 Selector，所以在 Netty 的线程模型中，是由多个 Selecotr 在监听 I/O 就绪事件。而 Channel 注册到 Selector。</li>
+<li>一个 Channel 绑定一个 NioEventLoop，相当于一个连接绑定一个线程，这个连接所有的 ChannelHandler 都是在一个线程中执行的，避免了多线程干扰。更重要的是 ChannelPipline 链表必须严格按照顺序执行的。单线程的设计能够保证 ChannelHandler 的顺序执行。</li>
+<li>一个 NioEventLoop 的 selector 可以被多个 Channel 注册，也就是说多个 Channel 共享一个 EventLoop。EventLoop 的 Selecctor 对这些 Channel 进行检查。</li>
+<li>相关问题<ul>
+<li><strong>如何理解 NioEventLoop 和 NioEventLoopGroup</strong><ul>
+<li>NioEventLoop 实际上就是工作线程，可以直接理解为一个线程。NioEventLoopGroup 是一个线程池，线程池中的线程就是 NioEventLoop。</li>
+<li>实际上 bossGroup 中有多个 NioEventLoop 线程，每个 NioEventLoop 绑定一个端口，也就是说，如果程序只需要监听 1 个端口的话，bossGroup 里面只需要有一个 NioEventLoop 线程就行了。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 工作原理<ul>
+<li>server 端工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_Server%E7%AB%AF%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="Netty_Server端工作原理"></li>
+</ul>
+</li>
+<li>client 端工作原理<ul>
+<li><img src="/2019/08/26/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Java-%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF-0-%E7%9F%A5%E8%AF%86%E7%82%B9%E6%B1%87%E6%80%BB/Netty_Client%E7%AB%AF%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86.jpg" alt="Netty_Client端工作原理"></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Netty 的零拷贝<ul>
+<li>零复制（英语：Zero-copy；也译零拷贝）技术是指计算机执行操作时，CPU 不需要先将数据从某处内存复制到另一个特定区域。这种技术通常用于通过网络传输文件时节省 CPU 周期和内存带宽。</li>
+<li>在 OS 层面上的 Zero-copy 通常指避免在用户态（User-space）与内核态（Kernel-space）之间来回拷贝数据。而在 Netty 层面，零拷贝主要体现在对于数据操作的优化。</li>
+<li>Netty 中的零拷贝体现在以下几个方面：<ul>
+<li>使用 Netty 提供的 CompositeByteBuf 类, 可以将多个 ByteBuf 合并为一个逻辑上的 ByteBuf, 避免了各个 ByteBuf 之间的拷贝。</li>
+<li>ByteBuf 支持 slice 操作, 因此可以将 ByteBuf 分解为多个共享同一个存储区域的 ByteBuf, 避免了内存的拷贝。</li>
+<li>通过 FileRegion 包装的 FileChannel.tranferTo 实现文件传输, 可以直接将文件缓冲区的数据发送到目标 Channel, 避免了传统通过循环 write 方式导致的内存拷贝问题。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/24/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC5%E7%AB%A0-%E5%86%B3%E7%AD%96%E6%A0%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1069,141 +1790,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/" class="post-title-link" itemprop="url">统计学系方法-第1章-统计学习方法概论</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-08-11 21:29:48" itemprop="dateCreated datePublished" datetime="2019-08-11T21:29:48+08:00">2019-08-11</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="统计学习"><a href="#统计学习" class="headerlink" title="统计学习"></a>统计学习</h2><p>统计学习主要特点：</p>
-<ol>
-<li>统计学习以计算机及网络为平台，是建立在计算机及网络之上的；</li>
-<li>统计学习以数据为研究对象，是数据驱动的学科；</li>
-<li>统计学习的目的是对数据进行预测与分析；</li>
-<li>统计学习以方法为中心，统计学习方法构建模型并应用模型进行预测与分析；</li>
-<li>统计学习是概率论、统计学、信息论、计算理论、最优化理论及计算机科学等多个领域的交叉学科，并且在发展中逐步形成独立的理论体现与方法论。</li>
-</ol>
-<p>统计学习的组成：</p>
-<ul>
-<li>监督学习（supervised learning）</li>
-<li>非监督学习（unsupervised learning）</li>
-<li>半监督学习（semi-supervised learning）</li>
-<li>强化学习（reinforcement learning）</li>
-</ul>
-<p>统计学习方法的三要素：</p>
-<ul>
-<li>模型（model）</li>
-<li>策略（strategy）</li>
-<li>算法（algorithm）</li>
-</ul>
-<h2 id="监督学习"><a href="#监督学习" class="headerlink" title="监督学习"></a>监督学习</h2><p>监督学习的任务是学习一个模型，使模型能够对任意给定的输入，对其相应的输出做出一个好的预测。</p>
-<h2 id="统计学习三要素"><a href="#统计学习三要素" class="headerlink" title="统计学习三要素"></a>统计学习三要素</h2><h3 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h3><p>在监督学习过程中，模型就是所要学习的条件概率分布或决策函数。模型的假设空间（hypothesis space）包含所有可能的条件概率分布或决策函数。</p>
-<h3 id="策略"><a href="#策略" class="headerlink" title="策略"></a>策略</h3><h4 id="损失函数和风险函数"><a href="#损失函数和风险函数" class="headerlink" title="损失函数和风险函数"></a>损失函数和风险函数</h4><h5 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h5><p>监督学习问题是在假设空间 F 中选取模型 f 作为决策函数，对于给定的输入 X，由 f(X) 给出相应的输出 Y，这个输出的预测值 f(X) 与真实值 Y 可能一致也可能不一致，用一个损失函数（loss function）或代价函数（cost function）来度量预测错误的程度。损失函数是 f(x) 和 Y 的非负实值函数，记作 <code>L(Y, f(X))</code>。</p>
-<p>常用的损失函数：</p>
-<ol>
-<li>0-1损失函数（0-1 loss function)<br><img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/01.png" alt="0-1损失函数"></li>
-<li>平方损失函数(quadratic loss function)<br><img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/quadratic.png" alt="平方损失函数"></li>
-<li>绝对损失函数（absolute loss function）<br><img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/absolute.png" alt="绝对损失函数"></li>
-<li>对数损失函数（logarithmic loss function）或对数似然损失函数（loglikelihood loss function）<br><img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/logarithmic.png" alt="对数损失函数"></li>
-</ol>
-<h5 id="风险函数"><a href="#风险函数" class="headerlink" title="风险函数"></a>风险函数</h5><p>损失函数数值越小，模型就越好。由于模型的输入、输出 (X, Y) 是随机变量，遵循联合分布 P(X, Y)，所以损失函数的期望是<img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E7%9A%84%E6%9C%9F%E6%9C%9B.png" alt="损失函数的期望"></p>
-<p>这是理论上模型 f(X) 关于联合分布 P(X, Y) 的平均意义下的损失，称为风险函数（risk funciton）或期望损失（expected loss）。</p>
-<p>学习的目标就是选择期望风险最小的模型。由于联合分布是未知的，所以损失函数的期望不能直接计算。</p>
-<p>给定一个训练数据集<img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E9%9B%86T.png" alt="训练数据集T">。模型 f(X) 关于训练数据集的平均损失称为经验风险（empirical risk）或经验损失风险（empirical loss），记作：<img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/%E7%BB%8F%E9%AA%8C%E6%8D%9F%E5%A4%B1%E9%A3%8E%E9%99%A9.png" alt="经验损失风险"></p>
-<p>根据大数定律，当样本容量 N 趋于无穷时，经验风险趋于期望风险。</p>
-<h4 id="经验风险最小化与结构风险最小化"><a href="#经验风险最小化与结构风险最小化" class="headerlink" title="经验风险最小化与结构风险最小化"></a>经验风险最小化与结构风险最小化</h4><h5 id="经验风险"><a href="#经验风险" class="headerlink" title="经验风险"></a>经验风险</h5><p>在假设空间、损失函数以及训练数据集确定的情况下，经验风险函数式就可以确定。经验风险最小化（empirical risk minimization，ERM）的策略认为，经验风险最小的模型是最优的模型。</p>
-<p>当样本容量足够大时，经验风险最小化能保证有很好的学习效果。比如，极大似然估计（maximum likelihood estimation）就是经验风险最小化的例子。当模型是条件概率分布，损失函数是对数损失函数时，经验风险最小化就等驾驭极大似然估计。</p>
-<p>但是，当样本容量很小时，经验风险最小化学习的效果就未必很好，就产生“过拟合（over-fitting）“现象。</p>
-<h4 id="结构风险"><a href="#结构风险" class="headerlink" title="结构风险"></a>结构风险</h4><p>结构风险最小化（structural risk minimization，SRM）是为了防止过拟合而提出来的策略。结构风险最小化等价于正则化（regularization）。结构风险在经验风险上加上表示模型复杂度的正则化项（regularizer）或罚项（penalty term）。在假设空间、损失函数以及训练数据集确定的情况下，结构风险的定义是：<img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/%E7%BB%93%E6%9E%84%E9%A3%8E%E9%99%A9.png" alt="结构风险">。其中 J(f) 为模型的复杂度，是定义在假设空间 F 上的泛函。模型 f 越复杂，复杂度 J(f) 就越大；反之，模型 f 越简单，复杂度 J(f) 就越小。</p>
-<p>比如，贝叶斯估计中的最大后验概率估计（maximum posterior probability estimation，MAP）就是结构风险最小化的例子。当模型是条件概率分布、损失函数是对数损失函数、模型复杂度由模型的先验概率表示时，结构风险最小化就等驾驭最大后验概率估计。</p>
-<h3 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h3><p>算法是指学习模型的具体计算方法。</p>
-<h2 id="模型评估与模型选择"><a href="#模型评估与模型选择" class="headerlink" title="模型评估与模型选择"></a>模型评估与模型选择</h2><h3 id="训练误差与测试误差"><a href="#训练误差与测试误差" class="headerlink" title="训练误差与测试误差"></a>训练误差与测试误差</h3><p>统计学习方法具体采用的损失函数未必是评估时使用的损失函数。当然，让两者一致是比较理想的。</p>
-<h3 id="过拟合与模型选择"><a href="#过拟合与模型选择" class="headerlink" title="过拟合与模型选择"></a>过拟合与模型选择</h3><p>如果一味追求提高对训练数据的预测能力，所选模型的复杂度则往往会比真模型更高，这种现象称为过拟合（over-fitting）。过拟合是指学习时选择的模型所包含的参数过多，以至于出现这一模型对已知数据预测得很好，但对未知数据预测得很差的现象。</p>
-<p><img src="/2019/08/11/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95/%E7%AC%AC1%E7%AB%A0-%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%E6%A6%82%E8%AE%BA/%E8%AE%AD%E7%BB%83%E8%AF%AF%E5%B7%AE%E4%B8%8E%E6%B5%8B%E8%AF%95%E8%AF%AF%E5%B7%AE.png" alt="训练误差与测试误差"></p>
-<p>当模型的复杂度增大时，训练误差会逐渐减小并趋向于0；而测试误差会先减小，达到最小值后又增大。当选择的模型复杂度过于大时，过拟合现象就会发生。这样，在学习时就要防止过拟合，进行最优的模型选择，即选择复杂度适当的模型，以达到使测试误差最小的学习目的。下面介绍两种常用的模型选择方法：正则化与交叉验证。</p>
-<h3 id="正则化与交叉验证"><a href="#正则化与交叉验证" class="headerlink" title="正则化与交叉验证"></a>正则化与交叉验证</h3><h4 id="正则化"><a href="#正则化" class="headerlink" title="正则化"></a>正则化</h4><p>模型选择的典型方法使正则化（regularization）。正则化是结构风险最小化策略的实现，是在经验风险上加一个正则化项（regularizer）或罚项（penalty term）。正则化项一般是模型复杂度的单调递增函数，模型越复杂，正则化值越大。</p>
-<p>正则化符合奥卡姆剃刀（Occam’s razor）原理。奥卡姆剃刀原理应用于模型选择时为以下想法：在所有可能选择的模型中，能够很好地解释已知数据并且十分简单才是最好的模型，也就是应该选择的模型。从贝叶斯估计的角度来看，正则化项对应于模型的先验概率。可以假设复杂的模型有较小的先验概率，简单的模型有较大的先验概率。</p>
-<h4 id="交叉验证"><a href="#交叉验证" class="headerlink" title="交叉验证"></a>交叉验证</h4><p>如果给定的样本数据充足，进行模型选择的一种简单方法是随机地将数据集切分成三部分，分为训练集（training set）、验证集（validation set）和测试集（test set）。训练集用来训练模型，验证集用于模型的选择，而测试集用于最终学习方法的评估。</p>
-<p>但是，在许多实际应用中数据是不充足的。为了选择好的模型，可以采用交叉验证方法。交叉验证的基本想法是重复地使用数据；把给定的数据进行切分，将切分的数据集组合为训练集与测试集，在此基础上反复地进行训练、测试以及模型选择。</p>
-<h5 id="简单交叉验证"><a href="#简单交叉验证" class="headerlink" title="简单交叉验证"></a>简单交叉验证</h5><p>简单交叉验证方法是：首先随机地将已给数据分为两部分，一部分作为训练集，另一部分作为测试集；然后用训练集在各种条件下训练模型，从而得到不同的模型；在测试集上评价各个模型的测试误差，选出测试误差最小的模型。</p>
-<h5 id="S-折交叉验证"><a href="#S-折交叉验证" class="headerlink" title="S 折交叉验证"></a>S 折交叉验证</h5><p>应用最多的是 S 折交叉验证（S-flod cross validation)，方法如下：首先随机地将已给数据切分为 S 个互不相交的大小相同的子集；然后利用 S-1 个子集的数据训练模型，利用余下的子集测试模型；将这一过程对可能的 S 种选择重复进行；最后选出 S 次评测中平均测试误差最小的模型。</p>
-<h5 id="留一交叉验证"><a href="#留一交叉验证" class="headerlink" title="留一交叉验证"></a>留一交叉验证</h5><p>S 折交叉验证的特殊情形是 S=N，称为留一交叉验证（leave-one-out cross validation），往往在数据缺乏的情况下使用。这里，N 是给定数据集的容量。</p>
-<h3 id="泛化能力"><a href="#泛化能力" class="headerlink" title="泛化能力"></a>泛化能力</h3><h4 id="泛化误差"><a href="#泛化误差" class="headerlink" title="泛化误差"></a>泛化误差</h4><p>学习方法的泛化能力（generalization ability）是指由该方法学习到的模型对未知数据的预测能力，是学习方法本质上重要的性质。现实中采用最多的办法是通过测试误差来评价学习方法的泛化能力。</p>
-<p>事实上，泛化误差就是所学习到的模型的期望风险。</p>
-<h4 id="泛化误差上界"><a href="#泛化误差上界" class="headerlink" title="泛化误差上界"></a>泛化误差上界</h4><p>学习方法的泛化能力分析往往是通过研究泛化误差的概率上界进行的，简称为泛化误差上界（generalizaiton error bound）。具体来说，就是通过比较两种学习方法的泛化误差上界的大小来比较它们的优劣。泛化误差上界通常具有以下性质：它是样本容量的函数，当样本容量增加时，泛化上界趋于0；它是假设空间容量（capacity）的函数，假设空间容量越大，模型就越难学，泛化误差上界就越大。</p>
-<h3 id="生成模型与判别模型"><a href="#生成模型与判别模型" class="headerlink" title="生成模型与判别模型"></a>生成模型与判别模型</h3><p>监督学习的任务就是学习一个模型，应用这一模型，对给定的输入预测相应的输出。这个模型的一般形式为决策函数：Y=f(X) 或者条件概率分布：P(Y|X)。</p>
-<p>监督学习方法又可分为生成方法（generative approach）和判别方法（discriminative approach）。所学习到的模型分别称为生成模型（generative model）和判别模型（discriminative model）。</p>
-<p>生成方法由数据学习联合概率分布 P(X, Y)，然后求出条件概率分布 P(Y|X) 作为预测的模型。这样的方法之所以称为生成方法。是因为模型表示了给定输入 X 产生输出 Y 的生成关系。典型的生成模型由：朴素贝叶斯法和隐马尔可夫模型。</p>
-<p>判别方法由数据直接学习决策函数 f(X) 或者条件概率分布 P(Y|X) 作为预测的模型，即判别模型。判别方法关系的是对给定的输入 X，应该预测什么样的输出 Y。典型的判别模型包括：k 近邻法、感知机、决策树、逻辑斯蒂回归模型、最大熵模型、支持向量机、提升方法和条件随机场等。</p>
-<p>生成方法的特点：生成方法可以还原出联合概率分布 P(X, Y)，而判别方法则不能；生成方法的学习收敛更快，即当样本容量增加的时候，学习的模型可以更快地收敛于真实模型；当存在隐变量时，仍可以用生成方法学习，此时判断方法就不能用。</p>
-<p>判别方法的忒点：判别方法直接学习的是条件概率 P(Y|X) 或决策函数 f(X)，直接面对预测，往往学习的准确率更高；由于直接学习 P(Y|X) 或 f(X)，可以对数据进行个各种程度上的抽象、定义特征并使用特征，因此可以简化学习问题。</p>
-<h3 id="分类问题"><a href="#分类问题" class="headerlink" title="分类问题"></a>分类问题</h3><p>在监督学习中，当输入变量 Y 取有限个离散值时，预测问题便称为分类问题。这时，输入变量 X 可以是离散的，也可以是连续的。监督学习从数据中学习一个分离诶模型或分类决策函数，称为分类器（classifier）。分类器对新的输入进行输出的预测（prediction），称为分类（classification）。可能的输出称为类（class）。分类的类别为多个时，称为多类分类问题。</p>
-<p>评价分类器性能的指标一般是分类准确率（accuracy），其定义是：对于给定的测试数据集，分类器正确分类的样本数与总样本数之比。也就是损失函数是 0-1 损失时测试数据集上的准确率。</p>
-<h3 id="标注问题"><a href="#标注问题" class="headerlink" title="标注问题"></a>标注问题</h3><p>标注（tagging）也是一个监督学习问题。可以认为标注问题是分类问题的一个推广，标注问题又是更复杂的结构预测（structure prediction）问题的简单形式。标注问题的输入是一个观测序列，输出是一个标记序列或状态序列。标注问题的目标在于学一个模型，使它能够对观测序列给出标记序列作为预测。注意，可能的标记个数是有限的，但其组合所成的标记序列的个数是依序列长度呈指数级增长的。</p>
-<p>标注常用的统计学习方法有：隐马尔可夫模型、条件随机场。</p>
-<h3 id="回归问题"><a href="#回归问题" class="headerlink" title="回归问题"></a>回归问题</h3><p>回归用于预测输入变量（自变量）和输出变量（因变量）之间的关系，特别是当输入变量的值发生变化时，输出变量的值随之发生的变化。</p>
-<p>回归问题按照输入变量的个数，分为一元回归和多元回归；按照输入变量和输出变量之前的关系的类型即模型的类型，分类线性回归和非线性回归。</p>
-<p>回归学习最常用的损失函数是平方损失函数，在此情况下，回归问题可以由著名的最小二乘法（least squares）求解。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1275,7 +1861,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">681</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1288,7 +1874,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-count">350</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

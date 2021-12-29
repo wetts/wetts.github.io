@@ -188,6 +188,332 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/12/17/%E8%AF%AD%E8%A8%80/Java/%E9%A1%B9%E7%9B%AE%E6%89%93%E5%8C%85/Java-%E9%A1%B9%E7%9B%AE%E6%89%93%E5%8C%85%E6%96%B9%E5%BC%8F%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/12/17/%E8%AF%AD%E8%A8%80/Java/%E9%A1%B9%E7%9B%AE%E6%89%93%E5%8C%85/Java-%E9%A1%B9%E7%9B%AE%E6%89%93%E5%8C%85%E6%96%B9%E5%BC%8F%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">Java-项目打包方式分析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-12-17 00:09:02" itemprop="dateCreated datePublished" datetime="2021-12-17T00:09:02+08:00">2021-12-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ywjy/p/7771042.html">https://www.cnblogs.com/ywjy/p/7771042.html</a></p>
+<h2 id="前置条件"><a href="#前置条件" class="headerlink" title="前置条件"></a>前置条件</h2><p>代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">package com.hikvision.demo;</span><br><span class="line"></span><br><span class="line">public class HelloWorld &#123;</span><br><span class="line">	public static void main(String[] args) &#123;</span><br><span class="line">		System.out.println(&quot;Hello World&quot;);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>目录结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./</span><br><span class="line"> ├─ HelloWorld.java</span><br><span class="line"> ├─ target/</span><br></pre></td></tr></table></figure>
+
+<h2 id="Java-原生打包"><a href="#Java-原生打包" class="headerlink" title="Java 原生打包"></a>Java 原生打包</h2><p>通过 jar 命令打包。JAR 包是 Java 中所特有一种压缩文档，其实大家就可以把它理解为 .zip 包。当然也是有区别的，JAR 包中有一个 META-INF\MANIFEST.MF 文件，当你打成 JAR 包时，它会自动生成。</p>
+<h3 id="jar-命令"><a href="#jar-命令" class="headerlink" title="jar 命令"></a>jar 命令</h3><p>jar 命令格式：<code>jar &#123;c t x u f &#125;[ v m e 0 M i ][-C 目录]文件名...</code></p>
+<ul>
+<li>-c 创建一个 jar 包</li>
+<li>-t 显示 jar 中的内容列表</li>
+<li>-x 解压 jar 包</li>
+<li>-u 添加文件到 jar 包中</li>
+<li>-f 指定 jar 包的文件名</li>
+<li>-v 生成详细的报造，并输出至标准设备</li>
+<li>-m 指定 manifest.mf 文件.（manifest.mf 文件中可以对 jar 包及其中的内容作一些一设置）</li>
+<li>-0 产生 jar 包时不对其中的内容进行压缩处理</li>
+<li>-M 不产生所有文件的清单文件（Manifest.mf）。这个参数与忽略掉-m参数的设置</li>
+<li>-i 为指定的 jar 文件创建索引文件</li>
+<li>-C 表示转到相应的目录下执行 jar 命令，相当于 cd 到那个目录，然后不带 -C 执行 jar 命令</li>
+</ul>
+<p>jar 使用范例</p>
+<ul>
+<li>创建 jar 包<ul>
+<li><code>jar cf hello.jar hello</code><ul>
+<li>利用 test 目录生成 hello.jar 包，如 hello.jar 存在，则覆盖</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>创建并显示打包过程<ul>
+<li><code>jar cvf hello.jar hello</code><ul>
+<li>利用 hello 目录创建 hello.jar 包，并显示创建过程</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>显示 jar 包<ul>
+<li><code>jar tvf hello.jar</code><ul>
+<li>查看 hello.jar 包的内容。</li>
+<li>指定的 jar 包必须真实存在，否则会发生 FileNoutFoundException。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>解压 jar 包<ul>
+<li><code>jar xvf hello.jar</code><ul>
+<li>解压 hello.jar 至当前目录</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>jar 中添加文件<ul>
+<li><code>jar uf hello.jar HelloWorld.java</code><ul>
+<li>将 HelloWorld.java 添加到 hello.jar 包中</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>创建不压缩内容 jar 包<ul>
+<li><code>jar cvf0 hello.jar *.class</code><ul>
+<li>利用当前目录中所有的 .class 文件生成一个不压缩 jar 包</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>创建带 manifest.mf 文件的 jar 包<ul>
+<li><code>jar cvfm hello.jar manifest.mf hello</code><ul>
+<li>创建的 jar 包多了一个 META-INF 目录，META-INF 子目录下多了一个 manifest.mf 文件</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>忽略 manifest.mf 文件<ul>
+<li><code>jar cvfM hello.jar hello</code><ul>
+<li>生成的 jar 包中不包括 META-INF 目录及 manifest.mf 文件</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>加 -C 应用<ul>
+<li><code>jar cvfm hello.jar mymanifest.mf -C hello/</code><ul>
+<li>表示在切换到 hello 目录下然后再执行 jar 命令</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>-i 为 jar 文件生成索引列表<ul>
+<li><code>jar i hello.jar</code><ul>
+<li>执行完这条命令后，它会在 hello.jar 包的 META-INF 文件夹下生成一个名为 INDEX.LIST 的索引文件，它会生成一个列表，最上边为 jar 包名。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>导出解压列表<ul>
+<li><code>jar tvf hello.jar &gt; hello.txt</code><ul>
+<li>如果你想查看解压一个 jar 的详细过程，而这个 jar 包又很大，屏幕信息会一闪而过，这时你可以把列表输出到一个文件中</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Manifest-mf-文件编写规则"><a href="#Manifest-mf-文件编写规则" class="headerlink" title="Manifest.mf 文件编写规则"></a>Manifest.mf 文件编写规则</h3><ol>
+<li><p>一般属性</p>
+<ol>
+<li>Manifest-Version<ul>
+<li>用来定义manifest文件的版本，例如：Manifest-Version: 1.0</li>
+</ul>
+</li>
+<li>Created-By<ul>
+<li>声明该文件的生成者，一般该属性是由jar命令行工具生成的，例如：Created-By: Apache Ant 1.5.1</li>
+</ul>
+</li>
+<li>Signature-Version<ul>
+<li>定义jar文件的签名版本</li>
+</ul>
+</li>
+<li>Class-Path<ul>
+<li>应用程序或者类装载器使用该值来构建内部的类搜索路径</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p>应用程序相关属性</p>
+<ol>
+<li>Main-Class<ul>
+<li>定义jar文件的入口类，该类必须是一个可执行的类，一旦定义了该属性即可通过 java -jar x.jar来运行该jar文件。</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p>小程序（Applet）相关属性</p>
+<ol>
+<li>Extendsion-List<ul>
+<li>该属性指定了小程序需要的扩展信息列表，列表中的每个名字对应以下的属性</li>
+</ul>
+</li>
+<li><extension>-Extension-Name</extension></li>
+<li><extension>-Specification-Version</extension></li>
+<li><extension>-Implementation-Version</extension></li>
+<li><extension>-Implementation-Vendor-Id</extension></li>
+<li><extension>-Implementation-URL</extension></li>
+</ol>
+</li>
+<li><p>扩展标识属性</p>
+<ol>
+<li>Extension-Name<ul>
+<li>该属性定义了jar文件的标识，例如Extension-Name: Struts Framework</li>
+</ul>
+</li>
+</ol>
+</li>
+<li><p>包扩展属性</p>
+<ol>
+<li>Implementation-Title 定义了扩展实现的标题</li>
+<li>Implementation-Version 定义扩展实现的版本</li>
+<li>Implementation-Vendor 定义扩展实现的组织</li>
+<li>Implementation-Vendor-Id 定义扩展实现的组织的标识</li>
+<li>Implementation-URL : 定义该扩展包的下载地址（URL）</li>
+<li>Specification-Title 定义扩展规范的标题</li>
+<li>Specification-Version 定义扩展规范的版本</li>
+<li>Specification-Vendor 声明了维护该规范的组织</li>
+<li>Sealed 定义jar文件是否封存，值可以是true或者false (这点我还不是很理解)</li>
+</ol>
+</li>
+<li><p>签名相关属性</p>
+<ul>
+<li><p>签名方面的属性我们可以来参照 JavaMail 所提供的 mail.jar 中的一段</p>
+<ul>
+<li>```<br>Name: javax/mail/Address.class</li>
+</ul>
+<p>Digest-Algorithms: SHA MD5</p>
+<p>SHA-Digest: AjR7RqnN//cdYGouxbd06mSVfI4=</p>
+<p>MD5-Digest: ZnTIQ2aQAtSNIOWXI1pQpw==</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">   - 这段内容定义类签名的类名、计算摘要的算法名以及对应的摘要内容（使用 BASE64 方法进行编码）</span><br><span class="line">7. 自定义属性</span><br><span class="line">   - 除了前面提到的一些属性外，你也可以在 MANIFEST.MF 中增加自己的属性以及响应的值，例如 J2ME 程序 jar 包中就可能包含着如下信息</span><br><span class="line">     - ```</span><br><span class="line">     MicroEdition-Configuration: CLDC-1.0</span><br><span class="line"></span><br><span class="line">     MIDlet-Name: J2ME_MOBBER Midlet Suite</span><br><span class="line"></span><br><span class="line">     MIDlet-Info-URL: http://www.javayou.com/</span><br><span class="line"></span><br><span class="line">     MIDlet-Icon: /icon.png</span><br><span class="line"></span><br><span class="line">     MIDlet-Vendor: Midlet Suite Vendor</span><br><span class="line"></span><br><span class="line">     MIDlet-1: mobber,/icon.png,mobber</span><br><span class="line"></span><br><span class="line">     MIDlet-Version: 1.0.0</span><br><span class="line"></span><br><span class="line">     MicroEdition-Profile: MIDP-1.0</span><br><span class="line"></span><br><span class="line">     MIDlet-Description: Communicator</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ol>
+<h3 id="打包"><a href="#打包" class="headerlink" title="打包"></a>打包</h3><h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><p>命令：<code>javac HelloWorld.java -d target</code>。目录结构变为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">./</span><br><span class="line"> ├─ HelloWorld.java</span><br><span class="line"> ├─ target/</span><br><span class="line">       ├─ com/hikvision/demo/</span><br><span class="line">             ├─ HelloWorld.class</span><br></pre></td></tr></table></figure>
+
+<h4 id="打包-1"><a href="#打包-1" class="headerlink" title="打包"></a>打包</h4><p>命令：<code>jar cvf demo-algorithm.jar -C target/ .</code>。目录结构变为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">./</span><br><span class="line"> ├─ HelloWorld.java</span><br><span class="line"> ├─ target/</span><br><span class="line"> │     └─ com/hikvision/demo/</span><br><span class="line"> │           └─ HelloWorld.class</span><br><span class="line"> ├─ demo-algorithm.jar</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>打包的结果 demo-algorithm.jar，其内部结构为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">demo-algorithm.jar</span><br><span class="line">  ├─ com</span><br><span class="line">  │   └─ hikvision</span><br><span class="line">  │       └─ demo</span><br><span class="line">  │           └─ HelloWorld.class</span><br><span class="line">  └─ META-INF</span><br><span class="line">      └─ MANIFEST.MF</span><br></pre></td></tr></table></figure>
+
+<p>其中，MANIFEST.MF 的内容为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Manifest-Version: 1.0</span><br><span class="line">Created-By: 1.8.0_144 (Oracle Corporation)</span><br></pre></td></tr></table></figure>
+
+<h4 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h4><p>命令：<code>java -cp demo-algorithm.jar com.hikvision.demo.HelloWorld</code>。</p>
+<p>留意上面的 jar 包的结构，如果我们希望以 java -cp 的方式运行 jar 包中的某一个类的 main 方法，class 的 package 必须对应 jar 包内部的一级目录。</p>
+<blockquote>
+<p>java -cp 和 -classpath 一样，是指定类运行所依赖其他类的路径，通常是类库，jar 包之类，需要全路径到 jar 包，window 上分号“;” 分隔，linux 上是分号“:”分隔。不支持通配符，需要列出所有 jar 包，用一点“.”代表当前路径。<br>格式：<br><code>java -cp .;myClass.jar packname.mainclassname</code><br>表达式支持通配符，例如：<br><code>java -cp .;c:\classes01\myClass.jar;c:\classes02\*.jar packname.mainclassname</code></p>
+<p>相关阅读<br><code>java -jar myClass.jar</code><br>执行该命令时，会用到目录 META-INF\MANIFEST.MF 文件，在该文件中，有一个叫 Main－Class 的参数，它说明了 java -jar 命令执行的类。</p>
+</blockquote>
+<p>这种结构我们称之为 java 标准 jar 包结构。</p>
+<h2 id="Maven-原生打包"><a href="#Maven-原生打包" class="headerlink" title="Maven 原生打包"></a>Maven 原生打包</h2><p>我一般使用 <code>mvn clean package</code> 命令打包。</p>
+<p>maven 打包的结果，jar 包名称是根据 artifactId 和 version 来生成的，比如对于 <code>com.hikvision.algorithm:demo-algorithm:0.0.1-SNAPSHOT</code> 的打包结果是：<code>demo-algorithm-0.0.1-SNAPSHOT.jar</code>。</p>
+<p>分析这个 jar 包的结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├─com</span><br><span class="line">│  └─hikvision</span><br><span class="line">│      └─algorithm</span><br><span class="line">│          └─HelloWorld.class</span><br><span class="line">├─META-INF</span><br><span class="line">│   ├─maven</span><br><span class="line">│   │   └─com.hikvision.algorithm</span><br><span class="line">│   │       └─demo-algorithm</span><br><span class="line">│   │           ├─pom.properties</span><br><span class="line">│   │           └─pom.xml</span><br><span class="line">│   └─MANIFEST.MF</span><br><span class="line">└─application.properties</span><br></pre></td></tr></table></figure>
+
+<p>除 META-INF 目录之外，其他的都是 class path，这一点符合 java 标准 jar 结构。不同的是 META-INF 有一级子目录 maven，放置项目的 maven 信息。</p>
+<p>对于 maven 原生的打包结果，可以使用 java -cp 的方式执行其中某个主类。但是需要注意它并没有包含所依赖的 jar 包，这需要另外提供。</p>
+<h2 id="使用-Maven-shade-插件打包"><a href="#使用-Maven-shade-插件打包" class="headerlink" title="使用 Maven shade 插件打包"></a>使用 Maven shade 插件打包</h2><p>Maven 打包插件应该不止一种，这里使用的是 <code>maven-shade-plugin</code>。</p>
+<p>在 pom 文件中添加插件配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;plugin&gt;</span><br><span class="line">	&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;</span><br><span class="line">	&lt;artifactId&gt;maven-shade-plugin&lt;/artifactId&gt;</span><br><span class="line">	&lt;version&gt;2.4.3&lt;/version&gt;</span><br><span class="line">	&lt;executions&gt;</span><br><span class="line">		&lt;execution&gt;</span><br><span class="line">			&lt;phase&gt;package&lt;/phase&gt;</span><br><span class="line">			&lt;goals&gt;</span><br><span class="line">				&lt;goal&gt;shade&lt;/goal&gt;</span><br><span class="line">			&lt;/goals&gt;</span><br><span class="line">		&lt;/execution&gt;</span><br><span class="line">	&lt;/executions&gt;</span><br><span class="line">&lt;/plugin&gt;</span><br></pre></td></tr></table></figure>
+
+<p>根据上面的配置，在 package 阶段，会自动执行插件的 shade 目标，这个目标负责将项目的 class 文件，以及项目依赖的 class 文件都会统一打到一个 jar 包里。</p>
+<p>我们可以执行 mvn clean package 来自动触发 shade，或者直接执行 mvn shade:shade。</p>
+<p>target 目录会生成 2 个 jar 包，一个是 maven 原生的 jar 包，一个是插件的 jar 包：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">target/</span><br><span class="line"> ├─ original-demo-algorithm-0.0.1-SNAPSHOT.jar (4KB)</span><br><span class="line"> └─ demo-algorithm-0.0.1-SNAPSHOT.jar (6.24MB)</span><br></pre></td></tr></table></figure>
+
+<p><code>original-demo-algorithm-0.0.1-SNAPSHOT.jar</code> 是原生的 jar 包，不包含任何依赖，只有 4KB。<code>demo-algorithm-0.0.1-SNAPSHOT.jar</code> 是包含依赖的 jar 包，有 6.24MB。</p>
+<p>对照上文可以猜测 shade 插件对 maven 原生打包结果进行重命名之后，使用这个名字又打出一个集成了依赖的 jar 包。</p>
+<p>注意，这表示如果执行了 mvn install，最终被安装到本地仓库的是插件打出的 jar 包，而不是 maven 原生的打包结果。可以配置插件，修改打包结果的名称：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;plugin&gt;</span><br><span class="line">	&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;</span><br><span class="line">	&lt;artifactId&gt;maven-shade-plugin&lt;/artifactId&gt;</span><br><span class="line">	&lt;version&gt;2.4.3&lt;/version&gt;</span><br><span class="line">	&lt;executions&gt;</span><br><span class="line">		&lt;execution&gt;</span><br><span class="line">			&lt;phase&gt;package&lt;/phase&gt;</span><br><span class="line">			&lt;goals&gt;</span><br><span class="line">				&lt;goal&gt;shade&lt;/goal&gt;</span><br><span class="line">			&lt;/goals&gt;</span><br><span class="line">			&lt;configuration&gt;</span><br><span class="line">				&lt;finalName&gt;demo-algorithm-0.0.1-SNAPSHOT-assembly&lt;/finalName&gt;</span><br><span class="line">			&lt;/configuration&gt;</span><br><span class="line">		&lt;/execution&gt;</span><br><span class="line">	&lt;/executions&gt;</span><br><span class="line">&lt;/plugin&gt;</span><br></pre></td></tr></table></figure>
+
+<p>使用这个配置，最终的打包结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">target/</span><br><span class="line"> ├─ demo-algorithm-0.0.1-SNAPSHOT.jar (4KB)</span><br><span class="line"> └─ demo-algorithm-0.0.1-SNAPSHOT-assembly.jar (6.24MB)</span><br></pre></td></tr></table></figure>
+
+<p>此时，<code>demo-algorithm-0.0.1-SNAPSHOT.jar</code> 是 maven 原生的打包结果，<code>demo-algorithm-0.0.1-SNAPSHOT-assembly.jar</code> 是插件的打包结果。</p>
+<p>插件打包结果的内部结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line">├─ch</span><br><span class="line">│  └─qos</span><br><span class="line">│      └─logback</span><br><span class="line">│          ├─classic</span><br><span class="line">│          │  ├─boolex</span><br><span class="line">│          │  ├─db</span><br><span class="line">│          │  │  ├─names</span><br><span class="line">│          │  │  └─script</span><br><span class="line">│          │  ├─encoder</span><br><span class="line">│          │  └─util</span><br><span class="line">│          └─core</span><br><span class="line">│              ├─boolex</span><br><span class="line">│              ├─db</span><br><span class="line">│              │  └─dialect</span><br><span class="line">│              ├─encoder</span><br><span class="line">│              ├─joran</span><br><span class="line">│              │  ├─action</span><br><span class="line">│              │  ├─conditional</span><br><span class="line">│              │  ├─event</span><br><span class="line">│              │  │  └─stax</span><br><span class="line">│              │  ├─node</span><br><span class="line">│              │  ├─spi</span><br><span class="line">│              │  └─util</span><br><span class="line">│              │      └─beans</span><br><span class="line">│              ├─subst</span><br><span class="line">│              └─util</span><br><span class="line">├─com</span><br><span class="line">│  └─hikvision</span><br><span class="line">│      └─algorithm</span><br><span class="line">├─META-INF</span><br><span class="line">│  ├─maven</span><br><span class="line">│  │  ├─ch.qos.logback</span><br><span class="line">│  │  │  ├─logback-classic</span><br><span class="line">│  │  │  └─logback-core</span><br><span class="line">│  │  ├─com.hikvision.algorithm</span><br><span class="line">│  │  │  └─demo-algorithm</span><br><span class="line">│  │  ├─org.slf4j</span><br><span class="line">│  │  │  ├─jcl-over-slf4j</span><br><span class="line">│  │  │  ├─jul-to-slf4j</span><br><span class="line">│  │  │  ├─log4j-over-slf4j</span><br><span class="line">│  │  │  └─slf4j-api</span><br><span class="line">│  │  ├─org.springframework.boot</span><br><span class="line">│  │  │  ├─spring-boot</span><br><span class="line">│  │  │  ├─spring-boot-autoconfigure</span><br><span class="line">│  │  │  ├─spring-boot-starter</span><br><span class="line">│  │  │  └─spring-boot-starter-logging</span><br><span class="line">│  │  └─org.yaml</span><br><span class="line">│  │      └─snakeyaml</span><br><span class="line">│  ├─org</span><br><span class="line">│  │  └─apache</span><br><span class="line">│  │      └─logging</span><br><span class="line">│  │          └─log4j</span><br><span class="line">│  │              └─core</span><br><span class="line">│  │                  └─config</span><br><span class="line">│  │                      └─plugins</span><br><span class="line">│  └─services</span><br><span class="line">└─org</span><br><span class="line">    ├─apache</span><br><span class="line">    │  ├─commons</span><br><span class="line">    │  │  └─logging</span><br><span class="line">    │  │      └─impl</span><br><span class="line">    │  └─log4j</span><br><span class="line">    │      ├─helpers</span><br><span class="line">    │      ├─spi</span><br><span class="line">    │      └─xml</span><br><span class="line">    ├─slf4j</span><br><span class="line">    │  ├─bridge</span><br><span class="line">    │  ├─event</span><br><span class="line">    │  ├─helpers</span><br><span class="line">    │  ├─impl</span><br><span class="line">    │  └─spi</span><br><span class="line">    ├─springframework</span><br><span class="line">    │  ├─boot</span><br><span class="line">    │  │  ├─admin</span><br><span class="line">    │  │  ├─ansi</span><br><span class="line">    │  │  ├─web</span><br><span class="line">    │  │  │  ├─client</span><br><span class="line">    │  │  │  ├─filter</span><br><span class="line">    │  │  │  ├─servlet</span><br><span class="line">    │  │  │  └─support</span><br><span class="line">    │  │  └─yaml</span><br><span class="line">    │  └─validation</span><br><span class="line">    │      ├─annotation</span><br><span class="line">    │      ├─beanvalidation</span><br><span class="line">    │      └─support</span><br><span class="line">    └─yaml</span><br><span class="line">        └─snakeyaml</span><br><span class="line">            ├─error</span><br><span class="line">            ├─tokens</span><br><span class="line">            └─util</span><br></pre></td></tr></table></figure>
+
+<p>这里省略了所有的文件，以及大部分的子目录。</p>
+<p>除 META-INF 目录外的其他所有目录，都是 classpath，结构和 Maven 原生的打包结构相同。不同的是 shade 插件将所有的依赖 jar 解压缩之后，和项目的 class 文件一起重新打成 jar 包；并且在 META-INF/maven 下包含了项目本身及所依赖的项目的 pom 信息。</p>
+<p>如果在 pom 文件中，声明某个依赖是 provided 的，它就不会被集成到 jar 包里。</p>
+<p>总的来说，使用 maven-shade-plugin 打出的 jar 包的结构依然符合 java 标准 jar 包结构，所以我们可以通过 java -cp 的方式运行 jar 包中的某一个类的 main 方法。</p>
+<h2 id="使用-spring-boot-maven-plugin-插件打包"><a href="#使用-spring-boot-maven-plugin-插件打包" class="headerlink" title="使用 spring-boot-maven-plugin 插件打包"></a>使用 spring-boot-maven-plugin 插件打包</h2><p>项目首先必须是 spring-boot 项目，即项目直接或间接继承了 org.springframework.boot:spring-boot-starter-parent。</p>
+<p>在 pom 文件中配置 spring-boot-maven-plugin 插件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;plugin&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">&lt;/plugin&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这个插件默认将打包绑定在了 maven 生命周期的 package 阶段，即执行 package 命令会自动触发插件打包。</p>
+<p>插件会将 Maven 原生的打包结果重命名，然后将自己的打包结果使用之前那个名字。比如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">target/</span><br><span class="line">  ├─ ...</span><br><span class="line">  ├─ demo-algorithm-0.0.1-SNAPSHOT.jar.original</span><br><span class="line">  └─ demo-algorithm-0.0.1-SNAPSHOT.jar</span><br></pre></td></tr></table></figure>
+
+<p>如上，demo-algorithm-0.0.1-SNAPSHOT.jar.original 是 Maven 原生的打包结果，被重命名之后追加了 .original 后缀。demo-algorithm-0.0.1-SNAPSHOT.jar 是插件的打包结果。</p>
+<p>这里需要注意，如果运行了 mvn install，会将这个大一统的 jar 包安装到本地仓库。这一点可以配置，使用下面的插件配置，可以确保安装到本地仓库的是原生的打包结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;plugin&gt;</span><br><span class="line">	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">	&lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">    &lt;configuration&gt;</span><br><span class="line">        &lt;!--将原始的包作为install和deploy的对象，而不是包含了依赖的包--&gt;</span><br><span class="line">        &lt;attach&gt;false&lt;/attach&gt;</span><br><span class="line">    &lt;/configuration&gt;</span><br><span class="line">&lt;/plugin&gt;</span><br></pre></td></tr></table></figure>
+
+<p>spring-boot-maven-plugin 打包的结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├─BOOT-INF</span><br><span class="line">│  ├─classes</span><br><span class="line">│  │  └─com</span><br><span class="line">│  │      └─hikvision</span><br><span class="line">│  │          └─algorithm</span><br><span class="line">│  └─lib</span><br><span class="line">├─META-INF</span><br><span class="line">│  └─maven</span><br><span class="line">│      └─com.hikvision.algorithm</span><br><span class="line">│          └─demo-algorithm</span><br><span class="line">└─org</span><br><span class="line">    └─springframework</span><br><span class="line">        └─boot</span><br><span class="line">            └─loader</span><br><span class="line">                ├─archive</span><br><span class="line">                ├─data</span><br><span class="line">                ├─jar</span><br><span class="line">                └─util</span><br></pre></td></tr></table></figure>
+
+<p>这里忽略了所有的文件。</p>
+<p>分析这个结构，spring-boot 插件将项目本身的 class 放到了目录 BOOT-INF/classes 下，将所有依赖的 jar 放到了 BOOT-INF/lib 下。在 jar 包的顶层有一个子目录 org，是 spring-boot loader 相关的 classes。</p>
+<p>所以，这个与 java 标准 jar 包结构是不同的，和 maven 原生的打包结构也是不同的。</p>
+<p>另外，需要注意的是，即使设置为 provided 的依赖，依然会被集成到 jar 包里，这一点与上文的 shade 插件不同。</p>
+<p>分析 META-INF/MANIFEST.MF 文件内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Manifest-Version: 1.0</span><br><span class="line">Implementation-Title: demo-algorithm</span><br><span class="line">Implementation-Version: 0.0.1-SNAPSHOT</span><br><span class="line">Archiver-Version: Plexus Archiver</span><br><span class="line">Built-By: lijinlong9</span><br><span class="line">Implementation-Vendor-Id: com.hikvision.algorithm</span><br><span class="line">Spring-Boot-Version: 1.5.8.RELEASE</span><br><span class="line">Implementation-Vendor: Pivotal Software, Inc.</span><br><span class="line">Main-Class: org.springframework.boot.loader.JarLauncher</span><br><span class="line">Start-Class: com.hikvision.algorithm.HelloWorld</span><br><span class="line">Spring-Boot-Classes: BOOT-INF/classes/</span><br><span class="line">Spring-Boot-Lib: BOOT-INF/lib/</span><br><span class="line">Created-By: Apache Maven 3.3.9</span><br><span class="line">Build-Jdk: 1.8.0_144</span><br><span class="line">Implementation-URL: http://projects.spring.io/spring-boot/demo-algorithm/</span><br></pre></td></tr></table></figure>
+
+<p>注意，这里配置了 Main-Class，这表示我们可以以 java -jar 的方式执行这个 jar 包。Main-Class 对应的值为 org.springframework.boot.loader.JarLauncher，这表示具体的加载过程是由 spring-boot 定义的。</p>
+<p>因为不符合 Java 标准 jar 包结构，所以无法通过 <code>java -cp &lt;package&gt;.&lt;MainClass&gt;</code> 的方式运行 jar 包里的某个类，因为按照标准的 jar 包结构是找不到这个类的。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>Java 原生打包、Maven 原生打包、shade 插件打包的结果，其结构都是一致的。可以使用 <code>java -cp</code> 的方式执行，一般无法直接使用 <code>java -jar</code> 的方式执行。</li>
+<li>使用 spring-boot 插件打包，其结构和上述的结构不同。不能使用 <code>java -cp</code> 的方式执行，可以使用 <code>java -jar</code> 的方式执行。</li>
+<li>shade 插件会忽略 provided 的依赖，不集成到 jar 包里；spring-boot 插件会将所有的依赖都集成到 jar 包里。</li>
+<li>默认的情况下，shade 插件和 spring-boot 插件的打包结果，会代替 Maven 原生打包结果被安装到本地仓库（执行 mvn install 时），可以通过配置改变这一点。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/07/12/%E8%AF%AD%E8%A8%80/Java/JVM/Java-JVM-GC%E6%B5%81%E7%A8%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1677,125 +2003,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%E4%B8%BA%E4%BD%95%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%9E%9A%E4%B8%BE%E8%A7%A3%E5%86%B3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%E4%B8%BA%E4%BD%95%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%9E%9A%E4%B8%BE%E8%A7%A3%E5%86%B3/" class="post-title-link" itemprop="url">Java-设计模式-单例模式问题为何可以通过枚举解决.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-05-13 21:30:07" itemprop="dateCreated datePublished" datetime="2021-05-13T21:30:07+08:00">2021-05-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/call-me-pengye/p/11214435.html">https://www.cnblogs.com/call-me-pengye/p/11214435.html</a></p>
-<p>首先我们都知道 enum 默认继承了 java.lang.Enum 类并实现了 java.lang.Seriablizable 和 java.lang.Comparable 两个接口。接下来我们将依次说明枚举是如何防止这三种方式对单例的破环</p>
-<h2 id="克隆"><a href="#克隆" class="headerlink" title="克隆"></a>克隆</h2><p>一个普通的类要是clone必须实现 java.lang.Cloneable 接口，重写 clone() 方法，同理我们来看看枚举能否也是一样<br><img src="/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%E4%B8%BA%E4%BD%95%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%9E%9A%E4%B8%BE%E8%A7%A3%E5%86%B3/1.png" alt="1"></p>
-<p>我们可以看到 enum 是不被允许重写 clone()，因为 Enum 类已经将 clone() 方法定义为 final 了，并且 Enum 在使用 clone() 时直接抛出异常，如下图，这就是枚举为什么能防止克隆破环的原因，它根本就不允许克隆<br><img src="/2021/05/13/%E8%AF%AD%E8%A8%80/Java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E5%8D%95%E4%BE%8B/Java-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E9%97%AE%E9%A2%98%E4%B8%BA%E4%BD%95%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E6%9E%9A%E4%B8%BE%E8%A7%A3%E5%86%B3/2.png" alt="2"></p>
-<h2 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class DestroySingleton &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //通过反射获取</span><br><span class="line">        Constructor&lt;Singleton&gt; constructor = Singleton.class.getDeclaredConstructor();</span><br><span class="line">        constructor.setAccessible(true);</span><br><span class="line">        Singleton reflex = constructor.newInstance();</span><br><span class="line">        System.out.println(&quot;reflex的hashCode:&quot;+reflex.hashCode());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>我们先来看一下反射实现的主要步骤：首先通过 class 的 getDeclaredConstructor() 获取到反射对象的构造器，然后通过 newInstance() 调用其构造方法获取对象，getDeclaredConstructor() 主要是通过 getConstructor0() 来获取构造器，具体代码如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@CallerSensitive</span><br><span class="line">public Constructor&lt;T&gt; getDeclaredConstructor(Class&lt;?&gt;... parameterTypes)</span><br><span class="line">    throws NoSuchMethodException, SecurityException &#123;</span><br><span class="line">    checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);</span><br><span class="line">    return getConstructor0(parameterTypes, Member.DECLARED);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在 getConstructor0 中，他会先调用 privateGetDeclaredConstructors 方法去获取；具体代码如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">private Constructor&lt;T&gt; getConstructor0(Class&lt;?&gt;[] parameterTypes,int which) throws NoSuchMethodException</span><br><span class="line">    &#123;</span><br><span class="line">        Constructor&lt;T&gt;[] constructors = privateGetDeclaredConstructors((which == Member.PUBLIC));</span><br><span class="line">        for (Constructor&lt;T&gt; constructor : constructors) &#123;</span><br><span class="line">            if (arrayContentsEq(parameterTypes,constructor.getParameterTypes())) &#123;</span><br><span class="line">                return getReflectionFactory().copyConstructor(constructor);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        throw new NoSuchMethodException(getName() + &quot;.&lt;init&gt;&quot; + argumentTypesToString(parameterTypes));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>在 privateGetDeclaredConstructors() 中 publicOnly 的值是 false，ReflectionData 的 publicConstructors 和 declaredConstructors 都是 null；而 privateGetDeclaredConstructors() 中真正决定 <code>Constructor&lt;T&gt;[]</code> 的代码是 getDeclaredConstructors0(publicOnly)。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">private Constructor&lt;T&gt;[] privateGetDeclaredConstructors(boolean publicOnly) &#123;</span><br><span class="line">        checkInitted();</span><br><span class="line">        Constructor&lt;T&gt;[] res;</span><br><span class="line">        ReflectionData&lt;T&gt; rd = reflectionData();</span><br><span class="line">        if (rd != null) &#123;</span><br><span class="line">            res = publicOnly ? rd.publicConstructors : rd.declaredConstructors;</span><br><span class="line">            if (res != null) return res;</span><br><span class="line">        &#125;</span><br><span class="line">        // No cached value available; request value from VM</span><br><span class="line">        if (isInterface()) &#123;</span><br><span class="line">            @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">            Constructor&lt;T&gt;[] temporaryRes = (Constructor&lt;T&gt;[]) new Constructor&lt;?&gt;[0];</span><br><span class="line">            res = temporaryRes;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            res = getDeclaredConstructors0(publicOnly);</span><br><span class="line">        &#125;</span><br><span class="line">        if (rd != null) &#123;</span><br><span class="line">            if (publicOnly) &#123;</span><br><span class="line">                rd.publicConstructors = res;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                rd.declaredConstructors = res;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return res;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>在得到 <code>Constructor&lt;T&gt;[]</code> 后回到 getConstructor0() 将依次对其进行轮询判断，找到合适的 Constructor 并交由 ReflectionFactory 工厂 copy 出一个 Constructor。其中轮询的判断条件由 parameterTypes 和 constructor.getParameterTypes() 决定，parameterTypes 是个空数组；普通类的 constructor.getParameterTypes() 得出的结果也是空数组，而枚举产生的数组为:<code>[class java.lang.String, int]</code>；接着就交由 arrayContentsEq() 执行，并返回一个 boolean值。</p>
-<p>arrayContentsEq 具体代码如下:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">private static boolean arrayContentsEq(Object[] a1, Object[] a2) &#123;</span><br><span class="line">        if (a1 == null) &#123;</span><br><span class="line">            return a2 == null || a2.length == 0;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if (a2 == null) &#123;</span><br><span class="line">            return a1.length == 0;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if (a1.length != a2.length) &#123;</span><br><span class="line">            return false;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        for (int i = 0; i &lt; a1.length; i++) &#123;</span><br><span class="line">            if (a1[i] != a2[i]) &#123;</span><br><span class="line">                return false;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>普通类在 arrayContentsEq() 中所有的 if 和 for 都通不过，最后直接返回 true；而枚举类则会因为 <code>a1.length != a2.length</code>（注：a2.length的之为2）条件成立而返回 false。于是普通类接着执行 <code>return getReflectionFactory().copyConstructor(constructor);</code> 而枚举类则直接抛出异常 <code>throw new NoSuchMethodException(getName() + &quot;.&lt;init&gt;&quot; + argumentTypesToString(parameterTypes));</code> 具体错误信息如下：</p>
-<blockquote>
-<p>Exception in thread “main” java.lang.NoSuchMethodException: designPatterns.singleton.useenum.Singleton.<init>()<br>　　　　 at java.lang.Class.getConstructor0(Class.java:3082)<br>　　　　 at java.lang.Class.getDeclaredConstructor(Class.java:2178)<br>　　　　 at designPatterns.singleton.useenum.DestroySingleton.main(DestroySingleton.java:18)</init></p>
-</blockquote>
-<p>从控制台输出的信息来看 parameterTypes 的确是一个空对象，但是为什么给出 init() 的 NoSuchMethodException 异常。这就是为什么枚举不能通过反射实例化的原因之一，另一个原因就是：在获取到类构造器后通过 newInstance() 来实例化前，枚举是无法通过</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if( (clazz.getModifiers() &amp; Modifier.ENUM) != 0 )</span><br></pre></td></tr></table></figure>
-<p>条件判断的，具体代码如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@CallerSensitive</span><br><span class="line">    public T newInstance(Object ... initargs)</span><br><span class="line">        throws InstantiationException, IllegalAccessException,</span><br><span class="line">               IllegalArgumentException, InvocationTargetException</span><br><span class="line">    &#123;</span><br><span class="line">        if (!override) &#123;</span><br><span class="line">            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) &#123;</span><br><span class="line">                Class&lt;?&gt; caller = Reflection.getCallerClass();</span><br><span class="line">                checkAccess(caller, clazz, null, modifiers);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        if ((clazz.getModifiers() &amp; Modifier.ENUM) != 0)</span><br><span class="line">            throw new IllegalArgumentException(&quot;Cannot reflectively create enum objects&quot;);</span><br><span class="line">        ConstructorAccessor ca = constructorAccessor;   // read volatile</span><br><span class="line">        if (ca == null) &#123;</span><br><span class="line">            ca = acquireConstructorAccessor();</span><br><span class="line">        &#125;</span><br><span class="line">        @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">        T inst = (T) ca.newInstance(initargs);</span><br><span class="line">        return inst;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public class CreateClassBySerialized &#123;</span><br><span class="line">    </span><br><span class="line">    @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">    public static &lt;T extends Serializable&gt; T createClassBySerialized(T  t) throws IOException, ClassNotFoundException&#123;</span><br><span class="line">        ByteArrayOutputStream bos = new ByteArrayOutputStream();</span><br><span class="line">        ObjectOutputStream oos = new ObjectOutputStream(bos);</span><br><span class="line">        oos.writeObject(t);</span><br><span class="line">        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());</span><br><span class="line">        ObjectInputStream ois = new ObjectInputStream(bis);</span><br><span class="line">        T object = (T) ois.readObject();</span><br><span class="line">        if (ois != null)    ois.close();</span><br><span class="line">        if (bis != null) bis.close();</span><br><span class="line">        if (oos != null) oos.close();</span><br><span class="line">        if (bos != null) bos.close();</span><br><span class="line">        return object;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">public class DestroySingleton &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //通过序列化，反序列化获取</span><br><span class="line">        Singleton serialize = CreateClassBySerialized.createClassBySerialized(Singleton.getInstance());</span><br><span class="line">        System.out.println(&quot;serialize的hashCode:&quot;+serialize.hashCode());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>首先我们先来看看为什么添加 readResolve() 方法就能防止序列化对单例的破环。关键的代码就是在 readObject() 里的 readObject0() 实现的，readObject() 具体代码如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public final Object readObject() throws IOException, ClassNotFoundException&#123;</span><br><span class="line">     if (enableOverride) &#123;</span><br><span class="line">         return readObjectOverride();</span><br><span class="line">     &#125;</span><br><span class="line">     // if nested read, passHandle contains handle of enclosing object</span><br><span class="line">     int outerHandle = passHandle;</span><br><span class="line">     try &#123;</span><br><span class="line">         Object obj = readObject0(false);</span><br><span class="line">         handles.markDependency(outerHandle, passHandle);</span><br><span class="line">         ClassNotFoundException ex = handles.lookupException(passHandle);</span><br><span class="line">         if (ex != null) &#123;</span><br><span class="line">             throw ex;</span><br><span class="line">         &#125;</span><br><span class="line">         if (depth == 0) &#123;</span><br><span class="line">             vlist.doCallbacks();</span><br><span class="line">         &#125;</span><br><span class="line">         return obj;</span><br><span class="line">     &#125; finally &#123;</span><br><span class="line">         passHandle = outerHandle;</span><br><span class="line">         if (closed &amp;&amp; depth == 0) &#123;</span><br><span class="line">             clear();</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-
-<p>而 readObject0() 对类的实现体现在 switch 选择器上：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">switch (tc) &#123;</span><br><span class="line">    case TC_NULL:</span><br><span class="line">        return readNull();</span><br><span class="line">    case TC_REFERENCE:</span><br><span class="line">        return readHandle(unshared);</span><br><span class="line">    case TC_CLASS:</span><br><span class="line">        return readClass(unshared);</span><br><span class="line">    case TC_CLASSDESC:</span><br><span class="line">    case TC_PROXYCLASSDESC:</span><br><span class="line">        return readClassDesc(unshared);</span><br><span class="line">    case TC_STRING:</span><br><span class="line">    case TC_LONGSTRING:</span><br><span class="line">        return checkResolve(readString(unshared));</span><br><span class="line">    case TC_ARRAY:</span><br><span class="line">        return checkResolve(readArray(unshared));</span><br><span class="line">    case TC_ENUM:</span><br><span class="line">        return checkResolve(readEnum(unshared));</span><br><span class="line">    case TC_OBJECT:</span><br><span class="line">        return checkResolve(readOrdinaryObject(unshared));</span><br><span class="line">    case TC_EXCEPTION:</span><br><span class="line">        IOException ex = readFatalException();</span><br><span class="line">        throw new WriteAbortedException(&quot;writing aborted&quot;, ex);</span><br><span class="line">    case TC_BLOCKDATA:</span><br><span class="line">    case TC_BLOCKDATALONG:</span><br><span class="line">        if (oldMode) &#123;</span><br><span class="line">            bin.setBlockDataMode(true);</span><br><span class="line">            bin.peek();             // force header read</span><br><span class="line">            throw new OptionalDataException(bin.currentBlockRemaining());</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            throw new StreamCorruptedException(&quot;unexpected block data&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    case TC_ENDBLOCKDATA:</span><br><span class="line">        if (oldMode) &#123;</span><br><span class="line">            throw new OptionalDataException(true);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            throw new StreamCorruptedException(&quot;unexpected end of block data&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    default:</span><br><span class="line">        throw new StreamCorruptedException(String.format(&quot;invalid type code: %02X&quot;, tc));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>tc 值不同，类的实现方式也不同；普通类(TC_OBJECT)由 readOrdinaryObject(unshared) 来实现，枚举类(TC_ENUM)由 readOrdinaryObject(unshared) 来实现。</p>
-<p>readOrdinaryObject(unshared) 决定了类是通过构造器实现还是通过 readResolve() 来实现</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">if (obj != null &amp;&amp; handles.lookupException(passHandle) == null &amp;&amp; desc.hasReadResolveMethod())</span><br><span class="line">&#123;</span><br><span class="line">    Object rep = desc.invokeReadResolve(obj);</span><br><span class="line">    if (unshared &amp;&amp; rep.getClass().isArray()) &#123;</span><br><span class="line">        rep = cloneArray(rep);</span><br><span class="line">    &#125;</span><br><span class="line">    if (rep != obj) &#123;</span><br><span class="line">        // Filter the replacement object</span><br><span class="line">        if (rep != null) &#123;</span><br><span class="line">            if (rep.getClass().isArray()) &#123;</span><br><span class="line">                filterCheck(rep.getClass(), Array.getLength(rep));</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                filterCheck(rep.getClass(), -1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        handles.setObject(passHandle, obj = rep);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>其中 desc.hasReadResolveMethod() 就是来用判断是否有 readResolve()</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">boolean hasReadResolveMethod() &#123;</span><br><span class="line">    requireInitialized();</span><br><span class="line">    return (readResolveMethod != null);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果不存在 readResolve() 则 readResolveMethod 为 null，反之则为 readResolve() 对应的 Method 对象（我这儿的是 private java.lang.Object designPatterns.singleton.doublecheck.Singleton.readResolve() ）。于是乎就执行 desc.invokeReadResolve(obj) 代码，通过 Method.invoke 执行 readResolve() 方法</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Object invokeReadResolve(Object obj) throws IOException, UnsupportedOperationException</span><br><span class="line">&#123;</span><br><span class="line">    requireInitialized();</span><br><span class="line">    if (readResolveMethod != null) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            return readResolveMethod.invoke(obj, (Object[]) null);</span><br><span class="line">        &#125; catch (InvocationTargetException ex) &#123;</span><br><span class="line">            Throwable th = ex.getTargetException();</span><br><span class="line">            if (th instanceof ObjectStreamException) &#123;</span><br><span class="line">                throw (ObjectStreamException) th;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                throwMiscException(th);</span><br><span class="line">                throw new InternalError(th);  // never reached</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (IllegalAccessException ex) &#123;</span><br><span class="line">            // should not occur, as access checks have been suppressed</span><br><span class="line">            throw new InternalError(ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        throw new UnsupportedOperationException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@CallerSensitive</span><br><span class="line">public Object invoke(Object obj, Object... args) throws IllegalAccessException, IllegalArgumentException,InvocationTargetException</span><br><span class="line">&#123;</span><br><span class="line">    if (!override) &#123;</span><br><span class="line">        if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) &#123;</span><br><span class="line">            Class&lt;?&gt; caller = Reflection.getCallerClass();</span><br><span class="line">            checkAccess(caller, clazz, obj, modifiers);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    MethodAccessor ma = methodAccessor;             // read volatile</span><br><span class="line">    if (ma == null) &#123;</span><br><span class="line">        ma = acquireMethodAccessor();</span><br><span class="line">    &#125;</span><br><span class="line">    return ma.invoke(obj, args);                   // readResolve最终执行处&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这样就得到了我们的静态 singleton，实现单例模式。而在实现枚举的 readEnum() 方法中，枚举的实现是通过调用 java.lang.Enum的 静态方法 valueOf 来实现的</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public static &lt;T extends Enum&lt;T&gt;&gt; T valueOf(Class&lt;T&gt; enumType,String name) &#123;</span><br><span class="line">        T result = enumType.enumConstantDirectory().get(name);</span><br><span class="line">        if (result != null)</span><br><span class="line">            return result;</span><br><span class="line">        if (name == null)</span><br><span class="line">            throw new NullPointerException(&quot;Name is null&quot;);</span><br><span class="line">        throw new IllegalArgumentException(</span><br><span class="line">            &quot;No enum constant &quot; + enumType.getCanonicalName() + &quot;.&quot; + name);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>enumType.enumConstantDirectory() 返回的对象是继承了枚举常量的 hashMap，其中 key 键是枚举常量名字，value 键是常量枚举对象本身；当它拿到枚举类中全部的枚举后，再其轮询将每一个枚举常量存入 hashMap 中：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">Map&lt;String, T&gt; enumConstantDirectory() &#123;</span><br><span class="line">        if (enumConstantDirectory == null) &#123;</span><br><span class="line">            T[] universe = getEnumConstantsShared();</span><br><span class="line">            if (universe == null)</span><br><span class="line">                throw new IllegalArgumentException(</span><br><span class="line">                    getName() + &quot; is not an enum type&quot;);</span><br><span class="line">            Map&lt;String, T&gt; m = new HashMap&lt;&gt;(2 * universe.length);</span><br><span class="line">            for (T constant : universe)</span><br><span class="line">                m.put(((Enum&lt;?&gt;)constant).name(), constant);</span><br><span class="line">            enumConstantDirectory = m;</span><br><span class="line">        &#125;</span><br><span class="line">        return enumConstantDirectory;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//getEnumConstantsShared()就是获取到的一个个枚举对象</span><br><span class="line">T[] getEnumConstantsShared() &#123;</span><br><span class="line">        if (enumConstants == null) &#123;</span><br><span class="line">            if (!isEnum()) return null;</span><br><span class="line">            try &#123;</span><br><span class="line">                final Method values = getMethod(&quot;values&quot;);</span><br><span class="line">                java.security.AccessController.doPrivileged(</span><br><span class="line">                    new java.security.PrivilegedAction&lt;Void&gt;() &#123;</span><br><span class="line">                        public Void run() &#123;</span><br><span class="line">                                values.setAccessible(true);</span><br><span class="line">                                return null;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;);</span><br><span class="line">                @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">                T[] temporaryConstants = (T[])values.invoke(null);</span><br><span class="line">                enumConstants = temporaryConstants;</span><br><span class="line">            &#125;</span><br><span class="line">            // These can happen when users concoct enum-like classes</span><br><span class="line">            // that don&#x27;t comply with the enum spec.</span><br><span class="line">            catch (InvocationTargetException | NoSuchMethodException |</span><br><span class="line">                   IllegalAccessException ex) &#123; return null; &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return enumConstants;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-
-<p>当我们拿到枚举的 hashMap 后，通过 get(name) 方法获取对应的枚举然后层层返回。代码中实现枚举的入口代码是 Enum.valueOf((Class)cl, name)，这样实现的现过其实就是 EnumClass.name(我代码的体现是Singleton.INSTANCE)，这样来看的话无论是 EnumClass.name 获取对象，还是 Enum.valueOf((Class)cl, name) 获取对象，它们得到的都是同一个对象，这其实就是枚举保持单例的原理。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1867,7 +2074,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">681</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1880,7 +2087,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">349</span>
+        <span class="site-state-item-count">350</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
