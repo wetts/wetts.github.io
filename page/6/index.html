@@ -188,6 +188,410 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/28/artificial_intelligence/deep_learning/%E5%88%9D%E5%A7%8B%E5%8C%96/%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/28/artificial_intelligence/deep_learning/%E5%88%9D%E5%A7%8B%E5%8C%96/%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96/" class="post-title-link" itemprop="url">权重初始化.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-28 21:20:38" itemprop="dateCreated datePublished" datetime="2020-03-28T21:20:38+08:00">2020-03-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>$z = w_{1}x_{1} + w_{2}x_{2} + \ldots +w_{n}x_{n}$，$b=0$，暂时忽略 $b$，为了预防 $z$ 值过大或过小，你可以看到 $n$ 越大，你希望 $w_{i}$ 越小，因为 $z$ 是 $w_{i}x_{i}$ 的和，如果你把很多此类项相加，希望每项值更小，最合理的方法就是设置 $w_{i}=\frac{1}{n}$，$n$ 表示神经元的输入特征数量，实际上，你要做的就是设置某层权重矩阵 $w^{[l]} = np.random.randn( \text{shape})*\text{np.}\text{sqrt}(\frac{1}{n^{[l-1]}})$，$n^{[l - 1]}$ 就是我喂给第 $l$ 层神经单元的数量（即第 $l-1$ 层神经元数量）。</p>
+<p><img src="/2020/03/28/artificial_intelligence/deep_learning/%E5%88%9D%E5%A7%8B%E5%8C%96/%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96/e4114d7dc1c6242bd96cdadb457b8959.png"></p>
+<p>结果，如果你是用的是<strong>Relu</strong>激活函数，而不是$\frac{1}{n}$，方差设置为$\frac{2}{n}$，效果会更好。你常常发现，初始化时，尤其是使用<strong>Relu</strong>激活函数时，$g^{[l]}(z) =Relu(z)$,它取决于你对随机变量的熟悉程度，这是高斯随机变量，然后乘以它的平方根，也就是引用这个方差$\frac{2}{n}$。这里，我用的是$n^{[l - 1]}$，因为本例中，逻辑回归的特征是不变的。但一般情况下$l$层上的每个神经元都有$n^{[l - 1]}$个输入。如果激活函数的输入特征被零均值和标准方差化，方差是1，$z$也会调整到相似范围，这就没解决问题（梯度消失和爆炸问题）。但它确实降低了梯度消失和爆炸问题，因为它给权重矩阵$w$设置了合理值，你也知道，它不能比1大很多，也不能比1小很多，所以梯度没有爆炸或消失过快。</p>
+<p><img src="/2020/03/28/artificial_intelligence/deep_learning/%E5%88%9D%E5%A7%8B%E5%8C%96/%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96/3decc82bf6f48903ee1fedbdb7e2c0f6.png"></p>
+<p>我提到了其它变体函数，刚刚提到的函数是<strong>Relu</strong>激活函数，一篇由<strong>Herd</strong>等人撰写的论文曾介绍过。对于几个其它变体函数，如<strong>tanh</strong>激活函数，有篇论文提到，常量1比常量2的效率更高，对于<strong>tanh</strong>函数来说，它是$\sqrt{\frac{1}{n^{[l-1]}}}$，这里平方根的作用与这个公式作用相同($\text{np.}\text{sqrt}(\frac{1}{n^{[l-1]}})$)，它适用于<strong>tanh</strong>激活函数，被称为<strong>Xavier</strong>初始化。<strong>Yoshua Bengio</strong>和他的同事还提出另一种方法，你可能在一些论文中看到过，它们使用的是公式$\sqrt{\frac{2}{n^{[l-1]} + n^{\left[l\right]}}}$。其它理论已对此证明，但如果你想用<strong>Relu</strong>激活函数，也就是最常用的激活函数，我会用这个公式$\text{np.}\text{sqrt}(\frac{2}{n^{[l-1]}})$，如果使用<strong>tanh</strong>函数，可以用公式$\sqrt{\frac{1}{n^{[l-1]}}}$，有些作者也会使用这个函数。</p>
+<p>实际上，我认为所有这些公式只是给你一个起点，它们给出初始化权重矩阵的方差的默认值，如果你想添加方差，方差参数则是另一个你需要调整的超级参数，可以给公式$\text{np.}\text{sqrt}(\frac{2}{n^{[l-1]}})$添加一个乘数参数，调优作为超级参数激增一份子的乘子参数。有时调优该超级参数效果一般，这并不是我想调优的首要超级参数，但我发现调优过程中产生的问题，虽然调优该参数能起到一定作用，但考虑到相比调优，其它超级参数的重要性，我通常把它的优先级放得比较低。</p>
+<p>希望你现在对梯度消失或爆炸问题以及如何为权重初始化合理值已经有了一个直观认识，希望你设置的权重矩阵既不会增长过快，也不会太快下降到0，从而训练出一个权重或梯度不会增长或消失过快的深度网络。我们在训练深度网络时，这也是一个加快训练速度的技巧。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%92%E5%88%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%92%E5%88%86/" class="post-title-link" itemprop="url">数据集划分.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-28 18:16:47" itemprop="dateCreated datePublished" datetime="2020-03-28T18:16:47+08:00">2020-03-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>一般分为：</p>
+<ul>
+<li>训练集（train set）</li>
+<li>开发测试集（training-dev set）</li>
+<li>开发集（dev set）：有时称为保留交叉验证集（hold out cross validation set）</li>
+<li>测试集（test set）</li>
+</ul>
+<p>数据集作用：</p>
+<ul>
+<li>_train set_：训练模型。</li>
+<li>_training-dev set_：评估模型的误差（bias、variance）原因。</li>
+<li>_dev set_：评估所有训练出的模型，迭代并选出适用的模型。</li>
+<li>_test set_：对最终所选定的神经网络系统做出无偏估计。</li>
+</ul>
+<p>数据集分布：</p>
+<ul>
+<li><em>train set</em> 可以是网上爬取的数据。与 <em>dev set_、_test set</em> 的分布可能不同。</li>
+<li><em>training-dev set</em> 与 <em>train set</em> 同分布。</li>
+<li><em>dev set</em> 一般和 <em>test set</em> 同分布。都来自真实场景中的数据。</li>
+</ul>
+<p><img src="/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%92%E5%88%86/Bias%E3%80%81Variance%E4%B8%8E%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%86%E5%B8%83%E4%BC%98%E5%8C%96.png" alt="Bias、Variance与数据集分布优化"></p>
+<p>如果出现了 <em>train set</em> 与 <em>dev set_、_test set</em> 不匹配的情况，可尝试以下方法：</p>
+<ul>
+<li>分析不匹配的原因，可人工合成数据新的 _train set_。</li>
+<li>迁移学习</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Variance%E4%B8%8E%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%86%E5%B8%83%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Variance%E4%B8%8E%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%86%E5%B8%83%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">Bias、Variance与数据集分布优化.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-28 18:13:25" itemprop="dateCreated datePublished" datetime="2020-03-28T18:13:25+08:00">2020-03-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>贝叶斯误差（一般用人类水平代替）与训练集错误率之差是 __bias（avoidble bias）__。</li>
+<li>训练集错误率与开发集错误率之差是 __variance__。</li>
+</ul>
+<p>高 bias 可尝试以下方法：</p>
+<ul>
+<li>新的网络（含有更多隐藏层或者隐藏单元的网络）</li>
+<li>花费更多时间来训练网络</li>
+</ul>
+<p>高 variance 可尝试以下方法：</p>
+<ul>
+<li>更多的数据</li>
+<li>正则化（L1、L2、dropout、数据扩增、early stopping）</li>
+</ul>
+<h3 id="误差分析"><a href="#误差分析" class="headerlink" title="误差分析"></a>误差分析</h3><p>在你的开发集里或者测试集里，观察错误标记的样本，统计属于不同错误类型的错误数量。</p>
+<p>通过统计不同错误标记类型占总数的百分比，可以帮你发现哪些问题需要优先解决，或者给你构思新优化方向的灵感。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/" class="post-title-link" itemprop="url">nlp-形式语言与自动机.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-26 22:27:52" itemprop="dateCreated datePublished" datetime="2020-03-26T22:27:52+08:00">2020-03-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="形式语言"><a href="#形式语言" class="headerlink" title="形式语言"></a>形式语言</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>乔姆斯基(Noam Chomsky)曾经把语言定义为：按照一定规律构成的句子和符号串的有限或无限的集合。</p>
+<p>一般地，描述一种语言可以有三种途径 <code>[刘颖，2002;石青云 (译)，1987]</code>：</p>
+<ol>
+<li>穷举法：把语言中的所有句子都枚举出来。显然，这种方法只适合句子数目有限的语言。</li>
+<li>文法（产生式系统）描述：语言中的每个句子用严格定义的规则来构造，利用规则生成语言中合法的句子。</li>
+<li>自动机法：通过对输入的句子进行合法性检验，区别哪些是语言中的句子，哪些不是语言中的句子。</li>
+</ol>
+<p>文法用来精确地描述语言和其结构，自动机则是用来机械地刻画对输入字符串的识别过程。用文法来定义语言的优点是：由文法给予语言中的句子以结构，各成分之间的结构关系清楚、明了。但是，如果要直接用这些规则来确定一个字符串是否属于这套规则所定义的语言似乎并不十分明确。而由自动机来识别一个字符串是否属于该语言则相对简单，但自动机很难描述语言的结构。所以自然语言处理中的识别和分析算法，大多兼取两者之长。</p>
+<h3 id="形式语法的定义"><a href="#形式语法的定义" class="headerlink" title="形式语法的定义"></a>形式语法的定义</h3><p>形式语言是用来精确地描述语言（包括人工语言和自然语言）及其结构的手段。形式语言学也称代数语言学。</p>
+<p>形式语法是一个4元组 $G=(N, \Sigma, P, S)$，其中 $N$ 是非终结符的有限集合（有时也叫变量集或句法种类集）；$\Sigma$ 是终结符的有限集合，$N \cap \Sigma = \emptyset$；$V = N \cup \Sigma$ 称总词汇表；$P$ 是一组重写规则的有限集合：$P={ \alpha \rightarrow \beta }$，其中，$\alpha, \beta$ 是 $V$ 中元素构成的串，但 $\alpha$ 中至少应含有一个非终结符号；$S \in N$，称为句子符或初始符。</p>
+<ul>
+<li>如果每步推导中只改写最左边的那个非终结符，这种推导称为“最左推导”。</li>
+<li>如果每次都只改写最右边的非终结符，则为最右推导。__最右推导又称规范推导__。</li>
+</ul>
+<h3 id="形式语法的类型"><a href="#形式语法的类型" class="headerlink" title="形式语法的类型"></a>形式语法的类型</h3><h4 id="正则文法"><a href="#正则文法" class="headerlink" title="正则文法"></a>正则文法</h4><p>如果文法 $G=(N, \Sigma, P, S)$ 的 $P$ 中的规则满足如下形式：$A \rightarrow Bx$，或 $A \rightarrow x$，其中$A, B \in N, x \in \Sigma$，则称该文法为正则文法或称 3 型文法。(左线性正则文法)</p>
+<p>如果 $A \rightarrow x B$，则该文法称为右线性正则文法。</p>
+<h4 id="上下文无关文法-context-free-grammar-CFG"><a href="#上下文无关文法-context-free-grammar-CFG" class="headerlink" title="上下文无关文法(context-free grammar, CFG)"></a>上下文无关文法(context-free grammar, CFG)</h4><p>如果 $P$ 中的规则满足如下形式：$A \rightarrow \alpha$，其中 $A \in N，\alpha \in (N \cup \Sigma)*$，则称该文法为上下文无关文法（CFG）或称 2 型文法。</p>
+<h4 id="上下文有关文法-context-sensitive-grammar-CSG"><a href="#上下文有关文法-context-sensitive-grammar-CSG" class="headerlink" title="上下文有关文法(context-sensitive grammar, CSG)"></a>上下文有关文法(context-sensitive grammar, CSG)</h4><p>如果 $P$ 中的规则满足如下形式：$\alpha A \beta \rightarrow \alpha \gamma \beta$, 其中 $A \in N, \alpha, \beta, \gamma \in (N \cup \Sigma)*$，且 $\gamma$ 至少包含一个字符，则称该文法为上下文有关文法（CSG）或称 1 型文法。</p>
+<p>另一种定义：$if \  x \rightarrow y, x \in (N \cup \Sigma)+, y \in (N \cup Sigma)*$，并且 $|y| \geq |x|$。</p>
+<h4 id="无约束文法（无限制重写系统）"><a href="#无约束文法（无限制重写系统）" class="headerlink" title="无约束文法（无限制重写系统）"></a>无约束文法（无限制重写系统）</h4><p>如果 $P$ 中的规则满足如下形式：$\alpha \rightarrow \beta$，$\alpha, \beta$ 是字符串，则称 $G$ 为无约束文法，或称 0 型文法。</p>
+<blockquote>
+<p>显然，每一个正则文法都是上下文无关文法，每一个上下无关文法都是上下文有关文法，而每一个上下文有关文法都是 0 型文法，即：$L(G3) \subseteq L(G2) \subseteq L(G1) \subseteq L(G0)$。</p>
+</blockquote>
+<h3 id="语言与文法类型的约定"><a href="#语言与文法类型的约定" class="headerlink" title="语言与文法类型的约定"></a>语言与文法类型的约定</h3><p>如果一种语言能由几种文法所产生，则把这种语言称为在这几种文法中受限制最多的那种文法所产生的语言。</p>
+<h3 id="CFG-识别句子的派生树表示"><a href="#CFG-识别句子的派生树表示" class="headerlink" title="CFG 识别句子的派生树表示"></a>CFG 识别句子的派生树表示</h3><p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%951.png" alt="二义性文法1"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%952.png" alt="二义性文法2"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%95.png" alt="二义性文法"></p>
+<p>一个文法 $G$，如果存在某个句子有不只一棵分析树与之对应，那么称这个文法是二义的。</p>
+<h2 id="自动机理论"><a href="#自动机理论" class="headerlink" title="自动机理论"></a>自动机理论</h2><h3 id="有限自动机"><a href="#有限自动机" class="headerlink" title="有限自动机"></a>有限自动机</h3><p>有限自动机又分为确定性有限自动机（definite automata, DFA）和不确定性有限自动机（non-definite automata, NFA）两种。</p>
+<h4 id="确定的有限自动机-definite-automata-DFA"><a href="#确定的有限自动机-definite-automata-DFA" class="headerlink" title="确定的有限自动机(definite automata, DFA)"></a>确定的有限自动机(definite automata, DFA)</h4><p>确定的有限自动机 $M$ 是一个五元组：$M = (\Sigma, Q, \delta, q_0, F)$</p>
+<ul>
+<li>$\Sigma$ 是输入符号的有穷集合；</li>
+<li>$Q$ 是状态的有限集合；</li>
+<li>$q_0 \in Q$ 是初始状态；</li>
+<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
+<li>$\delta$ 是 $Q$ 与 $\Sigma$ 的直积 $Q×\Sigma$ 到 $Q$ （下一个状态）的映射。它支配着有限状态控制的行为，有时也称为状态转移函数。</li>
+</ul>
+<p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/DFA.png" alt="DFA"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/DFA2.png" alt="DFA2"></p>
+<h5 id="DFA-定义的语言"><a href="#DFA-定义的语言" class="headerlink" title="DFA 定义的语言"></a>DFA 定义的语言</h5><p>如果一个句子 $x$ 使得有限自动机 $M$ 有 $\delta(q_0, x) = p, p \in F$，那么，称句子 $x$ 被 $M$ 接受。由 $M$ 定义的语言 $T(M)$ 就是被 $M$ 接受的句子的全集。即：$T(M) = {x | \delta(q_0, x) \in F }$</p>
+<h4 id="不确定的有限自动机-non-definite-automata-NFA"><a href="#不确定的有限自动机-non-definite-automata-NFA" class="headerlink" title="不确定的有限自动机(non-definite automata, NFA)"></a>不确定的有限自动机(non-definite automata, NFA)</h4><p>不确定的有限自动机 $M$ 是一个五元组 $M = (\Sigma, Q, \delta, q_0, F)$</p>
+<ul>
+<li>$\Sigma$ 是输入符号的有穷集合；</li>
+<li>$Q$ 是状态的有限集合；</li>
+<li>$q_0 \in Q$ 是初始状态；</li>
+<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
+<li>$\delta$ 是 $Q$ 与 $\Sigma$ 的直积 $Q×\Sigma$ 到Q的幂集 $2^Q$ 的映射。</li>
+</ul>
+<h4 id="NFA-与-DFA-的关系和区别"><a href="#NFA-与-DFA-的关系和区别" class="headerlink" title="NFA 与 DFA 的关系和区别"></a>NFA 与 DFA 的关系和区别</h4><p>NFA 与 DFA 的唯一区别是：在 NFA 中 $\delta(q, a)$ 是一个状态集合，而在 DFA 中 $\delta(q, a)$ 是一个状态。</p>
+<p>设 $L$ 是一个被 NFA 所接受的句子的集合，则存在一个 DFA，它能够接受 $L$。</p>
+<h4 id="正则文法与有限自动机的关系"><a href="#正则文法与有限自动机的关系" class="headerlink" title="正则文法与有限自动机的关系"></a>正则文法与有限自动机的关系</h4><p>若 $G = (V_N, V_T, P, S )$ 是一个正则文法，则存在一个有限自动机 $M=(\Sigma, Q, \delta, q_0, F)$，使得: $T(M) = L(G)$。</p>
+<p>由 $G$ 构造 $M$ 的一般步骤：</p>
+<ol>
+<li>令 $\Sigma =V_T, Q=V_N \cup {T}, q_0=S$，其中，$T$ 是一个新增加的非终结符。</li>
+<li>如果在 $P$ 中有产生式 $S \rightarrow \epsilon$，则 $F={S, T}$，否则 $F={T}$。</li>
+<li>如果在 $P$ 中有产生式 $B \rightarrow a, B \in V_N, a \in V_T$，则 $T \in \delta(B, a)$。</li>
+<li>如果在 $P$ 中有产生式 $B \rightarrow aC, B, C\in V_N，a \in V_T$，则 $C \in \delta(B, a)$。</li>
+<li>对于每一个 $a \in V_T$，有 $\delta(T, a) = \emptyset$。</li>
+</ol>
+<p>若 $M=(\Sigma, Q, \delta, q_0, F$ 是一有限自动机，则存在正则文法 $G = (V_N, V_T, P, S )$ 使 $L(G)=T(M)$。</p>
+<p>由 $M$ 构造 $G$ 的一般步骤：</p>
+<ol>
+<li>令 $V_N = Q, V_T = \Sigma, S = q_0$；</li>
+<li>如果 $C \in \delta(B, a), B, C \in Q, a \in \delta$，则在 $P$ 中有产生式 $B \rightarrow aC$；</li>
+<li>如果 $C \in \delta(B, a), C \in F$，则在 $P$ 中有产生式 $B \rightarrow a$。</li>
+</ol>
+<h3 id="下推自动机"><a href="#下推自动机" class="headerlink" title="下推自动机"></a>下推自动机</h3><h4 id="下推自动机-push-down-automata-PDA"><a href="#下推自动机-push-down-automata-PDA" class="headerlink" title="下推自动机(push-down automata, PDA)"></a>下推自动机(push-down automata, PDA)</h4><p>PDA 可以看成是一个带有附加的下推存储器的有限自动机，下推存储器是一个栈。</p>
+<p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/PDA.png" alt="PDA"></p>
+<p>一个不确定的 PDA 可以表达成一个 7 元组：$M = (\Sigma, Q, \Gamma, \delta, q_0, Z_0, F)$</p>
+<ul>
+<li>$\Sigma$ 是输入符号的有穷集合；</li>
+<li>$Q$ 是状态的有限集合；</li>
+<li>$q_0 \in Q$ 是初始状态；</li>
+<li>$\Gamma$ 为下推存储器符号的有穷集合；</li>
+<li>$Z_0 \in \Gamma$ 为最初出现在下推存储器顶端的符号；</li>
+<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
+<li>$\delta$ 是从 $Q×(\Sigma \cup {\epsilon})×\Gamma$ 到 $Q×\Gamma*$ 子集的映射。</li>
+</ul>
+<blockquote>
+<p>映射关系 $\delta$ 的解释</p>
+<p>映射关系 $\delta(q, a, Z)={(q_1, \gamma_1), (q_2, \gamma_2),…,(q_m, \gamma_m)}$</p>
+<p>其中, $q_1, q_2, …, q_m \in Q, a \in \Sigma, Z \in \Gamma, \gamma_1, \gamma_2,…,\gamma_m \in \Gamma*$。</p>
+<p>该映射的意思是：当 PDA 处于状态 $q$，面临输入符号 $a$ 时，自动机将进入 $q_i, i = 1, 2, …, m$ 状态，并以 $\gamma_i$ 来代替下推存储器（栈）顶端符号 $Z$，同时将输入头指向下一个字符。当 $Z$ 被 $\gamma_i$ 取代时，$\gamma_i$ 的符号按照从左到右的顺序依次从下向上推入到存储器。</p>
+</blockquote>
+<p>特殊情况下，当 $\delta(q, a, Z)={(q_1, \gamma_1), (q_2, \gamma_2),…,(q_m, \gamma_m)}$ 时，输入头位置不移动，只用于处理下推存储器内部的操作，叫作“$\epsilon$ 移动”。</p>
+<h3 id="另外两种自动机"><a href="#另外两种自动机" class="headerlink" title="另外两种自动机"></a>另外两种自动机</h3><h4 id="图灵机"><a href="#图灵机" class="headerlink" title="图灵机"></a>图灵机</h4><ul>
+<li>图灵机与 0 型文法等价；</li>
+<li>图灵机与有限自动机（FA）的区别：图灵机可以通过其读/写头改变输入带的字符。</li>
+</ul>
+<h4 id="线性带限自动机"><a href="#线性带限自动机" class="headerlink" title="线性带限自动机"></a>线性带限自动机</h4><ul>
+<li>线性带限自动机与 1 型文法等价；</li>
+<li>线性带限自动机是一个确定的单带图灵机，其读写头不能超越原输入带上字符串的初始和终止位置，即线性带限自动机的存储空间被输入符号串的长度所限制。</li>
+</ul>
+<h3 id="语言与识别器的对应关系"><a href="#语言与识别器的对应关系" class="headerlink" title="语言与识别器的对应关系"></a>语言与识别器的对应关系</h3><p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%AF%86%E5%88%AB%E5%99%A8%E7%9A%84%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB.png" alt="语言与识别器的对应关系"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%9F%BA%E7%A1%80/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -764,311 +1168,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/18/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Error%E3%80%81Variance/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/18/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Error%E3%80%81Variance/" class="post-title-link" itemprop="url">Bias、Error、Variance.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-18 13:59:27" itemprop="dateCreated datePublished" datetime="2020-03-18T13:59:27+08:00">2020-03-18</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><img src="/2020/03/18/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Error%E3%80%81Variance/Bias%E3%80%81Error%E3%80%81Variance.jpg" alt="Bias、Error、Variance"></p>
-<ul>
-<li>准：bias 描述的是根据样本拟合出的模型的输出预测结果的期望与样本真实结果的差距，简单讲，就是在样本上拟合的好不好。要想在 bias 上表现好，low bias，就得复杂化模型，增加模型的参数，但这样容易过拟合（overfitting），过拟合对应上图是 high variance，点很分散。low bias 对应就是点都打在靶心附近，所以瞄的是准的，但手不一定稳。</li>
-<li>确：varience 描述的是样本上训练出来的模型在测试集上的表现，要想在 variance 上表现好，low varience，就要简化模型，减少模型的参数，但这样容易欠拟合（unfitting），欠拟合对应上图是 high bias，点偏离中心。low variance 对应就是点都打的很集中，但不一定是靶心附近，手很稳，但是瞄的不准。</li>
-</ul>
-<p>Error = Bias + Variance</p>
-<p><img src="/2020/03/18/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Error%E3%80%81Variance/Bias%E3%80%81Error%E3%80%81Variance2.png" alt="Bias、Error、Variance2"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/16/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/pitch%E3%80%81yaw%E3%80%81roll/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/16/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/pitch%E3%80%81yaw%E3%80%81roll/" class="post-title-link" itemprop="url">pitch、yaw、roll</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-16 22:15:54" itemprop="dateCreated datePublished" datetime="2020-03-16T22:15:54+08:00">2020-03-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在航空中，pitch、yaw、roll 下图所示。</p>
-<ul>
-<li>pitch 是围绕 X 轴旋转，也叫做俯仰角。</li>
-<li>yaw 是围绕 Y 轴旋转，也叫偏航角。</li>
-<li>roll 是围绕 Z 轴旋转，也叫翻滚角。</li>
-</ul>
-<p><img src="/2020/03/16/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/pitch%E3%80%81yaw%E3%80%81roll/pitch%E3%80%81yaw%E3%80%81roll1.png" alt="pitch、yaw、roll1"></p>
-<p>在 3D 系统中，假设视点为原点，则视点坐标系如下图所示，通常 z 轴的负方向是视点方向（OpenGL）。<br><img src="/2020/03/16/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/pitch%E3%80%81yaw%E3%80%81roll/pitch%E3%80%81yaw%E3%80%81roll2.png" alt="pitch、yaw、roll2"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/16/artificial_intelligence/%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0/%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0-softmax/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/16/artificial_intelligence/%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0/%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0-softmax/" class="post-title-link" itemprop="url">激活函数-softmax</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-16 16:50:31" itemprop="dateCreated datePublished" datetime="2020-03-16T16:50:31+08:00">2020-03-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0/" itemprop="url" rel="index"><span itemprop="name">激活函数</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在多元分类的问题中，我们默认采用 softmax 函数，具体表现为将多个神经元的输出，映射到 0~1 的区间中，按概率高低进行分类，各概率之和为 1。</p>
-<p>某分类的概率数学表达式为：$y_{i}=e^{i} / \Sigma_{j=1} e^{j}$</p>
-<p>具体来说，假设有四个输出单元，分别为：</p>
-<ul>
-<li>$y_{1}=e^{x 1} /\left(e^{x 1}+e^{x 2}+e^{x 3}+e^{x 4}\right)$，假设其概率为 0.4。</li>
-<li>$y_{2}=e^{x 2} /\left(e^{x 1}+e^{x 2}+e^{x 3}+e^{x 4}\right)$，假设其概率为 0.15。</li>
-<li>$y_{3}=e^{x 3} /\left(e^{x 1}+e^{x 2}+e^{x 3}+e^{x 4}\right)$，假设其概率为 0.15。</li>
-<li>$y_{4}=e^{x 4} /\left(e^{x 1}+e^{x 2}+e^{x 3}+e^{x 4}\right)$，假设其概率为 0.3。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/16/artificial_intelligence/deep_learning/%E6%A6%82%E5%BF%B5/DL-%E6%A6%82%E5%BF%B5-%E5%BC%A0%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/16/artificial_intelligence/deep_learning/%E6%A6%82%E5%BF%B5/DL-%E6%A6%82%E5%BF%B5-%E5%BC%A0%E9%87%8F/" class="post-title-link" itemprop="url">DL-概念-张量</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-16 16:25:39" itemprop="dateCreated datePublished" datetime="2020-03-16T16:25:39+08:00">2020-03-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/48982978">https://zhuanlan.zhihu.com/p/48982978</a></p>
-<p>在深度学习里，Tensor 实际上就是一个多维数组（multidimensional array）。</p>
-<p>而 Tensor 的目的是能够创造更高维度的矩阵、向量。</p>
-<p><img src="/2020/03/16/artificial_intelligence/deep_learning/%E6%A6%82%E5%BF%B5/DL-%E6%A6%82%E5%BF%B5-%E5%BC%A0%E9%87%8F/%E5%BC%A0%E9%87%8F1.jpg" alt="张量1"></p>
-<p>现在将三维的张量用一个正方体来表示：<br><img src="/2020/03/16/artificial_intelligence/deep_learning/%E6%A6%82%E5%BF%B5/DL-%E6%A6%82%E5%BF%B5-%E5%BC%A0%E9%87%8F/%E5%BC%A0%E9%87%8F2.jpg" alt="张量2"></p>
-<p>这样子可以进一步生成更高维的张量：<br><img src="/2020/03/16/artificial_intelligence/deep_learning/%E6%A6%82%E5%BF%B5/DL-%E6%A6%82%E5%BF%B5-%E5%BC%A0%E9%87%8F/%E5%BC%A0%E9%87%8F3.jpg" alt="张量3"></p>
-<p>这有啥用呢？在用 TensorFlow 处理更高维数据结构的时候，最好可以能够在脑子里相出数据的形状。</p>
-<p>举个简单的例子，彩色图像文件（RGB）一般都会处理成 3-d tensor，每个 2d array 中的 element 表示一个像素，R 代表 Red，G 代表 Green，B 代表 Blue：<br><img src="/2020/03/16/artificial_intelligence/deep_learning/%E6%A6%82%E5%BF%B5/DL-%E6%A6%82%E5%BF%B5-%E5%BC%A0%E9%87%8F/%E5%BC%A0%E9%87%8F4.jpg" alt="张量4"></p>
-<p>而用 Python 举例子的话，来看看下面这个表格：<br><img src="/2020/03/16/artificial_intelligence/deep_learning/%E6%A6%82%E5%BF%B5/DL-%E6%A6%82%E5%BF%B5-%E5%BC%A0%E9%87%8F/%E5%BC%A0%E9%87%8F5.jpg" alt="张量5"></p>
-<p>再来看看 Tensor 对象的 3 个属性：</p>
-<ol>
-<li>rank: number of dimensions</li>
-<li>shape: number of rows and columns</li>
-<li>type: data type of tensor’s elements</li>
-</ol>
-<p>根据上面的张量说明图，是不是可以将属性和对象对应起来呢？</p>
-<p>最后总结一下：在深度学习中，Tensor 实际上就是一个多维数组（multidimensional array），其目的是能够创造更高维度的矩阵、向量。我们通过图示和 Python 的实例能够想象 Tensor 的空间构造以及如何用 Tensor 的属性来构造 Tensor。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1140,7 +1239,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1153,7 +1252,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1188,7 +1287,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

@@ -188,6 +188,441 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/" class="post-title-link" itemprop="url">Hadoop.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-10 12:58:16" itemprop="dateCreated datePublished" datetime="2020-05-10T12:58:16+08:00">2020-05-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Hadoop-的优化与发展"><a href="#Hadoop-的优化与发展" class="headerlink" title="Hadoop 的优化与发展"></a>Hadoop 的优化与发展</h2><h3 id="Hadoop-的局限与不足"><a href="#Hadoop-的局限与不足" class="headerlink" title="Hadoop 的局限与不足"></a>Hadoop 的局限与不足</h3><p>Hadoop1.0 的核心组件（仅指 MapReduce 和 HDFS，不包括 Hadoop 生态系统内的 Pig、Hive、HBase 等其他组件）主要存在以下不足。</p>
+<ol>
+<li>抽象层次低。需要手工编写代码来完成，有时只是为了实现一个简单的功能，也需要编写大量的代码。</li>
+<li>表达能力有限。MapReduce 把复杂分布式编程工作高度抽象到两个函数上，即 Map 和 Reduce，在降低开发人员程序开发复杂度的同时，却也带来了表达能力有限的问题，实际生产环境中的一些应用是无法用简单的 Map 和 Reduce 来完成的。</li>
+<li>开发者自己管理作业之间的依赖关系。一个作业（Job）只包含 Map 和 Reduce 两个阶段，通常的实际应用问题需要大量的作业进行协作才能顺利解决，这些作业之间往往存在复杂的依赖关系，但是 MapReduce 框架本身并没有提供相关的机制对这些依赖关系进行有效管理，只能由开发者自己管理。</li>
+<li>难以看到程序整体逻辑。用户的处理逻辑都隐藏在代码细节中，没有更高层次的抽象机制对程序整体逻辑进行设计，这就给代码理解和后期维护带来了障碍。</li>
+<li>执行迭代操作效率低。对于一些大型的机器学习、数据挖掘任务，往往需要多轮迭代才能得到结果。采用 MapReduce 实现这些算法时，每次迭代都是一次执行 Map、Reduce 任务的过程，这个过程的数据来自分布式文件系统 HDFS，本次迭代的处理结果也被存放到 HDFS 中，继续用于下一次迭代过程。反复读写 HDFS 文件中的数据，大大降低了迭代操作的效率。</li>
+<li>资源浪费。在 MapReduce 框架设计中，Reduce 任务需要等待所有 Map 任务都完成后才可以开始，造成了不必要的资源浪费。</li>
+<li>实时性差。只适用于离线批数据处理，无法支持交互式数据处理、实时数据处理。</li>
+</ol>
+<h3 id="针对-Hadoop-的改进与提升"><a href="#针对-Hadoop-的改进与提升" class="headerlink" title="针对 Hadoop 的改进与提升"></a>针对 Hadoop 的改进与提升</h3><p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/Hadoop1%E5%88%B02.png" alt="Hadoop1到2"></p>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/Hadoop%E7%A5%9E%E6%80%81%E7%B3%BB%E7%BB%9F.png" alt="Hadoop神态系统"></p>
+<h2 id="HDFS2-0-的新特性"><a href="#HDFS2-0-的新特性" class="headerlink" title="HDFS2.0 的新特性"></a>HDFS2.0 的新特性</h2><p>相对于之前的 HDFS1.0 而言，HDFS2.0 增加了 HDFS HA 和 HDFS 联邦等新特性。</p>
+<h3 id="HDFS-HA"><a href="#HDFS-HA" class="headerlink" title="HDFS HA"></a>HDFS HA</h3><p>对于分布式文件系统 HDFS 而言，名称节点（NameNode）是系统的核心节点，存储了各类元数据信息，并负责管理文件系统的命名空间和客户端对文件的访问。但是，在 HDFS1.0 中，只存在一个名称节点，一旦这个唯一的名称节点发生故障，就会导致整个集群变得不可用，这就是常说的“单点故障问题”。虽然 HDFS1.0 中存在一个“第二名称节点（Secondary NameNode）”，但是第二名称节点并不是名称节点的备用节点，它与名称节点有着不同的职责，其主要功能是周期性地从名称节点获取命名空间镜像文件（FsImage）和修改日志（EditLog），进行合并后再发送给名称节点，替换掉原来的 FsImage，以防止日志文件 EditLog 过大，导致名称节点失败恢复时消<br>耗过多时间。合并后的命名空间镜像文件 FsImage 在第二名称节点中也保存一份，当名称节点失效的时候，可以使用第二名称节点中的 FsImage 进行恢复。</p>
+<p>由于第二名称节点无法提供“热备份”功能，即在名称节点发生故障的时候，系统无法实时切换到第二名称节点立即对外提供服务，仍然需要进行停机恢复，因此 HDFS1.0 的设计是存在单点故障问题的。为了解决单点故障问题，HDFS2.0 采用了 HA（High Availability）架构。在一个典型的 HA 集群中，一般设置两个名称节点，其中一个名称节点处于“活跃（Active）”状态，另一个处于“待命（Standby）”状态。处于活跃状态的名称节点负责对外处理所有客户端的请求，而处于待命状态的名称节点则作为备用节点，保存了足够多的系统元数据，当名称节点出现故障时提供快速恢复能力。也就是说，在 HDFS HA 中，处于待命状态的名称节点提供了“热备份”，一旦活跃名称节点出现故障，就可以立即切换到待命名称节点，不会影响到系统的正常对外服务。</p>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS%20HA.png" alt="HDFS HA"></p>
+<p>由于待命名称节点是活跃名称节点的“热备份”，因此活跃名称节点的状态信息必须实时同步到待命名称节点。两种名称节点的状态同步，可以借助于一个共享存储系统来实现，比如 NFS（Network File Systerm）、QJM（Quorum Jourmal Manager）或者 Zookeeper。活跃名称节点将更新数据写人到共享存储系统，待命名称节点会一直监听该系统，一旦发现有新的写人，就立即从公共存储系统中读取这些数据并加载到自己的内存中，从而保证与活跃名称节点状态完全同步。</p>
+<p>此外，名称节点中保存了数据块（Block）到实际存储位置的映射信息，即每个数据块是由哪个数据节点存储的。当一个数据节点加入 HDFS 集群时，它会把自己所包含的数据块列表报告给名称节点，此后会通过“心跳”的方式定期执行这种告知操作，以确保名称节点的块映射是最新的。因此，为了实现故障时的快速切换，必须保证待命名称节点一直包含最新的集群中各个块的位置信息。为了做到这一点，需要给数据节点配置两个名称节点的地址（即活跃名称节点和待命名称节点），并把块的位置信息和心跳信息同时发送到这两个名称节点。为了防止出现“两个管家”现象，HA 还要保证任何时刻都只有一个名称节点处于活跃状态，否则，如果有两个名称节点处于活跃状态，HDFS 集群中出现“两个管家”，就会导致数据丢失或者其他异常，这个任务是由 Zookeeper 来实现的，Zookeeper 可以确保任意时刻只有一个名称节点提供对外服务。</p>
+<h3 id="HDFS-联邦"><a href="#HDFS-联邦" class="headerlink" title="HDFS 联邦"></a>HDFS 联邦</h3><h4 id="HDFS1-0-中存在的问题"><a href="#HDFS1-0-中存在的问题" class="headerlink" title="HDFS1.0 中存在的问题"></a>HDFS1.0 中存在的问题</h4><p>HDFS1.0 采用单名称节点的设计，不仅会带来单点故障问题，还存在可扩展性、性能和隔离性等问题。在可扩展性方面，名称节点把整个 HDFS 文件系统中的元数据信息都保存在自己的内存中，HDFS1.0 中只有一个名称节点，不可以水平扩展，而单个名称节点的内存空间是有上限的，这限制了系统中数据块、文件和目录的数目。是否可以通过纵向扩展的方式（即为单个名称节点增加更多的 CPU、内存等资源）解决这个问题呢？答案是否定的。纵向扩展带来的第一个问题就是，会带来过长的系统启动时间，比如一个具有 50 GB 内存的 HDFS 启动一次大概需要消耗 30min~2h，单纯增大内存空间只会让系统启动时间变得更长。其次，当在内存空间清理时发生错误，就会导致整个 HDFS 集群宕机。</p>
+<p>在系统整体性能方面，整个 HDFS 文件系统的性能会受限于单个名称节点的吞吐量。在隔离性方面，单个名称节点难以提供不同程序之间的隔离性，一个程序可能会影响其他运行的程序（比如一个程序消耗过多资源导致其他程序无法顺利运行）。HDFS HA 虽然提供了两个名称节点，但是在某个时刻也只会有一个名称节点处于活跃状态，另个则处于待命状态。因而，HDFS HA 在本质上还是单名称节点，只是通过“热备份”设计方式解决了单点故障问题，并没有解决可扩展性、系统性能和隔离性三个方面的问题。</p>
+<h4 id="HDFS-联邦的设计"><a href="#HDFS-联邦的设计" class="headerlink" title="HDFS 联邦的设计"></a>HDFS 联邦的设计</h4><p>HDFS 联邦可以很好地解决上述三个方面的问题。在 HDFS 联邦中，设计了多个相互独立的名称节点，使得 HDFS 的命名服务能够水平扩展，这些名称节点分别进行各自命名空间和块的管理，相互之间是联邦关系，不需要彼此协调。HDFS 联邦并不是真正的分布式设计，但是采用这种简单的“联合”设计方式，在实现和管理复杂性方面，都要远低于真正的分布式设计，而且可以快速满足需求。在兼容性方面，HDFS 联邦具有良好的向后兼容性，可以无缝地支持单名称节点架构中的配置。所以，原有针对单名称节点的部署配置，不需要作任何修改就可以继续工作。</p>
+<p>HDFS 联邦中的名称节点提供了命名空间和块管理功能。在 HDFS 联邦中，所有名称节点会共享底层的数据节点存储资源。每个数据节点要向集群中所有的名称节点注册，并周期性地向名称节点发送“心跳”和块信息，报告自已的状态，同时也会处理来自名称节点的指令。</p>
+<p>HDFS1.0 只有一个命名空间，这个命名空间使用底层数据节点全部的块。与 HDFS1.0 不同的是，HDFS 联邦拥有多个独立的命名空间，其中，每一个命名空间管理属于自己的一组块，这些属于同一个命名空间的块构成一个“块池”（Block Pool）。每个数据节点会为多个块池提供块的存储。可以看出，数据节点是一个物理概念，而块池则属于逻辑概念，一个块池是一组块的逻辑集合，块池中的各个块实际上是存储在各个不同的数据节点中的。因此，HDFS 联邦中的一个名称节点失效，也不会影响到与它相关的数据节点继续为其他名称节点提供服务。</p>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS%E8%81%94%E9%82%A6%E6%9E%B6%E6%9E%84.png" alt="HDFS联邦架构"></p>
+<h4 id="HDFS-联邦的访问方式"><a href="#HDFS-联邦的访问方式" class="headerlink" title="HDFS 联邦的访问方式"></a>HDFS 联邦的访问方式</h4><p>对于 HDFS 联邦中的多个命名空间，可以采用客户端挂载表（Client Side Mount Table）方式进行数据共享和访问。每个阴影三角形代表一个独立的命名空间，上方空白三角形表示从客户方向去访问下面子命名空间。客户可以访问不同的挂载点来访问不同的子命名空间。这就是 HDFS 联邦中命名空间管理的基本原理，即把各个命名空间挂载到全局“挂载表”（Mount-table）中，实现数据全局共享；同样地，命名空间挂载到个人的挂载表中，就成为应用程序可见的命名空间。</p>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8C%82%E8%BD%BD%E8%A1%A8%E6%96%B9%E5%BC%8F%E8%AE%BF%E9%97%AE%E5%A4%9A%E4%B8%AA%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4.png" alt="客户端挂载表方式访问多个命名空间"></p>
+<h4 id="HDFS-联邦相对于-HDFS1-0-的优势"><a href="#HDFS-联邦相对于-HDFS1-0-的优势" class="headerlink" title="HDFS 联邦相对于 HDFS1.0 的优势"></a>HDFS 联邦相对于 HDFS1.0 的优势</h4><p>采用 HDFS 联邦的设计方式，可解决单名称节点存在的以下 3 个问题。</p>
+<ol>
+<li>HDFS 集群可扩展性。多个名称节点各自分管一部分目录，使得个集群可以扩展到更多节点，不再像 HDFS1.0 中那样由于内存的限制制约文件存储数目。</li>
+<li>性能更高效。多个名称节点管理不同的数据，且同时对外提供服务，将为用户提供更高的读写吞吐率。</li>
+<li>良好的隔离性。用户可根据需要将不同业务数据交由不同名称节点管理，这样不同业务之间影响很小。</li>
+</ol>
+<p>需要注意的是，HDFS 联邦并不能解决单点故障问题，也就是说，每个名称节点都存在单点故障问题，需要为每个名称节点部署一个后备名称节点，以应对名称节点宕机后对业务产生的影响。</p>
+<h2 id="新一代资源管理调度框架-YARN"><a href="#新一代资源管理调度框架-YARN" class="headerlink" title="新一代资源管理调度框架 YARN"></a>新一代资源管理调度框架 YARN</h2><h3 id="MapReduce1-0-的缺陷"><a href="#MapReduce1-0-的缺陷" class="headerlink" title="MapReduce1.0 的缺陷"></a>MapReduce1.0 的缺陷</h3><p>MapReduce1.0 采用 Master/Slave 架构设计，包括二个 JobTracker 和若干个 TaskTracker，前者负责作业的调度和资源的管理，后者负责执行 JobTracker 指派的具体任务。这种架构设计具有一些很难克服的缺陷，具体如下。</p>
+<ol>
+<li>存在单点故障。由 JobTracker 负责所有 MapReduce 作业的调度，而系统中只有一个 JobTracker，因此会存在单点故障问题，即这个唯一的 JobTracker 出现故障就会导致系统不可用。</li>
+<li>JobTracker“大包大揽”导致任务过重。JobTracker 既要负责作业的调度和失败恢复，又要负责资源管理分配。执行过多的任务，需要消耗大量的资源，例如，当存在非常多的 MapReduce 任务时，JobTracker 需要巨大的内存开销，这也潜在地增加了 JobTracker 失败的风险。正因如此，业内普遍总结出 MapReduce1.0 支持主机数目的上限为 4000 个。</li>
+<li>容易出现内存溢出。在 TaskTracker 端，资源的分配并不考虑 CPU、内存的实际使用情况，而只是根据 MapReduce 任务的个数来分配资源，当两个具有较大内存消耗的任务被分配到同一个 TaskTracker 上时，很容易发生内存溢出的情况。</li>
+<li>资源划分不合理。资源（CPU、内存）被强制等量划分成多个“槽”（Slot），槽又被进一步划分为 Map 槽和 Reduce 槽两种，分别供 Map 任务和 Reduce 任务使用，彼此之间不能使用分配给对方的槽，也就是说，当 Map 任务已经用完 Map 槽时，即使系统中还有大量剩余的 Reduce 槽，也不能拿来运行 Map 任务，反之亦然。这就意味着，当系统中只存在单一 Map 任务或 Reduce 任务时，会造成资源的浪费。</li>
+</ol>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/MapReduce1.png" alt="MapReduce1"></p>
+<h3 id="YARN-设计思路"><a href="#YARN-设计思路" class="headerlink" title="YARN 设计思路"></a>YARN 设计思路</h3><p>为了克服 MapReduce1.0 版本的缺陷，Hadoop2.0 以后的版本对其核心子项目 MapReduce1.0 的体系结构进行了重新设计，生成了 MapReduce2.0 和 YARN（Yet Another Resource Negotiator）。YARN 架构设计基本思路就是“放权”，即不让 JobTracker 这一个组件承担过多的功能，把原 JobTracker 三大功能（资源管理、任务调度和任务监控）进行拆分，分别交给不同的新组件去处理。重新设计后得到的 YARN 包括 ResourceManager 、ApplicationMaster 和 NodeManager，其中，由 ResourceManager 负责资源管理，由 ApplicationMaster 负责任务调度和监控，由 NodeManager 负责执行原 TaskTracker 的任务。通过这种“放权”的设计，大大降低了 JobTracker 的负担，提升了系统运行的效率和稳定性。</p>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF.png" alt="YARN架构设计思路"></p>
+<p>在 Hadoop1.0 中，其核心子项目 MapReduce1.0 既是一个计算框架，也是一个资源管理调度框架。到了 Hadoop2.0 以后，MapReduce1.0 中的资源管理调度功能被单独分离出来形成了 YARN，它是一个纯粹的资源管理调度框架，而不是一个计算框架；而被剥离了资源管理调度功能的 MapReduce 框架就变成了 MapReduce2.0，它是运行在 YARN 之上的一个纯粹的计算框架，不再自己负责资源调度管理服务，而是由 YARN 为其提供资源管理调度服务。</p>
+<h3 id="YARN-体系架构"><a href="#YARN-体系架构" class="headerlink" title="YARN 体系架构"></a>YARN 体系架构</h3><p>YARN 体系结构中包含了三个组件：ResourceManager、ApplicationMaster 和 NodeManager。</p>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84.png" alt="YARN体系架构"></p>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E5%90%84%E4%B8%AA%E7%BB%84%E4%BB%B6%E7%9A%84%E5%8A%9F%E8%83%BD.png" alt="YARN各个组件的功能"></p>
+<p>ResourceManager（RM）是一个全局的资源管理器，负责整个系统的资源管理和分配，主要包括两个组件，即调度器（Scheduler）和应用程序管理器（Applications Manager）。调度器主要负责资源管理和分配，不再负责跟踪和监控应用程序的执行状态，也不负责执行失败恢复，因为这些任务都已经交给 ApplicationMaster 组件来负责。调度器接收来自 ApplicationMaster 的应用程序资源请求，并根据容量、队列等限制条件（如每个队列分配一定的资源，最多执行一定数量的作业等)，把集群中的资源以“容器”的形式分配给提出申请的应用程序，容器的选择通常会考虑应用程序所要处理的数据的位置，进行就近选择，从而实现“计算向数据靠拢”。在 MapReduce1.0 中，资源分配的单位是“槽”，而在 YARN 中是以容器（Container）作为动态资源分配单位，每个容器中都封装了一定数量的 CPU、内存、磁盘等资源，从而限定每个应用程序可以使用的资源量。同时，在 YARN 中调度器被设计成是一个可插拔的组件，YARN 不仅自身提供了许多种直接可用的调度器，也允许用户根据自己的需求重新设计调度器。应用程序管理器负责系统中所有应用程序的管理工作，主要包括应用程序提交、与调度器协商资源以启动 ApplicationMaster、 监控 ApplicationMaster 运行状态并在失败时重新启动等。</p>
+<p>在 Hadoop 平台上，用户的应用程序是以作业（Job）的形式提交的，然后一个作业会被分解成多个任务（包括 Map 任务和 Reduce 任务）进行分布式执行。ResourceManager 接收用户提交的作业，按照作业的上下文信息以及从 NodeManager 收集来的容器状态信息，启动调度过程，为用户作业启动一个 ApplicationMaster。</p>
+<p>ApplicationMaster 的主要功能是: </p>
+<ol>
+<li>当用户作业提交时，ApplicationMaster 与 ResourceManager 协商获取资源，ResourceManager 会以容器的形式为 ApplicationMaster 分配资源；</li>
+<li>把获得的资源进步分配给内部的各个任务（Map 任务或 Reduce 任务），实现资源的“二次分配”；</li>
+<li>与 NodeManager 保持交互通信进行应用程序的启动、运行、监控和停止，监控申请到的资源的使用情况，对所有任务的执行进度和状态进行监控，并在任务发生失败时执行失败恢复（即重新申请资源重启任务）；</li>
+<li>定时向 ResourceManager 发送“心跳”消息，报告资源的使用情况和应用的进度信息；</li>
+<li>当作业完成时，ApplicationMaster 向 ResourceManager 注销容器，执行周期完成。</li>
+</ol>
+<p>NodeManager 是驻留在一个 YARN 集群中的每个节点上的代理，主要负责容器生命周期管理，监控每个容器的资源（CPU、内存等）使用情况，跟踪节点健康状况，并以“心跳”的方式与 ResourceManager 保持通信，向 ResourceManager 汇报作业的资源使用情况和每个容器的运行状态，同时，它还要接收来自 ApplicationMaster 的启动/停止容器的各种请求。需要说明的是，NodeManager 主要负责管理抽象的容器，只处理与容器相关的事情，而不具体负责每个任务（Map 任务或 Reduce 任务）自身状态的管理，因为这些管理工作是由 ApplicationMaster 完成的，ApplicationMaster 会通过不断与 NodeManager 通信来掌握各个任务的执行状态。</p>
+<p>在集群部署方面，YARN 的各个组件是和 Hadoop 集群中的其他组件进行统一部署的。YARN 的 ResourceManager 组件和 HDFS 的名称节点（NameNode）部署在一个节点上，YARN 的 ApplicationMaster 及 NodeManager 是和 HDFS 的数据节点（DataNode）部署在一-起的。YARN 中的容器代表了 CPU、内存、网络等计算资源，它也是和 HDFS 的数据节点一起的。</p>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E5%92%8CHadoop%E5%B9%B3%E5%8F%B0%E5%85%B6%E4%BB%96%E7%BB%84%E4%BB%B6%E7%9A%84%E7%BB%9F%E4%B8%80%E9%83%A8%E7%BD%B2.png" alt="YARN和Hadoop平台其他组件的统一部署"></p>
+<h3 id="YARN-工作流程"><a href="#YARN-工作流程" class="headerlink" title="YARN 工作流程"></a>YARN 工作流程</h3><p>在 YARN 框架中执行一个 MapReduce 程序时，从提交到完成需要经历如下8个步骤。</p>
+<ol>
+<li>用户编写客户端应用程序，向 YARN 提交应用程序，提交的内容包括 ApplicationMaster 程序、启动 ApplicationMaster 的命令、用户程序等。</li>
+<li>YARN 中的 ResourceManager 负责接收和处理来自客户端的请求。接到客户端应用程序请求后，ResourceManager 里面的调度器会为应用程序分配一个容器。同时，ResourceManager 的应用程序管理器会与该容器所在的 NodeManager 通信，为该应用程序在该容器中启动一个 ApplicationMaster。</li>
+<li>ApplicationMaster 被创建后会首先向 ResourceManager 注册，从而使得用户可以通过 ResourceManager 来直接查看应用程序的运行状态。接下来的步骤4~7是具体的应用程序执行步骤。</li>
+<li>ApplicationMaster 采用轮询的方式通过 RPC 协议向 ResourceManager 申请资源。</li>
+<li>ResourceManager 以“容器”的形式向提出申请的 ApplicationMaster 分配资源，一旦 ApplicationMaster 申请到资源后，就会与该容器所在的 NodeManager 进行通信，要求它启动任务。</li>
+<li>当 ApplicationMaster 要求容器启动任务时，它会为任务设置好运行环境（包括环境变量、JAR 包、二进制程序等），然后将任务启动命令写到一个脚本中，最后通过在容器中运行该脚本来启动任务。</li>
+<li>各个任务通过某个 RPC 协议向 ApplicationMaster 汇报自己的状态和进度，让 AplicationMater 可以随时掌握各个任务的运行状态，从而可以在任务失败时重新启动任务。</li>
+<li>应用程序运行完成后，ApplicationMaster 向 ResourceManager 的应用程序管理器注销并关闭自己。若 ApplicationMaster 因故失败，ResourceManager 中的应用程序管理器会监测到失败的情形，然后将其重新启动，直到所有的任务执行完毕。</li>
+</ol>
+<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png" alt="YARN的工作流程"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/" class="post-title-link" itemprop="url">Hive.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-08 18:32:49" itemprop="dateCreated datePublished" datetime="2020-05-08T18:32:49+08:00">2020-05-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><h3 id="数据仓库概念"><a href="#数据仓库概念" class="headerlink" title="数据仓库概念"></a>数据仓库概念</h3><p>数据仓库的体系结构通常包含四个层次：数据源、数据存储和管理、数据服务、数据应用，具体如下：</p>
+<ul>
+<li>数据源：是数据仓库的数据来源，包括了外部数据、现有业务系统和文档资料等；</li>
+<li>数据集成：完成数据的抽取、清洗、转换和加载任务，数据源中的数据采用 ETL 工具以固定的周期加载到数据仓库中；</li>
+<li>数据存储和管理：这一层次主要涉及对数据的存储和管理，包括数据仓库、数据集市、数据仓库检测、运行与维护工具和元数据管理等；</li>
+<li>数据服务：为前端工具和应用提供数据服务，可以直接从数据仓库中获取数据供前端应用使用，也可以通过 OLAP（Online Analytical Processing）服务器为前端应用提供更加复杂的数据服务。OLAP 服务器提供了不同聚集粒度的多维数据集合，使得应用不需要直接访问数据仓库中的底层细节数据，大大减少了数据计算量，提高了查询响应速度。OLAP 服务器还支持针对多维数据集的上钻、下探、切片、切块和旋转等操作，增强了多维数据分析能力；</li>
+<li>数据应用：这一层次直接面向最终用户，包括数据查询工具、自由报表工具、数据分析工具、数据挖掘工具和各类应用系统。</li>
+</ul>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84.png" alt="数据仓库体系结构"></p>
+<h3 id="Hive-简介"><a href="#Hive-简介" class="headerlink" title="Hive 简介"></a>Hive 简介</h3><p>Hive 是一个构建于 Hadoop 顶层的数据仓库工具，依赖 HDFS 来存储数据，依赖 MapReduce 来处理数据。Hive 定义了简单的类似 SQL 的查询语言 HiveQL，它与大部分 SQL 语法兼容，但是，并不完全支持 SQL 标准，比如，HiveSQL 不支持更新操作，也不支持索引和事务，它的子查询和连接操作也存在很多局限。</p>
+<h3 id="Hive-与-Hadoop-生态系统中其他组件的关系"><a href="#Hive-与-Hadoop-生态系统中其他组件的关系" class="headerlink" title="Hive 与 Hadoop 生态系统中其他组件的关系"></a>Hive 与 Hadoop 生态系统中其他组件的关系</h3><p>HDFS 作为高可靠的底层存储，用来存储海量数据；MapReduce 对这些海量数据进行批处理，实现高性能计算；Hive 架构在 MapReduce、HDFS 之上，其自身并不存储和处理数据，需要分别借助于 HDFS 和 MapReduce 实现数据的存储和处理，用 HiveQL 语句编写的处理逻辑，最终都要转化为 MapReduce 任务来运行；Pig 可以作为 Hive 的替代工具，是一种数据流语言和运行环境，适合用于在 Hadoop 平台上查询半结构化数据集，常用于 ETL 过程的一部分，即将外部数据装载到 Hadoop 集群中，然后转换为用户需要的数据格式；HBase 是一个面向列的、分布式的、可伸缩的数据库，它可以提供数据的实时访问功能，而 Hive 只能处理静态数据，主要是 BI 报表数据，就设计初衷而言，在 Hadoop 上设计 Hive，是为了减少复杂 MapReduce 应用程序的编写工作，在 Hadoop 上设计 HBase 则是为了实现对数据的实时访问，所以，HBase 与 Hive 的功能是互补的，它实现了 Hive 不能提供的功能。</p>
+<h3 id="Hive-与传统数据库的对比"><a href="#Hive-与传统数据库的对比" class="headerlink" title="Hive 与传统数据库的对比"></a>Hive 与传统数据库的对比</h3><p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/Hive%E4%B8%8E%E4%BC%A0%E7%BB%9F%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AF%B9%E6%AF%94.png" alt="Hive与传统数据库的对比"></p>
+<h2 id="Hive-系统架构"><a href="#Hive-系统架构" class="headerlink" title="Hive 系统架构"></a>Hive 系统架构</h2><p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/Hive%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84.png" alt="Hive系统架构"></p>
+<p>Hive 主要由以下三个模块组成：用户接口模块、驱动模块以及元数据存储模块。</p>
+<p>用户接口模块包括 CLI、HWI、JDBC、ODBC、Thrift Server 等，用来实现外部应用对 Hive 的访问。</p>
+<ul>
+<li>CLI 是 Hive 自带的一个命令行界面</li>
+<li>HWI 是 Hive 的一个简单网页界面</li>
+<li>JDBC、ODBC 以及 Thrift Server 可以向用户提供进行编程访问的接口<ul>
+<li>Thrift Server 是基于 Thrift 软件框架开发的，它提供 Hive 的 RPC 通信接口</li>
+</ul>
+</li>
+</ul>
+<p>驱动模块（Driver）包括编译器、优化器、执行器等，负责把 HiveSQL 语句转换成一系列 MapReduce 作业，所有命令和查询都会进入到驱动模块，通过该模块对输入进行解析编译，对计算过程进行优化，然后按照指定的步骤执行。</p>
+<p>元数据存储模块（Metastore）是一个独立的关系型数据库，通常是与 MySQL 数据库连接后创建的一个 MySQL 实例，也可以是 Hive 自带的 derby 数据库实例。元数据存储模块中主要保存表模式和其他系统元数据，如表的名称、表的列及其属性、表的分区及其属性、表的属性、表中数据所在位置信息等。</p>
+<h2 id="Hive-工作原理"><a href="#Hive-工作原理" class="headerlink" title="Hive 工作原理"></a>Hive 工作原理</h2><p>Hive 可以快速实现简单的 MapReduce 统计，主要是通过自身组件把 HiveQL 语句转换成 MapReduce 任务来实现的。</p>
+<h3 id="SQL-语句转换成-MapReduce-作业的基本原理"><a href="#SQL-语句转换成-MapReduce-作业的基本原理" class="headerlink" title="SQL 语句转换成 MapReduce 作业的基本原理"></a>SQL 语句转换成 MapReduce 作业的基本原理</h3><h4 id="用-MapReduce-实现连接操作"><a href="#用-MapReduce-实现连接操作" class="headerlink" title="用 MapReduce 实现连接操作"></a>用 MapReduce 实现连接操作</h4><p>假设参与连接（join）的两个表分别为用户表 User 和订单表 Order，User 表有两个属性，即 uid 和 name，Order 表也有两个属性，即 uid 和 orderid，它们的连接键为公共属性 uid。这里对两个表执行连接操作，得到用户的订单号与用户名的对应关系，具体的 SQL 语句命令如下：<code>select name, orderid from user u join order o on u.uid=o.uid;</code></p>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/%E7%94%A8MapReduce%E5%AE%9E%E7%8E%B0%E8%BF%9E%E6%8E%A5%E6%93%8D%E4%BD%9C%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86.png" alt="用MapReduce实现连接操作的基本原理"></p>
+<p>首先，在 Map 阶段， User 表以 uid 为键（key），以 name 和表的标记位（这里 User 的标记位记为 1）为值（value）进行 Map 操作，把表中记录转化成生成一系列键值对的形式。同样地，Order 表以 uid 为键，以 orderid 和表的标记位（这里表 Order 的标记位记为 2）为值进行 Map 操作，把表中 记录转化成生成一系列键值对的形式。比如，User 表中记录 <code>(1,Lily)</code> 转化为键值对 <code>(1,&lt;1,Lily&gt;)</code>，其中，括号中的第一个“1”是 uid 的值，第二个“1”是表 User 的标记位，用来标识这个键值对来自 User 表；再比如，Order 表中记录 <code>(1,101)</code> 转化为键值对 <code>(1,&lt;2,101&gt;)</code>，其中，“2”是表 Order 的标记位，用来标识这个键值对来自 Order 表。</p>
+<p>接着，在 Shuffle 阶段，把 User 表和 Order 表生成的键值对按键值进行哈希，然后传送给对应的 Reduce 机器执行，比如键值对 <code>(1,&lt;1,Lily&gt;)</code>、<code>(1,&lt;2,101&gt;)</code> 和 <code>(1,&lt;2,102&gt;)</code> 传送到同一台 Reduce 机器上，键值对 <code>(2,&lt;1,Tom&gt;)</code> 和 <code>(2,&lt;2,103&gt;)</code> 传送到另一台 Reduce 机器上。当 Reduce 机器接收这些键值对时，还需要按表的标记位对这些键值对进行排序，以优化连接操作。</p>
+<p>最后，在 Reduce 阶段，对同一台 Reduce 机器上的键值对，根据“值”（value）中的表标记位，对来自 User 和 Order 这两个表的数据进行笛卡尔积连接操作，以生成最终的连接结果。比如，键值对 <code>(1,&lt;1,Lily&gt;)</code> 与键值对 <code>(1,&lt;2,101&gt;)</code> 和 <code>(1,&lt;2,102&gt;)</code> 的连接结果分别为 <code>(Lily ,101&gt;)</code> 和 <code>(Lily, 102)</code>，键值对 <code>(2,&lt;1,Tom&gt;)</code> 和键值对 <code>(2,&lt;2,103&gt;)</code> 的连接结果为 <code>(Tom, 103)</code>。</p>
+<h4 id="用-MapReduce-实现分组操作"><a href="#用-MapReduce-实现分组操作" class="headerlink" title="用 MapReduce 实现分组操作"></a>用 MapReduce 实现分组操作</h4><p>假设分数表 Score 具有两个属性，即 rank（排名）和 level（级别），这里存在一个分组（Group By）操作，其功能是把表 Score 的不同片段按照 rank 和 level 的组合值进行合并，计算不同 rank 和 level 的组合值分别有几条记录。具体的 SQL 语句命令如下：<code>select rank, level ,count(*) as value from score group by rank, level;</code></p>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/%E7%94%A8MapReduce%E5%AE%9E%E7%8E%B0%E5%88%86%E7%BB%84%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86.png" alt="用MapReduce实现分组操作的实现原理"></p>
+<p>首先，在 Map 阶段，对表 Score 进行 Map 操作，生成一系列键值对，对于每个键值对，其键为 <code>&lt;rank,level&gt;</code>，值为“拥有该 <code>&lt;rank,value&gt;</code> 组合值的记录的条数”。比如，Score 表的第一片段中有两条记录 <code>(A,1)</code>，所以，记录 <code>(A,1)</code> 转化为键值对 <code>(&lt;A,1&gt;,2)</code>，Score 表的第二片段中只有一条记录 <code>(A,1)</code>，所以，记录 <code>(A,1)</code> 转化为键值对 <code>(&lt;A,1&gt;,1)</code>。</p>
+<p>接着，在 Shuffle 阶段，对 Score 表生成的键值对，按照“键”的值进行哈希，然后根据哈希结果传送给对应的 Reduce 机器去执行，比如键值 对 <code>(&lt;A,1&gt;,2)</code> 和 <code>(&lt;A,1&gt;,1)</code> 传送到同一台 Reduce 机器上，键值对 <code>(&lt;B,2&gt;,1)</code> 传送到另一台 Reduce 机器上。然后，Reduce 机器对接收到的这些键值对，按“键”的值进行排序。</p>
+<p>最后，在 Reduce 阶段，对于 Reduce 机器上的这些键值对，把具有相同键的所有键值对的“值”进行累加，生成分组的最终结果，比如，在同一台 Reduce 机器上的键值对 <code>(&lt;A,1&gt;,2)</code> 和 <code>(&lt;A,1&gt;,1&gt;)</code> Reduce 后的输出结果为 <code>(&lt;A,1&gt;,3)</code>，<code>(&lt;B,2&gt;,1)</code> 的 Reduce 后的输出结果为 <code>(&lt;B,2&gt;,1)</code>。</p>
+<h3 id="Hive-中-SQL-查询转换成-MapReduce-作业的过程"><a href="#Hive-中-SQL-查询转换成-MapReduce-作业的过程" class="headerlink" title="Hive 中 SQL 查询转换成 MapReduce 作业的过程"></a>Hive 中 SQL 查询转换成 MapReduce 作业的过程</h3><p>当用户向 Hive 输入一段命令或查询（即 HiveQL 语句）时，Hive 需要与 Hadoop 交互工作来完成该操作。该命令或查询首先进入到驱动模块，由驱动模块中的编译器进行解析编译，并由优化器对该操作进行优化计算，然后交给执行器去执行。执行器通常的任务是启动一个或多个 MapReduce 任务，有时也不需要启动 MapReduce 任务，比如，执行包含 <code>*</code> 的操作时（如 <code>select * from 表</code>），就是全表扫描，选择所有的属性和所有的元组，不存在投影和选择操作，因此，不需要执行 Map 和 Reduce 操作。</p>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/Hive%E4%B8%ADSQL%E6%9F%A5%E8%AF%A2%E7%9A%84MapReduce%E4%BD%9C%E4%B8%9A%E8%BD%AC%E5%8C%96%E8%BF%87%E7%A8%8B.png" alt="Hive中SQL查询的MapReduce作业转化过程"></p>
+<p>在 Hive 中，用户通过命令行 CLI 或其他 Hive 访问工具，向 Hive 输入一段命令或查询以后，SQL 查询被 Hive 自动转化为 MapReduce 作业，具体步骤如下：</p>
+<ol>
+<li>由 Hive 驱动模块中的编译器——Antlr 语言识别工具，对用户输入的 SQL 语言进行词法和语法解析，将 SQL 语句转化为抽象语法树（AST Tree）的形式；</li>
+<li>对该抽象语法树进行遍历，进一步转化成 QueryBlock 查询单元。因为抽象语法树的结构仍很复杂，不方便直接翻译为 MapReduce 算法程序，所以，Hive 把抽象语法树进一步转化为 QueryBlock，其中，QueryBlock 是一条最基本的 SQL 语法组成单元，包括输入源、计算过程和输出三个部分；</li>
+<li>再对 QueryBlock 进行遍历，生成 OperatorTree（操作树）。其中，OperatorTree 由很多逻辑操作符组成，如 TableScanOperator、SelectOperator、FilterOperator、JoinOperator、 GroupByOperator 和 ReduceSinkOperator 等。这些逻辑操作符可以在 Map 阶段和 Reduce 阶 段完成某一特定操作；</li>
+<li>通过 Hive 驱动模块中的逻辑优化器对 OperatorTree 进行优化，变换 OperatorTree 的形式，合并多余的操作符，从而减少 MapReduce 任务数量以及 Shuffle 阶段的数据量；</li>
+<li>对优化后的 OperatorTree 进行遍历，根据 OperatorTree 中的逻辑操作符生成需要执行的 MapReduce 任务；</li>
+<li>启动 Hive 驱动模块中的物理优化器，对生成的 MapReduce 任务进行优化，生成最终的 MapReduce 任务执行计划；</li>
+<li>最后由 Hive 驱动模块中的执行器，对最终的 MapReduce 任务进行执行输出。</li>
+</ol>
+<p>需要说明的是，Hive 驱动模块中的执行器执行最终的 MapReduce 任务时，Hive 本身是不会生成 MapReduce 算法程序的，它需要通过一个表示“Job 执行计划”的 XML 文件，来驱动执行内置的、原生的 Mapper 和 Reducer 模块。Hive 通过和 JobTracker 通信来初始化 MapReduce 任务，而不需要直接部署在 JobTracker 所在的管理节点上执行。通常在大型集群上，会有专门的网关机来部署 Hive 工具。这些网关机的作用主要是远程操作和管理节点上的 JobTracker 通信来执行任务。Hive 要处理的数据文件通常存储在 HDFS 上，HDFS 由名称节点（NameNode）来管理。</p>
+<h2 id="Hive-HA-基本原理"><a href="#Hive-HA-基本原理" class="headerlink" title="Hive HA 基本原理"></a>Hive HA 基本原理</h2><p>Hive 的功能十分强大，可以支持采用 SQL 方式查询 Hadoop 平台上的数据，但是，在实际应用中，Hive 也暴露出不稳定的问题，在极少数情况下，甚至会出现端口不响应或者进程丢失的问题。Hive HA（High Availability）的出现，就是为了解决这类问题。</p>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/HiveHA%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86.png" alt="HiveHA基本原理"></p>
+<p>在 Hive HA 中，在 Hadoop 集群上构建的数据仓库是由多个 Hive 实例进行管理的，这些 Hive 实例被纳入到一个资源池中，并由 HAProxy 提供一个统一的对外接口。客户端的查询请求首先访问 HAProxy，由 HAProxy 对访问请求进行转发。HAProxy 收到请求后，会轮询资源池里可用的 Hive 实例，执行逻辑可用性测试，如果某个 Hive 实例逻辑可用，就会把客户端的访问请求转发到该 Hive 实例上，如果该 Hive 实例逻辑不可用，就把它放入黑名单，并继续从资源池中取出下一个 Hive 实例进行逻辑可用性测试。对于黑名单中的 Hive 实例，HiveHA 会每隔一段时间进行统一处理，首先尝试重启该 Hive 实例，如果重启成功，就再次把它放入到资源池中。由于采用 HAProxy 提供统一的对外访问接口，因此，对于程序开发人员来说，可以把它认为是一台超强“Hive”。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/" class="post-title-link" itemprop="url">MapReduce.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-08 18:18:06" itemprop="dateCreated datePublished" datetime="2020-05-08T18:18:06+08:00">2020-05-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><h3 id="模型简介"><a href="#模型简介" class="headerlink" title="模型简介"></a>模型简介</h3><p>在 MapReduce 中，一个存储在分布式文件系统中的大规模数据集会被切分成许多独立的小数据块，这些小数据块可以被多个 Map 任务并行处理。MapReduce 框架会为每个 Map 任务输入一个数据子集，Map 任务生成的结果会继续作为 Reduce 任务的输人，最终由 Reduce 任务输出最后结果，并写入分布式文件系统。</p>
+<p>特别注意：适合用 MapReduce 来传护理的数据集需要满足一个前提条件：待处理的数据集可以分解成许多小的数据集，而且每一个小数据集都可以完全并行地进行处理。</p>
+<p>MapReduce 设计的一个理念就是“计算向数据靠拢”，而不是“数据向计算靠拢”，因为移动数据需要大量的网络传输开销，尤其是在大规模数据环境下，这种开销尤为惊人，所以，移动计算要比移动数据更加经济。本着这个理念，在一个集群中，只要有可能，MapReduce 框架就会将 Map 程序就近地在 HDFS 数据所在的节点运行，即将计算节点和存储节点放在一起运行，从而减少了节点间的数据移动开销。</p>
+<h2 id="MapReduce-的工作流程"><a href="#MapReduce-的工作流程" class="headerlink" title="MapReduce 的工作流程"></a>MapReduce 的工作流程</h2><h3 id="工作流程概述"><a href="#工作流程概述" class="headerlink" title="工作流程概述"></a>工作流程概述</h3><p>MapReduce的 核心思想可以用“分而治之”来描述，也就是把一个大的数据集拆分成多个小数据块在多台机器上并行处理，也就是说，一个大的 MapReduce 作业，首先会被拆分成许多个 Map 任务在多台机器上并行执行，每个 Map 任务通常运行在数据存储的节点上，这样，计算和数据就可以放在一起运行，不需要额外的数据传输开销。当 Map 任务结束后，会生成以 <code>&lt;key,value&gt;</code> 形式表示的许多中间结果。然后，这些中间结果会被分发到多个 Reduce 任务在多台机器上并行执行，具有相同 key 的 <code>&lt;key,value&gt;</code> 会被发送到同个 Reduce 任务那里，Reduce 任务会对中间结果进行汇总计算得到最后结果，并输出到分布式文件系统中。</p>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png" alt="工作流程"></p>
+<p>需要指出的是，不同的 Map 任务之间不会进行通信，不同的 Reduce 任务之间也不会发生任何信息交换；用户不能显式地从一台机器向另台机器发送消息，所有的数据交换都是通过 MapReduce 框架自身去实现的。</p>
+<p>在 MapReduce 的整个执行过程中，Map 任务的输人文件、Reduce 任务的处理结果都是保存在分布式文件系统中的，而 Map 任务处理得到的中间结果则保存在本地存储中（如磁盘）。另外，只有当 Map 处理全部结束后， Reduce 过程才能开始；只有 Map 需要考虑数据局部性，实现“计算向数据靠拢”，而 Reduce 则无需考虑数据局部性。</p>
+<h3 id="各个执行阶段"><a href="#各个执行阶段" class="headerlink" title="各个执行阶段"></a>各个执行阶段</h3><ol>
+<li>MapReduce 框架使用 InputFormat 模块做 Map 前的预处理，比如验证输人的格式是否符合输人定义；然后，将输人文件切分为逻辑上的多个 InputSplit，InputSplit 是 MapReduce 对文件进行处理和运算的输人单位，只是一个逻辑概念，每个 InputSplit 并没有对文件进行实际切割，只是记录了要处理的数据的位置和长度。</li>
+<li>因为 InputSplit 是逻辑切分而非物理切分，所以还需要通过 RecordReader（RR）根据 InputSplit 中的信息来处理 InputSplit 中的具体记录，加载数据并转换为适合 Map 任务读取的键值对，输人给 Map 任务。</li>
+<li>Map 任务会根据用户自定义的映射规则，输出一系列的 <code>&lt;key,value&gt;</code> 作为中间结果。</li>
+<li>为了让 Reduce 可以并行处理 Map 的结果，需要对 Map 的输出进行一定的分区（Portition）、排序（Sort）、合并（Combine）、归并（Merge）等操作，得到 <code>&lt;key, value-list&gt;</code> 形式的中间结果，再交给对应的 Reduce 进行处理，这个过程称为 Shufle。从无序的 <code>&lt;key,value&gt;</code> 到有序的 <code>&lt;key, value-list&gt;</code>，这个过程用 Shuffle（洗牌）来称呼是非常形象的。</li>
+<li>Reduce 以一系列 <code>&lt;key, value-list&gt;</code> 中间结果作为输人，执行用户定义的逻辑，输出结果给 OutputFormat 模块。</li>
+<li>OutputFormat 模块会验证输出目录是否已经存在以及输出结果类型是否符合配置文件中的配置类型，如果都满足，就输出 Reduce 的结果到分布式文件系统。</li>
+</ol>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/MapReduce%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E4%B8%AD%E7%9A%84%E5%90%84%E4%B8%AA%E6%89%A7%E8%A1%8C%E9%98%B6%E6%AE%B5.png" alt="MapReduce工作流程中的各个执行阶段"></p>
+<h3 id="Shuffle-过程详解"><a href="#Shuffle-过程详解" class="headerlink" title="Shuffle 过程详解"></a>Shuffle 过程详解</h3><h4 id="Shuffle-过程简介"><a href="#Shuffle-过程简介" class="headerlink" title="Shuffle 过程简介"></a>Shuffle 过程简介</h4><p>所谓 Shuffle，是指对 Map 输出结果进行分区、排序、合并等处理并交给 Reduce 的过程。因此，Shuffle 过程分为 Map 端的操作和 Reduce 端的操作。</p>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/Shuffle%E8%BF%87%E7%A8%8B.png" alt="Shuffle过程"></p>
+<h4 id="Map-端的-Shuffle-过程"><a href="#Map-端的-Shuffle-过程" class="headerlink" title="Map 端的 Shuffle 过程"></a>Map 端的 Shuffle 过程</h4><p>Map 的输出结果首先被写入缓存，当缓存满时，就启动溢写操作，把缓存中的数据写入磁盘文件，并清空缓存。当启动溢写操作时，首先需要把缓存中的数据进行分区，然后对每个分区的数据进行排序（Sort）和合并（Combine），之后再写人磁盘文件。每次溢写操作会生成一个新的磁盘文件，随着 Map 任务的执行，磁盘中就会生成多个溢写文件。在 Map 任务全部结束之前，这些溢写文件会被归并（Merge）成一个大的磁盘文件，然后通知相应的 Reduce 任务来领取属于自己处理的数据。</p>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/Map%E7%AB%AF%E7%9A%84Shuffle%E8%BF%87%E7%A8%8B.png" alt="Map端的Shuffle过程"></p>
+<h5 id="输入数据和执行-Map-任务"><a href="#输入数据和执行-Map-任务" class="headerlink" title="输入数据和执行 Map 任务"></a>输入数据和执行 Map 任务</h5><p>Map 任务的输入数据一般保存在分布式文件系统（如 GFS 或 HDFS）的文件块中，这些文件块的格式是任意的，可以是文档，也可以是二进制格式的。Map 任务接受 <code>&lt;key, value&gt;</code>作为输入后，按一定的映射规则转换成一批 <code>&lt;key, value&gt;</code> 进行输出。</p>
+<h5 id="写入缓存"><a href="#写入缓存" class="headerlink" title="写入缓存"></a>写入缓存</h5><p>每个 Map 任务都会被分配一个缓存，Map 的输出结果不是立即写入磁盘，而是首先写人缓存。在缓存中积累一定数量的 Map 输出结果以后，再一次性批量写人磁盘，这样可以大大减少对磁盘 I/O 的影响。因为，磁盘包含机械部件，它是通过磁头移动和盘片的转动来寻址定位数据的，每次寻址的开销很大，如果每个 Map 输出结果都直接写人磁盘，会引入很多次寻址开销，而一次性批量写入，就只需要一次寻址、连续写入，大大降低了开销。需要注意的是，在写入缓存之前，key 与 value 值都会被序列化成字节数组。</p>
+<h5 id="溢写（分区、排序和合并）"><a href="#溢写（分区、排序和合并）" class="headerlink" title="溢写（分区、排序和合并）"></a>溢写（分区、排序和合并）</h5><p>提供给 MapReduce 的缓存的容量是有限的，默认大小是 100 MB。随着 Map 任务的执行，缓存中 Map 结果的数量会不断增加，很快就会占满整个缓存。这时，就必须启动溢写（Spill）操作，把缓存中的内容一次性写人磁盘，并清空缓存。溢写的过程通常是由另外个单独的后台线程来完成的，不会影响 Map 结果往缓存写人，但是为了保证 Map 结果能够不停地持续写入缓存，不受溢写过程的影响，就必须让缓存中一直有可用的空间，不能等到全部占满才启动溢写过程，所以一般会设置一个溢写比例，如0.8，也就是说，当 100 MB 大小的缓存被填满 80 MB 数据时，就启动溢写过程，把已经写人的 80 MB 数据写人磁盘，剩余 20 MB 空间供 Map 结果继续写人。</p>
+<p>但是，在溢写到磁盘之前，缓存中的数据首先会被分区（Partition）。缓存中的数据是 <code>&lt;key, value&gt;</code> 形式的键值对，这些键值对最终需要交给不同的 Reduce 任务进行并行处理。MapReduce 通过 Partitioner 接口对这些键值对进行分区，默认采用的分区方式是采用 Hash 函数对 key 进行哈希后再用 Reduce 任务的数量进行取模，可以表示成 <code>hash(key) mod R</code>，其中 R 表示 Reduce 任务的数量，这样，就可以把 Map 输出结果均匀地分配给这 R 个Reduce 任务去并行处理了。当然，MapReduce 也允许用户通过重载 Partitioner 接口来自定义分区方式。</p>
+<p>对于每个分区内的所有键值对，后台线程会根据 key 对它们进行内存排序（Sort），排序是 MapReduce 的默认操作。排序结束后，还包含一个可选的合并（Combine）操作。如果用户事先没有定义 Combiner 函数，就不用进行合并操作。如果用户事先定义了 Combiner 函数，则这个时候会执行合并操作，从而减少需要溢写到磁盘的数据量。</p>
+<p>所谓“合并”，是指将那些具有相同 key 的 <code>&lt;key,value&gt;</code> 的 value 加起来。比如，有两个键值对 <code>&lt;“xmu&quot; 1&gt;</code> 和 <code>&lt;“xmu” 1&gt;</code>，经过合并操作以后就可以得到一个键值对 <code>&lt;“xmu” 2&gt;</code>，减少了键值对的数量。这里需要注意，Map 端的这种合并操作，其实和 Reduce 的功能相似，但是由于这个操作发生在 Map 端，所以我们只能称之为“合并”，从而有别于 Reduce。不过，并非所有场合都可以使用 Combiner，因为 Combiner 的输出是 Reduce 任务的输人，Combiner 绝不能改变 Reduce 任务最终的计算结果，一般而言，累加、最大值等场景可以使用合并操作。</p>
+<p>经过分区、排序以及可能发生的合并操作之后，这些缓存中的键值对就可以被写人磁盘，并清空缓存。每次溢写操作都会在磁盘中生成一个新的溢写文件，写人溢写文件中的所有键值对都是经过分区和排序的。</p>
+<h5 id="文件归并"><a href="#文件归并" class="headerlink" title="文件归并"></a>文件归并</h5><p>每次溢写操作都会在磁盘中生成一个新的溢写文件，随着 MapReduce 任务的进行，磁盘中的溢写文件数量会越来越多。当然，如果 Map 输出结果很少，磁盘上只会存在一个溢写文件，但是通常都会存在多个溢写文件。最终，在 Map 任务全部结束之前，系统会对所有溢写文件中的数据进行归并（Merge），生成一个大的溢写文件，这个大的溢写文件中的所有键值对也是经过分区和排序的。</p>
+<p>所谓“归并”，是指对于具有相同 key 的键值对会被归并成一个新的键值对。具体而言，对于若千个具有相同 key 的键值对 $&lt;k_1,v_1&gt;, &lt;k_1,v_2&gt; ….. &lt;k_1,v_n&gt;$ 会被归并成一个新的键值对 $&lt;k_1, &lt;v_1,v_2,…,v_n&gt;$。</p>
+<p>另外，进行文件归并时，如果磁盘中已经生成的溢写文件的数量超过参数 min.num.spills.for.combine 的值时（默认值是 3，用户可以修改这个值），那么，就可以再次运行 Combiner，对数据进行合并操作，从而减少写人磁盘的数据量。但是，如果磁盘中只有一两个溢写文件时，执行合并操作就会“得不偿失”，因为执行合并操作本身也需要代价，因此不会运行 Combiner。</p>
+<p>经过上述4个步骤以后，Map 端的 Shuffle 过程全部完成，最终生成的一个大文件会被存放在本地磁盘上。这个大文件中的数据是被分区的，不同的分区会被发送到不同的 Reduce 任务进行并行处理。JobTracker 会一直监测 Map 任务的执行，当监测到一个 Map 任务完成后，就会立即通知相关的 Reduce 任务来“领取”数据，然后开始 Reduce 端的 Shuffle 过程。</p>
+<h4 id="Reduce-端的-Shuffle-过程"><a href="#Reduce-端的-Shuffle-过程" class="headerlink" title="Reduce 端的 Shuffle 过程"></a>Reduce 端的 Shuffle 过程</h4><p>Reduce 任务从 Map 端的不同 Map 机器领回属于自己处理的那部分数据，然后对数据进行归并（Merge）后交给 Reduce 处理。</p>
+<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/Reduce%E7%AB%AF%E7%9A%84Shuffle%E8%BF%87%E7%A8%8B.png" alt="Reduce端的Shuffle过程"></p>
+<h5 id="“领取”数据"><a href="#“领取”数据" class="headerlink" title="“领取”数据"></a>“领取”数据</h5><p>Map 端的 Shuffle 过程结束后，所有 Map 输出结果都保存在 Map 机器的本地磁盘上，Reduce 任务需要把这些数据“领取”（Fetch）回来存放到自己所在机器的本地磁盘上。因此，在每个 Reduce 任务真正开始之前，它大部分时间都在从 Map 端把属于自己处理的那些分区的数据“领取”过来。每个 Reduce 任务会不断地通过 RPC 向 JobTracker 询问 Map 任务是否已经完成；JobTracker 监测到一个 Map 任务完成后，就会通知相关的 Reduce 任务来“领取”数据；一旦一个 Reduce 任务收到 JobTracker 的通知，它就会到该 Map 任务所在机器上把属于自已处理的分区数据领取到本地磁盘中。一般系统中会存在多个 Map 机器，因此 Reduce 任务会使用多个线程同时从多个 Map 机器领回数据。</p>
+<h5 id="归并数据"><a href="#归并数据" class="headerlink" title="归并数据"></a>归并数据</h5><p>从Map端领回的数据会首先被存放在 Reduce 任务所在机器的缓存中，如果缓存被占满，就会像 Map 端一样被溢写到磁盘中。由于在 Shuffle 阶段 Reduce 任务还没有真正开始执行，因此，这时可以把内存的大部分空间分配给 Shuffle 过程作为缓存。需要注意的是，系统中一般存在多个 Map 机器，Reduce 任务会从多个 Map 机器领回属于自己处理的那些分区的数据，因此缓存中的数据是来自不同的 Map 机器的，一般会存在很多可以合并（Combine）的键值对。当溢写过程启动时，具有相同 key 的键值对会被归并（Merge），如果用户定义了 Combiner，则归并后的数据还可以执行合并操作，减少写人磁盘的数据量。每个溢写过程结束后，都会在磁盘中生成一个溢写文件，因此磁盘上会存在多个溢写文件。最终，当所有的 Map 端数据都已经被领回时，和 Map 端类似，多个溢写文件会被归并成开个大文件，归并的时候还会对键值对进行排序，从而使得最终大文件中的键值对都是有序的。当然，在数据很少的情形下，缓存可以存储所有数据，就不需要把数据溢写到磁盘，而是直接在内存中执行归并操作，然后直接输出给 Reduce 任务。</p>
+<p>需要说明的是，把磁盘上的多个溢写文件归并成一个大文件可能需要执行多轮归并操作。每轮归并操作可以归并的文件数量是由参数 io.sort.factor 的值来控制的（默认值是 10，可以修改）。假设磁盘中生成了 50 个溢写文件，每轮可以归并 10 个溢写文件，则需要经过 5 轮归并，得到 5 个归并后的大文件。</p>
+<h5 id="把数据输人给-Reduce-任务"><a href="#把数据输人给-Reduce-任务" class="headerlink" title="把数据输人给 Reduce 任务"></a>把数据输人给 Reduce 任务</h5><p>磁盘中经过多轮归并后得到的若干个大文件，不会继续归并成一个新的大文件，而是直接输入给 Reduce 任务，这样可以减少磁盘读写开销。由此，整个 Shuffle 过程顺利结束。接下来，Reduce 任务会执行 Reduce 函数中定义的各种映射，输出最终结果，并保存到分布式文件系统中（比如 GFS 或 HDFS）。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/" class="post-title-link" itemprop="url">数据增强.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-05 23:39:37" itemprop="dateCreated datePublished" datetime="2020-05-05T23:39:37+08:00">2020-05-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>最简单的数据扩充方法就是垂直镜像对称，假如，训练集中有这张图片，然后将其翻转得到右边的图像。对大多数计算机视觉任务，左边的图片是猫，然后镜像对称仍然是猫，如果镜像操作保留了图像中想识别的物体的前提下，这是个很实用的数据扩充技巧。</li>
+<li>另一个经常使用的技巧是随机裁剪，给定一个数据集，然后开始随机裁剪，可能修剪这个（编号1），选择裁剪这个（编号2），这个（编号3），可以得到不同的图片放在数据集中，你的训练集中有不同的裁剪。随机裁剪并不是一个完美的数据扩充的方法，如果你随机裁剪的那一部分（红色方框标记部分，编号4），这部分看起来不像猫。但在实践中，这个方法还是很实用的，随机裁剪构成了很大一部分的真实图片。</li>
+<li>镜像对称和随机裁剪是经常被使用的。当然，理论上，你也可以使用旋转，剪切（shearing：此处并非裁剪的含义，图像仅水平或垂直坐标发生变化）图像，可以对图像进行这样的扭曲变形，引入很多形式的局部弯曲等等。当然使用这些方法并没有坏处，尽管在实践中，因为太复杂了所以使用的很少。</li>
+</ul>
+<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/%E9%9A%8F%E6%9C%BA%E8%A3%81%E5%89%AA.png" alt="随机裁剪"></p>
+<ul>
+<li>第二种经常使用的方法是彩色转换，有这样一张图片，然后给R、G和B三个通道上加上不同的失真值。</li>
+</ul>
+<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/%E8%89%B2%E5%BD%A9%E8%BD%AC%E6%8D%A2.png" alt="色彩转换"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -914,410 +1349,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/28/artificial_intelligence/deep_learning/%E5%88%9D%E5%A7%8B%E5%8C%96/%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/28/artificial_intelligence/deep_learning/%E5%88%9D%E5%A7%8B%E5%8C%96/%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96/" class="post-title-link" itemprop="url">权重初始化.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-28 21:20:38" itemprop="dateCreated datePublished" datetime="2020-03-28T21:20:38+08:00">2020-03-28</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>$z = w_{1}x_{1} + w_{2}x_{2} + \ldots +w_{n}x_{n}$，$b=0$，暂时忽略 $b$，为了预防 $z$ 值过大或过小，你可以看到 $n$ 越大，你希望 $w_{i}$ 越小，因为 $z$ 是 $w_{i}x_{i}$ 的和，如果你把很多此类项相加，希望每项值更小，最合理的方法就是设置 $w_{i}=\frac{1}{n}$，$n$ 表示神经元的输入特征数量，实际上，你要做的就是设置某层权重矩阵 $w^{[l]} = np.random.randn( \text{shape})*\text{np.}\text{sqrt}(\frac{1}{n^{[l-1]}})$，$n^{[l - 1]}$ 就是我喂给第 $l$ 层神经单元的数量（即第 $l-1$ 层神经元数量）。</p>
-<p><img src="/2020/03/28/artificial_intelligence/deep_learning/%E5%88%9D%E5%A7%8B%E5%8C%96/%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96/e4114d7dc1c6242bd96cdadb457b8959.png"></p>
-<p>结果，如果你是用的是<strong>Relu</strong>激活函数，而不是$\frac{1}{n}$，方差设置为$\frac{2}{n}$，效果会更好。你常常发现，初始化时，尤其是使用<strong>Relu</strong>激活函数时，$g^{[l]}(z) =Relu(z)$,它取决于你对随机变量的熟悉程度，这是高斯随机变量，然后乘以它的平方根，也就是引用这个方差$\frac{2}{n}$。这里，我用的是$n^{[l - 1]}$，因为本例中，逻辑回归的特征是不变的。但一般情况下$l$层上的每个神经元都有$n^{[l - 1]}$个输入。如果激活函数的输入特征被零均值和标准方差化，方差是1，$z$也会调整到相似范围，这就没解决问题（梯度消失和爆炸问题）。但它确实降低了梯度消失和爆炸问题，因为它给权重矩阵$w$设置了合理值，你也知道，它不能比1大很多，也不能比1小很多，所以梯度没有爆炸或消失过快。</p>
-<p><img src="/2020/03/28/artificial_intelligence/deep_learning/%E5%88%9D%E5%A7%8B%E5%8C%96/%E6%9D%83%E9%87%8D%E5%88%9D%E5%A7%8B%E5%8C%96/3decc82bf6f48903ee1fedbdb7e2c0f6.png"></p>
-<p>我提到了其它变体函数，刚刚提到的函数是<strong>Relu</strong>激活函数，一篇由<strong>Herd</strong>等人撰写的论文曾介绍过。对于几个其它变体函数，如<strong>tanh</strong>激活函数，有篇论文提到，常量1比常量2的效率更高，对于<strong>tanh</strong>函数来说，它是$\sqrt{\frac{1}{n^{[l-1]}}}$，这里平方根的作用与这个公式作用相同($\text{np.}\text{sqrt}(\frac{1}{n^{[l-1]}})$)，它适用于<strong>tanh</strong>激活函数，被称为<strong>Xavier</strong>初始化。<strong>Yoshua Bengio</strong>和他的同事还提出另一种方法，你可能在一些论文中看到过，它们使用的是公式$\sqrt{\frac{2}{n^{[l-1]} + n^{\left[l\right]}}}$。其它理论已对此证明，但如果你想用<strong>Relu</strong>激活函数，也就是最常用的激活函数，我会用这个公式$\text{np.}\text{sqrt}(\frac{2}{n^{[l-1]}})$，如果使用<strong>tanh</strong>函数，可以用公式$\sqrt{\frac{1}{n^{[l-1]}}}$，有些作者也会使用这个函数。</p>
-<p>实际上，我认为所有这些公式只是给你一个起点，它们给出初始化权重矩阵的方差的默认值，如果你想添加方差，方差参数则是另一个你需要调整的超级参数，可以给公式$\text{np.}\text{sqrt}(\frac{2}{n^{[l-1]}})$添加一个乘数参数，调优作为超级参数激增一份子的乘子参数。有时调优该超级参数效果一般，这并不是我想调优的首要超级参数，但我发现调优过程中产生的问题，虽然调优该参数能起到一定作用，但考虑到相比调优，其它超级参数的重要性，我通常把它的优先级放得比较低。</p>
-<p>希望你现在对梯度消失或爆炸问题以及如何为权重初始化合理值已经有了一个直观认识，希望你设置的权重矩阵既不会增长过快，也不会太快下降到0，从而训练出一个权重或梯度不会增长或消失过快的深度网络。我们在训练深度网络时，这也是一个加快训练速度的技巧。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%92%E5%88%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%92%E5%88%86/" class="post-title-link" itemprop="url">数据集划分.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-28 18:16:47" itemprop="dateCreated datePublished" datetime="2020-03-28T18:16:47+08:00">2020-03-28</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>一般分为：</p>
-<ul>
-<li>训练集（train set）</li>
-<li>开发测试集（training-dev set）</li>
-<li>开发集（dev set）：有时称为保留交叉验证集（hold out cross validation set）</li>
-<li>测试集（test set）</li>
-</ul>
-<p>数据集作用：</p>
-<ul>
-<li>_train set_：训练模型。</li>
-<li>_training-dev set_：评估模型的误差（bias、variance）原因。</li>
-<li>_dev set_：评估所有训练出的模型，迭代并选出适用的模型。</li>
-<li>_test set_：对最终所选定的神经网络系统做出无偏估计。</li>
-</ul>
-<p>数据集分布：</p>
-<ul>
-<li><em>train set</em> 可以是网上爬取的数据。与 <em>dev set_、_test set</em> 的分布可能不同。</li>
-<li><em>training-dev set</em> 与 <em>train set</em> 同分布。</li>
-<li><em>dev set</em> 一般和 <em>test set</em> 同分布。都来自真实场景中的数据。</li>
-</ul>
-<p><img src="/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%92%E5%88%86/Bias%E3%80%81Variance%E4%B8%8E%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%86%E5%B8%83%E4%BC%98%E5%8C%96.png" alt="Bias、Variance与数据集分布优化"></p>
-<p>如果出现了 <em>train set</em> 与 <em>dev set_、_test set</em> 不匹配的情况，可尝试以下方法：</p>
-<ul>
-<li>分析不匹配的原因，可人工合成数据新的 _train set_。</li>
-<li>迁移学习</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Variance%E4%B8%8E%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%86%E5%B8%83%E4%BC%98%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/28/artificial_intelligence/%E8%AF%AF%E5%B7%AE&%E4%BC%98%E5%8C%96/Bias%E3%80%81Variance%E4%B8%8E%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%86%E5%B8%83%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">Bias、Variance与数据集分布优化.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-28 18:13:25" itemprop="dateCreated datePublished" datetime="2020-03-28T18:13:25+08:00">2020-03-28</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>贝叶斯误差（一般用人类水平代替）与训练集错误率之差是 __bias（avoidble bias）__。</li>
-<li>训练集错误率与开发集错误率之差是 __variance__。</li>
-</ul>
-<p>高 bias 可尝试以下方法：</p>
-<ul>
-<li>新的网络（含有更多隐藏层或者隐藏单元的网络）</li>
-<li>花费更多时间来训练网络</li>
-</ul>
-<p>高 variance 可尝试以下方法：</p>
-<ul>
-<li>更多的数据</li>
-<li>正则化（L1、L2、dropout、数据扩增、early stopping）</li>
-</ul>
-<h3 id="误差分析"><a href="#误差分析" class="headerlink" title="误差分析"></a>误差分析</h3><p>在你的开发集里或者测试集里，观察错误标记的样本，统计属于不同错误类型的错误数量。</p>
-<p>通过统计不同错误标记类型占总数的百分比，可以帮你发现哪些问题需要优先解决，或者给你构思新优化方向的灵感。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/" class="post-title-link" itemprop="url">nlp-形式语言与自动机.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-26 22:27:52" itemprop="dateCreated datePublished" datetime="2020-03-26T22:27:52+08:00">2020-03-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/nlp/" itemprop="url" rel="index"><span itemprop="name">nlp</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="形式语言"><a href="#形式语言" class="headerlink" title="形式语言"></a>形式语言</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>乔姆斯基(Noam Chomsky)曾经把语言定义为：按照一定规律构成的句子和符号串的有限或无限的集合。</p>
-<p>一般地，描述一种语言可以有三种途径 <code>[刘颖，2002;石青云 (译)，1987]</code>：</p>
-<ol>
-<li>穷举法：把语言中的所有句子都枚举出来。显然，这种方法只适合句子数目有限的语言。</li>
-<li>文法（产生式系统）描述：语言中的每个句子用严格定义的规则来构造，利用规则生成语言中合法的句子。</li>
-<li>自动机法：通过对输入的句子进行合法性检验，区别哪些是语言中的句子，哪些不是语言中的句子。</li>
-</ol>
-<p>文法用来精确地描述语言和其结构，自动机则是用来机械地刻画对输入字符串的识别过程。用文法来定义语言的优点是：由文法给予语言中的句子以结构，各成分之间的结构关系清楚、明了。但是，如果要直接用这些规则来确定一个字符串是否属于这套规则所定义的语言似乎并不十分明确。而由自动机来识别一个字符串是否属于该语言则相对简单，但自动机很难描述语言的结构。所以自然语言处理中的识别和分析算法，大多兼取两者之长。</p>
-<h3 id="形式语法的定义"><a href="#形式语法的定义" class="headerlink" title="形式语法的定义"></a>形式语法的定义</h3><p>形式语言是用来精确地描述语言（包括人工语言和自然语言）及其结构的手段。形式语言学也称代数语言学。</p>
-<p>形式语法是一个4元组 $G=(N, \Sigma, P, S)$，其中 $N$ 是非终结符的有限集合（有时也叫变量集或句法种类集）；$\Sigma$ 是终结符的有限集合，$N \cap \Sigma = \emptyset$；$V = N \cup \Sigma$ 称总词汇表；$P$ 是一组重写规则的有限集合：$P={ \alpha \rightarrow \beta }$，其中，$\alpha, \beta$ 是 $V$ 中元素构成的串，但 $\alpha$ 中至少应含有一个非终结符号；$S \in N$，称为句子符或初始符。</p>
-<ul>
-<li>如果每步推导中只改写最左边的那个非终结符，这种推导称为“最左推导”。</li>
-<li>如果每次都只改写最右边的非终结符，则为最右推导。__最右推导又称规范推导__。</li>
-</ul>
-<h3 id="形式语法的类型"><a href="#形式语法的类型" class="headerlink" title="形式语法的类型"></a>形式语法的类型</h3><h4 id="正则文法"><a href="#正则文法" class="headerlink" title="正则文法"></a>正则文法</h4><p>如果文法 $G=(N, \Sigma, P, S)$ 的 $P$ 中的规则满足如下形式：$A \rightarrow Bx$，或 $A \rightarrow x$，其中$A, B \in N, x \in \Sigma$，则称该文法为正则文法或称 3 型文法。(左线性正则文法)</p>
-<p>如果 $A \rightarrow x B$，则该文法称为右线性正则文法。</p>
-<h4 id="上下文无关文法-context-free-grammar-CFG"><a href="#上下文无关文法-context-free-grammar-CFG" class="headerlink" title="上下文无关文法(context-free grammar, CFG)"></a>上下文无关文法(context-free grammar, CFG)</h4><p>如果 $P$ 中的规则满足如下形式：$A \rightarrow \alpha$，其中 $A \in N，\alpha \in (N \cup \Sigma)*$，则称该文法为上下文无关文法（CFG）或称 2 型文法。</p>
-<h4 id="上下文有关文法-context-sensitive-grammar-CSG"><a href="#上下文有关文法-context-sensitive-grammar-CSG" class="headerlink" title="上下文有关文法(context-sensitive grammar, CSG)"></a>上下文有关文法(context-sensitive grammar, CSG)</h4><p>如果 $P$ 中的规则满足如下形式：$\alpha A \beta \rightarrow \alpha \gamma \beta$, 其中 $A \in N, \alpha, \beta, \gamma \in (N \cup \Sigma)*$，且 $\gamma$ 至少包含一个字符，则称该文法为上下文有关文法（CSG）或称 1 型文法。</p>
-<p>另一种定义：$if \  x \rightarrow y, x \in (N \cup \Sigma)+, y \in (N \cup Sigma)*$，并且 $|y| \geq |x|$。</p>
-<h4 id="无约束文法（无限制重写系统）"><a href="#无约束文法（无限制重写系统）" class="headerlink" title="无约束文法（无限制重写系统）"></a>无约束文法（无限制重写系统）</h4><p>如果 $P$ 中的规则满足如下形式：$\alpha \rightarrow \beta$，$\alpha, \beta$ 是字符串，则称 $G$ 为无约束文法，或称 0 型文法。</p>
-<blockquote>
-<p>显然，每一个正则文法都是上下文无关文法，每一个上下无关文法都是上下文有关文法，而每一个上下文有关文法都是 0 型文法，即：$L(G3) \subseteq L(G2) \subseteq L(G1) \subseteq L(G0)$。</p>
-</blockquote>
-<h3 id="语言与文法类型的约定"><a href="#语言与文法类型的约定" class="headerlink" title="语言与文法类型的约定"></a>语言与文法类型的约定</h3><p>如果一种语言能由几种文法所产生，则把这种语言称为在这几种文法中受限制最多的那种文法所产生的语言。</p>
-<h3 id="CFG-识别句子的派生树表示"><a href="#CFG-识别句子的派生树表示" class="headerlink" title="CFG 识别句子的派生树表示"></a>CFG 识别句子的派生树表示</h3><p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%951.png" alt="二义性文法1"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%952.png" alt="二义性文法2"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E4%BA%8C%E4%B9%89%E6%80%A7%E6%96%87%E6%B3%95.png" alt="二义性文法"></p>
-<p>一个文法 $G$，如果存在某个句子有不只一棵分析树与之对应，那么称这个文法是二义的。</p>
-<h2 id="自动机理论"><a href="#自动机理论" class="headerlink" title="自动机理论"></a>自动机理论</h2><h3 id="有限自动机"><a href="#有限自动机" class="headerlink" title="有限自动机"></a>有限自动机</h3><p>有限自动机又分为确定性有限自动机（definite automata, DFA）和不确定性有限自动机（non-definite automata, NFA）两种。</p>
-<h4 id="确定的有限自动机-definite-automata-DFA"><a href="#确定的有限自动机-definite-automata-DFA" class="headerlink" title="确定的有限自动机(definite automata, DFA)"></a>确定的有限自动机(definite automata, DFA)</h4><p>确定的有限自动机 $M$ 是一个五元组：$M = (\Sigma, Q, \delta, q_0, F)$</p>
-<ul>
-<li>$\Sigma$ 是输入符号的有穷集合；</li>
-<li>$Q$ 是状态的有限集合；</li>
-<li>$q_0 \in Q$ 是初始状态；</li>
-<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
-<li>$\delta$ 是 $Q$ 与 $\Sigma$ 的直积 $Q×\Sigma$ 到 $Q$ （下一个状态）的映射。它支配着有限状态控制的行为，有时也称为状态转移函数。</li>
-</ul>
-<p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/DFA.png" alt="DFA"><br><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/DFA2.png" alt="DFA2"></p>
-<h5 id="DFA-定义的语言"><a href="#DFA-定义的语言" class="headerlink" title="DFA 定义的语言"></a>DFA 定义的语言</h5><p>如果一个句子 $x$ 使得有限自动机 $M$ 有 $\delta(q_0, x) = p, p \in F$，那么，称句子 $x$ 被 $M$ 接受。由 $M$ 定义的语言 $T(M)$ 就是被 $M$ 接受的句子的全集。即：$T(M) = {x | \delta(q_0, x) \in F }$</p>
-<h4 id="不确定的有限自动机-non-definite-automata-NFA"><a href="#不确定的有限自动机-non-definite-automata-NFA" class="headerlink" title="不确定的有限自动机(non-definite automata, NFA)"></a>不确定的有限自动机(non-definite automata, NFA)</h4><p>不确定的有限自动机 $M$ 是一个五元组 $M = (\Sigma, Q, \delta, q_0, F)$</p>
-<ul>
-<li>$\Sigma$ 是输入符号的有穷集合；</li>
-<li>$Q$ 是状态的有限集合；</li>
-<li>$q_0 \in Q$ 是初始状态；</li>
-<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
-<li>$\delta$ 是 $Q$ 与 $\Sigma$ 的直积 $Q×\Sigma$ 到Q的幂集 $2^Q$ 的映射。</li>
-</ul>
-<h4 id="NFA-与-DFA-的关系和区别"><a href="#NFA-与-DFA-的关系和区别" class="headerlink" title="NFA 与 DFA 的关系和区别"></a>NFA 与 DFA 的关系和区别</h4><p>NFA 与 DFA 的唯一区别是：在 NFA 中 $\delta(q, a)$ 是一个状态集合，而在 DFA 中 $\delta(q, a)$ 是一个状态。</p>
-<p>设 $L$ 是一个被 NFA 所接受的句子的集合，则存在一个 DFA，它能够接受 $L$。</p>
-<h4 id="正则文法与有限自动机的关系"><a href="#正则文法与有限自动机的关系" class="headerlink" title="正则文法与有限自动机的关系"></a>正则文法与有限自动机的关系</h4><p>若 $G = (V_N, V_T, P, S )$ 是一个正则文法，则存在一个有限自动机 $M=(\Sigma, Q, \delta, q_0, F)$，使得: $T(M) = L(G)$。</p>
-<p>由 $G$ 构造 $M$ 的一般步骤：</p>
-<ol>
-<li>令 $\Sigma =V_T, Q=V_N \cup {T}, q_0=S$，其中，$T$ 是一个新增加的非终结符。</li>
-<li>如果在 $P$ 中有产生式 $S \rightarrow \epsilon$，则 $F={S, T}$，否则 $F={T}$。</li>
-<li>如果在 $P$ 中有产生式 $B \rightarrow a, B \in V_N, a \in V_T$，则 $T \in \delta(B, a)$。</li>
-<li>如果在 $P$ 中有产生式 $B \rightarrow aC, B, C\in V_N，a \in V_T$，则 $C \in \delta(B, a)$。</li>
-<li>对于每一个 $a \in V_T$，有 $\delta(T, a) = \emptyset$。</li>
-</ol>
-<p>若 $M=(\Sigma, Q, \delta, q_0, F$ 是一有限自动机，则存在正则文法 $G = (V_N, V_T, P, S )$ 使 $L(G)=T(M)$。</p>
-<p>由 $M$ 构造 $G$ 的一般步骤：</p>
-<ol>
-<li>令 $V_N = Q, V_T = \Sigma, S = q_0$；</li>
-<li>如果 $C \in \delta(B, a), B, C \in Q, a \in \delta$，则在 $P$ 中有产生式 $B \rightarrow aC$；</li>
-<li>如果 $C \in \delta(B, a), C \in F$，则在 $P$ 中有产生式 $B \rightarrow a$。</li>
-</ol>
-<h3 id="下推自动机"><a href="#下推自动机" class="headerlink" title="下推自动机"></a>下推自动机</h3><h4 id="下推自动机-push-down-automata-PDA"><a href="#下推自动机-push-down-automata-PDA" class="headerlink" title="下推自动机(push-down automata, PDA)"></a>下推自动机(push-down automata, PDA)</h4><p>PDA 可以看成是一个带有附加的下推存储器的有限自动机，下推存储器是一个栈。</p>
-<p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/PDA.png" alt="PDA"></p>
-<p>一个不确定的 PDA 可以表达成一个 7 元组：$M = (\Sigma, Q, \Gamma, \delta, q_0, Z_0, F)$</p>
-<ul>
-<li>$\Sigma$ 是输入符号的有穷集合；</li>
-<li>$Q$ 是状态的有限集合；</li>
-<li>$q_0 \in Q$ 是初始状态；</li>
-<li>$\Gamma$ 为下推存储器符号的有穷集合；</li>
-<li>$Z_0 \in \Gamma$ 为最初出现在下推存储器顶端的符号；</li>
-<li>$F$ 是终止状态集合，$F \subseteq Q$；</li>
-<li>$\delta$ 是从 $Q×(\Sigma \cup {\epsilon})×\Gamma$ 到 $Q×\Gamma*$ 子集的映射。</li>
-</ul>
-<blockquote>
-<p>映射关系 $\delta$ 的解释</p>
-<p>映射关系 $\delta(q, a, Z)={(q_1, \gamma_1), (q_2, \gamma_2),…,(q_m, \gamma_m)}$</p>
-<p>其中, $q_1, q_2, …, q_m \in Q, a \in \Sigma, Z \in \Gamma, \gamma_1, \gamma_2,…,\gamma_m \in \Gamma*$。</p>
-<p>该映射的意思是：当 PDA 处于状态 $q$，面临输入符号 $a$ 时，自动机将进入 $q_i, i = 1, 2, …, m$ 状态，并以 $\gamma_i$ 来代替下推存储器（栈）顶端符号 $Z$，同时将输入头指向下一个字符。当 $Z$ 被 $\gamma_i$ 取代时，$\gamma_i$ 的符号按照从左到右的顺序依次从下向上推入到存储器。</p>
-</blockquote>
-<p>特殊情况下，当 $\delta(q, a, Z)={(q_1, \gamma_1), (q_2, \gamma_2),…,(q_m, \gamma_m)}$ 时，输入头位置不移动，只用于处理下推存储器内部的操作，叫作“$\epsilon$ 移动”。</p>
-<h3 id="另外两种自动机"><a href="#另外两种自动机" class="headerlink" title="另外两种自动机"></a>另外两种自动机</h3><h4 id="图灵机"><a href="#图灵机" class="headerlink" title="图灵机"></a>图灵机</h4><ul>
-<li>图灵机与 0 型文法等价；</li>
-<li>图灵机与有限自动机（FA）的区别：图灵机可以通过其读/写头改变输入带的字符。</li>
-</ul>
-<h4 id="线性带限自动机"><a href="#线性带限自动机" class="headerlink" title="线性带限自动机"></a>线性带限自动机</h4><ul>
-<li>线性带限自动机与 1 型文法等价；</li>
-<li>线性带限自动机是一个确定的单带图灵机，其读写头不能超越原输入带上字符串的初始和终止位置，即线性带限自动机的存储空间被输入符号串的长度所限制。</li>
-</ul>
-<h3 id="语言与识别器的对应关系"><a href="#语言与识别器的对应关系" class="headerlink" title="语言与识别器的对应关系"></a>语言与识别器的对应关系</h3><p><img src="/2020/03/26/artificial_intelligence/nlp/nlp-%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%87%AA%E5%8A%A8%E6%9C%BA/%E8%AF%AD%E8%A8%80%E4%B8%8E%E8%AF%86%E5%88%AB%E5%99%A8%E7%9A%84%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB.png" alt="语言与识别器的对应关系"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1389,7 +1420,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1402,7 +1433,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1437,7 +1468,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

@@ -188,6 +188,384 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/" class="post-title-link" itemprop="url">MongoDB-结构-存储结构及对空间使用率的影响</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-17 16:23:37" itemprop="dateCreated datePublished" datetime="2017-01-17T16:23:37+08:00">2017-01-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.mongoing.com/blog/file-storage">http://www.mongoing.com/blog/file-storage</a></p>
+<p>参考：<a target="_blank" rel="noopener" href="http://blog.mlab.com/2014/01/how-big-is-your-mongodb/">http://blog.mlab.com/2014/01/how-big-is-your-mongodb/</a></p>
+<h2 id="数据库文件类型"><a href="#数据库文件类型" class="headerlink" title="数据库文件类型"></a>数据库文件类型</h2><p>MongoDB 的数据库文件主要有 3 种：</p>
+<ul>
+<li>journal 日志文件</li>
+<li>namespace 表名文件</li>
+<li>data 数据及索引文件</li>
+</ul>
+<h3 id="日志文件"><a href="#日志文件" class="headerlink" title="日志文件"></a>日志文件</h3><p>跟一些传统数据库不同，MongoDB 的日志文件只是用来在系统出现宕机时候恢复尚未来得及同步到硬盘的内存数据。日志文件会存放在一个分开的目录下面。启动时候 MongoDB 会自动预先创建 3 个每个为 1G 的日志文件（初始为空）。除非你真的有持续海量数据并发写入，一般来说 3 个 G 已经足够。</p>
+<h3 id="命名文件-dbname-ns"><a href="#命名文件-dbname-ns" class="headerlink" title="命名文件 dbname.ns"></a>命名文件 dbname.ns</h3><p>这个文件用来存储整个数据库的集合以及索引的名字。这个文件不大，默认 16M，可以存储 24000 个集合或者索引名以及那些集合和索引在数据文件中得具体位置。通过这个文件 MongoDB 可以知道从哪里去开始寻找或插入集合的数据或者索引数据。这个值可以通过参数调整至2G。</p>
+<h3 id="数据文件-dbname-0-dbname-1-…-dbname-n"><a href="#数据文件-dbname-0-dbname-1-…-dbname-n" class="headerlink" title="数据文件 dbname.0, dbname.1,… dbname.n"></a>数据文件 dbname.0, dbname.1,… dbname.n</h3><p>MongoDB 的数据以及索引都存放在一个或者多个 MongoDB 数据文件里。第一个数据文件会以“数据库名.0”命名，如 my-db.0。这个文件默认大小是 64M，在接近用完这个 64M 之前，MongoDB 会提前生成下一个数据文件如 my-db.1。数据文件的大小会 2 倍递增。第二个数据文件的大小为 128M，第三个为 256M。一直到了 2G 以后就会停止，一直按这个 2G 这个大小增加新的文件。</p>
+<hr>
+<p>当然 MongoDB还 会生成一些临时文件如 <code>_tmp</code> 和 <code>mongod.lock</code>等， 不过他们跟我们的讨论都没有太大相关性。</p>
+<h2 id="数据文件结构"><a href="#数据文件结构" class="headerlink" title="数据文件结构"></a>数据文件结构</h2><h3 id="Extent"><a href="#Extent" class="headerlink" title="Extent"></a>Extent</h3><p>在每一个数据文件内，MongoDB 把所存储的 BSON 文档的数据和 B 树索引组织到逻辑容器“Extent”里面。如下图所示（my-db.1 和 my-db.2 是数据库的两个数据文件）：</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/Extents.png" alt="Extent"></p>
+<ul>
+<li>一个文件可以有多个 Extent</li>
+<li>每一个 Extent 只会包含一个集合的数据或者索引</li>
+<li>同一个集合的数据或索引可以分布在多个 Extent 内。这几个 Extent 也可以分步于多个文件内</li>
+<li>同一个 Extent 不会又有数据又有索引</li>
+</ul>
+<h3 id="Record-记录"><a href="#Record-记录" class="headerlink" title="Record 记录"></a>Record 记录</h3><p>在每个 Extent 里面存放有多个”Record“, 每一个记录里包含一个记录头以及 MongoDB 的 BSON 文档，以及一些额外的 padding 空间。Padding 是 MongoDB 在插入记录时额外分配一些未用空间，这样将来文档变大的时候不至于需要把文档迁移到别处。 记录头以整个记录的大小开始，包括该记录自己的位置以及前一个记录和后一个记录的位置。可以想象成一个 Double Linked List。</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/Record.png" alt="Record"></p>
+<h2 id="数据库大小参数"><a href="#数据库大小参数" class="headerlink" title="数据库大小参数"></a>数据库大小参数</h2><p>在之前的基础上，我们可以来理解一下 db.stats() 里面关于空间大小参数的含义。</p>
+<h3 id="dataSize"><a href="#dataSize" class="headerlink" title="dataSize"></a>dataSize</h3><p>dataSize 是最接近真实数据大小的一个参数。你可以用来检查你的数据有多少。这个大小包括了数据库（或者集合）的每条记录的总和。注意每条记录除了 BSON 文档外还有 header 及 padding 这些额外开销。所以实际大小会比真正数据所占空间会稍大。</p>
+<p>当删除文档的时候，这个参数会相应变小因为它是所有文档数的大小总和。如果你的文档没有删除，只是文档内部的字段被删除或缩小，则不会对 dataSize 有影响。原因就是因为文档所在记录还在，并且整条记录所占空间并无改动，只不过记录内的未用空间变多了而已。</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/dataSize.png" alt="dataSize"></p>
+<h3 id="storageSize"><a href="#storageSize" class="headerlink" title="storageSize"></a>storageSize</h3><p>这个参数等于数据库或者某个集合所有用到的 Data Extents 的总和。注意这个数字会大于 dataSize 因为 Extent 里面会有一些删除文档之后留下来的碎片（deleted）。及时你的 storageSize 大出 dataSize 很多，这个也不一定就是很糟糕的情况。如果有新插入的文档小于或等于碎片的大小，MongoDB 会重新利用这个碎片来存储新的文档。不过在这之前这些碎片将一直会被保留在那里占用空间。由于这个原因，你删除文档的时候这个参数不会变小。</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/storageSize.png" alt="storageSize"></p>
+<p>碎片问题会因为运行的时间变长而变得严重。你可以通过 compact 命令来进行碎片清理或者通过新架一台从机复制所有数据，然后变成主节点的方式来解决这些碎片。</p>
+<h3 id="fileSize"><a href="#fileSize" class="headerlink" title="fileSize"></a>fileSize</h3><p>这个参数只在数据库上有效，指的是实际文件系统中用到的文件的大小。它包括所有的数据 Extents 的总和，索引 Extent 的总和，以及一些未被分配的空间。之前提到 MongoDB 会对数据库文件创建时候进行预分配，例如最小就是 64M，哪怕你只有几百个 KB 的数据。所以这个参数可能会比实际的数据大小会大不少。这些额外未用空间是用来保证 MongoDB 可以在新的数据写入时候快速的分配新的 Extent，避免引起磁盘空间分配引起的延迟。</p>
+<p><img src="/2017/01/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E5%8F%8A%E5%AF%B9%E7%A9%BA%E9%97%B4%E4%BD%BF%E7%94%A8%E7%8E%87%E7%9A%84%E5%BD%B1%E5%93%8D/fileSize.png" alt="fileSize"></p>
+<p>值得注意的是，当你删除文档，或甚至集合和索引，这个参数不会变小。换句话说，数据库所使用的硬盘空间只会上升（或者不变），而不会因为删除数据而变小。当然需要知道的是这并不就意味着浪费，只是说有很多预留空间而已。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/14/%E5%B7%A5%E5%85%B7/git/github%E8%A2%AB%E5%A2%99%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/14/%E5%B7%A5%E5%85%B7/git/github%E8%A2%AB%E5%A2%99%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86/" class="post-title-link" itemprop="url">github被墙设置代理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-14 13:27:41" itemprop="dateCreated datePublished" datetime="2017-01-14T13:27:41+08:00">2017-01-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><code>git config --global http.proxy &quot;localhost:8787&quot;</code></p>
+<p>端口可以设置为Lantern的代理端口</p>
+<p>所以需要默认不设置代理：</p>
+<p><code>git config --global --unset http.proxy</code></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E9%85%8D%E7%BD%AE-%E9%99%90%E5%88%B6IP%E8%AE%BF%E9%97%AE%E7%9A%84%E5%90%84%E7%A7%8D%E6%83%85%E5%86%B5%E5%85%A8%E8%A7%A3%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E6%9C%8D%E5%8A%A1%E5%99%A8/Nginx/Nginx-%E9%85%8D%E7%BD%AE-%E9%99%90%E5%88%B6IP%E8%AE%BF%E9%97%AE%E7%9A%84%E5%90%84%E7%A7%8D%E6%83%85%E5%86%B5%E5%85%A8%E8%A7%A3%E6%9E%90/" class="post-title-link" itemprop="url">Nginx-配置-限制IP访问的各种情况全解析</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-14 12:37:22" itemprop="dateCreated datePublished" datetime="2017-01-14T12:37:22+08:00">2017-01-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%8D%E5%8A%A1%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">服务器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.jb51.net/article/71148.htm">http://www.jb51.net/article/71148.htm</a></p>
+<h2 id="限制某个IP同一时间段的访问次数"><a href="#限制某个IP同一时间段的访问次数" class="headerlink" title="限制某个IP同一时间段的访问次数"></a>限制某个IP同一时间段的访问次数</h2><p>如何设置能限制某个IP某一时间段的访问次数是一个让人头疼的问题，特别面对恶意的ddos攻击的时候。其中CC攻击（Challenge Collapsar）是DDOS（分布式拒绝服务）的一种，也是一种常见的网站攻击方法，攻击者通过代理服务器或者肉鸡向向受害主机不停地发大量数据包， 造成对方服务器资源耗尽，一直到宕机崩溃。</p>
+<p>cc攻击一般就是使用有限的ip数对服务器频繁发送数据来达到攻击的目的，nginx可以通过HttpLimitReqModul和HttpLimitZoneModule配置来限制ip在同一时间段的访问次数来防cc攻击。</p>
+<p>HttpLimitReqModul用来限制连单位时间内连接数的模块，使用limit_req_zone和limit_req指令配合使用来达到限制。一旦并发连接超过指定数量，就会返回503错误。</p>
+<p>HttpLimitConnModul用来限制单个ip的并发连接数，使用limit_zone和limit_conn指令</p>
+<p>这两个模块的区别前一个是对一段时间内的连接数限制，后者是对同一时刻的连接数限制</p>
+<h3 id="HttpLimitReqModul-限制某一段时间内同一ip访问数实例"><a href="#HttpLimitReqModul-限制某一段时间内同一ip访问数实例" class="headerlink" title="HttpLimitReqModul 限制某一段时间内同一ip访问数实例"></a>HttpLimitReqModul 限制某一段时间内同一ip访问数实例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">http&#123;</span><br><span class="line">  ...</span><br><span class="line">  #定义一个名为allips的limit_req_zone用来存储session，大小是10M内存，</span><br><span class="line">  #以$binary_remote_addr 为key,限制平均每秒的请求为20个，</span><br><span class="line">  #1M能存储16000个状态，rete的值必须为整数，</span><br><span class="line">  #如果限制两秒钟一个请求，可以设置成30r/m</span><br><span class="line">  limit_req_zone $binary_remote_addr zone=allips:10m rate=20r/s;</span><br><span class="line">  ...</span><br><span class="line">  server&#123;</span><br><span class="line">    ...</span><br><span class="line">    location &#123;</span><br><span class="line">      ...</span><br><span class="line">      #限制每ip每秒不超过20个请求，漏桶数burst为5</span><br><span class="line">      #brust的意思就是，如果第1秒、2,3,4秒请求为19个，</span><br><span class="line">      #第5秒的请求为25个是被允许的。</span><br><span class="line">      #但是如果你第1秒就25个请求，第2秒超过20的请求返回503错误。</span><br><span class="line">      #nodelay，如果不设置该选项，严格使用平均速率限制请求数，</span><br><span class="line">      #第1秒25个请求时，5个请求放到第2秒执行，</span><br><span class="line">      #设置nodelay，25个请求将在第1秒执行。</span><br><span class="line">      limit_req zone=allips burst=5 nodelay;</span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="HttpLimitZoneModule-限制并发连接数实例"><a href="#HttpLimitZoneModule-限制并发连接数实例" class="headerlink" title="HttpLimitZoneModule 限制并发连接数实例"></a>HttpLimitZoneModule 限制并发连接数实例</h3><p>limit_zone只能定义在http作用域，limit_conn可以定义在http server location作用域</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">http&#123;</span><br><span class="line">  ...</span><br><span class="line">  #定义一个名为one的limit_zone,大小10M内存来存储session，</span><br><span class="line">  #以$binary_remote_addr 为key</span><br><span class="line">  #nginx 1.18以后用limit_conn_zone替换了limit_conn</span><br><span class="line">  #且只能放在http作用域</span><br><span class="line">  limit_conn_zone  one $binary_remote_addr 10m;</span><br><span class="line">  ...</span><br><span class="line">  server&#123;</span><br><span class="line">    ...</span><br><span class="line">    location &#123;</span><br><span class="line">      ...</span><br><span class="line">      limit_conn one 20;     #连接数限制</span><br><span class="line">      #带宽限制,对单个连接限数，如果一个ip两个连接，就是500x2k</span><br><span class="line">      limit_rate 500k;     </span><br><span class="line">      ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="服务器全局限IP"><a href="#服务器全局限IP" class="headerlink" title="服务器全局限IP"></a>服务器全局限IP</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#vi nginx.conf</span><br><span class="line">  allow 10.57.22.172;</span><br><span class="line">  deny all;</span><br></pre></td></tr></table></figure>
+
+<h2 id="指定目录的IP访问限制"><a href="#指定目录的IP访问限制" class="headerlink" title="指定目录的IP访问限制"></a>指定目录的IP访问限制</h2><p>实现重点</p>
+<p>正则表达式中()和|的使用，（）代表一个原则，|代表或</p>
+<p>nginx的location匹配规则中，有一条按照文件顺序进行正则匹配(ps:可以把需要匹配的目录放置在server模块开始的位置)</p>
+<p>allow和deny的使用</p>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>目录结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">根目录/srv/</span><br><span class="line">test1 / --  hello.php</span><br><span class="line">test2/  --  hello.php</span><br><span class="line">test3/  --  hello.php</span><br><span class="line">test4/  --  &#123;hello.php,1.php,2.php&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="访问需求"><a href="#访问需求" class="headerlink" title="访问需求"></a>访问需求</h3><p>对于test1,test2目录，只允许指定的192.168.1.101ip地址访问，禁止其它ip访问</p>
+<p>对于其他目录的php程序，所有ip地址均可以访问</p>
+<p>实现的nginx配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#指定目录实行白名单访问机制</span><br><span class="line">location ~ ^/(test1|test2)/ &#123;</span><br><span class="line">  allow 192.168.1.101;</span><br><span class="line">  deny all;</span><br><span class="line"></span><br><span class="line">  root /srv/;  </span><br><span class="line">  fastcgi_param  HTTPS  on;</span><br><span class="line">    include /etc/nginx/fastcgi_params;  </span><br><span class="line">    fastcgi_pass  php5_fpm;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># proxy the PHP scripts to fpm</span><br><span class="line">location ~ \.php$ &#123;</span><br><span class="line">root /srv/;  </span><br><span class="line">fastcgi_param  HTTPS  on;</span><br><span class="line">  include /etc/nginx/fastcgi_params;  </span><br><span class="line">  fastcgi_pass  php5_fpm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项:"></a>注意事项:</h3><ol>
+<li>deny 一定要加一个ip，否则直接跳转到403,不往下执行了;如果403默认页是同一域名下，会造成死循环访问；</li>
+<li>allow的ip段</li>
+</ol>
+<p>  从允许访问的段位从小到大排列,如127.0.0.0/24</p>
+<p>  下面才能是10.10.0.0/16</p>
+<p>  24表示子网掩码:255.255.255.0</p>
+<p>  16表示子网掩码:255.255.0.0</p>
+<p>  8表示子网掩码:255.0.0.0</p>
+<ol start="3">
+<li>deny all;结尾 表示除了上面allow的其他都禁止</li>
+</ol>
+<p>如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">deny 192.168.1.1;           allow 127.0.0.0/24;           allo w 192.168.0.0/16;           allow 10.10.0.0/16;           deny all;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-zset/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/01/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-zset/" class="post-title-link" itemprop="url">Redis-数据结构-zset</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-13 16:05:13" itemprop="dateCreated datePublished" datetime="2017-01-13T16:05:13+08:00">2017-01-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://redisbook.readthedocs.io/en/latest/datatype/sorted_set.html">http://redisbook.readthedocs.io/en/latest/datatype/sorted_set.html</a></p>
+<h2 id="有序集"><a href="#有序集" class="headerlink" title="有序集"></a>有序集</h2><p>REDIS_ZSET（有序集）是 ZADD、ZCOUNT 等命令的操作对象，它使用 REDIS_ENCODING_ZIPLIST 和 REDIS_ENCODING_SKIPLIST 两种方式编码：</p>
+<p><img src="/2017/01/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-zset/zset.png" alt="zset"></p>
+<h2 id="编码的选择"><a href="#编码的选择" class="headerlink" title="编码的选择"></a>编码的选择</h2><p>在通过 ZADD 命令添加第一个元素到空 key 时，程序通过检查输入的第一个元素来决定该创建什么编码的有序集。</p>
+<p>如果第一个元素符合以下条件的话，就创建一个 REDIS_ENCODING_ZIPLIST 编码的有序集：</p>
+<ul>
+<li>服务器属性 server.zset_max_ziplist_entries 的值大于 0（默认为 128）。</li>
+<li>元素的 member 长度小于服务器属性 server.zset_max_ziplist_value 的值（默认为 64）。</li>
+</ul>
+<p>否则，程序就创建一个 REDIS_ENCODING_SKIPLIST 编码的有序集。</p>
+<h2 id="编码的转换"><a href="#编码的转换" class="headerlink" title="编码的转换"></a>编码的转换</h2><p>对于一个 REDIS_ENCODING_ZIPLIST 编码的有序集，只要满足以下任一条件，就将它转换为 REDIS_ENCODING_SKIPLIST 编码：</p>
+<ul>
+<li>ziplist 所保存的元素数量超过服务器属性 server.zset_max_ziplist_entries 的值（默认值为 128）</li>
+<li>新添加元素的 member 的长度大于服务器属性 server.zset_max_ziplist_value 的值（默认值为 64）</li>
+</ul>
+<h2 id="ZIPLIST-编码的有序集"><a href="#ZIPLIST-编码的有序集" class="headerlink" title="ZIPLIST 编码的有序集"></a>ZIPLIST 编码的有序集</h2><p>当使用 REDIS_ENCODING_ZIPLIST 编码时，有序集将元素保存到 ziplist 数据结构里面。</p>
+<p>其中，每个有序集元素以两个相邻的 ziplist 节点表示，第一个节点保存元素的 member 域，第二个元素保存元素的 score 域。</p>
+<p><strong>多个元素之间按 score 值从小到大排序，如果两个元素的 score 相同，那么按字典序对 member 进行对比，决定哪个元素排在前面，哪个元素排在后面。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">          |&lt;--  element 1 --&gt;|&lt;--  element 2 --&gt;|&lt;--   .......   --&gt;|</span><br><span class="line"></span><br><span class="line">+---------+---------+--------+---------+--------+---------+---------+---------+</span><br><span class="line">| ZIPLIST |         |        |         |        |         |         | ZIPLIST |</span><br><span class="line">| ENTRY   | member1 | score1 | member2 | score2 |   ...   |   ...   | ENTRY   |</span><br><span class="line">| HEAD    |         |        |         |        |         |         | END     |</span><br><span class="line">+---------+---------+--------+---------+--------+---------+---------+---------+</span><br><span class="line"></span><br><span class="line">score1 &lt;= score2 &lt;= ...</span><br></pre></td></tr></table></figure>
+<p>虽然元素是按 score 域有序排序的，但对 ziplist 的节点指针只能线性地移动，所以在 REDIS_ENCODING_ZIPLIST 编码的有序集中，查找某个给定元素的复杂度为 $O(N)$。</p>
+<p>每次执行添加/删除/更新操作都需要执行一次查找元素的操作，因此这些函数的复杂度都不低于 $O(N)$，至于这些操作的实际复杂度，取决于它们底层所执行的 ziplist 操作。</p>
+<h2 id="SKIPLIST-编码的有序集"><a href="#SKIPLIST-编码的有序集" class="headerlink" title="SKIPLIST 编码的有序集"></a>SKIPLIST 编码的有序集</h2><p>当使用 REDIS_ENCODING_SKIPLIST 编码时， 有序集元素由 redis.h/zset 结构来保存：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * 有序集</span><br><span class="line"> */</span><br><span class="line">typedef struct zset &#123;</span><br><span class="line"></span><br><span class="line">    // 字典</span><br><span class="line">    dict *dict;</span><br><span class="line"></span><br><span class="line">    // 跳跃表</span><br><span class="line">    zskiplist *zsl;</span><br><span class="line"></span><br><span class="line">&#125; zset;</span><br></pre></td></tr></table></figure>
+<p>zset 同时使用字典和跳跃表两个数据结构来保存有序集元素。</p>
+<p>其中，元素的成员由一个 redisObject 结构表示，而元素的 score 则是一个 double 类型的浮点数，字典和跳跃表两个结构通过将指针共同指向这两个值来节约空间（不用每个元素都复制两份）。</p>
+<p>下图展示了一个 REDIS_ENCODING_SKIPLIST 编码的有序集：</p>
+<p><img src="/2017/01/13/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-zset/skiplist.png" alt="skiplist"></p>
+<p>通过使用字典结构，并将 member 作为键，score 作为值，有序集可以在 $O(1)$ 时间复杂度内：</p>
+<ul>
+<li>检查给定 member 是否存在于有序集（被很多底层函数使用）；</li>
+<li>取出 member 对应的 score 值（实现 ZSCORE 命令）。</li>
+</ul>
+<p>另一方面，通过使用跳跃表，可以让有序集支持以下两种操作：</p>
+<ul>
+<li>在 $O(logN)$ 期望时间、$O(N)$ 最坏时间内根据 score 对 member 进行定位（被很多底层函数使用）；</li>
+<li>范围性查找和处理操作，这是（高效地）实现 ZRANGE、ZRANK 和 ZINTERSTORE 等命令的关键。</li>
+</ul>
+<p>通过同时使用字典和跳跃表，有序集可以高效地实现按成员查找和按顺序查找两种操作。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/01/12/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -634,476 +1012,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-_id%E5%92%8CObjectId/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-_id%E5%92%8CObjectId/" class="post-title-link" itemprop="url">MongoDB-结构-`_id`和ObjectId</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-31 13:21:11" itemprop="dateCreated datePublished" datetime="2016-12-31T13:21:11+08:00">2016-12-31</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://book.51cto.com/art/201112/307016.htm">http://book.51cto.com/art/201112/307016.htm</a></p>
-<h2 id="id和ObjectId"><a href="#id和ObjectId" class="headerlink" title="_id和ObjectId"></a><code>_id和ObjectId</code></h2><p>MongoDB 中存储的文档必须有一个”<code>_id</code>“键。这个键的值可以是任何类型的，默认是个 ObjectId 对象。在一个集合里面，每个文档都有唯一的”<code>_id</code>“值，来确保集合里面每个文档都能被唯一标识。如果有两个集合的话，两个集合可以都有一个值为 123 的”<code>_id</code>“键，但是每个集合里面只能有一个”<code>_id</code>“是 123 的文档。</p>
-<h3 id="ObjectId"><a href="#ObjectId" class="headerlink" title="ObjectId"></a>ObjectId</h3><p>ObjectId 是”<code>_id</code>“ 的默认类型。它设计成轻量型的，不同的机器都能用全局唯一的同种方法方便地生成它。这是MongoDB 采用ObjectId，而不是其他比较常规的做法（比如自动增加的主键）的主要原因，因为在多个服务器上同步自动增加主键值既费力还费时。MongoDB 从一开始就设计用来作为分布式数据库，处理多个节点是一个核心要求。后面会看到ObjectId 类型在分片环境中要容易生成得多。</p>
-<p>ObjectId 使用 12 字节的存储空间，每个字节两位十六进制数字，是一个 24 位的字符串。由于看起来很长，不少人会觉得难以处理。但关键是要知道这个长长的 ObjectId 是实际存储数据的两倍长。</p>
-<p>如果快速连续创建多个 ObjectId，会发现每次只有最后几位数字有变化。另外，中间的几位数字也会变化（要是在创建的过程中停顿几秒钟）。这是ObjectId 的创建方式导致的。12 字节按照如下方式生成：</p>
-<p><img src="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E7%BB%93%E6%9E%84-_id%E5%92%8CObjectId/1.png" alt="1"></p>
-<h4 id="ObjectId-生成规则"><a href="#ObjectId-生成规则" class="headerlink" title="ObjectId 生成规则"></a>ObjectId 生成规则</h4><h5 id="4字节：UNIX时间戳"><a href="#4字节：UNIX时间戳" class="headerlink" title="4字节：UNIX时间戳"></a>4字节：UNIX时间戳</h5><p>前 4 个字节是从标准纪元开始的时间戳，单位为秒。这会带来一些有用的属性。时间戳，与随后的 5 个字节组合起来，提供了秒级别的唯一性。</p>
-<p>由于时间戳在前，这意味着 ObjectId 大致会按照插入的顺序排列。这对于某些方面很有用，如将其作为索引提高效率，但是这个是没有保证的，仅仅是“大致”。</p>
-<p>这 4 个字节也隐含了文档创建的时间。绝大多数驱动都会公开一个方法从 ObjectId 获取这个信息。</p>
-<p>因为使用的是当前时间，很多用户担心要对服务器进行时间同步。其实没有这个必要，因为时间戳的实际值并不重要，只要其总是不停增加就好了（每秒一次）。</p>
-<h5 id="3-字节：表示运行-MongoDB-的机器"><a href="#3-字节：表示运行-MongoDB-的机器" class="headerlink" title="3 字节：表示运行 MongoDB 的机器"></a>3 字节：表示运行 MongoDB 的机器</h5><p>接下来的 3 字节是所在主机的唯一标识符。通常是机器主机名的散列值。这样就可以确保不同主机生成不同的 ObjectId，不产生冲突。</p>
-<h5 id="2-字节：表示生成此-id-的进程"><a href="#2-字节：表示生成此-id-的进程" class="headerlink" title="2 字节：表示生成此 _id 的进程"></a>2 字节：表示生成此 _id 的进程</h5><p>为了确保在同一台机器上并发的多个进程产生的 ObjectId 是唯一的，接下来的两字节来自产生 ObjectId 的进程标识符（PID）。</p>
-<h5 id="3-字节：由一个随机数开始的计数器生成的值"><a href="#3-字节：由一个随机数开始的计数器生成的值" class="headerlink" title="3 字节：由一个随机数开始的计数器生成的值"></a>3 字节：由一个随机数开始的计数器生成的值</h5><p>前 9 字节保证了同一秒钟不同机器不同进程产生的 ObjectId 是唯一的。后 3 字节就是一个自动增加的计数器，确保相同进程同一秒产生的 ObjectId 也是不一样的。同一秒钟最多允许每个进程拥有 2563（16 777 216）个不同的 ObjectId。</p>
-<h3 id="自动生成-id"><a href="#自动生成-id" class="headerlink" title="自动生成 _id"></a>自动生成 _id</h3><p>前面讲到，如果插入文档的时候没有”<code>_id</code>“键，系统会自动帮你创建一个。可以由 MongoDB 服务器来做这件事情，但通常会在客户端由驱动程序完成。理由如下。</p>
-<p>虽然 ObjectId 设计成轻量型的，易于生成，但是毕竟生成的时候还是产生开销。在客户端生成体现了 MongoDB 的设计理念：能从服务器端转移到驱动程序来做的事，就尽量转移。这种理念背后的原因是，即便是像 MongoDB 这样的可扩展数据库，扩展应用层也要比扩展数据库层容易得多。将事务交由客户端来处理，就减轻了数据库扩展的负担。</p>
-<p>在客户端生成 ObjectId，驱动程序能够提供更加丰富的 API。例如，驱动程序可以有自己的 insert 方法，可以返回生成的 ObjectId，也可以直接将其插入文档。如果驱动程序允许服务器生成 ObjectId，那么将需要单独的查询，以确定插入的文档中的”<code>_id</code>“值。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5/" class="post-title-link" itemprop="url">MongoDB-常用命令-增删改查</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-31 10:21:13" itemprop="dateCreated datePublished" datetime="2016-12-31T10:21:13+08:00">2016-12-31</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h2><p><code>db.collection.insert()</code></p>
-<p><img src="/2016/12/31/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4-%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5/%E6%8F%92%E5%85%A5.png" alt="插入"></p>
-<p>存储在 MongoDB 集合中的每个文档（document）都有一个默认的主键 _id，这个主键名称是固定的，它可以是 MongoDB 支持的任何数据类型，默认是 ObjectId</p>
-<h2 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h2><p><code>db.collection.find()</code></p>
-<h3 id="数组查询"><a href="#数组查询" class="headerlink" title="数组查询"></a>数组查询</h3><table>
-<thead>
-<tr>
-<th align="center">名称</th>
-<th align="center">描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">$all</td>
-<td align="center">通过多个元素来匹配数组。</td>
-</tr>
-<tr>
-<td align="center">$size</td>
-<td align="center">查询特定长度的数组。</td>
-</tr>
-<tr>
-<td align="center">$slice</td>
-<td align="center">返回数组的一个子集合。</td>
-</tr>
-</tbody></table>
-<h4 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h4><p><code>db.food.find()</code></p>
-<p>数据：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;001&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;香蕉&quot;, &quot;橘子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;002&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;003&quot;, &quot;fruits&quot; : [ &quot;圣女果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="all"><a href="#all" class="headerlink" title="$all"></a>$all</h5><p>查询水果列表中既有苹果又有桃子的食品：<code>db.food.find(&#123;&quot;fruits&quot;:&#123;&quot;$all&quot;:[&quot;苹果&quot;,&quot;桃子&quot;]&#125;&#125;) --这是AND的关系</code></p>
-<p>结果：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;002&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
-
-<p>查询水果列表中下标为1的元素是梨子的食品：<code>db.food.find(&#123;&quot;fruits.1&quot;:&quot;梨子&quot;&#125;)</code></p>
-<p>结果：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;002&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;003&quot;, &quot;fruits&quot; : [ &quot;圣女果&quot;, &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="size"><a href="#size" class="headerlink" title="$size"></a>$size</h5><p>数组包含3个元素的文档：<code>db.food.find(&#123;&quot;fruits&quot;:&#123;&quot;$size&quot;:3&#125;&#125;)</code></p>
-<p>结果：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;001&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;香蕉&quot;, &quot;橘子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="slice"><a href="#slice" class="headerlink" title="$slice"></a>$slice</h5><p>返回lists后3个元素：<code>db.test.find(&#123;&#125;,&#123;&quot;lists&quot;:&#123;&quot;$slice&quot;:-3&#125;&#125;)</code></p>
-<p>结果：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;_id&quot; : &quot;001&quot;, &quot;fruits&quot; : [ &quot;苹果&quot;, &quot;香蕉&quot;, &quot;橘子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;002&quot;, &quot;fruits&quot; : [ &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;003&quot;, &quot;fruits&quot; : [ &quot;梨子&quot;, &quot;橘子&quot;, &quot;桃子&quot; ] &#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="修改"><a href="#修改" class="headerlink" title="修改"></a>修改</h2><h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><p><code>db.collection.update(&lt;query&gt;, &lt;update&gt;, upsert:&lt;boolean&gt;, multi:&lt;boolean&gt;) </code></p>
-<table>
-<thead>
-<tr>
-<th align="center">参数</th>
-<th align="center">类型</th>
-<th align="center">描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">query</td>
-<td align="center">document</td>
-<td align="center">要修改哪些的查询条件，类似于SQL 的 where</td>
-</tr>
-<tr>
-<td align="center">update</td>
-<td align="center">document</td>
-<td align="center">要修改的字段对应的值</td>
-</tr>
-<tr>
-<td align="center">upsert</td>
-<td align="center">boolean</td>
-<td align="center">可选的，默认值是false。如果根据查询条件没找到对应的文档，如果设置为true，相当于执行insert，如果设置为false,不做任何的操作。</td>
-</tr>
-<tr>
-<td align="center">multi</td>
-<td align="center">boolean</td>
-<td align="center">可选的，默认值是false。如果根据查询条件找到对应的多条记录是，如果设置为false时，只修改第一条，如果设置为true，全部更新。</td>
-</tr>
-</tbody></table>
-<h3 id="对单个字段进行修改"><a href="#对单个字段进行修改" class="headerlink" title="对单个字段进行修改"></a>对单个字段进行修改</h3><table>
-<thead>
-<tr>
-<th align="center">名称</th>
-<th align="center">描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">$inc</td>
-<td align="center">根据要添加的值递增该字段的值。</td>
-</tr>
-<tr>
-<td align="center">$mul</td>
-<td align="center">将该字段的值乘以指定的值</td>
-</tr>
-<tr>
-<td align="center">$rename</td>
-<td align="center">重命名字段</td>
-</tr>
-<tr>
-<td align="center">$setOnInsert</td>
-<td align="center">操作时,操作给相应的字段赋值</td>
-</tr>
-<tr>
-<td align="center">$set</td>
-<td align="center">用来指定一个键的值，如果不存在则创建它</td>
-</tr>
-<tr>
-<td align="center">$unset</td>
-<td align="center">用来指定一个键的值，如果不存在不创建创建它</td>
-</tr>
-<tr>
-<td align="center">$min</td>
-<td align="center">只有当指定的值小于现有字段值时才更新该字段。</td>
-</tr>
-<tr>
-<td align="center">$max</td>
-<td align="center">只有当指定的值大于现有字段值时才更新该字段。</td>
-</tr>
-<tr>
-<td align="center">$currentDate</td>
-<td align="center">设置当前日期字段的值，或者作为一个日期或时间戳。</td>
-</tr>
-</tbody></table>
-<h3 id="对数组进行修改"><a href="#对数组进行修改" class="headerlink" title="对数组进行修改"></a>对数组进行修改</h3><table>
-<thead>
-<tr>
-<th align="center">名称</th>
-<th align="center">描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">$</td>
-<td align="center">作为一个占位符的更新与查询条件在一个更新的第一要素</td>
-</tr>
-<tr>
-<td align="center">$addToSet</td>
-<td align="center">将元素添加到数组中，仅当它们在集合中不存在</td>
-</tr>
-<tr>
-<td align="center">$pop</td>
-<td align="center">删除数组的第一个或最后一个项</td>
-</tr>
-<tr>
-<td align="center">$pullAll</td>
-<td align="center">从数组中移除所有匹配值</td>
-</tr>
-<tr>
-<td align="center">$pull</td>
-<td align="center">移除匹配指定查询的所有数组元素</td>
-</tr>
-<tr>
-<td align="center">$pushAll</td>
-<td align="center">将所有值添加到数组中（Deprecated since version 2.4: Use the $push operator with $each instead.）</td>
-</tr>
-<tr>
-<td align="center">$push</td>
-<td align="center">将值添加到数组中，如果有的数组存在则向数组末尾添加该值，如果数组不存在则创建该数组并保存该值</td>
-</tr>
-</tbody></table>
-<h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><h3 id="删除文档"><a href="#删除文档" class="headerlink" title="删除文档"></a>删除文档</h3><p><code>db.collection.remove()</code></p>
-<p>删除 orders 集合的数据，集合还存在，索引都还存在</p>
-<h3 id="删除集合"><a href="#删除集合" class="headerlink" title="删除集合"></a>删除集合</h3><p><code>db.collection.drop()</code></p>
-<p>集合、索引都不存在了</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/30/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E6%95%B0%E7%BB%84-elemMatch/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/30/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E6%95%B0%E7%BB%84-elemMatch/" class="post-title-link" itemprop="url">MongoDB-elemMatch</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-30 17:45:41" itemprop="dateCreated datePublished" datetime="2016-12-30T17:45:41+08:00">2016-12-30</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MongoDB/" itemprop="url" rel="index"><span itemprop="name">MongoDB</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><code>$elemMatch</code> 是用来匹配数组内的元素的。</p>
-<p>与 <code>.</code> 容易产生混淆。</p>
-<h3 id="elemMatch-与-对比"><a href="#elemMatch-与-对比" class="headerlink" title="$elemMatch 与 . 对比"></a><code>$elemMatch</code> 与 <code>.</code> 对比</h3><h4 id="初始化源数据"><a href="#初始化源数据" class="headerlink" title="初始化源数据"></a>初始化源数据</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:11&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:12&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2&quot;:13&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:14&#125;]&#125;)</span><br><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:21&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:22&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2&quot;:23&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:24&#125;]&#125;)</span><br><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:31&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:32&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2</span><br><span class="line">&quot;:33&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:34&#125;]&#125;)</span><br><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:41&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:42&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2&quot;:43&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:44&#125;]&#125;)</span><br><span class="line">db.em.insert(&#123;&quot;arr&quot;:[&#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:51&#125;,&#123;&quot;e1&quot;:&quot;b&quot;,&quot;e2&quot;:52&#125;,&#123;&quot;e1&quot;:&quot;c&quot;,&quot;e2&quot;:53&#125;,&#123;&quot;e1&quot;:&quot;d&quot;,&quot;e2&quot;:54&#125;]&#125;)</span><br></pre></td></tr></table></figure>
-
-<h4 id="用-查询"><a href="#用-查询" class="headerlink" title="用 . 查询"></a>用 <code>.</code> 查询</h4><p><code>db.em.find(&#123;&quot;arr&quot;:&#123;$elemMatch: &#123;&quot;e1&quot;:&quot;a&quot;,&quot;e2&quot;:32&#125;&#125;&#125;)</code></p>
-<p>无结果集</p>
-<h4 id="用-elemMatch-查询"><a href="#用-elemMatch-查询" class="headerlink" title="用 $elemMatch 查询"></a>用 <code>$elemMatch</code> 查询</h4><p><code>db.em.find(&#123;&quot;arr.e1&quot;:&quot;a&quot;,&quot;arr.e2&quot;:32&#125;)</code></p>
-<p>查询结果如下：<br><img src="/2016/12/30/%E6%95%B0%E6%8D%AE%E5%BA%93/MongoDB/MongoDB-%E6%95%B0%E7%BB%84-elemMatch/1.png" alt="1"></p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
-<li><code>$elemMatch</code>：数组内单个元素匹配则符合</li>
-<li><code>.</code>：数组内多个元素能分别匹配上条件即符合</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%85%83%E6%95%B0%E6%8D%AE-information_schema%E5%BA%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/12/29/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%85%83%E6%95%B0%E6%8D%AE-information_schema%E5%BA%93/" class="post-title-link" itemprop="url">MySQL-元数据-information_schema库</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-12-29 14:34:27" itemprop="dateCreated datePublished" datetime="2016-12-29T14:34:27+08:00">2016-12-29</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在 mysql 中有一个 information_schema 数据库，这个数据库中装的是 mysql 的元数据，包括数据库信息、数据库中表的信息等。所以要想查询数据库占用磁盘的空间大小可以通过对 information_schema 数据库进行操作。</p>
-<p>information_schema 中的表主要有：</p>
-<ul>
-<li>schemata表：这个表里面主要是存储在 mysql 中的所有的数据库的信息</li>
-<li>tables表：这个表里存储了所有数据库中的表的信息，包括每个表有多少个列等信息。</li>
-<li>columns表：这个表存储了所有表中的表字段信息。</li>
-<li>statistics表：存储了表中索引的信息。</li>
-<li>user_privileges表：存储了用户的权限信息。</li>
-<li>schema_privileges表：存储了数据库权限。</li>
-<li>table_privileges表：存储了表的权限。</li>
-<li>column_privileges表：存储了列的权限信息。</li>
-<li>character_sets表：存储了 mysql 可以用的字符集的信息。</li>
-<li>collations表：提供各个字符集的对照信息。</li>
-<li>collation_character_set_applicability表：相当于 collations 表和 character_sets 表的前两个字段的一个对比，记录了字符集之间的对照信息。</li>
-<li>table_constraints表：这个表主要是用于记录表的描述存在约束的表和约束类型。</li>
-<li>key_column_usage表：记录具有约束的列。</li>
-<li>routines表：记录了存储过程和函数的信息，不包含自定义的过程或函数信息。</li>
-<li>views表：记录了视图信息，需要有 show view 权限。</li>
-<li>triggers表：存储了触发器的信息，需要有 super 权限。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1175,7 +1083,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1188,7 +1096,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1223,7 +1131,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

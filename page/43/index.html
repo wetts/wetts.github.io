@@ -188,6 +188,496 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/" class="post-title-link" itemprop="url">Redis-主从切换-sentinel（哨兵机制）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-26 19:01:27" itemprop="dateCreated datePublished" datetime="2016-06-26T19:01:27+08:00">2016-06-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/zhoujinyi/p/5569462.html">http://www.cnblogs.com/zhoujinyi/p/5569462.html</a></p>
+<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Redis-Sentinel 是 Redis 官方推荐的高可用性（HA）解决方案，当用 Redis 做 Master-slave 的高可用方案时，假如 master 宕机了，Redis 本身（包括它的很多客户端）都没有实现自动进行主备切换，而 Redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。</p>
+<p>它的主要功能有以下几点</p>
+<ul>
+<li>不时地监控 redis 是否按照预期良好地运行；</li>
+<li>如果发现某个 redis 节点运行出现状况，能够通知另外一个进程（例如它的客户端）；</li>
+<li>能够进行自动切换。当一个 master 节点不可用时，能够选举出 master 的多个 slave（如果有超过一个 slave 的话）中的一个来作为新的 master，其它的 slave 节点会将它所追随的 master 的地址改为被提升为 master 的 slave 的新地址。</li>
+</ul>
+<h2 id="Sentinel-支持集群"><a href="#Sentinel-支持集群" class="headerlink" title="Sentinel 支持集群"></a>Sentinel 支持集群</h2><p>很显然，只使用单个 sentinel 进程来监控 redis 集群是不可靠的，当 sentinel 进程宕掉后（sentinel 本身也有单点问题，single-point-of-failure）整个集群系统将无法按照预期的方式运行。所以有必要将 sentinel 集群，这样有几个好处：</p>
+<ul>
+<li>即使有一些 sentinel 进程宕掉了，依然可以进行 redis 集群的主备切换；</li>
+<li>如果只有一个 sentinel 进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现 redis 集群的主备切换（单点问题）;</li>
+<li>如果有多个 sentinel，redis 的客户端可以随意地连接任意一个 sentinel 来获得关于 redis 集群中的信息。</li>
+</ul>
+<h2 id="运行-Sentinel"><a href="#运行-Sentinel" class="headerlink" title="运行 Sentinel"></a>运行 Sentinel</h2><p>运行 sentinel 有两种方式：</p>
+<ol>
+<li>```<br>redis-sentinel /path/to/sentinel.conf<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2. ```</span><br><span class="line">   redis-server /path/to/sentinel.conf --sentinel</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>以上两种方式，都必须指定一个 sentinel 的配置文件 sentinel.conf，如果不指定，将无法启动 sentinel。sentinel 默认监听 26379 端口，所以运行前必须确定该端口没有被别的进程占用。</p>
+<h2 id="Sentinel-的配置"><a href="#Sentinel-的配置" class="headerlink" title="Sentinel 的配置"></a>Sentinel 的配置</h2><p>Redis 源码包中包含了一个 sentinel.conf 文件作为 sentinel 的配置文件，配置文件自带了关于各个配置项的解释。典型的配置项如下所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 60000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br><span class="line">sentinel parallel-syncs mymaster 1</span><br><span class="line"></span><br><span class="line">sentinel monitor resque 192.168.1.3 6380 4</span><br><span class="line">sentinel down-after-milliseconds resque 10000</span><br><span class="line">sentinel failover-timeout resque 180000</span><br><span class="line">sentinel parallel-syncs resque 5</span><br></pre></td></tr></table></figure>
+
+<p>上面的配置项配置了两个名字分别为 mymaster 和 resque 的 master，配置文件只需要配置 master 的信息就好啦，不用配置 slave 的信息，因为 slave 能够被自动检测到（master 节点会有关于 slave 的消息）。需要注意的是，配置文件在 sentinel 运行期间是会被动态修改的，例如当发生主备切换时候，配置文件中的 master 会被修改为另外一个 slave。这样，之后 sentinel 如果重启时，就可以根据这个配置来恢复其之前所监控的 redis 集群的状态。</p>
+<p>接下来我们将一行一行地解释上面的配置项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br></pre></td></tr></table></figure>
+<p>这一行代表 sentinel 监控的 master 的名字叫做 mymaster，地址为 127.0.0.1:6379，行尾最后的一个 2 代表什么意思呢？我们知道，网络是不可靠的，有时候一个 sentinel 会因为网络堵塞而误以为一个 master redis 已经死掉了，当 sentinel 集群式，解决这个问题的方法就变得很简单，只需要多个 sentinel 互相沟通来确认某个 master 是否真的死了，这个 2 代表，当集群中有 2 个 sentinel 认为 master 死了时，才能真正认为该 master 已经不可用了。（sentinel 集群中各个 sentinel 也有互相通信，通过 gossip 协议）。</p>
+<p>除了第一行配置，我们发现剩下的配置都有一个统一的格式:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel &lt;option_name&gt; &lt;master_name&gt; &lt;option_value&gt;</span><br></pre></td></tr></table></figure>
+<p>接下来我们根据上面格式中的 option_name 一个一个来解释这些配置项：</p>
+<ul>
+<li>down-after-milliseconds<ul>
+<li>sentinel 会向 master 发送心跳 PING 来确认 master 是否存活，如果 master 在“一定时间范围”内不回应PONG 或者是回复了一个错误消息，那么这个 sentinel 会主观地（单方面地）认为这个 master 已经不可用了（subjectively down, 也简称为 SDOWN）。而这个 down-after-milliseconds 就是用来指定这个“一定时间范围”的，单位是毫秒。</li>
+<li>不过需要注意的是，这个时候 sentinel 并不会马上进行 failover 主备切换，这个 sentinel 还需要参考 sentinel 集群中其他 sentinel 的意见，如果超过某个数量的 sentinel 也主观地认为该 master 死了，那么这个 master 就会被客观地（注意哦，这次不是主观，是客观，与刚才的 subjectively down 相对，这次是 objectively down，简称为 ODOWN）认为已经死了。需要一起做出决定的 sentinel 数量在上一条配置中进行配置。</li>
+</ul>
+</li>
+<li>parallel-syncs<ul>
+<li>在发生 failover 主备切换时，这个选项指定了最多可以有多少个 slave 同时对新的 master 进行同步，这个数字越小，完成 failover 所需的时间就越长，但是如果这个数字越大，就意味着越多的 slave 因为 replication 而不可用。可以通过将这个值设为 1 来保证每次只有一个 slave 处于不能处理命令请求的状态。</li>
+</ul>
+</li>
+<li>其他配置项在 sentinel.conf 中都有很详细的解释。</li>
+</ul>
+<p>所有的配置都可以在运行时用命令 SENTINEL SET command 动态修改。</p>
+<hr>
+<p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yswKnight/article/details/78158540">https://blog.csdn.net/yswKnight/article/details/78158540</a></p>
+<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="什么是哨兵机制"><a href="#什么是哨兵机制" class="headerlink" title="什么是哨兵机制?"></a>什么是哨兵机制?</h2><p>Redis 的哨兵（sentinel）系统用于管理多个 Redis 服务器，该系统执行以下三个任务:</p>
+<ol>
+<li>监控（Monitoring）：哨兵（sentinel）会不断地检查你的 Master 和 Slave 是否运作正常。</li>
+<li>提醒（Notification）：当被监控的某个 Redis 出现问题时，哨兵（sentinel）可以通过 API 向管理员或者其他应用程序发送通知。</li>
+<li>自动故障迁移（Automatic failover）：当一个 Master 不能正常工作时，哨兵（sentinel）会开始一次自动故障迁移操作，它会将失效 Master 的其中一个 Slave 升级为新的 Master，并让失效 Master 的其他 Slave 改为复制新的 Master；当客户端试图连接失效的 Master 时，集群也会向客户端返回新 Master 的地址，使得集群可以使用 Master 代替失效 Master。</li>
+</ol>
+<p>哨兵（sentinel）是一个分布式系统，你可以在一个架构中运行多个哨兵（sentinel）进程，这些进程使用流言协议（gossip protocols）来接收关于 Master 是否下线的信息，并使用投票协议（agreement protocols）来决定是否执行自动故障迁移，以及选择哪个 Slave 作为新的 Master。</p>
+<p>哨兵（sentinel）会向其它哨兵（sentinel）、master、slave 定时发送消息，以确认对方是否”活”着，如果发现对方在指定时间（可配置）内未回应，则暂时认为对方已挂（所谓的”主观认为宕机” Subjective Down，简称 sdown）.</p>
+<p>若“哨兵群”中的多数 sentinel，都报告某一 master 没响应，系统才认为该 master “彻底死亡”（即:客观上的真正down 机，Objective Down，简称 odown），通过一定的 vote 算法，从剩下的 slave 节点中，选一台提升为 master，然后自动修改相关配置。</p>
+<p>虽然哨兵（sentinel）释出为一个单独的可执行文件 redis-sentinel，但实际上它只是一个运行在特殊模式下的 Redis 服务器，你可以在启动一个普通 Redis 服务器时通过给定 <code>--sentinel</code> 选项来启动哨兵（sentinel）。</p>
+<p>哨兵（sentinel）的一些设计思路和 zookeeper 非常类似<br><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/1.png" alt="1"></p>
+<h2 id="哨兵模式的配置修改"><a href="#哨兵模式的配置修改" class="headerlink" title="哨兵模式的配置修改"></a>哨兵模式的配置修改</h2><p>实现步骤:</p>
+<ol>
+<li>拷贝到 etc 目录<ul>
+<li><code>cp sentinel.conf  /usr/local/redis/etc</code></li>
+</ul>
+</li>
+<li>修改 sentinel.conf 配置文件<ul>
+<li>sentinel monitor mymast  192.168.110.133 6379 1  #主节点 名称 IP 端口号 选举次数</li>
+<li><code>#配置主服务器的密码(如没设置密码，可以省略)</code></li>
+<li><code>sentinel auth-pass mymaster 123456</code></li>
+</ul>
+</li>
+<li>修改心跳检测 5000 毫秒<ul>
+<li><code>sentinel down-after-milliseconds mymaster 5000</code></li>
+</ul>
+</li>
+<li>做多多少合格节点<ul>
+<li><code>sentinel parallel-syncs mymaster 2</code></li>
+</ul>
+</li>
+<li>启动哨兵模式<ul>
+<li><code>./redis-server /usr/local/redis/etc/sentinel.conf --sentinel &amp;</code></li>
+</ul>
+</li>
+<li>停止哨兵模式</li>
+</ol>
+<p>注意：</p>
+<ol>
+<li>当启动哨兵模式之后，如果你的 master 服务器宕机之后，哨兵自动会在从 redis 服务器里面投票选举一个 master 主服务器出来；这个主服务器也可以进行读写操作！</li>
+<li>如果之前宕机的主服务器已经修好，可以正式运行了。那么这个服务器只能进行读的操作，会自动跟随由哨兵选举出来的新服务器！</li>
+<li>大家可以进入 <code>./redis-cli</code>，输入 info，查看你的状态信息；</li>
+</ol>
+<p><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/2.png" alt="2"></p>
+<h2 id="哨兵（sentinel）总结"><a href="#哨兵（sentinel）总结" class="headerlink" title="哨兵（sentinel）总结"></a>哨兵（sentinel）总结</h2><h3 id="Sentinel-的作用："><a href="#Sentinel-的作用：" class="headerlink" title="Sentinel 的作用："></a>Sentinel 的作用：</h3><ol>
+<li>Master 状态监测</li>
+<li>如果Master 异常，则会进行 Master-slave 转换，将其中一个 Slave 作为 Master，将之前的 Master 作为Slave </li>
+<li>Master-Slave 切换后，master_redis.conf、slave_redis.conf 和 sentinel.conf 的内容都会发生改变，即 master_redis.conf 中会多一行 slaveof 的配置，sentinel.conf 的监控目标会随之调换 </li>
+</ol>
+<h3 id="Sentinel-的工作方式"><a href="#Sentinel-的工作方式" class="headerlink" title="Sentinel 的工作方式:"></a>Sentinel 的工作方式:</h3><ol>
+<li>每个 Sentinel 以每秒钟一次的频率向它所知的 Master，Slave 以及其他 Sentinel 实例发送一个 PING 命令。</li>
+<li>如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel 标记为主观下线。 </li>
+<li>如果一个 Master 被标记为主观下线，则正在监视这个 Master 的所有 Sentinel 要以每秒一次的频率确认 Master 的确进入了主观下线状态。 </li>
+<li>当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认 Master 的确进入了主观下线状态， 则 Master 会被标记为客观下线 。</li>
+<li>在一般情况下，每个 Sentinel 会以每 10 秒一次的频率向它已知的所有 Master，Slave发送 INFO 命令。</li>
+<li>当 Master 被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次 。</li>
+<li>若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 </li>
+<li>若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/" class="post-title-link" itemprop="url">Lumen-问题-NotFoundHttpException</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-19 09:10:48" itemprop="dateCreated datePublished" datetime="2016-06-19T09:10:48+08:00">2016-06-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>The problem was solved by changing the</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$app-&gt;run();</span><br></pre></td></tr></table></figure>
+<p>in /public/index.php to</p>
+<p>$request = Illuminate\Http\Request::capture();</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$app-&gt;run($request);</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E5%BF%AB%E6%8D%B7%E9%94%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/06/17/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E5%BF%AB%E6%8D%B7%E9%94%AE/" class="post-title-link" itemprop="url">IntelliJ-快捷键</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-17 17:29:48" itemprop="dateCreated datePublished" datetime="2016-06-17T17:29:48+08:00">2016-06-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="keymaps为Mac-OS-X-10-5"><a href="#keymaps为Mac-OS-X-10-5" class="headerlink" title="keymaps为Mac OS X 10.5+"></a>keymaps为Mac OS X 10.5+</h2><h3 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h3><ul>
+<li>跳到下一步(Step Over 相当于eclipse的f6)：<code>F8</code> (Win)</li>
+<li>进入到代码(Step Into 相当于eclipse的f5)：<code>F7</code> (Win)</li>
+<li>跳过：<code>F9</code> (Win)</li>
+<li>运行到光标处：<code>Alt + F9</code> (Win)</li>
+</ul>
+<h3 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a>搜索</h3><ul>
+<li>文件<ul>
+<li>通过类名搜索类文件：<code>command + o</code> (Mac)、 <code>ctrl + n</code> (Win)</li>
+<li>通过文件名搜索文件：<code>command + shift + o</code> (Mac)、 <code>ctrl + shift + n</code> (Win)</li>
+<li>文件名全局搜索（所有文件）：<code>double shift</code> (Mac、Win)</li>
+</ul>
+</li>
+<li>内容<ul>
+<li>搜索文件内容：<code>ctrl + shift + f</code> (Win)<h3 id="历史记录"><a href="#历史记录" class="headerlink" title="历史记录"></a>历史记录</h3></li>
+</ul>
+</li>
+<li>光标<ul>
+<li>查看上下步：<code>command + alt + 左右方向键</code> (Mac)、 <code>ctrl + alt + 左右方向键</code> (Win)</li>
+<li>跳转到上次编辑的地方：<code>command + shift + backspace</code> (Mac)、 <code>ctrl + shift + backspace</code> (Win)</li>
+<li>跳到大括号的开头结尾：<code>ctrl + [或者]</code> (Win)</li>
+</ul>
+</li>
+<li>文件<ul>
+<li>列出最近查看的文件列表：<code>command + e</code> (Mac)、 <code>ctrl + e</code> (Win)</li>
+<li>最近修改文件列表：<code>shift + command + e</code> (Mac)、 <code>ctrl + shift + e</code> (Win)</li>
+</ul>
+</li>
+</ul>
+<h3 id="查看"><a href="#查看" class="headerlink" title="查看"></a>查看</h3><ul>
+<li>其他<ul>
+<li>查看文档：<code>ctrl + j</code> (Mac)、<code>ctrl + q</code> (Win)</li>
+<li>查看文件内容纲要：<code>command + F12</code> (Mac)、 <code>ctrl + F12</code> (Win)</li>
+<li>查看当前方法的声明：<code>alt + q</code> (Win)、<code>option + space</code> (Mac)</li>
+</ul>
+</li>
+<li>继承<ul>
+<li>查看方法、类的super方法：<code>command + u</code> (Mac)、<code>ctrl + u</code> (Win)</li>
+<li>查看接口、方法、类的实现：<code>command + alt + b</code> (Mac)、<code>ctrl + alt + b</code> (Mac)</li>
+</ul>
+</li>
+<li>继承关系图<ul>
+<li>查询方法super、继承关系图（Call Hierarchy）：<code>command + shift + h</code> (Mac)</li>
+<li>查询类super、继承关系树图（Type Hierarchy）：<code>ctrl + h</code> (Mac)</li>
+<li>查看类的层次结构图（Diagram）：<code>command + alt + shift + u</code> (Mac)、<code>ctrl + alt + shift + u</code> (Win)</li>
+</ul>
+</li>
+<li>引用查找<ul>
+<li>查看类、方法、变量的引用：<code>command + b</code> (Mac)、<code>ctrl + b</code> (Win)</li>
+<li>搜索对象被引用的地方：<code>alt + F7</code> (Mac &amp; Win)</li>
+<li>搜索对象在当前文件被引用的地方：<code>command + F7</code> (Mac)、 <code>ctrl + F7</code> (Win)</li>
+</ul>
+</li>
+<li>光标<ul>
+<li>跳转到某行：<code>ctrl + g</code> (Win)</li>
+<li>跳转到第一行：<code>ctrl + Home</code> (Win)</li>
+<li>跳转到第一行：<code>ctrl + End</code> (Win)</li>
+</ul>
+</li>
+</ul>
+<h3 id="编辑"><a href="#编辑" class="headerlink" title="编辑"></a>编辑</h3><ul>
+<li>整行编辑<ul>
+<li>删除行：<code>command + delete</code> (Mac)、 <code>ctrl + y</code> (Win)</li>
+<li>向下插入新行：<code>command + shift + enter</code> (Mac)、 <code>shift + enter</code> (Win)</li>
+<li>向上插入新行：<code>command + alt + enter</code> (Mac)、 <code>ctrl + alt + enter</code> (Win)</li>
+<li>向上下移动当前行：<code>shift + alt + 上下方向键</code> (Mac &amp; Win)</li>
+<li>剪切当前行：<code>command + x</code> (Mac)、 <code>ctrl + x</code> (Win)</li>
+<li>复制当前行：<code>command + c</code> (Mac)、 <code>ctrl + c</code> (Win)</li>
+<li>将当前行复制到到下一行：<code>command + d</code> (Mac)、 <code>ctrl + d</code> (Win)</li>
+<li>粘贴：<code>command + v</code> (Mac)、 <code>ctrl + v</code> (Win)</li>
+<li>注释：<code>command + ／</code> (Mac)、 <code>ctrl + /</code> (Win)</li>
+<li>整合两行：<code>ctrl + shift + j</code> (Win)</li>
+</ul>
+</li>
+<li>内容<ul>
+<li>替换文件内容：<code>ctrl + shift + r</code> (Win)</li>
+<li>格式化代码：<code>command + alt + l</code> (Mac)、 <code>ctrl + alt + l</code> (Win)</li>
+<li>将选择的内容转换大小写：<code>command + shift + u</code> (Mac)、 <code>ctrl + shift + u</code> (Win)</li>
+<li>选择代码块：<code>ctrl + w</code> (Win)</li>
+</ul>
+</li>
+<li>提示<ul>
+<li>代码模版：<code>ctrl + j</code> (Win)</li>
+<li>错误内容提示：<code>alt + enter</code> (Mac &amp; Win)</li>
+<li>get\set\构造方法等生成：<code>alt + Insert</code> (Win)</li>
+</ul>
+</li>
+<li>文件<ul>
+<li>修改文件名：<code>shift + F6</code> (Win)</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>撤销：<code>ctrl + z</code> (Win)</li>
+<li>取消撤销：<code>ctrl + shift + z</code> (Win)</li>
+<li>自动导入包、删除多余的包：<code>alt + ctrl + o</code> (Mac、Win)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>psvm：public static void main</li>
+<li>sout：System.out.println</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">HTML-报头Accept与Content-Type的区别</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-06-17 14:32:58" itemprop="dateCreated datePublished" datetime="2016-06-17T14:32:58+08:00">2016-06-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HTTP/" itemprop="url" rel="index"><span itemprop="name">HTTP</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ol>
+<li>Accept属于请求头， Content-Type属于实体头。</li>
+</ol>
+<p>  Http报头分为通用报头，请求报头，响应报头和实体报头。</p>
+<p>  请求方的http报头结构：通用报头|请求报头|实体报头</p>
+<p>  响应方的http报头结构：通用报头|响应报头|实体报头</p>
+<ol start="2">
+<li>Accept代表发送端（客户端）希望接受的数据类型。</li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/05/14/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E5%91%BD%E4%BB%A4-configure%EF%BC%8Fmake%EF%BC%8Fmake%20install%E7%9A%84%E4%BD%9C%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -671,296 +1161,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%92%8Cbrew%20cask%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/04/23/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%92%8Cbrew%20cask%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Mac-brew-brew和brew cask的区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-04-23 19:55:57" itemprop="dateCreated datePublished" datetime="2016-04-23T19:55:57+08:00">2016-04-23</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Mac/" itemprop="url" rel="index"><span itemprop="name">Mac</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>brew 是从下载源码解压然后 ./configure &amp;&amp; make install ，同时会包含相关依存库。并自动配置好各种环境变量，而且易于卸载。<br>这个对程序员来说简直是福音，简单的指令，就能快速安装和升级本地的各种开发环境。</p>
-<p>而 brew cask 是 已经编译好了的应用包 （.dmg/.pkg），仅仅是下载解压，放在统一的目录中（/opt/homebrew-cask/Caskroom），省掉了自己去下载、解压、拖拽（安装）等蛋疼步骤，同样，卸载相当容易与干净。这个对一般用户来说会比较方便，包含很多在 AppStore 里没有的常用软件。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/22/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/04/22/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Mac-brew-brew常见问题</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-04-22 13:11:57" itemprop="dateCreated datePublished" datetime="2016-04-22T13:11:57+08:00">2016-04-22</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Mac/" itemprop="url" rel="index"><span itemprop="name">Mac</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="brew-Error-no-implicit-conversion-of-nil-into-String"><a href="#brew-Error-no-implicit-conversion-of-nil-into-String" class="headerlink" title="brew Error: no implicit conversion of nil into String"></a>brew Error: no implicit conversion of nil into String</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/bin</span><br><span class="line">git reset --hard HEAD</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/20/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E6%9B%B4%E6%8D%A2%E6%BA%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/04/20/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E6%9B%B4%E6%8D%A2%E6%BA%90/" class="post-title-link" itemprop="url">Mac-brew-brew更换源</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-04-20 21:16:21" itemprop="dateCreated datePublished" datetime="2016-04-20T21:16:21+08:00">2016-04-20</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Mac/" itemprop="url" rel="index"><span itemprop="name">Mac</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="清华"><a href="#清华" class="headerlink" title="清华"></a>清华</h1><h2 id="替换brew-git"><a href="#替换brew-git" class="headerlink" title="替换brew.git:"></a>替换brew.git:</h2><p><code>git -C &quot;$(brew --repo)&quot; remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git</code></p>
-<h2 id="替换homebrew-core-git"><a href="#替换homebrew-core-git" class="headerlink" title="替换homebrew-core.git:"></a>替换homebrew-core.git:</h2><p><code>git -C &quot;$(brew --repo homebrew/core)&quot; remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git</code></p>
-<h2 id="应用生效"><a href="#应用生效" class="headerlink" title="应用生效"></a>应用生效</h2><p><code>brew update</code></p>
-<h2 id="替换homebrew-bottles"><a href="#替换homebrew-bottles" class="headerlink" title="替换homebrew-bottles:"></a>替换homebrew-bottles:</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles&#x27; &gt;&gt; ~/.bash_profile</span><br><span class="line">source ~/.bash_profile</span><br></pre></td></tr></table></figure>
-
-<h1 id="阿里"><a href="#阿里" class="headerlink" title="阿里"></a>阿里</h1><h2 id="替换brew-git-1"><a href="#替换brew-git-1" class="headerlink" title="替换brew.git:"></a>替换brew.git:</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &quot;$(brew --repo)&quot;</span><br><span class="line">git remote set-url origin https://mirrors.aliyun.com/homebrew/brew.git</span><br></pre></td></tr></table></figure>
-
-<h2 id="替换homebrew-core-git-1"><a href="#替换homebrew-core-git-1" class="headerlink" title="替换homebrew-core.git:"></a>替换homebrew-core.git:</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &quot;$(brew --repo)/Library/Taps/homebrew/homebrew-core&quot;</span><br><span class="line">git remote set-url origin https://mirrors.aliyun.com/homebrew/homebrew-core.git</span><br></pre></td></tr></table></figure>
-
-<h2 id="应用生效-1"><a href="#应用生效-1" class="headerlink" title="应用生效"></a>应用生效</h2><p><code>brew update</code></p>
-<h2 id="替换homebrew-bottles-1"><a href="#替换homebrew-bottles-1" class="headerlink" title="替换homebrew-bottles:"></a>替换homebrew-bottles:</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.aliyun.com/homebrew/homebrew-bottles&#x27; &gt;&gt; ~/.bash_profile</span><br><span class="line">source ~/.bash_profile</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/04/20/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/04/20/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Mac/Mac-brew-brew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">Mac-brew-brew常用命令</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-04-20 20:20:51" itemprop="dateCreated datePublished" datetime="2016-04-20T20:20:51+08:00">2016-04-20</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Mac/" itemprop="url" rel="index"><span itemprop="name">Mac</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>安装（需要 Ruby）：ruby -e “$(curl -fsSL <a target="_blank" rel="noopener" href="https://raw.github.com/Homebrew/homebrew/go/install)&quot;">https://raw.github.com/Homebrew/homebrew/go/install)&quot;</a></li>
-<li>搜索：brew search mysql</li>
-<li>查询：brew info mysql 主要看具体的信息，比如目前的版本，依赖，安装后注意事项等</li>
-<li>更新：brew update 这会更新 Homebrew 自己，并且使得接下来的两个操作有意义——</li>
-<li>检查过时（是否有新版本）：brew outdated 这回列出所有安装的软件里可以升级的那些</li>
-<li>升级：brew upgrade 升级所有可以升级的软件们</li>
-<li>清理：brew cleanup 清理不需要的版本极其安装包缓存</li>
-<li>安装包：brew install</li>
-<li>卸载包：brew uninstall</li>
-<li><code>brew leaves</code>：打印所有不是其他软件包依赖的软件包</li>
-<li><code>brew deps --tree --installed</code>：列出包和依赖</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1032,7 +1232,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1045,7 +1245,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1080,7 +1280,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

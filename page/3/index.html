@@ -188,6 +188,364 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" class="post-title-link" itemprop="url">数据结构-布隆过滤器.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-07 12:30:17" itemprop="dateCreated datePublished" datetime="2021-04-07T12:30:17+08:00">2021-04-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/43263751">https://zhuanlan.zhihu.com/p/43263751</a></p>
+<p>在进入正文之前，之前看到的有句话我觉得说得很好：</p>
+<blockquote>
+<p>Data structures are nothing different. They are like the bookshelves of your application where you can organize your data. Different data structures will give you different facility and benefits. To properly use the power and accessibility of the data structures you need to know the trade-offs of using one.</p>
+<p>大意是不同的数据结构有不同的适用场景和优缺点，你需要仔细权衡自己的需求之后妥善适用它们，布隆过滤器就是践行这句话的代表。</p>
+</blockquote>
+<h2 id="什么是布隆过滤器"><a href="#什么是布隆过滤器" class="headerlink" title="什么是布隆过滤器"></a>什么是布隆过滤器</h2><p>本质上布隆过滤器是一种数据结构，比较巧妙的概率型数据结构（probabilistic data structure），特点是高效地插入和查询，可以用来告诉你 “<strong>某样东西一定不存在或者可能存在</strong>”。</p>
+<p>相比于传统的 List、Set、Map 等数据结构，它更高效、占用空间更少，但是缺点是其返回的结果是概率性的，而不是确切的。</p>
+<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><h3 id="HashMap-的问题"><a href="#HashMap-的问题" class="headerlink" title="HashMap 的问题"></a>HashMap 的问题</h3><p>讲述布隆过滤器的原理之前，我们先思考一下，通常你判断某个元素是否存在用的是什么？应该蛮多人回答 HashMap 吧，确实可以将值映射到 HashMap 的 Key，然后可以在 $O(1)$ 的时间复杂度内返回结果，效率奇高。但是 HashMap 的实现也有缺点，例如存储容量占比高，考虑到负载因子的存在，通常空间是不能被用满的，而一旦你的值很多例如上亿的时候，那 HashMap 占据的内存大小就变得很可观了。</p>
+<p>还比如说你的数据集存储在远程服务器上，本地服务接受输入，而数据集非常大不可能一次性读进内存构建 HashMap 的时候，也会存在问题。</p>
+<h3 id="布隆过滤器数据结构"><a href="#布隆过滤器数据结构" class="headerlink" title="布隆过滤器数据结构"></a>布隆过滤器数据结构</h3><p>布隆过滤器是一个 bit 向量或者说 bit 数组，长这样：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/1.jpg" alt="1"></p>
+<p>如果我们要映射一个值到布隆过滤器中，我们需要使用多个不同的哈希函数生成多个哈希值，并对每个生成的哈希值指向的 bit 位置 1，例如针对值 “baidu” 和三个不同的哈希函数分别生成了哈希值 1、4、7，则上图转变为：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/2.jpg" alt="2"></p>
+<p>Ok，我们现在再存一个值 “tencent”，如果哈希函数返回 3、4、8 的话，图继续变为：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/3.jpg" alt="3"></p>
+<p>值得注意的是，4 这个 bit 位由于两个值的哈希函数都返回了这个 bit 位，因此它被覆盖了。现在我们如果想查询 “dianping” 这个值是否存在，哈希函数返回了 1、5、8三个值，结果我们发现 5 这个 bit 位上的值为 0，说明没有任何一个值映射到这个 bit 位上，因此我们可以很确定地说 “dianping” 这个值不存在。而当我们需要查询 “baidu” 这个值是否存在的话，那么哈希函数必然会返回 1、4、7，然后我们检查发现这三个 bit 位上的值均为 1，那么我们可以说 “baidu” 存在了么？答案是不可以，只能是 “baidu” 这个值可能存在。</p>
+<p>这是为什么呢？答案跟简单，因为随着增加的值越来越多，被置为 1 的 bit 位也会越来越多，这样某个值 “taobao” 即使没有被存储过，但是万一哈希函数返回的三个 bit 位都被其他值置位了 1 ，那么程序还是会判断 “taobao” 这个值存在。</p>
+<h2 id="支持删除么"><a href="#支持删除么" class="headerlink" title="支持删除么"></a>支持删除么</h2><p>感谢评论区提醒，传统的布隆过滤器并不支持删除操作。但是名为 Counting Bloom filter 的变种可以用来测试元素计数个数是否绝对小于某个阈值，它支持元素删除。可以参考文章 <a href="%5Bhttps://link%5D(https://link.zhihu.com/?target=https://cloud.tencent.com/developer/article/1136056)">Counting Bloom Filter 的原理和实现</a></p>
+<blockquote>
+<p>注：【首先需要判断一定存在，才能进行删除】</p>
+</blockquote>
+<h2 id="如何选择哈希函数个数和布隆过滤器长度"><a href="#如何选择哈希函数个数和布隆过滤器长度" class="headerlink" title="如何选择哈希函数个数和布隆过滤器长度"></a>如何选择哈希函数个数和布隆过滤器长度</h2><p>很显然，过小的布隆过滤器很快所有的 bit 位均为 1，那么查询任何值都会返回“可能存在”，起不到过滤的目的了。布隆过滤器的长度会直接影响误报率，布隆过滤器越长其误报率越小。</p>
+<p>另外，哈希函数的个数也需要权衡，个数越多则布隆过滤器 bit 位置位 1 的速度越快，且布隆过滤器的效率越低；但是如果太少的话，那我们的误报率会变高。<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/4.jpg" alt="4"></p>
+<p>k 为哈希函数个数，m 为布隆过滤器长度，n 为插入的元素个数，p 为误报率</p>
+<p>如何选择适合业务的 k 和 m 值呢，这里直接贴一个公式：<br><img src="/2021/04/07/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E3%80%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/5.jpg" alt="5"></p>
+<p>如何推导这个公式这里只是提一句，因为对于使用来说并没有太大的意义，你让一个高中生来推会推得很快。k 次哈希函数某一 bit 位未被置为 1 的概率为：</p>
+<p>$\left(1-\frac{1}{m}\right)^{k}$</p>
+<p>插入n个元素后依旧为 0 的概率和为 1 的概率分别是：</p>
+<p>$\left(1-\frac{1}{m}\right)^{n k} 1-\left(1-\frac{1}{m}\right)^{n k}$</p>
+<p>标明某个元素是否在集合中所需的 k 个位置都按照如上的方法设置为 1，但是该方法可能会使算法错误的认为某一原本不在集合中的元素却被检测为在该集合中（False Positives），该概率由以下公式确定</p>
+<p>$\left[1-\left(1-\frac{1}{m}\right)^{n k}\right]^{k} \approx\left(1-e^{-k n / m}\right)^{k}$</p>
+<h2 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h2><p>常见的适用常见有，利用布隆过滤器减少磁盘 IO 或者网络请求，因为一旦一个值必定不存在的话，我们可以不用进行后续昂贵的查询请求。</p>
+<p>另外，既然你使用布隆过滤器来加速查找和判断是否存在，那么性能很低的哈希函数不是个好选择，推荐 MurmurHash、Fnv 这些。</p>
+<h3 id="大Value拆分"><a href="#大Value拆分" class="headerlink" title="大Value拆分"></a>大Value拆分</h3><p>Redis 因其支持 setbit 和 getbit 操作，且纯内存性能高等特点，因此天然就可以作为布隆过滤器来使用。但是布隆过滤器的不当使用极易产生大 Value，增加 Redis 阻塞风险，因此生成环境中建议对体积庞大的布隆过滤器进行拆分。</p>
+<p>拆分的形式方法多种多样，但是本质是不要将 <code>Hash(Key)</code> 之后的请求分散在多个节点的多个小 bitmap 上，而是应该拆分成多个小 bitmap 之后，对一个 Key 的所有哈希函数都落在这一个小 bitmap 上。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/04/07/%E5%B7%A5%E7%A8%8B/%E7%BC%93%E5%AD%98/%E7%BC%93%E5%AD%98-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E5%87%BA%E7%8E%B0%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/04/07/%E5%B7%A5%E7%A8%8B/%E7%BC%93%E5%AD%98/%E7%BC%93%E5%AD%98-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E5%87%BA%E7%8E%B0%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" class="post-title-link" itemprop="url">缓存-缓存雪崩，缓存穿透，缓存击穿出现的原因及解决方案.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-07 12:10:23" itemprop="dateCreated datePublished" datetime="2021-04-07T12:10:23+08:00">2021-04-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">缓存</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/104655455">https://blog.csdn.net/zzti_erlie/article/details/104655455</a></p>
+<h2 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h2><h3 id="出现过程"><a href="#出现过程" class="headerlink" title="出现过程"></a>出现过程</h3><p>假设有如下一个系统，高峰期请求为5000次/秒，4000次走了缓存，只有1000次落到了数据库上，数据库每秒1000的并发是一个正常的指标，完全可以正常工作，但如果缓存宕机了，或者缓存设置了相同的过期时间，导致缓存在同一时刻同时失效，每秒5000次的请求会全部落到数据库上，数据库立马就死掉了，因为数据库一秒最多抗2000个请求，如果DBA重启数据库，立马又会被新的请求打死了，这就是缓存雪崩。<br><img src="/2021/04/07/%E5%B7%A5%E7%A8%8B/%E7%BC%93%E5%AD%98/%E7%BC%93%E5%AD%98-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E5%87%BA%E7%8E%B0%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9.png" alt="1"></p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><ul>
+<li>事前：redis高可用，主从+哨兵，redis cluster，避免全盘崩溃</li>
+<li>事中：本地ehcache缓存 + hystrix限流&amp;降级，避免MySQL被打死</li>
+<li>事后：redis持久化RDB+AOF，快速恢复缓存数据</li>
+<li>缓存的失效时间设置为随机值，避免同时失效</li>
+</ul>
+<h2 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h2><h3 id="出现过程-1"><a href="#出现过程-1" class="headerlink" title="出现过程"></a>出现过程</h3><p>假如客户端每秒发送5000个请求，其中4000个为黑客的恶意攻击，即在数据库中也查不到。举个例子，用户id为正数，黑客构造的用户id为负数，如果黑客每秒一直发送这4000个请求，缓存就不起作用，数据库也很快被打死。<br><img src="/2021/04/07/%E5%B7%A5%E7%A8%8B/%E7%BC%93%E5%AD%98/%E7%BC%93%E5%AD%98-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E5%87%BA%E7%8E%B0%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F.png" alt="2"></p>
+<h3 id="解决方法-1"><a href="#解决方法-1" class="headerlink" title="解决方法"></a>解决方法</h3><ul>
+<li>对请求参数进行校验，不合理直接返回</li>
+<li>查询不到的数据也放到缓存，value为空，如 set -999 “”</li>
+<li>使用布隆过滤器，快速判断key是否在数据库中存在，不存在直接返回</li>
+</ul>
+<p>第一种是最基本的策略，第二种其实并不常用，第三种比较常用。</p>
+<p>为什么第二种并不常用呢？</p>
+<p>因为如果黑客构造的请求id是随机数，第二种并不能起作用，反而由于缓存的清空策略，（例如清除最近没有被访问的缓存）导致有用的缓存被清除了。</p>
+<h2 id="缓存击穿"><a href="#缓存击穿" class="headerlink" title="缓存击穿"></a>缓存击穿</h2><h3 id="出现过程-2"><a href="#出现过程-2" class="headerlink" title="出现过程"></a>出现过程</h3><p>设置了过期时间的key，承载着高并发，是一种热点数据。从这个key过期到重新从MySQL加载数据放到缓存的一段时间，大量的请求有可能把数据库打死。缓存雪崩是指大量缓存失效，缓存击穿是指热点数据的缓存失效</p>
+<h3 id="解决方法-2"><a href="#解决方法-2" class="headerlink" title="解决方法"></a>解决方法</h3><p>设置key永远不过期，或者快过期时，通过另一个异步线程重新设置key</p>
+<p>当从缓存拿到的数据为null，重新从数据库加载数据的过程上锁，下面写个分布式锁实现的demo</p>
+<h4 id="Redis实现分布式锁"><a href="#Redis实现分布式锁" class="headerlink" title="Redis实现分布式锁"></a>Redis实现分布式锁</h4><ol>
+<li>加锁执行命令<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET resource_name random_value NX PX 30000</span><br></pre></td></tr></table></figure></li>
+<li>解锁执行脚本<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if redis.call(&quot;get&quot;, KEYS[1]) == ARGV[1] then </span><br><span class="line">    return redis.call(&quot;del&quot;, KEYS[1]) </span><br><span class="line">else </span><br><span class="line">    return 0 </span><br><span class="line">end</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>写一个分布式锁工具类</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">public class LockUtil &#123;</span><br><span class="line"></span><br><span class="line">    private static final String OK = &quot;OK&quot;;</span><br><span class="line">    private static final Long LONG_ONE = 1L;</span><br><span class="line">    private static final String script = &quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then return redis.call(&#x27;del&#x27;, KEYS[1]) else return 0 end&quot;;</span><br><span class="line"></span><br><span class="line">    public static boolean tryLock(String key, String value, long expire) &#123;</span><br><span class="line">        Jedis jedis = RedisPool.getJedis();</span><br><span class="line">        SetParams setParams = new SetParams();</span><br><span class="line">        setParams.nx().px(expire);</span><br><span class="line">        return OK.equals(jedis.set(key, value, setParams));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static boolean releaseLock(String key, String value) &#123;</span><br><span class="line">        Jedis jedis = RedisPool.getJedis();</span><br><span class="line">        return LONG_ONE.equals(jedis.eval(script, 1, key, value));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>工具类写起来还是挺简单的</p>
+<p>示例代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public String getData(String key) &#123;</span><br><span class="line">	String lockKey = &quot;key&quot;;</span><br><span class="line">	String lockValue = String.valueOf(System.currentTimeMillis());</span><br><span class="line">	long expireTime = 1000L;</span><br><span class="line">	String value = getFromRedis(key);</span><br><span class="line">	if (value == null) &#123;</span><br><span class="line">		if (LockUtil.tryLock(lockKey, lockValue, expireTime)) &#123;</span><br><span class="line">			// 从数据库取值并放到redis中</span><br><span class="line">			LockUtil.releaseLock(lockKey, lockValue);</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			// sleep一段时间再从缓存中拿</span><br><span class="line">			Thread.sleep(100);</span><br><span class="line">			getFromRedis(key);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	return value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/03/24/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E9%AB%98%E5%B9%B6%E5%8F%91-%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8B%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%B9%82%E7%AD%89%E6%80%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/03/24/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E9%AB%98%E5%B9%B6%E5%8F%91-%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8B%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%B9%82%E7%AD%89%E6%80%A7/" class="post-title-link" itemprop="url">高并发-高并发下如何保证接口的幂等性.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-24 12:42:56" itemprop="dateCreated datePublished" datetime="2021-03-24T12:42:56+08:00">2021-03-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%AB%98%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">高并发</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/106910362">https://blog.csdn.net/zzti_erlie/article/details/106910362</a></p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>幂等性就是同一个操作执行多次，产生的效果一样。如 http 的 get 请求，数据库的 select 请求就是幂等的</p>
+<p>在分布式系统中，保证接口的幂等性非常重要，如提交订单，扣款等接口都要保证幂等性，不然会造成重复创建订单，重复扣款，那么如何保证接口的幂等性呢？</p>
+<h2 id="前端保证幂等性的方法"><a href="#前端保证幂等性的方法" class="headerlink" title="前端保证幂等性的方法"></a>前端保证幂等性的方法</h2><h3 id="按钮只能点击一次"><a href="#按钮只能点击一次" class="headerlink" title="按钮只能点击一次"></a>按钮只能点击一次</h3><p>用户点击按钮后将按钮置灰，或者显示 loading 状态</p>
+<h3 id="RPG-模式"><a href="#RPG-模式" class="headerlink" title="RPG 模式"></a>RPG 模式</h3><p>即 Post-Redirect-Get，当客户提交表单后，去执行一个客户端的重定向，转到提交成功页面。避免用户按 F5 刷新导致的重复提交，也能消除按浏览器后退键导致的重复提交问题。目前绝大多数公司都是这样做的，比如淘宝，京东等</p>
+<h2 id="后端保证幂等性的方法"><a href="#后端保证幂等性的方法" class="headerlink" title="后端保证幂等性的方法"></a>后端保证幂等性的方法</h2><h3 id="使用唯一索引"><a href="#使用唯一索引" class="headerlink" title="使用唯一索引"></a>使用唯一索引</h3><p>对业务唯一的字段加上唯一索引，这样当数据重复时，插入数据库会抛异常</p>
+<h3 id="状态机幂等"><a href="#状态机幂等" class="headerlink" title="状态机幂等"></a>状态机幂等</h3><p>如果业务上需要修改订单状态，例如订单状态有待支付，支付中，支付成功，支付失败。设计时最好只支持状态的单向改变。这样在更新的时候就可以加上条件，多次调用也只会执行一次。例如想把订单状态更新为支持成功，则之前的状态必须为支付中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">update table_name set status = 支付成功 where status = 支付中</span><br></pre></td></tr></table></figure>
+
+<h3 id="乐观锁实现幂等"><a href="#乐观锁实现幂等" class="headerlink" title="乐观锁实现幂等"></a>乐观锁实现幂等</h3><ol>
+<li>查询数据获得版本号</li>
+<li>通过版本号去更新，版本号匹配则更新，版本号不匹配则不更新<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-- 假如查询出的 version 为 1</span><br><span class="line">select version from table_name where userid = 10;</span><br><span class="line">-- 给用户的账户加10</span><br><span class="line">update table_name set money = money -10, version = version + 1 where userid = 10 and version = 1</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>也可以通过条件来实现乐观锁，如库存不能超卖，数量不能小于 0</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">update table_name set num = num - 10 where num - 10 &gt;= 0</span><br></pre></td></tr></table></figure>
+
+<h3 id="防重表"><a href="#防重表" class="headerlink" title="防重表"></a>防重表</h3><p>增加一个防重表，业务唯一的id作为唯一索引，如订单号，当想针对订单做一系列操作时，可以向防重表中插入一条记录，插入成功，执行后续操作，插入失败，则不执行后续操作。本质上可以看成是基于MySQL实现的分布式锁。根据业务场景决定执行成功后，是否删除防重表中对应的数据</p>
+<h3 id="分布式锁实现幂等"><a href="#分布式锁实现幂等" class="headerlink" title="分布式锁实现幂等"></a>分布式锁实现幂等</h3><p>执行方法时，先根据业务唯一的 id 获取分布式锁，获取成功，则执行，失败则不执行。分布式锁可以基于 redis，zookeeper，mysql 来实现，分布式锁的细节就不介绍了</p>
+<h3 id="select-insert"><a href="#select-insert" class="headerlink" title="select+insert"></a>select+insert</h3><p>先查询一下有没有符合要求的数据，如果没有再执行插入。没有并发的系统中可以保证幂等性，高并发下不要用这种方法，也会造成数据的重复插入。我一般做消息幂等的时候就是先 select，有数据直接返回，没有数据加分布式锁进行 insert 操作</p>
+<h3 id="全局唯一号实现幂等"><a href="#全局唯一号实现幂等" class="headerlink" title="全局唯一号实现幂等"></a>全局唯一号实现幂等</h3><p>通过 source（来源）+ seq（序列号）来判断请求是否重复，重复则直接返回请求重复提交，否则执行。如当多个三方系统调用服务的时候，就可以采用这种方式</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/02/12/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E5%A4%9A%E4%B8%AA%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E5%AE%8C%E6%AF%95%E5%90%8E%EF%BC%8C%E6%89%8D%E6%89%A7%E8%A1%8C%E5%8F%A6%E4%B8%80%E4%B8%AA%E7%BA%BF%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/02/12/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E5%A4%9A%E4%B8%AA%E7%BA%BF%E7%A8%8B%E6%89%A7%E8%A1%8C%E5%AE%8C%E6%AF%95%E5%90%8E%EF%BC%8C%E6%89%8D%E6%89%A7%E8%A1%8C%E5%8F%A6%E4%B8%80%E4%B8%AA%E7%BA%BF%E7%A8%8B/" class="post-title-link" itemprop="url">Java-多线程-多个线程执行完毕后，才执行另一个线程.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-12 15:11:15" itemprop="dateCreated datePublished" datetime="2021-02-12T15:11:15+08:00">2021-02-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zzti_erlie/article/details/100047508">https://blog.csdn.net/zzti_erlie/article/details/100047508</a></p>
+<h3 id="CountDownLatch"><a href="#CountDownLatch" class="headerlink" title="CountDownLatch"></a>CountDownLatch</h3><p>去掉try catch版本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) throws InterruptedException &#123;</span><br><span class="line"></span><br><span class="line">	/**</span><br><span class="line">	 * Thread-1 在路上耗时4秒</span><br><span class="line">	 * Thread-2 在路上耗时0秒</span><br><span class="line">	 * Thread-0 在路上耗时4秒</span><br><span class="line">	 * Thread-2 到达车站了</span><br><span class="line">	 * Thread-1 到达车站了</span><br><span class="line">	 * Thread-0 到达车站了</span><br><span class="line">	 * 老司机，发车</span><br><span class="line">	 */</span><br><span class="line">	CountDownLatch countDownLatch = new CountDownLatch(3);</span><br><span class="line">	Random random = new Random();</span><br><span class="line">	for (int i = 0; i &lt; 3; i++) &#123;</span><br><span class="line">		new Thread(() -&gt; &#123;</span><br><span class="line">			//返回[0,5)的值</span><br><span class="line">			int time = random.nextInt(5);</span><br><span class="line">			System.out.println(Thread.currentThread().getName() + &quot; 在路上耗时&quot; + time + &quot;秒&quot;);</span><br><span class="line">			TimeUnit.SECONDS.sleep(time);</span><br><span class="line">			System.out.println(Thread.currentThread().getName() + &quot; 到达车站了&quot;);</span><br><span class="line">			countDownLatch.countDown();</span><br><span class="line">		&#125;).start();</span><br><span class="line">	&#125;</span><br><span class="line">	countDownLatch.await();</span><br><span class="line">	System.out.println(&quot;老司机，发车&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>先来演示一下用法，可以看到所有子线程都执行完毕才会执行主线程。实现这个功能主要靠的是 CountDownLatch 的 2 个方法 await() 和 countDown()。</p>
+<p>new 一个 CountDownLatch 时会传一个计数器的值，上面的例子为 3。调用 await() 方法时判断计数是否为 0，如果不为 0 则呈等待状态。其他线程可以调用 countDown() 方法将计数减 1，当计数减到位 0 时，则呈等待的线程继续执行。</p>
+<h3 id="CyclicBarrier"><a href="#CyclicBarrier" class="headerlink" title="CyclicBarrier"></a>CyclicBarrier</h3><p>去掉try catch版本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">	/**</span><br><span class="line">	 * Thread-1 在路上耗时0秒</span><br><span class="line">	 * Thread-2 在路上耗时2秒</span><br><span class="line">	 * Thread-1 到达车站了</span><br><span class="line">	 * Thread-0 在路上耗时3秒</span><br><span class="line">	 * Thread-2 到达车站了</span><br><span class="line">	 * Thread-0 到达车站了</span><br><span class="line">	 * 老司机，发车</span><br><span class="line">	 */</span><br><span class="line">	CyclicBarrier cyclicBarrier = new CyclicBarrier(3, ()-&gt;&#123;</span><br><span class="line">		System.out.println(&quot;老司机，发车&quot;);</span><br><span class="line">	&#125;);</span><br><span class="line">	Random random = new Random();</span><br><span class="line">	for (int i = 0; i &lt; 3; i++) &#123;</span><br><span class="line">		new Thread(() -&gt; &#123;</span><br><span class="line">			//返回[0,5)的值</span><br><span class="line">			int time = random.nextInt(5);</span><br><span class="line">			System.out.println(Thread.currentThread().getName() + &quot; 在路上耗时&quot; + time + &quot;秒&quot;);</span><br><span class="line">			TimeUnit.SECONDS.sleep(time);</span><br><span class="line">			System.out.println(Thread.currentThread().getName() + &quot; 到达车站了&quot;);</span><br><span class="line">			cyclicBarrier.await();</span><br><span class="line">		&#125;).start();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>CountDownLatch 的计数器只能使用一次，而 CyclicBarrier 的计数器可以使用 reset() 方法重置。挺简单的就不再演示。因为这 2 个工具类都用到了 AQS，而 AQS 的原理很长，因此在本文就不介绍 AQS 的实现了</p>
+<h3 id="CompletableFuture"><a href="#CompletableFuture" class="headerlink" title="CompletableFuture"></a>CompletableFuture</h3><p>去掉try catch版本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) &#123;</span><br><span class="line">    /**</span><br><span class="line">     * ForkJoinPool.commonPool-worker-1 在路上耗时4秒</span><br><span class="line">     * ForkJoinPool.commonPool-worker-2 在路上耗时3秒</span><br><span class="line">     * ForkJoinPool.commonPool-worker-1 到达车站了</span><br><span class="line">     * ForkJoinPool.commonPool-worker-2 到达车站了</span><br><span class="line">     * 老司机，发车</span><br><span class="line">     */</span><br><span class="line">    Random random = new Random();</span><br><span class="line">    CompletableFuture future1 = CompletableFuture.runAsync(() -&gt; &#123;</span><br><span class="line">        int time = random.nextInt(5);</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + &quot; 在路上耗时&quot; + time + &quot;秒&quot;);</span><br><span class="line">        TimeUnit.SECONDS.sleep(random.nextInt());</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + &quot; 到达车站了&quot;);</span><br><span class="line">    &#125;);</span><br><span class="line">    CompletableFuture future2 = CompletableFuture.runAsync(() -&gt; &#123;</span><br><span class="line">        int time = random.nextInt(5);</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + &quot; 在路上耗时&quot; + time + &quot;秒&quot;);</span><br><span class="line">        TimeUnit.SECONDS.sleep(random.nextInt());</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + &quot; 到达车站了&quot;);</span><br><span class="line">    &#125;);</span><br><span class="line">    CompletableFuture.allOf(future1, future2).thenRun(() -&gt; &#123;</span><br><span class="line">        System.out.println(&quot;老司机，发车&quot;);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2021/02/11/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%B9%B6%E5%8F%91/%E5%85%B6%E4%BB%96/Java-%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -809,522 +1167,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/" class="post-title-link" itemprop="url">Storm.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-12 16:46:00" itemprop="dateCreated datePublished" datetime="2020-06-12T16:46:00+08:00">2020-06-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="流计算概述"><a href="#流计算概述" class="headerlink" title="流计算概述"></a>流计算概述</h2><h3 id="静态数据和流数据"><a href="#静态数据和流数据" class="headerlink" title="静态数据和流数据"></a>静态数据和流数据</h3><p>科从概念上而言，流数据（或数据流）是指在时间分布和数量上无限的一系列动态数据集合体；数据记录是流数据的最小组成单元。流数据具有如下特征：</p>
-<ol>
-<li>数据快速持续到达，潜在大小也许是无穷无尽的。</li>
-<li>数据来源众多，格式复杂。</li>
-<li>数据量大，但是不十分关注存储，一旦流数据中的某个元素经过处理，要么被丢弃，要么被归档存储。</li>
-<li>注重数据的整体价值，不过分关注个别数据。</li>
-<li>数据顺序颠倒，或者不完整，系统无法控制将要处理的新到达的数据元素的顺序。</li>
-</ol>
-<h3 id="批量计算和实时计算"><a href="#批量计算和实时计算" class="headerlink" title="批量计算和实时计算"></a>批量计算和实时计算</h3><p>对静态数据和流数据的处理，对应着两种截然不同的计算模式：批量计算和实时计算。</p>
-<p>批量计算以“静态数据”为对象，可以在很充裕的时间内对海量数据进行批量处理，计算得到有价值的信息。Hadoop就是典型的批处理模型，由 HDFS 和 HBase 存放大量的静态数据，由 MapReduce 负贵对海量数据执行批量计算。</p>
-<p>流数据则不适合采用批量计算，因为流数据不适合用传统的关系模型建模，不能把源源不断的流数据保存到数据库中，流数据被处理后，一部分进入数据库成为静态数据，其他部分则直接被丢弃。传统的关系数据库通常用于满足信息实时交互处理需求，比如零售系统和银行系统，每次有一笔业务发生，用户通过和关系数据库系统进行交互，就可以把相应记录写人磁盘，并支持对记录进行随机读写操作。但是，关系数据库并不是为存储快速、连续到达的流数据而设计的，不支持连续处理，把这类数据库用于流数据处理，不仅成本高，而且效率低。</p>
-<p>流数据必须采用实时计算，实时计算最重要的一个需求是能够实时得到计算结果，一般要求响应时间为秒级。当只需要处理少量数据时，实时计算并不是问题；但是，在大数据时代，不仅数据格式复杂、来源众多，而且数据量巨大，这就对实时计算提出了很大的挑战。因此，针对流数据的实时计算-流计算，应运而生。</p>
-<h3 id="流计算的概念"><a href="#流计算的概念" class="headerlink" title="流计算的概念"></a>流计算的概念</h3><p>总的来说，流计算秉承一个基本理念，即数据的价值随着时间的流逝而降低。因此，当事件出现时就应该立即进行处理，而不是缓存起来进行批量处理。为了及时处理流数据，就需要一个低延迟、可扩展、高可靠的处理引擎。对于一个流计算系统来说，它应达到如下需求。</p>
-<ol>
-<li>高性能。处理大数据的基本要求，如每秒处理几十万条数据。</li>
-<li>海量式。支持 TB 级甚至是 PB 级的数据规模。</li>
-<li>实时性。必须保证一个较低的延迟时间，达到秒级别，甚至是毫秒级别。</li>
-<li>分布式。支持大数据的基本架构，必须能够平滑扩展。</li>
-<li>易用性。能够快速进行开发和部署。</li>
-<li>可靠性。能可靠地处理流数据。</li>
-</ol>
-<p>针对不同的应用场景，相应的流计算系统会有不同的需求，但是针对海量数据的流计算，无论在数据采集、数据处理中都应达到秒级别的要求。</p>
-<h3 id="流计算与-Hadoop"><a href="#流计算与-Hadoop" class="headerlink" title="流计算与 Hadoop"></a>流计算与 Hadoop</h3><p>Hadoop 设计的初衷是面向大规模数据的批量处理，在使用 MapReduce 处理大规模文件时，一个大文件会被分解成许多个块分发到不同的机器上，每台机器并行运行 MapReduce 任务，最后对结果进行汇总输出。有时候，完成一个任务甚至要经过多轮的迭代。很显然，这种批量任务处理方式在时间延迟方面是无法满足流计算的实时响应需求的。这时，我们可能很自然地会想到一种“变通”的方案来降低批处理的时间延迟-将基于 MapReduce 的批量处理转为小批量处理，将输人数据切成小的片段，每隔一个周期就启动一次 MapReduce 作业。但是这种方案会存在以下问题。</p>
-<ol>
-<li>切分成小的片段，虽然可以降低延迟，但是也增加了任务处理的附加开销，而且还要处理片段之间的依赖关系，因为一个片段可能需要用到前一个片段的计算结果。</li>
-<li>需要对 MapReduce 进行改造以支持流式处理，Reduce 阶段的结果不能直接输出，而是保存在内存中。这种做法会大大增加 MapReduce 框架的复杂度，导致系统难以维护和扩展。</li>
-<li>降低了用户程序的可伸缩性，因为用户必须要使用 MapReduce 接口来定义流式作业。</li>
-</ol>
-<p>总之，流数据处理和批量数据处理是两种截然不同的数据处理模式，MapReduce 是专门面向静态数据的批量处理的，内部各种实现机制都为批处理做了高度优化，不适合用于处理持续到达的动态数据。</p>
-<h2 id="流计算的处理流程"><a href="#流计算的处理流程" class="headerlink" title="流计算的处理流程"></a>流计算的处理流程</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/%E4%BC%A0%E7%BB%9F%E7%9A%84%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.png" alt="传统的数据处理流程"></p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/%E6%B5%81%E8%AE%A1%E7%AE%97%E7%9A%84%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.png" alt="流计算的数据处理流程"></p>
-<h3 id="数据实时采集"><a href="#数据实时采集" class="headerlink" title="数据实时采集"></a>数据实时采集</h3><p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84.png" alt="数据采集系统基本架构"></p>
-<ul>
-<li>Agent：主动采集数据，并把数据推送到 Colletor 部分。</li>
-<li>Collector：接收多个 Agent 的数据，并实现有序、可靠、高性能的转发。</li>
-<li>Store：存储 Collecter 转发过来的数据。</li>
-</ul>
-<p>但对于流计算，一般在 Store 部分不进行数据的存储，而是将采集的数据直接发送给流计算平台进行实时计算。</p>
-<h3 id="数据实时计算"><a href="#数据实时计算" class="headerlink" title="数据实时计算"></a>数据实时计算</h3><p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/%E6%95%B0%E6%8D%AE%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97%E7%9A%84%E6%B5%81%E7%A8%8B.png" alt="数据实时计算的流程"></p>
-<h3 id="实时查询服务"><a href="#实时查询服务" class="headerlink" title="实时查询服务"></a>实时查询服务</h3><p>流计算的第三个阶段是实时查询服务，经由流计算框架得出的结果可供用户进行实时查询、展示或储存。传统的数据处理流程，用户需要主动发出查询才能获得想要的结果。而在流处理流程中，实时查询服务可以不断更新结果，并将用户所需的结果实时推送给用户。虽然通过对传统的数据处理系统进行定时查询也可以实现不断更新结果和结果推送，但通过这样的方式获取的结果仍然是根据过去某一时 刻的数据得到的结果，与实时结果有着本质的区别。</p>
-<p>由此可见，流处理系统与传统的数据处理系统有如下不同之处。</p>
-<ol>
-<li>流处理系统处理的是实时的数据，而传统的数据处理系统处理的是预先存储好的静态数据。</li>
-<li>用户通过流处理系统获取的是实时结果，而通过传统的数据处理系统获取的是过去某时刻的结果。并且，流处理系统无需用户主动发出查询，实时查询服务可以主动将实时结果推送给用户。</li>
-</ol>
-<h2 id="开源流计算框架-Storm"><a href="#开源流计算框架-Storm" class="headerlink" title="开源流计算框架 Storm"></a>开源流计算框架 Storm</h2><h3 id="Storm-的设计思想"><a href="#Storm-的设计思想" class="headerlink" title="Storm 的设计思想"></a>Storm 的设计思想</h3><h4 id="Streams"><a href="#Streams" class="headerlink" title="Streams"></a>Streams</h4><p>在 Storm 对流数据 Streams 的抽象描述中，流数据是一个无限的 Tuple 序列（Tuple 即元组，是元素的有序列表，每一个 Tuple 就是一个值列表，列表中的每个值都有一个名称，并且该值可以是基本类型、字符类型、字节数组等，也可以是其他可序列化的类型）。这些 Tuple 序列会以分布式的方式并行地创建和处理。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Streams.png" alt="Streams"></p>
-<h4 id="Spouts"><a href="#Spouts" class="headerlink" title="Spouts"></a>Spouts</h4><p>Storm 认为每个 Stream 都有一个源头，并把这个源头抽象为 Spouts。Spouts 会从外部读取流数据并持续发出 Tuple。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Spouts.png" alt="Spouts"></p>
-<h4 id="Bolts"><a href="#Bolts" class="headerlink" title="Bolts"></a>Bolts</h4><p>Storm 将 Streams 的状态转换过程抽象为 Bolts。Bolts 既可以处理 Tuple，也可以将处理后的 Tuple 作为新的 Streams 发送给其他 Bolts 对 Tuple 的处理逻辑都被封装 在Bolts中，可执行过滤、聚合、查询等操作。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Bolts.png" alt="Bolts"></p>
-<h4 id="Topology"><a href="#Topology" class="headerlink" title="Topology"></a>Topology</h4><p>Storm 将 Spouts 和 Bolts 组成的网络抽象成 Topology。Topology 是 Storm 中最高层次的抽象概念，它可以被提交到 Storm 集群执行。一个 Topology 就是一个流转换图，图中节点是一个 Spout 或 Bolt，图中的边则表示 Bolt 订阅了哪个 Stream。当 Spout 或者 Bolt 发送元组时，它会把元组发送到每个订阅了该 Stream 的 Bolt 上进行处理。</p>
-<p>在 Topology 的具体实现上，Storm 中的 Topology 定义仅仅是一些 Thrift 结构体（Thrift 是基于二进制的高性能的通信中间件），而 Thrift 支持各种编程语言进行定义，这样一来就可以使用各种编程语言来创建、提交 Topology。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Topology.png" alt="Topology"></p>
-<h4 id="Stream-Groupings"><a href="#Stream-Groupings" class="headerlink" title="Stream Groupings"></a>Stream Groupings</h4><p>Storm 中的 Stream Groupings 用于告知 Topology 如何在两个组件间（如 Spout 和 Bolt 之间，或者不同的 Bolt 之间）进行 Tuple 的传送。一个 Topology 中 Tuple 的流向中，箭头表示 Tuple 的流向，而圆圈则表示任务，每一个 Spout 和 Bolt 都可以有多个分布式任务，一个任务在什么时候、以什么方式发送 Tuple 就是由 Stream Groupings 来决定的。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Stream_Groupings.png" alt="Stream_Groupings"></p>
-<p>目前，Storm 中的 Stream Groupings 有如下 6 种方式。</p>
-<ol>
-<li>ShuffleGrouping：随机分组，随机分发 Stream 中的 Tuple，保证每个 Bolt 的 Task 接收 Tuple数量大致一致。</li>
-<li>FieldsGrouping：按照字段分组，保证相同字段的 Tuple 分配到同一个 Task 中。</li>
-<li>AllGrouping：广播发送，每一个 Task 都会收到所有的 Tuple。</li>
-<li>GlobalGrouping：全局分组，所有的 Tuple 都发送到同一个 Task 中。</li>
-<li>NonGrouping：不分组，和 ShuffleGrouping 类似，当前 Task 的执行会和它的被订阅者在同一个线程中执行。</li>
-<li>DireetGrouping：直接分组，直接指定由某个 Task 来执行 Tuple 的处理。</li>
-</ol>
-<h3 id="Storm-的框架设计"><a href="#Storm-的框架设计" class="headerlink" title="Storm 的框架设计"></a>Storm 的框架设计</h3><p>Storm 运行在分布式集群中，其运行任务的方式与 Hadoop 类似：在 Hadoop 上运行的是 MapReduce 作业，而在 Storm 上运行的是”Topology”。但两者的任务大不相同，其中主要的不同是一个 MapReduce 作业最终会完成计算并结束运行，而一个 Topology 将持续处理消息（直到入为终止）。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Storm%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="Storm集群架构示意图"></p>
-<p>Storm 集群采用”Mater-Worker”的节点方式，其中 Master 节点运行名为”Nimbus”的后台程序（类似 Hadoop 中的”JobTracker”）, 负责在集群范围内分发代码、为 Worker 分配任务和监测故障。而每个 Worker 节点运行名为”Supervisor”的后台程序，负责监听分配给它所在机器的工作，即根据 Nimbus 分配的任务来决定启动或停止 Worker 进程。</p>
-<p>Storm 采用了 Zookeeper 来作为分布式协调组件，负责 Nimbus 和多个 Supervisor 之间的所有协调工作（一个完整的拓扑可能被分为多个子拓扑，并由多个 Supervisor 完成）。</p>
-<p>此外，Nimbus 后台进程和 Supervisor 后台进程都是快速失败（Fail-fast）和无状态（Stateless）的，Master 节点并没有直接和 Worker 节点通信，而是借助 Zookeeper 将状态信息存放在 Zookeeper 中或本地磁盘中，以便节点故障时进行快速恢复。这意味着，若 Nimbus 进程或 Supervisor 进程终止后，一旦进程重启，它们将恢复到之前的状态并继续工作。这种设计使 Storm 极其稳定。</p>
-<p>基于这样的架构设计，Storm 的工作流程包含4个过程。</p>
-<ol>
-<li>客户端提交 Topology 到 Storm 集群中。</li>
-<li>Nimbus 将分配给 Supervisor 的任务写人 Zookeeper。</li>
-<li>Supervisor 从 Zookeeper 中获取所分配的任务，并启动 Worker 进程。</li>
-<li>Worker 进程执行具体的任务。</li>
-</ol>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Storm%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="Storm工作流程示意图"></p>
-<h2 id="Spark-Streaming"><a href="#Spark-Streaming" class="headerlink" title="Spark Streaming"></a>Spark Streaming</h2><p>Spark Streaming 是构建在 Spark 上的实时计算框架，它扩展了 Spark 处理大规模流式数据的能力。Spark Streaming 可结合批处理和交互查询，适合一些需要对历史数据和实时数据进行结合分析的应用场景。</p>
-<h3 id="Spark-Streaming-设计"><a href="#Spark-Streaming-设计" class="headerlink" title="Spark Streaming 设计"></a>Spark Streaming 设计</h3><p>Spark Streaming 是 Spark 的核心组件之一，为 Spark 提供了可拓展、高吞吐、容错的流计算能力。Spark Streaming 可整合多种输人数据源，如 Kafka、Flume、HDFS，甚至是普通的 TCP 套接字。经处理后的数据可存储至文件系统、数据库，或显示在仪表盘里。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Spark_Streaming%E6%94%AF%E6%8C%81%E7%9A%84%E8%BE%93%E5%85%A5%E3%80%81%E8%BE%93%E5%87%BA%E6%95%B0%E6%8D%AE%E6%BA%90.png" alt="Spark_Streaming支持的输入、输出数据源"></p>
-<p>Spark Streaming 的基本原理是将实时输人数据流以时间片（秒级）为单位进行拆分，然后经 Spark 引擎以类似批处理的方式处理每个时间片数据。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Spark_Streaming%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png" alt="Spark_Streaming执行流程"></p>
-<p>Spark Streaming 最主要的抽象是 DStream（Discretized Stream，离散化数据流），表示连续不断的数据流。在内部实现上，Spark Streaming 的输人数据按照时间片（如 1s）分成一段一段的 DStream，每一段数据转换为 Spark 中的 RDD，并且对 DStream 的操作都最终转变为对相应的 RDD的操作。</p>
-<p>例如，进行单词统计时，每个时间片的数据（存储句子的 RDD）经 flatMap 操作，生成了存储单词的 RDD。整个流式计算可根据业务的需求对这些中间的结果进一步处理，或者存储到外部设备中。</p>
-<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/DStream.png" alt="DStream"></p>
-<h3 id="Spark-Streaming-与-Storm-的对比"><a href="#Spark-Streaming-与-Storm-的对比" class="headerlink" title="Spark Streaming 与 Storm 的对比"></a>Spark Streaming 与 Storm 的对比</h3><p>Spark Streaming 和 Storm 最大的区别在于，Spark Streaming 无法实现毫秒级的流计算，而 Storm 则可以实现毫秒级响应。</p>
-<p>Spark Streaming 无法实现毫秒级的流计算，是因为其将流数据按批处理窗口大小（通常在 0.5~2s 之间）分解为一系列批处理作业，在这个过程中会产生多个 Spark 作业，且每一段数据的处理都会经过 Spark DAG 图分解、任务调度过程，因此无法实现毫秒级相应。Spark Streaming 难以满足对实时性要求非常高（如高频实时交易）的场景，但足以胜任其他流式准实时计算场景。</p>
-<p>相比之下，Storm 处理的单位为 Tuple，只需要极小的延迟。Spark Streaming 构建在 Spark 上，一方面是因为 Spark 的低延迟执行引擎（100ms 左右）可以用于实时计算，另一方面，相比于 Storm，RDD 数据集更容易做高效的容错处理。此外，Spark Streaming 采用的小批量处理的方式使得它可以同时兼容批量和实时数据处理的逻辑和算法，因此方便了一些需要历史数据和实时数据联合分析的特定应用场合。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/" class="post-title-link" itemprop="url">神经风格迁移.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-26 18:36:28" itemprop="dateCreated datePublished" datetime="2020-05-26T18:36:28+08:00">2020-05-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB.png" alt="神经风格迁移"></p>
-<p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB2.png" alt="神经风格迁移2"></p>
-<p>$J_{\text{content}}(C,G)$</p>
-<p>第一部分被称作内容代价，这是一个关于内容图片和生成图片的函数，它是用来度量生成图片$G$的内容与内容图片$C$的内容有多相似。</p>
-<p>$J_{\text{style}}(S,G)$</p>
-<p>然后我们会把结果加上一个风格代价函数，也就是关于$S$和$G$的函数，用来度量图片$G$的风格和图片$S$的风格的相似度。</p>
-<p>$J( G) = a J_{\text{content}}( C,G) + \beta J_{\text{style}}(S,G)$</p>
-<h3 id="内容代价函数（Content-cost-function）"><a href="#内容代价函数（Content-cost-function）" class="headerlink" title="内容代价函数（Content cost function）"></a>内容代价函数（Content cost function）</h3><p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E5%86%85%E5%AE%B9%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B0.png" alt="内容代价函数"></p>
-<p>假如说，你用隐含层$l$来计算内容代价，如果$l$是个很小的数，比如用隐含层1，这个代价函数就会使你的生成图片像素上非常接近你的内容图片。然而如果你用很深的层，那么那就会问，内容图片里是否有狗，然后它就会确保生成图片里有一个狗。所以在实际中，这个层$l$在网络中既不会选的太浅也不会选的太深。因为你要自己做这周结束的编程练习，我会让你获得一些直觉，在编程练习中的具体例子里通常$l$会选择在网络的中间层，既不太浅也不很深，然后用一个预训练的卷积模型，可以是<strong>VGG网络</strong>或者其他的网络也可以。</p>
-<p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E5%86%85%E5%AE%B9%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B02.png" alt="内容代价函数2"></p>
-<p>现在你需要衡量假如有一个内容图片和一个生成图片他们在内容上的相似度，我们令这个$a^{[l][C]}$和$a^{[l][G]}$，代表这两个图片$C$和$G$的$l$层的激活函数值。如果这两个激活值相似，那么就意味着两个图片的内容相似。</p>
-<p>$J_{\text{content}}( C,G) = \frac{1}{2}|| a^{[l][C]} - a^{[l][G]}||^{2}$</p>
-<p>为两个激活值不同或者相似的程度，我们取$l$层的隐含单元的激活值，按元素相减，内容图片的激活值与生成图片相比较，然后取平方，也可以在前面加上归一化或者不加，比如$\frac{1}{2}$或者其他的，都影响不大,因为这都可以由这个超参数$a$来调整（$J(G) =a J_{\text{content}}( C,G) + \beta J_{\text{style}}(S,G)$）</p>
-<h3 id="风格代价函数（Style-cost-function）"><a href="#风格代价函数（Style-cost-function）" class="headerlink" title="风格代价函数（Style cost function）"></a>风格代价函数（Style cost function）</h3><p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E9%A3%8E%E6%A0%BC%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B0.png" alt="风格代价函数"></p>
-<p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E9%A3%8E%E6%A0%BC%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B02.png" alt="风格代价函数2"></p>
-<p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E9%A3%8E%E6%A0%BC%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B03.png" alt="风格代价函数3"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/" class="post-title-link" itemprop="url">人脸识别.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-25 19:42:35" itemprop="dateCreated datePublished" datetime="2020-05-25T19:42:35+08:00">2020-05-25</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Siamese-网络"><a href="#Siamese-网络" class="headerlink" title="Siamese 网络"></a>Siamese 网络</h2><p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/Siamese%E7%BD%91%E7%BB%9C.png" alt="Siamese网络"></p>
-<p>建立一个人脸识别系统的方法就是，如果你要比较两个图片的话，例如这里的第一张（编号1）和第二张图片（编号2），你要做的就是把第二张图片喂给有同样参数的同样的神经网络，然后得到一个不同的128维的向量（编号3），这个向量代表或者编码第二个图片，我要把第二张图片的编码叫做$f(x^{(2)})$。这里我用$x^{(1)}$和$x^{(2)}$仅仅代表两个输入图片，他们没必要非是第一个和第二个训练样本，可以是任意两个图片。</p>
-<p>最后如果你相信这些编码很好地代表了这两个图片，你要做的就是定义$d$，将$x^{(1)}$和$x^{(2)}$的距离定义为这两幅图片的编码之差的范数，$d( x^{( 1)},x^{( 2)}) =|| f( x^{( 1)}) - f( x^{( 2)})||_{2}^{2}$。</p>
-<h2 id="Triplet-损失"><a href="#Triplet-损失" class="headerlink" title="Triplet 损失"></a>Triplet 损失</h2><p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/Triplet%E6%8D%9F%E5%A4%B1.png" alt="Triplet损失"></p>
-<p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/Triplet%E6%8D%9F%E5%A4%B12.png" alt="Triplet损失2"></p>
-<h2 id="面部识别与二分类"><a href="#面部识别与二分类" class="headerlink" title="面部识别与二分类"></a>面部识别与二分类</h2><p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/%E9%9D%A2%E9%83%A8%E8%AF%86%E5%88%AB%E4%B8%8E%E4%BA%8C%E5%88%86%E7%B1%BB.png" alt="面部识别与二分类"></p>
-<p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/%E9%9D%A2%E9%83%A8%E8%AF%86%E5%88%AB%E4%B8%8E%E4%BA%8C%E5%88%86%E7%B1%BB2.png" alt="面部识别与二分类2"></p>
-<p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/%E9%9D%A2%E9%83%A8%E8%AF%86%E5%88%AB%E4%B8%8E%E4%BA%8C%E5%88%86%E7%B1%BB3.png" alt="面部识别与二分类3"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/" class="post-title-link" itemprop="url">Spark.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-22 18:37:15" itemprop="dateCreated datePublished" datetime="2020-05-22T18:37:15+08:00">2020-05-22</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><h3 id="Spark-简介"><a href="#Spark-简介" class="headerlink" title="Spark 简介"></a>Spark 简介</h3><p>Spark 具有如下 4 个主要特点：</p>
-<ul>
-<li>运行速度快。Spark 使用先进的 DAG（Directed Acyelic Graph，有向无环图）执行引擎，以支持循环数据流与内存计算，基于内存的执行速度可比 Hadoop MapReduce 快上百倍，基于磁盘的执行速度也能快十倍。</li>
-<li>容易使用。Spark 支持使用 Scala、Java、Python 和 R 语言进行编程，简洁的 API 设计有助于用户轻松构建并行程序，并且可以通过 Spark Shell 进行交互式编程。</li>
-<li>通用性。Spark 提供了完整而强大的技术栈，包括 SQL 查询、流式计算、机器学习和图算法组件，这些组件可以无缝整合在同一个应用中，足以应对复杂的计算。</li>
-<li>运行模式多样。Spark 可运行于独立的集群模式中，或者运行于 Hadoop 中，也可运行于 Amazon EC2 等云环境中，并且可以访问 HDFS、Cassandra、HBase、Hive等多种数据源。</li>
-</ul>
-<h3 id="Spark-与-Hadoop-的对比"><a href="#Spark-与-Hadoop-的对比" class="headerlink" title="Spark 与 Hadoop 的对比"></a>Spark 与 Hadoop 的对比</h3><p>Hadoop 虽然已成为大数据技术的事实标准，但其本身还存在诸多缺陷，最主要的缺陷是其 MapReduce 计算模型延迟过高，无法胜任实时、快速计算的需求，因而只适用于离线批处理的应用场景。</p>
-<p>Hadoop存在以下缺点：</p>
-<ul>
-<li>表达能力有限。计算都必须要转化成 Map 和 Reduce 两个操作，但这并不适合所有的情况，难以描述复杂的数据处理过程。</li>
-<li>磁盘 IO 开销大。每次执行时都需要从磁盘读取数据，并且在计算完成后需要将中间结果写人到磁盘中，IO 开销较大。</li>
-<li>延迟高。一次计算可能需要分解成一系列按顺序执行的 MapReduce 任务，任务之间的衔接由于涉及到 IO 开销，会产生较高延迟。而且，在前一个任务执行完成之前，其他任务无法开始，因此难以胜任复杂、多阶段的计算任务。</li>
-</ul>
-<p>Spark 在借鉴 Hadoop MapReduce 优点的同时，很好地解决了 MapReduce 所面临的问题。相比于 MapReduce，Spark主要具有如下优点：</p>
-<ul>
-<li>Spark 的计算模式也属于 MapReduce，但不局限于 Map 和 Reduce 操作，还提供了多种数据集操作类型，编程模型比 MapReduce 更灵活。</li>
-<li>Spark 提供了内存计算，中间结果直接放到内存中，带来了更高的迭代运算效率。</li>
-<li>Spark 基于 DAG 的任务调度执行机制，要优于 MapReduce 的迭代执行机制。</li>
-</ul>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Hadoop%E4%B8%8ESpark%E7%9A%84%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%AF%B9%E6%AF%94.png" alt="Hadoop与Spark的执行流程对比"></p>
-<p>Spark 最大的特点就是将计算数据、中间结果都存储在内存中，大大减少了 IO 开销，因而 Spark 更适合于迭代运算比较多的数据挖掘与机器学习运算。</p>
-<p>使用 Hadoop 进行迭代计算非常耗资源，因为每次迭代都需要从磁盘中写人、读取中间数据，IO 开销大。而 Spark 将数据载人内存后，之后的迭代计算都可以直接使用内存中的中间结果作运算，避免了从磁盘中频繁读取数据。</p>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Hadoop%E4%B8%8ESpark%E6%89%A7%E8%A1%8C%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%9A%84%E6%97%B6%E9%97%B4%E5%AF%B9%E6%AF%94.png" alt="Hadoop与Spark执行逻辑回归的时间对比"></p>
-<p>在实际进行开发时，使用 Hadoop 需要编写不少相对底层的代码，不够高效。相对而言，Spark 提供了多种高层次、简洁的 API。通常情况下，对于实现相同功能的应用程序，Hadoop 的代码量要比 Spark 多 2~5 倍。更重要的是，Spark 提供了实时交互式编程反馈，可以方便地验证、调整算法。</p>
-<p>尽管 Spark 相对于 Hadoop 而言具有较大优势，但 Spark 并不能完全替代 Hadoop，主要用于替代 Hadoop 中的 MapReduce 计算模型。实际上，Spark 已经很好地融入了 Hadoop 生态圈，并成为其中的重要一员，它可以借助于 YARN 实现资源调度管理，借助于 HDFS 实现分布式存储。此外，Hadoop 可以使用廉价的、异构的机器来做分布式存储与计算，但是 Spark 对硬件的要求稍高一些，对内存与 CPU 有一定的要求。</p>
-<h2 id="Spark-生态系统"><a href="#Spark-生态系统" class="headerlink" title="Spark 生态系统"></a>Spark 生态系统</h2><p>在实际应用中，大数据处理主要包括以下三个类型：</p>
-<ul>
-<li>复杂的批量数据处理：时间跨度通常在数十分钟到数小时之间。</li>
-<li>基于历史数据的交互式查询：时间跨度通常在数十秒到数分钟之间。</li>
-<li>基于实时数据流的数据处理：时间跨度通常在数百毫秒到数秒之间。</li>
-</ul>
-<p>目前，已有很多相对成熟的开源软件用于处理以上三种情景。</p>
-<ul>
-<li>可以利用 Hadoop MapReduce 来进行批量数据处理；</li>
-<li>可以用 Impala 来进行交互式查询（Impala 与 Hive 相似，但底层引擎不同，提供了实时交互式 SQL 查询）；</li>
-<li>对于流式数据处理可以采用开源流计算框架 Storm。</li>
-</ul>
-<p>一些企业可能只会涉及其中部分应用场景，只需部署相应软件即可满足业务需求，但是对于互联网公司而言，通常会同时存在以上三种场景，就需要同时部署三种不同的软件，这样做难免会带来一些问题。</p>
-<ul>
-<li>不同场景之间输人输出数据无法做到无缝共享，通常需要进行数据格式的转换。</li>
-<li>不同的软件需要不同的开发和维护团队，带来了较高的使用成本。</li>
-<li>比较难以对同一个集群中的各个系统进行统一的资源协调和分配。</li>
-</ul>
-<p>Spark 的设计遵循“一个软件栈满足不同应用场景”的理念，逐渐形成了一套完整的生态系统，既能够提供内存计算框架，也可以支持 SQL 即席查询、实时流式计算、机器学习和图计算等。Spark 可以部署在资源管理器 YARN 之上，提供一站式的大数据解决方案。因此，Spark 所提供的生态系统足以应对上述三种场景，即同时支持批处理、交互式查询和流数据处理。</p>
-<p>Spark 生态系统主要包含了 Spark Core、Spark SQL、Spark Streaming、MLlib 和 GraphX 等组件，各个组件的具体功能如下：</p>
-<ol>
-<li>Spark Core<blockquote>
-<p>Spark Core 包含 Spark 的基本功能，如内存计算、任务调度、部署模式、故障恢复、存储管理等，主要面向批数据处理。Spark 建立在统一的抽象 RDD 之上，使其可以以基本一致的方式应对不同的大数据处理场景。</p>
-</blockquote>
-</li>
-<li>Spark SQL<blockquote>
-<p>Spark SQL 允许开发人员直接处理 RDD，同时也可查询 Hive、HBase 等外部数据源。Spark SQL 的一个重要特点是其能够统一处理关系表和 RDD，使得开发人员不需要自己编写 Spark 应用程序，开发人员可以轻松地使用 SQL 命令进行查询，并进行更复杂的数据分析。</p>
-</blockquote>
-</li>
-<li>Spark Streaming<blockquote>
-<p>Spark Streaming 支持高吞吐量、可容错处理的实时流数据处理，其核心思路是将流数据分解成一系列短小的批处理作业，每个短小的批处理作业都可以使用 Spark Core 进行快速处理。Spark Streaming 支持多种数据输入源，如 Kafka、Flume 和 TCP 套接字等。</p>
-</blockquote>
-</li>
-<li>MLlib（机器学习）<blockquote>
-<p>MLlib 提供了常用机器学习算法的实现，包括聚类、分类、回归、协同过滤等，降低了机器学习的门槛，开发人员只要具备一定的理论知识就能进行机器学习的工作。</p>
-</blockquote>
-</li>
-<li>GraphX（图计算）<blockquote>
-<p>GraphX 是 Spark 中用于图计算的 API，可认为是 Pregel 在 Spark 上的重写及优化，GraphX 性能良好，拥有丰富的功能和运算符，能在海量数据上自如地运行复杂的图算法。</p>
-</blockquote>
-</li>
-</ol>
-<p>需要说明的是，无论是 Spark SQL、Spark Streaming、MLlib 还是 GraphX，都可以使用 Spark Core 的 API 处理问题，它们的方法几乎是通用的，处理的数据也可以共享，不同应用之间的数据可以无缝集成。</p>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF.png" alt="Spark的应用场景"></p>
-<h2 id="Spark-运行架构"><a href="#Spark-运行架构" class="headerlink" title="Spark 运行架构"></a>Spark 运行架构</h2><h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><ul>
-<li>RDD：是弹性分布式数据集（Resilient Distributed Dataset）的英文缩写，是分布式内存的一个抽象概念，提供了一种高度受限的共享内存模型。</li>
-<li>DAG：是 Directed Acyclic Graph（有向无环图）的英文缩写，反映 RDD 之间的依赖关系。</li>
-<li>Executor：是运行在工作节点（Worker Node）上的一个进程，负责运行任务，并为应用程<br>序存储数据。</li>
-<li>应用：用户编写的 Spark 应用程序。</li>
-<li>任务：运行在 Executor 上的工作单元。</li>
-<li>作业：一个作业包含多个 RDD 及作用于相应 RDD 上的各种操作。</li>
-<li>阶段：是作业的基本调度单位，一个作业会分为多组任务，每组任务被称为“阶段”，或者<br>也被称为“任务集”。</li>
-</ul>
-<h3 id="架构设计"><a href="#架构设计" class="headerlink" title="架构设计"></a>架构设计</h3><p>Spark 运行架构包括集群资源管理器（Cluster Manager）、运行作业任务的工作节点（WorkerNode）、每个应用的任务控制节点（Driver）和每个工作节点上负责具体任务的执行进程（Executor）。其中，集群资源管理器可以是 Spark 自带的资源管理器，也可以是 YARN 或 Mesos 等资源管理框架。</p>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E8%BF%90%E8%A1%8C%E6%9E%B6%E6%9E%84.png" alt="Spark运行架构"></p>
-<p>与 Hadoop MapReduce 计算框架相比，Spark 所采用的 Executor 有两个优点：</p>
-<ul>
-<li>一是利用多线程来执行具体的任务（Hadoop MapReduce 采用的是进程模型），减少任务的启动开销；</li>
-<li>二是 Executor 中有一个 BlockManager 存储模块，会将内存和磁盘共同作为存储设备，当需要多轮迭代计算时，可以将中间结果存储到这个存储模块里，下次需要时就可以直接读该存储模块里的数据，而不需要读写到 HDFS 等文件系统里，因而有效减少了 IO 开销；或者在交互式查询场景下，预先将表缓存到该存储系统上，从而可以提高读写 IO 性能。</li>
-</ul>
-<p>在 Spark 中，一个应用（Application）由一个任务控制节点（Driver）和若干个作业（Job）构成，一个作业由多个阶段（Stage）构成，一个阶段由多个任务（Task）组成。当执行一个应用时，任务控制节点会向集群管理器（Cluster Manager）申请资源，启动 Executor，并向 Executor 发送应用程序代码和文件，然后在 Executor 上执行任务，运行结束后执行结果会返回给任务控制节点，或者写到 HDFS 或者其他数据库中。</p>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E4%B8%AD%E5%90%84%E7%A7%8D%E6%A6%82%E5%BF%B5%E4%B9%8B%E9%97%B4%E5%AE%9A%E7%9A%84%E7%9B%B8%E4%BA%92%E5%85%B3%E7%B3%BB.png" alt="Spark中各种概念之间定的相互关系"></p>
-<h3 id="Spark-运行基本流程"><a href="#Spark-运行基本流程" class="headerlink" title="Spark 运行基本流程"></a>Spark 运行基本流程</h3><p>Spark 运行基本流程如下：</p>
-<ol>
-<li>当一个 Spark 应用被提交时，首先需要为这个应用构建起基本的运行环境，即由任务控制节点（Driver）创建一个 SparkContext，由 SparkContext 负责和资源管理器（Cluster Manager）的通信以及进行资源的申请、任务的分配和监控等。SparkContext 会向资源管理器注册并申请运行 Executor 的资源。</li>
-<li>资源管理器为 Executor 分配资源，并启动 Executor 进程，Executor 运行情况将随着“心跳”发送到资源管理器上。</li>
-<li>SparkContext 根据 RDD 的依赖关系构建 DAG 图，DAG 图提交给 DAG 调度器（DAGScheduler）进行解析，将 DAG 图分解成多个“阶段”（每个阶段都是一个任务集），并且计算出各个阶段之间的依赖关系，然后把一个个“任务集”提交给底层的任务调度器（TaskScheduler）进行处理；Executor 向 SparkContext 申请任务，任务调度器将任务分发给 Executor 运行，同时 SparkContext 将应用程序代码发放给 Executor。</li>
-<li>任务在 Executor 上运行，把执行结果反馈给任务调度器，然后反馈给 DAG 调度器，运行完毕后写人数据并释放所有资源。</li>
-</ol>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E8%BF%90%E8%A1%8C%E5%9F%BA%E6%9C%AC%E6%B5%81%E7%A8%8B%E5%9B%BE.png" alt="Spark运行基本流程图"></p>
-<p>Spark 运行架构具有以下特点：</p>
-<ol>
-<li>每个应用都有自己专属的 Executor 进程，并且该进程在应用运行期间一直驻留。Executor 进程以多线程的方式运行任务，减少了多进程任务频繁的启动开销，使得任务执行变得非常高效和可靠。</li>
-<li>Spark 运行过程与资源管理器无关，只要能够获取 Executor 进程并保持通信即可。</li>
-<li>Executor 上有一个 BlockManager 存储模块，类似于键值存储系统（把内存和磁盘共同作为存储设备），在处理迭代计算任务时，不需要把中间结果写人到 HDFS 等文件系统，而是直接放在这个存储系统上，后续有需要时就可以直接读取；在交互式查询场景下，也可以把表提前缓存到这个存储系统上，提高读写 IO 性能。</li>
-<li>任务采用了数据本地性和推测执行等优化机制。数据本地性是尽量将计算移到数据所在的节点上进行，即“计算向数据靠拢”，因为移动计算比移动数据所占的网络资源要少得多。而且，Spark 采用了延时调度机制，可以在更大的程度上实现执行过程优化。比如，拥有数据的节点当前正被其他的任务占用，那么在这种情况下是否需要将数据移动到其他的空闲节点上呢？答案是不一定。因为，如果经过预测发现当前节点结束当前任务的时间要比移动数据的时间还要少，那么调度就会等待，直到当前节点可用。</li>
-</ol>
-<h3 id="RDD-的设计与运行原理"><a href="#RDD-的设计与运行原理" class="headerlink" title="RDD 的设计与运行原理"></a>RDD 的设计与运行原理</h3><h4 id="RDD-设计背景"><a href="#RDD-设计背景" class="headerlink" title="RDD 设计背景"></a>RDD 设计背景</h4><p>在实际应用中，存在许多迭代式算法（比如机器学习、图算法等）和交互式数据挖掘工具，这些应用场景的共同之处是，不同计算阶段之间会重用中间结果，即一个阶段的输出结果会作为下一个阶段的输入。但是，目前的 MapReduce 框架都是把中间结果写人到 HDFS 中，带来了大量的数据复制、磁盘 IO 和序列化开销。虽然类似 Pregel 等图计算框架也是将结果保存在内存当中，但是这些框架只能支持一些特定的计算模式，并没有提供种通用的数据抽象。RDD 就是为了满足这种需求而出现的，它提供了一个抽象的数据架构，我们不必担心底层数据的分布式特性，只需将具体的应用逻辑表达为一系列转换处理，不同 RDD 之间的转换操作形成依赖关系，可以实现管道化，从而避免了中间结果的存储，大大降低了数据复制、磁盘 IO 和序列化开销。</p>
-<h4 id="RDD-概念"><a href="#RDD-概念" class="headerlink" title="RDD 概念"></a>RDD 概念</h4><p>一个 RDD 就是一个分布式对象集合，本质上是一个只读的分区记录集合，每个 RDD 可以分成多个分区，每个分区就是一个数据集片段，并且一个 RDD 的不同分区可以被保存到集群中不同的节点上，从而可以在集群中的不同节点上进行并行计算。RDD 提供了一种高度受限的共享内存模型，即 RDD 是只读的记录分区的集合，不能直接修改，只能基于稳定的物理存储中的数据集来创建 RDD，或者通过在其他 RDD 上执行确定的转换操作（如 map、join 和 groupBy）而创建得到新的 RDD。</p>
-<p>RDD 提供了一组丰富的操作以支持常见的数据运算，分为“行动”（Action）和“转换”（Transformation）两种类型：</p>
-<ul>
-<li>前者用于执行计算并指定输出的形式</li>
-<li>后者指定 RDD 之间的相互依赖关系。</li>
-</ul>
-<p>两类操作的主要区别是，转换操作（如map、filter、 groupBy、 join等）接受 RDD 并返回 RDD，而行动操作（如 count、collect 等）接受 RDD 但是返回非 RDD（即输出一个值或结果）。</p>
-<p>RDD提供的转换接口都非常简单，都是类似 map、filter、 groupBy、 join 等粗粒度的数据转换操作，而不是针对某个数据项的细粒度修改。因此，RDD 比较适合对于数据集中元素执行相同操作的批处理式应用，而不适合用于需要异步、细粒度状态的应用，比如 Web 应用系统、增量式的网页爬虫等。正因为这样，这种粗粒度转换接口设计，会使人直觉上认为 RDD 的功能很受限、不够强大。但是，实际上 RDD 已经被实践证明可以很好地应用于许多并行计算应用中，可以具备很多现有计算框架（如 MapReduce、SQL、 Pregel 等）的表达能力，并且可以应用于这些框架处理不了的交互式数据挖掘应用。</p>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E7%9A%84%E8%BD%AC%E6%8D%A2%E5%92%8C%E8%A1%8C%E5%8A%A8%E6%93%8D%E4%BD%9C.png" alt="Spark的转换和行动操作"></p>
-<h4 id="RDD-特性"><a href="#RDD-特性" class="headerlink" title="RDD 特性"></a>RDD 特性</h4><ol>
-<li>高效的容错性。现有的分布式共享内存、键值存储、内存数据库等，为了实现容错，必须在集群节点之间进行数据复制或者记录日志，也就是在节点之间会发生大量的数据传输，这对于数据密集型应用而言会带来很大的开销。在 RDD 的设计中，数据只读，不可修改，如果需要修改数据，必须从父 RDD 转换到子 RDD，由此在不同 RDD 之间建立了血缘关系。所以，RDD 是一种天生具有容错机制的特殊集合，不需要通过数据冗余的方式（比如检查点）实现容错，而只需通过 RDD 父子依赖（血缘）关系重新计算得到丢失的分区来实现容错，无需回滚整个系统，这样就避免了数据复制的高开销，而且重算过程可以在不同节点之间并行进行，实现了高效的容错。此外，RDD 提供的转换操作都是一些粗粒度的操作（比如 map、filter 和 join），RDD 依赖关系只需要记录这种粗粒度的转换操作，而不需要记录具体的数据和各种细粒度操作的日志（比如对哪个数据项进行了修改），这就大大降低了数据密集型应用中的容错开销。</li>
-<li>中间结果持久化到内存。数据在内存中的多个 RDD 操作之间进行传递，不需要“落地”到磁盘上，避免了不必要的读写磁盘开销。</li>
-<li>存放的数据可以是 Java 对象，避免了不必要的对象序列化和反序列化开销。</li>
-</ol>
-<h4 id="RDD-之间的依赖关系"><a href="#RDD-之间的依赖关系" class="headerlink" title="RDD 之间的依赖关系"></a>RDD 之间的依赖关系</h4><p>RDD 中不同的操作会使得不同 RDD 中的分区产生不同的依赖。RDD 中的依赖关系分为窄依赖（Narrow Dependency）与宽依赖（Wide Dependency）。</p>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/RDD%E7%9A%84%E5%AE%BD%E4%BE%9D%E8%B5%96%E5%92%8C%E7%AA%84%E4%BE%9D%E8%B5%96.png" alt="RDD的宽依赖和窄依赖"></p>
-<p>窄依赖表现为一个父 RDD 的分区对应于一个子 RDD 的分区，或多个父 RDD 的分区对应于一个子 RDD 的分区。比如图中，RDD1 是 RDD2 的父 RDD，RDD2 是子 RDD，RDD1 的分区 1 对应于 RDD2 的一个分区（即分区 4）；再比如，RDD6 和 RDD7 都是RDD8的父RDD, RDD6 中的分区（分区 15）和 RDD7 中的分区（分区18），两者都对应于 RDD8 中的一个分区（分区 21）。</p>
-<p>宽依赖则表现为存在一个父 RDD 的一个分区对应一个子 RDD 的多个分区。比如中，RDD9 是 RDD12 的父 RDD，RDD9 中的分区 24 对应了 RDD12 中的两个分区（即分区 27 和分区 28）。</p>
-<p>总体而言，如果父 RDD 的一个分区只被一个子 RDD 的一个分区所使用就是窄依赖，否则就<br>是宽依赖。窄依赖典型的操作包括 map、filter、 union 等，宽依赖典型的操作包括groupByKey、sortByKey 等。对于连接（Join）操作，可以分为两种情况。</p>
-<ol>
-<li>对输人进行协同划分，属于窄依赖，如图所示。所谓协同划分（Co-partitioned）是指多个父 RDD 的某一分区的所有“键（Key）”落在子 RDD的同一个分区内，不会产生同一个父 RDD 的某一分区落在子 RDD 的两个分区的情况。</li>
-<li>对输人做非协同划分，属于宽依赖，如图所示。</li>
-</ol>
-<p>对于窄依赖的 RDD，可以以流水线的方式计算所有父分区，不会造成网络之间的数据混合。对于宽依赖的 RDD，则通常伴随着 Shuffle 操作，即首先需要计算好所有父分区数据，然后在节<br>点之间进行 Shuffle。</p>
-<p>Spark 的这种依赖关系设计，使其具有了天生的容错性，大大加快了 Spark 的执行速度。因为，RDD 数据集通过“血缘关系”记住了它是如何从其他 RDD 中演变过来的，血缘关系记录的是粗颗粒度的转换操作行为，当这个 RDD 的部分分区数据丢失时，它可以通过血缘关系获取足够的信息来重新运算和恢复丢失的数据分区，由此带来了性能的提升。相对而言，在两种依赖关系中，窄依赖的失败恢复更为高效，它只需要根据父 RDD 分区重新计算丢失的分区即可（不需要重新计算所有分区），而且可以并行地在不同节点上进行重新计算。而对于宽依赖而言，单个节点失效通常意味着重新计算过程会涉及多个父 RDD 分区，开销较大。此外，Spark 还提供了数据检查点和记录日志，用于持久化中间 RDD，从而使得在进行失败恢复时不需要追溯到最开始的阶段。在进行故障恢复时，Spark 会对数据检查点开销和重新计算 RDD 分区的开销进行比较，从而自动选择最优的恢复策略。</p>
-<h4 id="阶段的划分"><a href="#阶段的划分" class="headerlink" title="阶段的划分"></a>阶段的划分</h4><p>Spark 通过分析各个 RDD 的依赖关系生成了 DAG，再通过分析各个 RDD 中的分区之间的依赖关系来决定如何划分阶段，具体划分方法是：在DAG中进行反向解析，遇到宽依赖就断开，遇到窄依赖就把当前的 RDD 加入到当前的阶段中；将窄依赖尽量划分在同一个阶段中，可以实现流水线计算</p>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/RDD%E9%98%B6%E6%AE%B5%E5%88%92%E5%88%86.png" alt="RDD阶段划分"></p>
-<p>例如，根据 RDD 分区的依赖关系划分阶段，假设从 HDFS 中读入数据生成 3 个不同的 RDD（即 A、C 和 E），通过一系列转换操作后再将计算结果保存回 HDFS。对 DAG 进行解析时，在依赖图中进行反向解析，由于从 RDD A到 RDD B 的转换以及从 RDD B 和 RDD F 到 RDD G 的转换都属于宽依赖，因此在宽依赖处断开后可以得到 3 个阶段，即阶段 1、阶段 2和阶段 3。由图可以看出，在阶段 2 中，从 map 到 union 都是窄依赖，这两步操作可以形成一个流水线操作。比如，分区 7 通过 map 操作生成的分区 9，可以不用等待分区 8 到分区 10 这个转换操作的计算结束，而是继续进行 union 操作，转换得到分区 13，这样流水线执行大大提高了计算的效率。</p>
-<p>由上述论述可知，把一个 DAG 图划分成多个阶段以后，每个阶段都代表了一组关联的、相互之间没有 Shuffle 依赖关系的任务组成的任务集合。每个任务集合会被提交给任务调度器（TaskScheduler）进行处理，由任务调度器将任务分发给 Executor 运行。</p>
-<h4 id="RDD-运行过程"><a href="#RDD-运行过程" class="headerlink" title="RDD 运行过程"></a>RDD 运行过程</h4><ol>
-<li>创建 RDD 对象。</li>
-<li>SparkContext 负责计算 RDD 之间的依赖关系，构建 DAG。</li>
-<li>DAGScheduler 负责把 DAG 图分解成多个阶段，每个阶段中包含了多个任务，每个任务会被任务调度器分发给各个工作节点（Worker Node）上的 Executor 去执行。</li>
-</ol>
-<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/RDD%E8%BF%90%E8%A1%8C%E8%BF%87%E7%A8%8B.png" alt="RDD运行过程"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1396,7 +1238,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1409,7 +1251,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1444,7 +1286,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

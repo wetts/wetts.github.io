@@ -188,6 +188,314 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC10%E7%AB%A0%20-%20Thread%20Specific%20Storage%EF%BC%88%E7%BA%BF%E7%A8%8B%E7%89%B9%E6%9C%89%E5%AD%98%E5%82%A8%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC10%E7%AB%A0%20-%20Thread%20Specific%20Storage%EF%BC%88%E7%BA%BF%E7%A8%8B%E7%89%B9%E6%9C%89%E5%AD%98%E5%82%A8%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第10章-Thread Specific Storage（线程特有存储）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-14 13:42:34" itemprop="dateCreated datePublished" datetime="2015-11-14T13:42:34+08:00">2015-11-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第十章-Thread-Specific-Storage（线程特有存储）模式"><a href="#第十章-Thread-Specific-Storage（线程特有存储）模式" class="headerlink" title="第十章 Thread Specific Storage（线程特有存储）模式"></a>第十章 Thread Specific Storage（线程特有存储）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>多线程相关的问题如线程安全、死锁等归根究底是多线程共享变量导致的。有鉴于此，Thread Specific Storage 模式通过不共享变量实现了线程安全，并由此自然地避免了与锁的消耗及与之有关的问题。</li>
+<li>Java 1.2 引入的标准类库 java.lang.ThreadLocal 就相当于访问线程特有变量的逻辑统一入口点。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC10%E7%AB%A0%20-%20Thread%20Specific%20Storage%EF%BC%88%E7%BA%BF%E7%A8%8B%E7%89%B9%E6%9C%89%E5%AD%98%E5%82%A8%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC9%E7%AB%A0%20-%20Thread%20Pool%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC9%E7%AB%A0%20-%20Thread%20Pool%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第9章-Thread Pool（线程池）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-14 10:11:18" itemprop="dateCreated datePublished" datetime="2015-11-14T10:11:18+08:00">2015-11-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第九章-Thread-Pool（线程池）模式"><a href="#第九章-Thread-Pool（线程池）模式" class="headerlink" title="第九章 Thread Pool（线程池）模式"></a>第九章 Thread Pool（线程池）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>一个系统中的线程相对于其所要处理的任务而言，总是一种非常有限的资源。线程不仅在其执行任务时需要消耗 CPU 时间和内存等资源，线程对象（Thread 实例）本身以及线程所需的调用栈（Call Stack）也占用内存，并且 Java 中创建一个线程往往意味着 JVM 会创建相应的依赖于宿主机操作系统的本地线程（Native Thread）。因此，为每个或者每一批任务创建一个线程以对其进行执行，通常是一种奢侈而不现实的事情。比较常见的一种做法是复用一定量的线程，由这些线程去执行不断产生的任务。绝大多数的 Web 服务器就是采用这种方法。例如，Tomcat 服务器复用一定数量的线程用于处理其接收到的请求。</li>
+<li>Thread Pool 模式的核心思想是使用队列对待处理的任务进行缓存，并复用一定数量的工作者线程去取队列中的任务进行执行。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/14/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC9%E7%AB%A0%20-%20Thread%20Pool%EF%BC%88%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC8%E7%AB%A0%20-%20Active%20Object%EF%BC%88%E4%B8%BB%E5%8A%A8%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC8%E7%AB%A0%20-%20Active%20Object%EF%BC%88%E4%B8%BB%E5%8A%A8%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第8章-Active Object（主动对象）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-13 22:06:48" itemprop="dateCreated datePublished" datetime="2015-11-13T22:06:48+08:00">2015-11-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第八章-Active-Object（主动对象）模式"><a href="#第八章-Active-Object（主动对象）模式" class="headerlink" title="第八章 Active Object（主动对象）模式"></a>第八章 Active Object（主动对象）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>Active Object 模式是一种异步编程模式。它通过对方法的调用（Method Invocation）与方法的执行（Method Execution）进行解藕（Decoupling）来提高并发性。若以任务的概念来说，Active Object 模式的核心则是它允许任务的提交（相当于对异步方法的调用）和任务的执行（相当于异步方法的真正执行）分离。这有点类似于 System.gc() 这个方法：客户端代码调用完 gc() 后，一个进行垃圾回收的任务被提交，但此时 JVM 并不一定进行了垃圾回收，而可能是在 gc() 方法调用返回后的某段时间才开始执行任务——回收垃圾。我们知道，System.gc() 的调用方代码是运行在自己的线程上（通常是 main 线程派生的子线程），而 JVM 的垃圾回收这个动作则由专门的工作者线程（垃圾回收线程）来执行。换而言之，System.gc() 这个方法所代表的动作（其所定义的功能）的调用方和执行方是运行在不同的线程中的，从而提高了并发性。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC8%E7%AB%A0%20-%20Active%20Object%EF%BC%88%E4%B8%BB%E5%8A%A8%E5%AF%B9%E8%B1%A1%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC7%E7%AB%A0%20-%20Producer-Consumer%EF%BC%88%E7%94%9F%E4%BA%A7%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85%EF%BC%89%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC7%E7%AB%A0%20-%20Producer-Consumer%EF%BC%88%E7%94%9F%E4%BA%A7%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85%EF%BC%89%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">Java多线程编程实战指南-第7章-Producer-Consumer（生产者-消费者）模式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-13 20:13:54" itemprop="dateCreated datePublished" datetime="2015-11-13T20:13:54+08:00">2015-11-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="读书笔记-Java-多线程编程实战指南"><a href="#读书笔记-Java-多线程编程实战指南" class="headerlink" title="读书笔记 - Java 多线程编程实战指南"></a>读书笔记 - Java 多线程编程实战指南</h1><hr>
+<h2 id="第七章-Producer-Consumer（生产者-消费者）模式"><a href="#第七章-Producer-Consumer（生产者-消费者）模式" class="headerlink" title="第七章 Producer-Consumer（生产者-消费者）模式"></a>第七章 Producer-Consumer（生产者-消费者）模式</h2><h4 id="模式介绍"><a href="#模式介绍" class="headerlink" title="模式介绍"></a>模式介绍</h4><ul>
+<li>数据的提供方可形象地称为数据的生产者，它“生产”了数据，而数据的加工方则相应地被称为消费者，它“消费”了数据。</li>
+<li>实际上，生产者“生产”数据的速率和消费者“消费”数据的速率往往是不均衡的。为了避免数据的生产者和消费者中处理速率快的一方需要等待处理速率慢的一方，Producer-Consumer 模式通过在数据的生产者和消费者之间引入一个通道（Channel，暂时可以将其简单地理解为一个队列）对两者进行解藕（Decoupling）：生产者将其“生产”的数据放入通道，消费者从相应通道中取出数据进行“消费”，生产者和消费者各自运行在各自的线程中，从而使双方处理速率互不影响。</li>
+<li>Producer-Consumer 模式可以看成设计模式的设计模式。许多模式都可以看成 Producer-Consumer 模式的一个实例。</li></ul>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC7%E7%AB%A0%20-%20Producer-Consumer%EF%BC%88%E7%94%9F%E4%BA%A7%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85%EF%BC%89%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/13/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98%E6%8C%87%E5%8D%97/%E7%AC%AC6%E7%AB%A0%20-%20Promise%EF%BC%88%E6%89%BF%E8%AF%BA%EF%BC%89%E6%A8%A1%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -809,391 +1117,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-PS1%E3%80%81PS2%E3%80%81PS3%E3%80%81PS4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/11/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-PS1%E3%80%81PS2%E3%80%81PS3%E3%80%81PS4/" class="post-title-link" itemprop="url">Linux-配置-PS1、PS2、PS3、PS4</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-11-03 17:21:58" itemprop="dateCreated datePublished" datetime="2015-11-03T17:21:58+08:00">2015-11-03</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://os.51cto.com/art/201205/334954.htm">http://os.51cto.com/art/201205/334954.htm</a></p>
-<h2 id="PS1——默认提示符"><a href="#PS1——默认提示符" class="headerlink" title="PS1——默认提示符"></a>PS1——默认提示符</h2><p>如下所示，可以通过修改Linux下的默认提示符，使其更加实用。在下面的例子中，默认的PS1的值是<code>\s-\v\$</code>,显示出了shell的名称的版本。我们通过修改，可以使其显示用户名、主机名和当前工作目录。</p>
-<ul>
-<li><code>\d</code> ：代表日期，格式为weekday month date，例如：”Mon Aug 1”</li>
-<li><code>\H</code> ：完整的主机名称。例如：我的机器名称为：fc4.linux，则这个名称就是fc4.linux</li>
-<li><code>\h</code> ：仅取主机的第一个名字，如上例，则为fc4，.linux则被省略</li>
-<li><code>\t</code> ：显示时间为24小时格式，如：HH：MM：SS</li>
-<li><code>\T</code> ：显示时间为12小时格式</li>
-<li><code>\A</code> ：显示时间为24小时格式：HH：MM</li>
-<li><code>\u</code> ：当前用户的账号名称</li>
-<li><code>\v</code> ：BASH的版本信息</li>
-<li><code>\w</code> ：完整的工作目录名称。家目录会以 ~代替</li>
-<li><code>\W</code> ：利用basename取得工作目录名称，所以只会列出最后一个目录</li>
-<li><code>\#</code> ：下达的第几个命令</li>
-<li><code>\$</code> ：提示字符，如果是root时，提示符为：# ，普通用户则为：$</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th align="center">前景</th>
-<th align="center">背景</th>
-<th align="center">颜色</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">30</td>
-<td align="center">40</td>
-<td align="center">黑色</td>
-</tr>
-<tr>
-<td align="center">31</td>
-<td align="center">41</td>
-<td align="center">红色</td>
-</tr>
-<tr>
-<td align="center">32</td>
-<td align="center">42</td>
-<td align="center">绿色</td>
-</tr>
-<tr>
-<td align="center">33</td>
-<td align="center">43</td>
-<td align="center">黄色</td>
-</tr>
-<tr>
-<td align="center">34</td>
-<td align="center">44</td>
-<td align="center">蓝色</td>
-</tr>
-<tr>
-<td align="center">35</td>
-<td align="center">45</td>
-<td align="center">紫红色</td>
-</tr>
-<tr>
-<td align="center">36</td>
-<td align="center">46</td>
-<td align="center">青蓝色</td>
-</tr>
-<tr>
-<td align="center">37</td>
-<td align="center">47</td>
-<td align="center">白色</td>
-</tr>
-</tbody></table>
-<p><code>\[\e[37;40m\][\[\e[32;40m\]\u\[\e[37;40m\]@\h \[\e[36;40m\]\w\[\e[0m\]]\n$</code><br>[用户名@计算机名 当前路径]</p>
-<h2 id="PS2——再谈提示符"><a href="#PS2——再谈提示符" class="headerlink" title="PS2——再谈提示符"></a>PS2——再谈提示符</h2><p>一个非常长的命令可以通过在末尾加<code>\</code>使其分行显示。多行命令的默认提示符是<code>&gt;</code>。 我们可以通过修改PS2，将提示符修改为”continue-&gt;” 。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; myisamchk --silent --force --fast --update-state \</span><br><span class="line">&gt; --key_buffer_size=512M --sort_buffer_size=512M \</span><br><span class="line">&gt; --read_buffer_size=4M --write_buffer_size=4M \</span><br><span class="line">&gt; /var/lib/mysql/bugs/*.MYI</span><br></pre></td></tr></table></figure>
-<p>[注: 这里使用 “&gt;” 作为默认提示符]</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; export PS2=&quot;continue-&gt; &quot;</span><br><span class="line">ramesh@dev-db ~&gt; myisamchk --silent --force --fast --update-state \</span><br><span class="line">continue-&gt; --key_buffer_size=512M --sort_buffer_size=512M \</span><br><span class="line">continue-&gt; --read_buffer_size=4M --write_buffer_size=4M \</span><br><span class="line">continue-&gt; /var/lib/mysql/bugs/*.MYI</span><br></pre></td></tr></table></figure>
-<p>[注: 与上面类似，用 “continue-&gt; “ 作提示符]</p>
-<p>当用<code>\</code>使长命令分行显示，我发现非常易读。当然我也见过有的人不喜欢分行显示命令</p>
-<h2 id="PS3——Shell脚本中使用select时的提示符"><a href="#PS3——Shell脚本中使用select时的提示符" class="headerlink" title="PS3——Shell脚本中使用select时的提示符"></a>PS3——Shell脚本中使用select时的提示符</h2><p>你可以像下面示范的那样，用环境变量PS3定制shell脚本的select提示：</p>
-<p>不使用PS3的脚本输出:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps3.sh</span><br><span class="line">select i in mon tue wed exit</span><br><span class="line">do</span><br><span class="line">    case $i in</span><br><span class="line">        mon) echo &quot;Monday&quot;;;</span><br><span class="line">        tue) echo &quot;Tuesday&quot;;;</span><br><span class="line">        wed) echo &quot;Wednesday&quot;;;</span><br><span class="line">        exit) exit;;</span><br><span class="line">    esac</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; ./ps3.sh</span><br><span class="line">1) mon</span><br><span class="line">2) tue</span><br><span class="line">3) wed</span><br><span class="line">4) exit</span><br><span class="line">#? 1</span><br><span class="line">Monday</span><br><span class="line">#? 4</span><br></pre></td></tr></table></figure>
-<p>[注: 缺省的提示符是 #?]</p>
-<p>使用PS3的脚本输出：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps3.sh</span><br><span class="line">PS3=&quot;Select a day (1-4): &quot;</span><br><span class="line">select i in mon tue wed exit</span><br><span class="line">do</span><br><span class="line">    case $i in</span><br><span class="line">        mon) echo &quot;Monday&quot;;;</span><br><span class="line">        tue) echo &quot;Tuesday&quot;;;</span><br><span class="line">        wed) echo &quot;Wednesday&quot;;;</span><br><span class="line">        exit) exit;;</span><br><span class="line">    esac</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; ./ps3.sh</span><br><span class="line">1) mon</span><br><span class="line">2) tue</span><br><span class="line">3) wed</span><br><span class="line">4) exit</span><br><span class="line">Select a day (1-4): 1</span><br><span class="line">Monday</span><br><span class="line">Select a day (1-4): 4</span><br></pre></td></tr></table></figure>
-<p>[注: 设置了PS3变量后，命令提示符已经成为 “Select a day (1-4):”]</p>
-<h2 id="PS4——PS4-“set-x”用来修改跟踪输出的前缀"><a href="#PS4——PS4-“set-x”用来修改跟踪输出的前缀" class="headerlink" title="PS4——PS4-“set -x”用来修改跟踪输出的前缀"></a>PS4——PS4-“set -x”用来修改跟踪输出的前缀</h2><p>如果你像下面那样在调试模式下的脚本中，PS4环境变量可以定制提示信息：</p>
-<p>没有设置PS4时的shell脚本输出:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps4.sh</span><br><span class="line"></span><br><span class="line">set –x</span><br><span class="line">echo &quot;PS4 demo script&quot;</span><br><span class="line">ls -l /etc/ | wc –l du -sh ~</span><br><span class="line"></span><br><span class="line">ramesh@dev-db ~&gt; ./ps4.sh</span><br><span class="line">    ++ echo &#x27;PS4 demo script&#x27;</span><br><span class="line">PS4 demo script</span><br><span class="line">++ ls -l /etc/</span><br><span class="line">++ wc –l</span><br><span class="line">243</span><br><span class="line">++ du -sh /home/ramesh</span><br><span class="line">48K /home/ramesh</span><br></pre></td></tr></table></figure>
-<p>[注: 当使用sex -x跟踪输出时的提示符为 ++]<br>设置PS4后的脚本输出:</p>
-<p>PS4在ps.sh中定义了下面两个变量</p>
-<ul>
-<li>$0 显示当前的脚本名</li>
-<li>$LINENO 显示的当前的行号<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps4.sh</span><br><span class="line">export PS4=&#x27;$0.$LINENO+ &#x27;</span><br><span class="line">set -x</span><br><span class="line">echo &quot;PS4 demo script&quot;</span><br><span class="line">ls -l /etc/ | wc -l</span><br><span class="line">du -sh ~</span><br><span class="line"></span><br><span class="line">ramesh@dev-db ~&gt; ./ps4.sh</span><br><span class="line">../ps4.sh.3+ echo &#x27;PS4 demo script&#x27;</span><br><span class="line">PS4 demo script</span><br><span class="line">../ps4.sh.4+ ls -l /etc/</span><br><span class="line">../ps4.sh.4+ wc -l</span><br><span class="line">243</span><br><span class="line">../ps4.sh.5+ du -sh /home/ramesh</span><br><span class="line">48K /home/ramesh</span><br></pre></td></tr></table></figure>
-[注: 使用PS4后使 “{script-name}.{line-number}+” 成为set –x的命令提示符]</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Android-问题-Eclipse创建Android项目时，会多出一个appcompat_v7的问题</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-10-13 10:07:29" itemprop="dateCreated datePublished" datetime="2015-10-13T10:07:29+08:00">2015-10-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="Eclipse创建Android项目时，会多出一个appcompat-v7的问题"><a href="#Eclipse创建Android项目时，会多出一个appcompat-v7的问题" class="headerlink" title="Eclipse创建Android项目时，会多出一个appcompat_v7的问题"></a>Eclipse创建Android项目时，会多出一个appcompat_v7的问题</h1><hr>
-<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>使用eclipse创建一个Android项目时，发现project列表中会多创建出一个appcompat_v7项目，再创建一个Android项目时，又会再多出一个appcompat_v7_2，如果再次创建，会以此类推地创建出appcompat_v7_x格式的“多余项目”出来（此情况在ADT升级为22.6.x版本后出现，22.3.x前的版本不会有）</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">Android-SDK-SDK文档目录结构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-10-12 14:41:54" itemprop="dateCreated datePublished" datetime="2015-10-12T14:41:54+08:00">2015-10-12</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="android-SDK-文档目录结构"><a href="#android-SDK-文档目录结构" class="headerlink" title="android SDK 文档目录结构"></a>android SDK 文档目录结构</h1><ol>
-<li><p>add-ons 这里面保存着附加库，比如google Maps，当然你如果安装了OPhone SDK，这里也会有一些类库在里面。</p>
-</li>
-<li><p>docs 这里面是Android SDK API参考文档，所有的API都可以在这里查到。</p></li></ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/09/27/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/09/27/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/" class="post-title-link" itemprop="url">Linux-配置-防火墙</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-09-27 16:12:57" itemprop="dateCreated datePublished" datetime="2015-09-27T16:12:57+08:00">2015-09-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="关闭开启"><a href="#关闭开启" class="headerlink" title="关闭开启"></a>关闭开启</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1) 重启后生效</span><br><span class="line">开启： chkconfig iptables on</span><br><span class="line">关闭： chkconfig iptables off</span><br><span class="line"></span><br><span class="line">2) 即时生效，重启后失效</span><br><span class="line">开启： service iptables start</span><br><span class="line">关闭： service iptables stop</span><br><span class="line">重启： service iptables restart</span><br></pre></td></tr></table></figure>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/09/27/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1265,7 +1188,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1278,7 +1201,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1313,7 +1236,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

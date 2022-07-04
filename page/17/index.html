@@ -188,6 +188,590 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/12/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-Pipeline%E4%B8%8E%E4%BA%8B%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/12/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-Pipeline%E4%B8%8E%E4%BA%8B%E5%8A%A1/" class="post-title-link" itemprop="url">Redis-原理-Pipeline与事务.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-12-17 02:27:20" itemprop="dateCreated datePublished" datetime="2017-12-17T02:27:20+08:00">2017-12-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000011440752">https://segmentfault.com/a/1190000011440752</a></p>
+<blockquote>
+<p>Redis提供了 5 种数据结构，但除此之外，Redis 还提供了注入慢查询分析、Redis Shell、Pipeline、事务、与Lua 脚本、Bitmaps、HyperLogLog、PubSub、GEO 等附加功能，这些功能可以在某些场景发挥很重要的作用。</p>
+</blockquote>
+<h2 id="Pipeline"><a href="#Pipeline" class="headerlink" title="Pipeline"></a>Pipeline</h2><h3 id="Pipeline-概念"><a href="#Pipeline-概念" class="headerlink" title="Pipeline 概念"></a>Pipeline 概念</h3><p>Redis 客户端执行一条命令分为以下四个步骤:</p>
+<ol>
+<li>发送命令</li>
+<li>命令排队</li>
+<li>命令执行</li>
+<li>返回结果</li>
+</ol>
+<p>其中，第一步+第四步称为 Round Trip Time（RTT，往返时间）.</p>
+<p><img src="/2017/12/17/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E5%8E%9F%E7%90%86-Pipeline%E4%B8%8E%E4%BA%8B%E5%8A%A1/1.png" alt="没有Pipeline执行n次命令"></p>
+<p>Redis 提供了批量操作命令（例如 mget、mset 等），有效的节约 RTT。但大部分命令是不支持批量操作的，例如要执行 n 次 hgetall 命令，并没有 mhgetall 存在，需要消耗 n 次 RTT。Redis 的客户端和服务端可能不是在不同的机器上。例如客户端在北京，Redis 服务端在上海，两地直线距离为 1300 公里，那么 1 次 $RTT时间=1300×2/(300000×2/3)=13毫秒$（光在真空中传输速度为每秒 30 万公里，这里假设光纤的速度为光速的 2/3），那么客户端在 1 秒内大约只能执行 80 次左右的命令，这个和 Redis 的高并发高吞吐背道而驰。</p>
+<p>Pipeline（流水线）机制能改善上面这类问题，它能将一组 Redis 命令进行组装，通过一次 RTT 传输给 Redis，再将这组 Redis 命令按照顺序执行并装填结果返回给客户端。上图未使用 Pipeline 执行了 n 次命令，整个过程需要 n 个 RTT。</p>
+<p>Pipeline 并不是什么新的技术和机制，很多技术上都使用过。而且 RTT 在不同网络环境下会有不同，例如同机房和同机器会比较快，跨机房跨地区会比较慢。Redis 命令真正执行的时间通常在微秒级别，所以才会有 Redis 性能瓶颈是网络这样的说法。</p>
+<h3 id="原生批量命令与-Pipeline-对比"><a href="#原生批量命令与-Pipeline-对比" class="headerlink" title="原生批量命令与 Pipeline 对比"></a>原生批量命令与 Pipeline 对比</h3><p>可以使用 Pipeline 模拟出批量操作的效果，但是在使用时需要质疑它与原生批量命令的区别，具体包含几点：</p>
+<ul>
+<li>原生批量命令是原子性，Pipeline 是非原子性的。</li>
+<li>原生批量命令是一个命令对应多个 key，Pipeline 支持多个命令。</li>
+<li>原生批量命令是 Redis 服务端支持实现的，而 Pipeline 需要服务端与客户端的共同实现。</li>
+</ul>
+<h3 id="Pipeline-总结"><a href="#Pipeline-总结" class="headerlink" title="Pipeline 总结"></a>Pipeline 总结</h3><p>Pipeline 虽然好用，但是每次 Pipeline 组装的命令个数不能没有节制，否则一次组装 Pipeline 数据量过大，一方面会增加客户端的等待时机，另一方面会造成一定的网络阻塞，可以将一次包含大量命令的 Pipeline 拆分成多次较小的 Pipeline 来完成。</p>
+<p>Pipeline 只能操作一个 Redis 实例，但即使在分布式 Redis 场景中，也可以作为批量操作的重要优化方法.</p>
+<h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>为了保证多条命令组合的原子性，Redis 提供了简单的事务以及集成 Lua 脚本来解决这个问题。</p>
+<p>熟悉关系型数据库的开发者应该对事务比较了解，简单地说，事务表示一组动作，要么全部成功，要不全部不成功。例如在在电商网站中用户购买商品A那么需要将商品A的库存 -1，并创建一个订单。这两个操作要么远不执行成功，要么全部执行不成功，否则会出现数据不一致的情况。</p>
+<p>Redis 提供了简单的功能，将一组需要一起执行的命令放到 multi 和 exec 两个命令之间。multi 命令代表事务的开始，exec 命令代表事务结束，他们之间的命令是原子顺序执行的。</p>
+<p>例如上述的用户购买商品问题：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; multi</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; hincrby commodity:a:detail stock -1</span><br><span class="line">QUEUE</span><br><span class="line">127.0.0.1:6379&gt; rpush user:1:orders &#123;&quot;commodity&quot;:&#x27;a&#x27;,..&#125;</span><br><span class="line">QUEUE</span><br></pre></td></tr></table></figure>
+
+<p>可以看到数据操作命令返回的结果是 QUEUE，代表命令并没有真正执行，而是暂时保存在 Redis 中。如果此时另一个客户端执行 llen user:1:orders 返回结果为 0。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; llen user:1:orders</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+<p>只有当 exec 执行后,用户购买商品的行为才算完成，如下两个结果对应 hincrby 和 rpush 命令。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; exec</span><br><span class="line">1) (integer) 4  # 商品原库存为5</span><br><span class="line">2) (integer) 1</span><br><span class="line">127.0.0.1:6379&gt; llen user:1:orders</span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+
+<p>如果要停止事务的执行，可以使用 discard 命令替代 exec 命令即可.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; discard</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; llen user:1:orders</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+<p>如果事务中的命令出现错误，Redis 的处理机制也不尽相同.</p>
+<h3 id="命令错误"><a href="#命令错误" class="headerlink" title="命令错误"></a>命令错误</h3><p>例如下面操作错将 set 写成了 sett，属于语法错误，会造成整个事务无法执行，key 和 counter 的值未发生变化:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; mget key counter</span><br><span class="line">1) &quot;hello&quot;</span><br><span class="line">2) &quot;100&quot;</span><br><span class="line">127.0.0.1:6379&gt; multi</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; sett key world</span><br><span class="line">(error) ERR unknown command &#x27;sett&#x27;</span><br><span class="line">127.0.0.1:6379&gt; incr counter</span><br><span class="line">QUEUE</span><br><span class="line">127.0.0.1:6379&gt; exec</span><br><span class="line">(error) EXECABORT Transaction discarded because of previous errors.</span><br><span class="line">127.0.0.1:6379&gt; mget key counter</span><br><span class="line">1) &quot;hello&quot;</span><br><span class="line">2) &quot;100&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="运行时错误"><a href="#运行时错误" class="headerlink" title="运行时错误"></a>运行时错误</h3><p>例如用户购买商品，误把 rpush 写成了 zadd</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; multi</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; hincrby commodity:a:detail stock -1</span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379&gt; zadd user:1:orders &#123;&quot;commodity&quot;:&#x27;a&#x27;,..&#125;</span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379&gt; exec</span><br><span class="line">1) (integer) 1</span><br><span class="line">2) (error) WRONGTYPE Operation against a key holding the wrong kind of value.</span><br><span class="line">127.0.0.1:6379&gt; hget commodity:a:detail stack</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+
+<p>可以看到 Redis 并不支持回滚功能，hincrby commodity:a:detail stock -1 命令已经执行成功，开发者需要自己修改这类问题。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/11/11/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E9%AB%98%E5%B9%B6%E5%8F%91-Redis%E5%8E%9F%E5%AD%90%E8%AE%A1%E6%95%B0%E5%99%A8incr%EF%BC%8C%E9%98%B2%E6%AD%A2%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/11/11/%E5%B7%A5%E7%A8%8B/%E6%8E%A5%E5%8F%A3/%E9%AB%98%E5%B9%B6%E5%8F%91-Redis%E5%8E%9F%E5%AD%90%E8%AE%A1%E6%95%B0%E5%99%A8incr%EF%BC%8C%E9%98%B2%E6%AD%A2%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82/" class="post-title-link" itemprop="url">高并发-Redis原子计数器incr，防止并发请求.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-11-11 08:53:19" itemprop="dateCreated datePublished" datetime="2017-11-11T08:53:19+08:00">2017-11-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%AB%98%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">高并发</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Roy_70/article/details/78260826">https://blog.csdn.net/Roy_70/article/details/78260826</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在一些对高并发请求有限制的系统或者功能里，比如说秒杀活动，或者一些网站返回的当前用户过多，请稍后尝试。这些都是通过对同一时刻请求数量进行了限制，一般用作对后台系统的保护，防止系统因为过大的流量冲击而崩溃。对于系统崩溃带来的后果，显然还是拒绝一部分请求更能被维护者所接受。</p>
+<p>而在各种限流中，除了系统自身设计的带锁机制的计数器外，利用 Redis 实现显然是一种既高效安全又便捷方便的方式。</p>
+<h2 id="incr命令"><a href="#incr命令" class="headerlink" title="incr命令"></a>incr命令</h2><p>Redis Incr 命令将 key 中储存的数字值增一。</p>
+<p>如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCR 操作。</p>
+<p>如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。</p>
+<p>本操作的值限制在 64 位(bit)有符号数字表示之内。<br>示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set num 10</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; incr num</span><br><span class="line">(integer) 11</span><br><span class="line">127.0.0.1:6379&gt; get num    # 数字值在 Redis 中以字符串的形式保存</span><br><span class="line">&quot;11&quot;</span><br></pre></td></tr></table></figure>
+
+<p>注意: 由于 redis 并没有一个明确的类型来表示整型数据，所以这个操作是一个字符串操作。</p>
+<p>执行这个操作的时候，key 对应存储的字符串被解析为 10 进制的 64 位有符号整型数据。</p>
+<p>事实上，Redis 内部采用整数形式（Integer representation）来存储对应的整数值，所以对该类字符串值实际上是用整数保存，也就不存在存储整数的字符串表示（String representation）所带来的额外消耗。</p>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><h3 id="计数器"><a href="#计数器" class="headerlink" title="计数器"></a>计数器</h3><p>使用思路是：每次有相关操作的时候，就向 Redis 服务器发送一个 incr 命令。</p>
+<p>例如这样一个场景：我们有一个 web 应用，我们想记录每个用户每天访问这个网站的次数。</p>
+<p>web 应用只需要通过拼接用户 id 和代表当前时间的字符串作为key，每次用户访问这个页面的时候对这个 key 执行一下 incr 命令。</p>
+<p>这个场景可以有很多种扩展方法：</p>
+<ul>
+<li>通过结合使用 INCR 和 EXPIRE 命令，可以实现一个只记录用户在指定间隔时间内的访问次数的计数器</li>
+<li>客户端可以通过 GETSET 命令获取当前计数器的值并且重置为 0</li>
+<li>通过类似于 DECR 或者 INCRBY 等原子递增/递减的命令，可以根据用户的操作来增加或者减少某些值 比如在线游戏，需要对用户的游戏分数进行实时控制，分数可能增加也可能减少。</li>
+</ul>
+<h3 id="限速器"><a href="#限速器" class="headerlink" title="限速器"></a>限速器</h3><p>限速器是一种可以限制某些操作执行速率的特殊场景。</p>
+<p>传统的例子就是限制某个公共 api 的请求数目。</p>
+<p>假设我们要解决如下问题：限制某个 api 每秒每个 ip 的请求次数不超过 10 次。</p>
+<p>我们可以通过 incr 命令来实现两种方法解决这个问题。</p>
+<h2 id="流量控制之-java-实现"><a href="#流量控制之-java-实现" class="headerlink" title="流量控制之 java 实现"></a>流量控制之 java 实现</h2><p>这里我们将在 java 中使用 redis-incr 的特性来构建一个 1 分钟内只允许请求 100 次的控制代码，key 代表在 redis 内存放的被控制的键值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public static boolean flowControl(String key)&#123;</span><br><span class="line">    //最大允许100</span><br><span class="line">    int max = 100;</span><br><span class="line">    long total = 1L;</span><br><span class="line">    try &#123;</span><br><span class="line">        if (jedisInstance.get(key) == null) &#123;</span><br><span class="line">            //jedisInstance是Jedis连接实例，可以使单链接也可以使用链接池获取，实现方式请参考之前的blog内容</span><br><span class="line">            //如果redis目前没有这个key，创建并赋予0，有效时间为60s</span><br><span class="line">            jedisInstance.setex(key, 60, &quot;0&quot;);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            //获取加1后的值</span><br><span class="line">            total = jedisInstance.incr(redisKey).longValue();</span><br><span class="line">            //Redis TTL命令以秒为单位返回key的剩余过期时间。当key不存在时，返回-2。当key存在但没有设置剩余生存时间时，返回-1。否则，以秒为单位，返回key的剩余生存时间。</span><br><span class="line">            if (jedisInstance.ttl(redisKey).longValue() == -1L)</span><br><span class="line">            &#123;</span><br><span class="line">                //为给定key设置生存时间，当key过期时(生存时间为0)，它会被自动删除。</span><br><span class="line">                jedisInstance.expire(redisKey, 60);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; catch (Exception e) &#123;</span><br><span class="line">        logger.error(&quot;流量控制组件:执行计数操作失败,无法执行计数&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    long keytotaltransations = max;</span><br><span class="line">    //判断是否已超过最大值，超过则返回false</span><br><span class="line">    if (total &gt; keytotaltransations) &#123;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/11/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6&%E9%87%8D%E5%AE%9A%E5%90%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/11/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6&%E9%87%8D%E5%AE%9A%E5%90%91/" class="post-title-link" itemprop="url">Linux-文件描述符&重定向</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-11-03 08:53:40" itemprop="dateCreated datePublished" datetime="2017-11-03T08:53:40+08:00">2017-11-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h2><p>Linux 系统预留可三个文件描述符：0、1 和 2，他们的意义如下所示：</p>
+<ol>
+<li>0——标准输入（stdin）</li>
+<li>1——标准输出（stdout）</li>
+<li>2——标准错误（stderr）</li>
+</ol>
+<h3 id="标准输出——stdout"><a href="#标准输出——stdout" class="headerlink" title="标准输出——stdout"></a>标准输出——stdout</h3><p>假设：在当前目录下，有且只有一个文件名称为 123.txt 的文件，这时我们运行这个命令 <code>ls 123.txt</code>，就会获得一个标准输出 stdout 的输出结果：<code>123.txt</code></p>
+<h3 id="错误输出——stderr"><a href="#错误输出——stderr" class="headerlink" title="错误输出——stderr"></a>错误输出——stderr</h3><p>按照上面的假设，我们运行另一条命令 <code>ls abc.txt</code>，这样我们就会获得一个标准错误 stderr 的输出结果 <code>ls：无法访问abc.txt：没有那个文件或目录</code>。</p>
+<hr>
+<h2 id="重定向"><a href="#重定向" class="headerlink" title="重定向"></a>重定向</h2><p>重定向的符号有两个：&gt; 或 &gt;&gt;，两者的区别是：前者会先清空文件，然后再写入内容，后者会将重定向的内容追加到现有文件的尾部。</p>
+<hr>
+<h2 id="Linux-特殊文件"><a href="#Linux-特殊文件" class="headerlink" title="Linux 特殊文件"></a>Linux 特殊文件</h2><p><code>/dev/null</code> 是一个特殊的设备文件，这个文件接收到任何数据都会被丢弃。因此，null 这个设备通常也被称为位桶（bit bucket）或黑洞。</p>
+<hr>
+<p><code>find 路径 -name 文件名 2&gt;/dev/null</code>: 过滤掉没有查看权限的文件</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/" class="post-title-link" itemprop="url">MySQL-四种事务隔离级别.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-09-22 13:24:38" itemprop="dateCreated datePublished" datetime="2017-09-22T13:24:38+08:00">2017-09-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/huanongying/p/7021555.html">https://www.cnblogs.com/huanongying/p/7021555.html</a></p>
+<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><p>本文实验的测试环境：Windows 10+cmd+MySQL5.6.36+InnoDB</p>
+<h2 id="事务的基本要素（ACID）"><a href="#事务的基本要素（ACID）" class="headerlink" title="事务的基本要素（ACID）"></a>事务的基本要素（ACID）</h2><ol>
+<li>原子性（Atomicity）：事务开始后所有操作，要么全部做完，要么全部不做，不可能停滞在中间环节。事务执行过程中出错，会回滚到事务开始前的状态，所有的操作就像没有发生一样。也就是说事务是一个不可分割的整体，就像化学中学过的原子，是物质构成的基本单位。</li>
+<li>一致性（Consistency）：事务开始前和结束后，数据库的完整性约束没有被破坏 。比如 A 向 B 转账，不可能 A 扣了钱，B 却没收到。</li>
+<li>隔离性（Isolation）：同一时间，只允许一个事务请求同一数据，不同的事务之间彼此没有任何干扰。比如A正在从一张银行卡中取钱，在A取钱的过程结束前，B 不能向这张卡转账。</li>
+<li>持久性（Durability）：事务完成后，事务对数据库的所有更新将被保存到数据库，不能回滚。</li>
+</ol>
+<h2 id="事务的并发问题"><a href="#事务的并发问题" class="headerlink" title="事务的并发问题"></a>事务的并发问题</h2><ol>
+<li>脏读：事务 A 读取了事务B更新的数据，然后 B 回滚操作，那么 A 读取到的数据是脏数据</li>
+<li>不可重复读：事务 A 多次读取同一数据，事务 B 在事务 A 多次读取的过程中，对数据作了更新并提交，导致事务 A 多次读取同一数据时，结果不一致。</li>
+<li>幻读：系统管理员A将数据库中所有学生的成绩从具体分数改为 ABCDE 等级，但是系统管理员 B 就在这个时候插入了一条具体分数的记录，当系统管理员A改结束后发现还有一条记录没有改过来，就好像发生了幻觉一样，这就叫幻读。</li>
+</ol>
+<p>小结：不可重复读的和幻读很容易混淆，不可重复读侧重于修改，幻读侧重于新增或删除。解决不可重复读的问题只需锁住满足条件的行，解决幻读需要锁表</p>
+<h2 id="MySQL-事务隔离级别"><a href="#MySQL-事务隔离级别" class="headerlink" title="MySQL 事务隔离级别"></a>MySQL 事务隔离级别</h2><table>
+<thead>
+<tr>
+<th>事务隔离级别</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>读未提交（read-uncommitted）</td>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>不可重复读（read-committed）</td>
+<td>否</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>可重复读（repeatable-read）</td>
+<td>否</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>串行化（serializable）</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+</tr>
+</tbody></table>
+<p>mysql 默认的事务隔离级别为 repeatable-read<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/1.png" alt="1"></p>
+<h2 id="用例子说明各个隔离级别的情况"><a href="#用例子说明各个隔离级别的情况" class="headerlink" title="用例子说明各个隔离级别的情况"></a>用例子说明各个隔离级别的情况</h2><h3 id="读未提交"><a href="#读未提交" class="headerlink" title="读未提交"></a>读未提交</h3><ol>
+<li><p>打开一个客户端 A，并设置当前事务模式为 read uncommitted（未提交读），查询表 account 的初始值：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/2.png" alt="2"></p>
+</li>
+<li><p>在客户端 A 的事务提交之前，打开另一个客户端 B，更新表 account：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/3.png" alt="3"></p>
+</li>
+<li><p>这时，虽然客户端 B 的事务还没提交，但是客户端 A 就可以查询到 B 已经更新的数据：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/4.png" alt="4"></p>
+</li>
+<li><p>一旦客户端 B 的事务因为某种原因回滚，所有的操作都将会被撤销，那客户端 A 查询到的数据其实就是脏数据：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/5.png" alt="5"></p>
+</li>
+<li><p>在客户端 A 执行更新语句 <code>update account set balance = balance - 50 where id =1</code>，lilei 的 balance 没有变成 350，居然是 400，是不是很奇怪，数据不一致啊，<strong>如果你这么想就太天真 了，在应用程序中，我们会用 400-50=350，并不知道其他会话回滚了，要想解决这个问题可以采用读已提交的隔离级别</strong><br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/6.png" alt="6"></p>
+</li>
+</ol>
+<h3 id="读已提交"><a href="#读已提交" class="headerlink" title="读已提交"></a>读已提交</h3><ol>
+<li><p>打开一个客户端A，并设置当前事务模式为 read committed（未提交读），查询表 account 的所有记录：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/7.png" alt="7"></p>
+</li>
+<li><p>在客户端 A 的事务提交之前，打开另一个客户端 B，更新表 account：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/8.png" alt="8"></p>
+</li>
+<li><p>这时，客户端B的事务还没提交，客户端 A 不能查询到B已经更新的数据，解决了脏读问题：<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/9.png" alt="9"></p>
+</li>
+<li><p>客户端 B 的事务提交<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/10.png" alt="10"></p>
+</li>
+<li><p>客户端 A 执行与上一步相同的查询，结果与上一步不一致，即产生了不可重复读的问题<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/11.png" alt="11"></p>
+</li>
+</ol>
+<h3 id="可重复读"><a href="#可重复读" class="headerlink" title="可重复读"></a>可重复读</h3><ol>
+<li><p>打开一个客户端 A，并设置当前事务模式为 repeatable read，查询表 account 的所有记录<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/12.png" alt="12"></p>
+</li>
+<li><p>在客户端 A 的事务提交之前，打开另一个客户端 B，更新表 account 并提交<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/13.png" alt="13"></p>
+</li>
+<li><p>在客户端 A 查询表 account 的所有记录，与步骤（1）查询结果一致，没有出现不可重复读的问题<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/14.png" alt="14"></p>
+</li>
+<li><p><strong>在客户端 A，接着执行 <code>update balance = balance - 50 where id = 1</code>，balance 没有变成 400-50=350，lilei 的 balance 值用的是步骤（2）中的 350 来算的，所以是 300，数据的一致性倒是没有被破坏。可重复读的隔离级别下使用了 MVCC 机制，select 操作不会更新版本号，是快照读（历史版本）；insert、update 和 delete 会更新版本号，是当前读（当前版本）。</strong><br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/15.png" alt="15"></p>
+</li>
+<li><p>重新打开客户端 B，插入一条新数据后提交<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/16.png" alt="16"></p>
+</li>
+<li><p>在客户端 A 查询表 account 的所有记录，没有查出新增数据，所以没有出现幻读<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/17.png" alt="17"></p>
+</li>
+</ol>
+<h3 id="串行化"><a href="#串行化" class="headerlink" title="串行化"></a>串行化</h3><ol>
+<li><p>打开一个客户端A，并设置当前事务模式为 serializable，查询表 account 的初始值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set session transaction isolation level serializable;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; start transaction;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from account;</span><br><span class="line">+------+--------+---------+</span><br><span class="line">| id   | name   | balance |</span><br><span class="line">+------+--------+---------+</span><br><span class="line">|    1 | lilei  |   10000 |</span><br><span class="line">|    2 | hanmei |   10000 |</span><br><span class="line">|    3 | lucy   |   10000 |</span><br><span class="line">|    4 | lily   |   10000 |</span><br><span class="line">+------+--------+---------+</span><br><span class="line">4 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure></li>
+<li><p>打开一个客户端 B，并设置当前事务模式为 serializable，插入一条记录报错，表被锁了插入失败，mysql 中事务隔离级别为 serializable 时会锁表，因此不会出现幻读的情况，这种隔离级别并发性极低，开发中很少会用到。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set session transaction isolation level serializable;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; start transaction;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into account values(5,&#x27;tom&#x27;,0);</span><br><span class="line">ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>补充：</p>
+<ol>
+<li>事务隔离级别为读提交时，写数据只会锁住相应的行</li>
+<li>事务隔离级别为可重复读时，如果检索条件有索引（包括主键索引）的时候，默认加锁方式是 next-key 锁；如果检索条件没有索引，更新数据时会锁住整张表。一个间隙被事务加了锁，其他事务是不能在这个间隙插入记录的，这样可以防止幻读。</li>
+<li>事务隔离级别为串行化时，读写数据都会锁住整张表</li>
+<li>隔离级别越高，越能保证数据的完整性和一致性，但是对并发性能的影响也越大。</li>
+<li>MYSQL MVCC 实现机制参考链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/whoamiyang/article/details/51901888">https://blog.csdn.net/whoamiyang/article/details/51901888</a></li>
+<li>关于 next-key 锁可以参考链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/bigtree_3721/article/details/73731377">https://blog.csdn.net/bigtree_3721/article/details/73731377</a></li>
+</ol>
+<hr>
+<p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/rjzheng/p/9955395.html">https://www.cnblogs.com/rjzheng/p/9955395.html</a></p>
+<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>大家在面试中一定碰到过</p>
+<blockquote>
+<p>说说事务的隔离级别吧？</p>
+</blockquote>
+<p>老实说，事务隔离级别这个问题，无论是校招还是社招，面试官都爱问！然而目前网上很多文章，说句实在话啊，我看了后我都怀疑作者弄懂没!因为他们对可重复读（Repeatable Read）和串行化（serializable）的解析实在是看的我一头雾水！</p>
+<p>再加上很多书都说可重复读解决了幻读问题，比如《mysql技术内幕–innodb存储引擎》等，不一一列举了，因此网上关于事务隔离级别的文章大多是有问题的，所以再开一文说明！</p>
+<p>本文所讲大部分内容，皆有官网作为佐证，因此对本文内容你可以看完后，你完全可以当概念记在脑海里，除非官网的开发手册是错的，否则应当无误！<br>另外，本文会重点说一下</p>
+<blockquote>
+<p>可重复读（Repeatable Read）是否真的解决幻读的问题！</p>
+</blockquote>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>开始我先提一下，根据事务的隔离级别不同，会有三种情况发生。即脏读、不可重复读、幻读。这里我先不提这三种情况的定义，后面在讲隔离级别的时候会补上。</p>
+<p>这里，大家记住一点，根据脏读、不可重复读、幻读定义来看（自己总结，官网没有），有如下包含关系:<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/18.png" alt="18"></p>
+<p>那么，这张图怎么理解呢？</p>
+<p>即，如果发生了脏读，那么不可重复读和幻读是一定发生的。因为拿脏读的现象，用不可重复读，幻读的定义也能解释的通。但是反过来，拿不可重复读的现象，用脏读的定义就不一定解释的通了！</p>
+<p>假设有表 tx_tb 如下，pId 为主键</p>
+<table>
+<thead>
+<tr>
+<th>pId</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>zhangsan</td>
+</tr>
+</tbody></table>
+<h3 id="读未提交（READ-UNCOMMITTED）"><a href="#读未提交（READ-UNCOMMITTED）" class="headerlink" title="读未提交（READ_UNCOMMITTED）"></a>读未提交（READ_UNCOMMITTED）</h3><p>其实这个从隔离名字就可以看出来，一个事务可以读到另一个事务未提交的数据！为了便于说明，我简单的画图说明！<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/19.png" alt="19"></p>
+<p>如图所示，一个事务检索的数据被另一个未提交的事务给修改了。</p>
+<p>官网对脏读定义的地址为<code>https://dev.mysql.com/doc/refman/5.7/en/glossary.html#glos_dirty_read</code></p>
+<p>其内容为</p>
+<blockquote>
+<p>**dirty read</p>
+<p>An operation that retrieves unreliable data, data that was updated by another transaction but not yet committed.</p>
+<p>**</p>
+</blockquote>
+<p>翻译过来就是</p>
+<blockquote>
+<p>检索操作出来的数据是不可靠的，是可以被另一个未提交的事务修改的！</p>
+</blockquote>
+<p>你会发现，我们的演示结果和官网对脏读的定义一致。根据我们最开始的推理，如果存在脏读，那么不可重复读和幻读一定是存在的。</p>
+<h3 id="读已提交（READ-COMMITTED）"><a href="#读已提交（READ-COMMITTED）" class="headerlink" title="读已提交（READ_COMMITTED）"></a>读已提交（READ_COMMITTED）</h3><p>这个也能看的出来，一个事务能读到另一个事务已提交的数据！为了便于说明，我简单的画图说明！<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/20.png" alt="20"></p>
+<p>如图所示，一个事务检索的数据只能被另一个已提交的事务修改。</p>
+<p>官网对不可重复读定义的地址为<code>https://dev.mysql.com/doc/refman/5.7/en/glossary.html#glos_non_repeatable_read</code></p>
+<p>其内容为</p>
+<blockquote>
+<p>**non-repeatable read</p>
+<p>The situation when a query retrieves data, and a later query within the same transaction retrieves what should be the same data, but the queries return different results (changed by another transaction committing in the meantime).</p>
+<p>**</p>
+</blockquote>
+<p>翻译过来就是</p>
+<blockquote>
+<p>一个查询语句检索数据，随后又有一个查询语句在同一个事务中检索数据，两个数据应该是一样的，但是实际情况返回了不同的结果。！</p>
+</blockquote>
+<p>ps:作者注，这里的不同结果，指的是在行不变的情况下（专业点说，主键索引没变），主键索引指向的磁盘上的数据内容变了。如果主键索引变了，比如新增一条数据或者删除一条数据，就不是不可重复读。</p>
+<p>显然，我们这个现象符合不可重复读的定义。下面，大家做一个思考:</p>
+<ul>
+<li>这个不可重复读的定义，放到脏读的现象里是不是也可以说的通。显然脏读的现象，也就是读未提交（READ_UNCOMMITTED）的那个例子，是不是也符合在同一个事务中返回了不同结果！</li>
+<li>但是反过来就不一定通了，一个事务 A 中查询两次的结果在被另一个事务 B 改变的情况下，如果事务 B 未提交就改变了事务 A 的结果，就属于脏读，也属于不可重复读。如果该事务B提交了才改变事务A的结果，就不属于脏读，但属于不可重复读。</li>
+</ul>
+<h3 id="可重复读（REPEATABLE-READ）"><a href="#可重复读（REPEATABLE-READ）" class="headerlink" title="可重复读（REPEATABLE_READ）"></a>可重复读（REPEATABLE_READ）</h3><p>这里，我改变一下顺序，先上幻读的定义</p>
+<p>官网对幻读定义的地址为<code>https://dev.mysql.com/doc/refman/5.7/en/glossary.html#glos_phantom</code></p>
+<blockquote>
+<p>phantom</p>
+<p>A row that appears in the result set of a query, but not in the result set of an earlier query. For example, if a query is run twice within a transaction, and in the meantime, another transaction commits after inserting a new row or updating a row so that it matches the WHERE clause of the query.</p>
+</blockquote>
+<p>翻译过来就是</p>
+<blockquote>
+<p>在一次查询的结果集里出现了某一行数据，但是该数据并未出现在更早的查询结果集里。例如，在一次事务里进行了两次查询，同时另一个事务插入某一行或更新某一行数据后（该数据符合查询语句里 where 后的条件），并提交了！</p>
+</blockquote>
+<p>好了，接下来上图，大家自己评定该现象是否符合幻读的定义<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/21.png" alt="21"></p>
+<p>显然，该现象是符合幻读的定义的。同一事务的两次相同查询出现不同行。下面，大家做一个思考:</p>
+<ul>
+<li>这个幻读的定义，放到不可重复读的现象里是不是也可以说的通。大家自行思考！</li>
+<li>反过来就不一定通了。事务第二次查询出了一个数据，但是该数据并未出现在第一次查询的结果集里。如果该数据是修改数据，那么该现象既属于不可重复读，也属于幻读。如果该数据是新增或删除的数据，那该现象就不属于不可重复读，但属于幻读。</li>
+</ul>
+<p>接下来说一下，为什么很多文章都产生误传，说是可重复读可以解决幻读问题！原因出自官网的一句话(地址是:<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html#innodb-record-locks">https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html#innodb-record-locks</a>)</p>
+<p>原文内容如下</p>
+<blockquote>
+<p>By default, InnoDB operates in REPEATABLE READ transaction isolation level. In this case, InnoDB uses next-key locks for searches and index scans, which prevents phantom rows (see Section 14.7.4, “Phantom Rows”).</p>
+</blockquote>
+<p>按照原本这句话的意思，应该是</p>
+<p><strong>InnoDB 默认用了 REPEATABLE READ。在这种情况下，使用 next-key locks 解决幻读问题！</strong></p>
+<p>结果估计，某个国内翻译人员翻着翻着变成了</p>
+<p><strong>InnoDB 默认用了 REPEATABLE READ。在这种情况下，可以解决幻读问题！</strong></p>
+<p>然后大家继续你抄我，我抄你，结果你懂的！</p>
+<p>显然，漏了”使用了 next-key locks！”这个条件后，意思完全改变，我们在该隔离级别下执行语句</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select *  from tx_tb where pId &gt;= 1;</span><br></pre></td></tr></table></figure>
+<p>是快照读，是不加任何锁的，根本不能解决幻读问题，除非你用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select *  from tx_tb where pId &gt;= 1 lock in share mode;</span><br></pre></td></tr></table></figure>
+<p>这样，你就用上了next-key locks，解决了幻读问题！</p>
+<h3 id="串行读（SERIALIZABLE-READ）"><a href="#串行读（SERIALIZABLE-READ）" class="headerlink" title="串行读（SERIALIZABLE_READ）"></a>串行读（SERIALIZABLE_READ）</h3><p>在该隔离级别下，所有的 select 语句后都自动加上 lock in share mode。因此，在该隔离级别下，无论你如何进行查询，都会使用 next-key locks。所有的 select 操作均为当前读!<br><img src="/2017/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/22.png" alt="22"></p>
+<p>OK，注意看上表红色部分！就是因为使用了 next-key locks，innodb 将 PiD=1 这条索引记录，和 $(1,++∞)$ 这个间隙锁住了。其他事务要在这个间隙上插数据，就会阻塞，从而防止幻读发生!</p>
+<p>有的人会说，你这第二次查询的结果，也变了啊，明显和第一次查询结果不一样啊?对此，我只能说，请看清楚啊。这是被自己的事务改的，不是被其他事物修改的。这不算是幻读，也不是不可重复读。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>上面罗里吧嗦一大堆，最后来一个表格做总结吧，你面试答这个表就行。上面的一切是为了这张表做准备！</p>
+<table>
+<thead>
+<tr>
+<th>隔离级别</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>读未提交</td>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>不可重复读</td>
+<td>否</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>可重复读</td>
+<td>否</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>串行化</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+</tr>
+</tbody></table>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/08/10/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E5%B7%A5%E5%85%B7-expect%E4%BA%A4%E4%BA%92%E8%84%9A%E6%9C%AC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -825,358 +1409,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/27/%E8%AF%AD%E8%A8%80/web/HTML-%E9%9D%9E%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0%E5%92%8C%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/27/%E8%AF%AD%E8%A8%80/web/HTML-%E9%9D%9E%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0%E5%92%8C%E6%9B%BF%E6%8D%A2%E5%85%83%E7%B4%A0/" class="post-title-link" itemprop="url">HTML-非替换元素和替换元素</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-27 15:56:48" itemprop="dateCreated datePublished" datetime="2017-07-27T15:56:48+08:00">2017-07-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/HTML/" itemprop="url" rel="index"><span itemprop="name">HTML</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/sakurallj/article/details/48277463">http://blog.csdn.net/sakurallj/article/details/48277463</a></p>
-<h3 id="替换元素-置换元素"><a href="#替换元素-置换元素" class="headerlink" title="替换元素/置换元素"></a>替换元素/置换元素</h3><ol>
-<li>一个内容不受CSS视觉格式化模型控制，CSS渲染模型并不考虑对此内容的渲染，且元素本身一般拥有固有尺寸（宽度，高度，宽高比）的元素，被称之为替换元素。</li>
-<li>替换元素就是浏览器根据元素的标签和属性，来决定元素的具体显示内容。</li>
-<li>例如浏览器会根据img标签的src属性的值来读取图片信息并显示出来，而如果查看(X)HTML代码，则看不到图片的实际内容；又例如根据input标签的type属性来决定是显示输入框，还是单选按钮等。</li>
-<li>HTML中的img、input、textarea、select、object都是替换元素。这些元素往往没有实际的内容，即是一个空元素。</li>
-</ol>
-<h3 id="非替换元素-不可替换元素"><a href="#非替换元素-不可替换元素" class="headerlink" title="非替换元素/不可替换元素"></a>非替换元素/不可替换元素</h3><ol>
-<li>HTML 的大多数元素是不可替换元素，即其内容直接表现给用户端（例如浏览器），如：</li>
-</ol>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- span是非置换元素 因此 hello word 被展示出来 而不是被替换成其他内容 --&gt;</span><br><span class="line">&lt;span&gt;hello word&lt;/span&gt;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/" class="post-title-link" itemprop="url">C-内存-内存分配</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-26 18:23:13" itemprop="dateCreated datePublished" datetime="2017-07-26T18:23:13+08:00">2017-07-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/fengyv/p/3789252.html">http://www.cnblogs.com/fengyv/p/3789252.html</a></p>
-<p>一个程序本质上都是由 BSS 段、data段、text段三个组成的。这样的概念在当前的计算机程序设计中是很重要的一个基本概念，而且在嵌入式系统的设计中也非常重要，牵涉到嵌入式系统运行时的内存大小分配，存储单元占用空间大小的问题。</p>
-<ul>
-<li>BSS段：在采用段式内存管理的架构中，BSS段（bss segment）通常是指用来存放程序中未初始化的全局变量的一块内存区域。BSS是英文Block Started by Symbol的简称。BSS段属于静态内存分配。</li>
-<li>数据段：在采用段式内存管理的架构中，数据段（data segment）通常是指用来存放程序中已初始化的全局变量的一块内存区域。数据段属于静态内存分配。</li>
-<li>代码段：在采用段式内存管理的架构中，代码段（text segment）通常是指用来存放程序执行代码的一块内存区域。这部分区域的大小在程序运行前就已经确定，并且内存区域属于只读。在代码段中，也有可能包含一些只读的常数变量，例如字符串常量等。</li>
-</ul>
-<p>程序编译后生成的目标文件至少含有这三个段，这三个段的大致结构图如下所示：<br><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/1.png" alt="1"></p>
-<p>其中.text即为代码段，为只读。.bss段包含程序中未初始化的全局变量和static变量。data段包含三个部分：heap(堆)、stack(栈)和静态数据区。</p>
-<ul>
-<li><p>堆（heap）：堆是用于存放进程运行中被动态分配的内存段，它的大小并不固定，可动态扩张或缩减。当进程调用malloc等函数分配内存时，新分配的内存就被动态添加到堆上（堆被扩张）；当利用free等函数释放内存时，被释放的内存从堆中被剔除（堆被缩减）。</p>
-</li>
-<li><p>栈 (stack)：栈又称堆栈，是用户存放程序临时创建的局部变量，也就是说我们函数括弧“{}”中定义的变量（但不包括static声明的变量，static意味着在数据段中存放变量）。除此以外，在函数被调用时，其参数也会被压入发起调用的进程栈中，并且待到调用结束后，函数的返回值也会被存放回栈中。由于栈的先进先出特点，所以栈特别方便用来保存/恢复调用现场。从这个意义上讲，我们可以把堆栈看成一个寄存、交换临时数据的内存区。</p>
-</li>
-</ul>
-<p>当程序在执行时动态分配空间（C中的malloc函数），所分配的空间就属于heap。其概念与数据结构中“堆”的概念不同。</p>
-<p>stack段存放函数内部的变量、参数和返回地址，其在函数被调用时自动分配，访问方式就是标准栈中的LIFO方式。（因为函数的局部变量存放在此，因此其访问方式应该是栈指针加偏移的方式，否则若通过push、pop操作来访问相当麻烦）</p>
-<p>data段中的静态数据区存放的是程序中已初始化的全局变量、静态变量和常量。</p>
-<p>在采用段式内存管理的架构中（比如intel的80x86系统），BSS 段（Block Started by Symbol segment）通常是指用来存放程序中未初始化的全局变量的一块内存区域，一般在初始化时 BSS 段部分将会清零。BSS 段属于静态内存分配，即程序一开始就将其清零了。</p>
-<p>比如，在C语言之类的程序编译完成之后，已初始化的全局变量保存在.data 段中，未初始化的全局变量保存在.bss 段中。</p>
-<p>text和data段都在可执行文件中（在嵌入式系统里一般是固化在镜像文件中），由系统从可执行文件中加载；而BSS段不在可执行文件中，由系统初始化。</p>
-<p><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/2.png" alt="2"></p>
-<p>BSS段只保存没有值的变量，所以事实上它并不需要保存这些变量的映像。运行时所需要的BSS段大小记录在目标文件中，但BSS段并不占据目标文件的任何空间。</p>
-<p><img src="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%86%85%E5%AD%98-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D/3.png" alt="3"></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">//main.c  </span><br><span class="line">int a = 0; //全局初始化区  </span><br><span class="line">char *p1; //全局未初始化区  </span><br><span class="line"></span><br><span class="line">main()  </span><br><span class="line">&#123;  </span><br><span class="line">  static int c =0； //全局（静态）初始化区  </span><br><span class="line">  int b; //栈  </span><br><span class="line">  char s[] = &quot;abc&quot;; //栈  </span><br><span class="line">  char *p2; //栈  </span><br><span class="line">  char *p3 = &quot;123456&quot;; //&quot;123456\0&quot;在常量区，p3在栈上。  </span><br><span class="line">  p1 = (char *)malloc(10);  </span><br><span class="line">  p2 = (char *)malloc(20); //分配得来得10和20字节的区域就在堆区。  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-API-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="post-title-link" itemprop="url">C-API-内存管理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-26 18:07:18" itemprop="dateCreated datePublished" datetime="2017-07-26T18:07:18+08:00">2017-07-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <table>
-<thead>
-<tr>
-<th align="center">序号</th>
-<th align="center">函数</th>
-<th align="center">描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">1</td>
-<td align="center"><code>void *calloc(int num, int size);</code></td>
-<td align="center">在内存中动态地分配 num 个长度为 size 的连续空间，并将每一个字节都初始化为 0。所以它的结果是分配了 num*size 个字节长度的内存空间，并且每个字节的值都是0。</td>
-</tr>
-<tr>
-<td align="center">2</td>
-<td align="center"><code>void free(void *address);</code></td>
-<td align="center">该函数释放 address 所指向的内存块,释放的是动态分配的内存空间。</td>
-</tr>
-<tr>
-<td align="center">3</td>
-<td align="center"><code>void *malloc(int num);</code></td>
-<td align="center">在堆区分配一块指定大小的内存空间，用来存放数据。这块内存空间在函数执行完成后不会被初始化，它们的值是未知的。</td>
-</tr>
-<tr>
-<td align="center">4</td>
-<td align="center"><code>void *realloc(void *address, int newsize);</code></td>
-<td align="center">该函数重新分配内存，把内存扩展到 newsize。</td>
-</tr>
-<tr>
-<td align="center">5</td>
-<td align="center"><code>void *memset(void *s, int ch, size_t n);</code></td>
-<td align="center">将s中当前位置后面的n个字节 （typedef unsigned int size_t ）用 ch 替换并返回 s 。</td>
-</tr>
-<tr>
-<td align="center">6</td>
-<td align="center"><code>void *memcpy(void *dest, const void *src, size_t n);</code></td>
-<td align="center">从源src所指的内存地址的起始位置开始拷贝n个字节到目标dest所指的内存地址的起始位置中</td>
-</tr>
-</tbody></table>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%8C%BA%E5%88%AB-return%E5%92%8Cexit/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/07/26/%E8%AF%AD%E8%A8%80/C/C-%E5%8C%BA%E5%88%AB-return%E5%92%8Cexit/" class="post-title-link" itemprop="url">C-区别-return和exit</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2017-07-26 18:01:18" itemprop="dateCreated datePublished" datetime="2017-07-26T18:01:18+08:00">2017-07-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ol>
-<li><p>exit 用于在程序运行的过程中随时结束程序，exit 的参数是返回给OS的。main函数结束时也会隐式地调用exit函数。exit函数运行时首先会执行由atexit()函数登记的函数，然后会做一些自身的清理工作，同时刷新所有输出流、关闭所有打开的流并且关闭通过标准I/O函数tmpfile()创建的临时文件。exit是结束一个进程，它将删除进程使用的内存空间，同时把错误信息返回父进程，而return是返回函数值并退出函数。</p>
-</li>
-<li><p>return是语言级别的，它表示了调用堆栈的返回；而exit是系统调用级别的，它表示了一个进程的结束。</p>
-</li>
-<li><p>exit函数是退出应用程序，并将应用程序的一个状态返回给OS，这个状态标识了应用程序的一些运行信息。和机器和操作系统有关一般是 0 为正常退出 非0 为非正常退出。</p>
-</li>
-</ol>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">函数原型  void exit(int status);  ( 头文件 stdlib.h )</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>return是返回函数调用，如果返回的是main函数，则为退出程序。exit是在调用处强行退出程序，运行一次程序就结束。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1248,7 +1480,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1261,7 +1493,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1296,7 +1528,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

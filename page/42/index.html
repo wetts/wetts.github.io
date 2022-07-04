@@ -188,6 +188,370 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/23/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%94%A8%E6%B3%95-8%E7%A7%8D%E5%88%86%E9%A1%B5%E6%96%B9%E6%B3%95%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/07/23/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%94%A8%E6%B3%95-8%E7%A7%8D%E5%88%86%E9%A1%B5%E6%96%B9%E6%B3%95%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">MySQL-8种分页方法总结</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-23 16:26:17" itemprop="dateCreated datePublished" datetime="2016-07-23T16:26:17+08:00">2016-07-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="方法1：直接使用数据库提供的-SQL-语句"><a href="#方法1：直接使用数据库提供的-SQL-语句" class="headerlink" title="方法1：直接使用数据库提供的 SQL 语句"></a>方法1：直接使用数据库提供的 SQL 语句</h2><ul>
+<li>语句样式：MySQL 中，可用如下方法：<code>SELECT * FROM 表名称 LIMIT M,N</code>。</li>
+<li>适应场景：适用于数据量较少的情况（元组百/千级）。</li>
+<li>原因/缺点：全表扫描,速度会很慢，且有的数据库结果集返回不稳定（如某次返回 1,2,3，另外的一次返回 2,1,3）。Limit 限制的是从结果集的 M 位置处取出 N 条输出，其余抛弃。</li>
+</ul>
+<h2 id="方法2：建立主键或唯一索引，利用索引（假设每页-10-条）"><a href="#方法2：建立主键或唯一索引，利用索引（假设每页-10-条）" class="headerlink" title="方法2：建立主键或唯一索引，利用索引（假设每页 10 条）"></a>方法2：建立主键或唯一索引，利用索引（假设每页 10 条）</h2><ul>
+<li>语句样式：MySQL 中，可用如下方法:<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">复制代码代码如下:</span><br><span class="line">SELECT * FROM 表名称 WHERE id_pk &gt; (pageNum*10) LIMIT M。</span><br></pre></td></tr></table></figure></li>
+<li>适应场景：适用于数据量多的情况（元组数上万）。</li>
+<li>原因：索引扫描，速度会很快。有朋友提出因为数据查询出来并不是按照 pk_id 排序的，所以会有漏掉数据的情况，只能方法3。</li>
+</ul>
+<h2 id="方法3：基于索引再排序"><a href="#方法3：基于索引再排序" class="headerlink" title="方法3：基于索引再排序"></a>方法3：基于索引再排序</h2><ul>
+<li>语句样式：MySQL 中，可用如下方法: <code>SELECT * FROM 表名称 WHERE id_pk &gt; (pageNum*10) ORDER BY id_pk ASC LIMIT M</code>。</li>
+<li>适应场景：适用于数据量多的情况（元组数上万）。最好 ORDER BY 后的列对象是主键或唯一索引，使得 ORDER BY 操作能利用索引被消除但结果集是稳定的（稳定的含义，参见方法 1）。</li>
+<li>原因：索引扫描，速度会很快。但 MySQL 的排序操作，只有 ASC 没有 DESC（DESC是假的，未来会做真正的 DESC，期待）。</li>
+</ul>
+<h2 id="方法4：基于索引使用-prepare（第一个问号表示-pageNum，第二个？表示每页元组数）"><a href="#方法4：基于索引使用-prepare（第一个问号表示-pageNum，第二个？表示每页元组数）" class="headerlink" title="方法4：基于索引使用 prepare（第一个问号表示 pageNum，第二个？表示每页元组数）"></a>方法4：基于索引使用 prepare（第一个问号表示 pageNum，第二个？表示每页元组数）</h2><ul>
+<li>语句样式：MySQL 中，可用如下方法:<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">复制代码代码如下:</span><br><span class="line">PREPARE stmt_name FROM SELECT * FROM 表名称 WHERE id_pk &gt; (？* ？) ORDER BY id_pk ASC LIMIT M。</span><br></pre></td></tr></table></figure></li>
+<li>适应场景：大数据量。</li>
+<li>原因：索引扫描，速度会很快。prepare 语句又比一般的查询语句快一点。</li>
+</ul>
+<h2 id="方法5：利用-MySQL-支持-ORDER-操作可以利用索引快速定位部分元组，避免全表扫描"><a href="#方法5：利用-MySQL-支持-ORDER-操作可以利用索引快速定位部分元组，避免全表扫描" class="headerlink" title="方法5：利用 MySQL 支持 ORDER 操作可以利用索引快速定位部分元组，避免全表扫描"></a>方法5：利用 MySQL 支持 ORDER 操作可以利用索引快速定位部分元组，避免全表扫描</h2><ul>
+<li>比如：读第 1000 到 1019 行元组（pk 是主键/唯一键）。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">复制代码代码如下:</span><br><span class="line">SELECT * FROM your_table WHERE pk&gt;=1000 ORDER BY pk ASC LIMIT 0,20。</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="方法6：利用”子查询-连接-索引”快速定位元组的位置，然后再读取元组。道理同方法-5"><a href="#方法6：利用”子查询-连接-索引”快速定位元组的位置，然后再读取元组。道理同方法-5" class="headerlink" title="方法6：利用”子查询/连接+索引”快速定位元组的位置，然后再读取元组。道理同方法 5"></a>方法6：利用”子查询/连接+索引”快速定位元组的位置，然后再读取元组。道理同方法 5</h2><ul>
+<li>如（id 是主键/唯一键，蓝色字体时变量）：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">利用子查询示例:</span><br><span class="line">复制代码代码如下:</span><br><span class="line">SELECT * FROM your_table WHERE id &lt;= (SELECT id FROM your_table ORDER BY id desc LIMIT ($page-1)*$pagesize ORDER BY id desc LIMIT $pagesize</span><br><span class="line"></span><br><span class="line">利用连接示例:</span><br><span class="line">复制代码代码如下:</span><br><span class="line">SELECT * FROM your_table AS t1 JOIN(SELECT id FROM your_table ORDER BY id desc LIMIT ($page-1)*$pagesize AS t2 WHERE t1.id &lt;= t2.id ORDER BY t1.id desc LIMIT $pagesize;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="方法7：存储过程类（最好融合上述方法-5-6）"><a href="#方法7：存储过程类（最好融合上述方法-5-6）" class="headerlink" title="方法7：存储过程类（最好融合上述方法 5/6）"></a>方法7：存储过程类（最好融合上述方法 5/6）</h2><ul>
+<li>语句样式：不再给出</li>
+<li>适应场景：大数据量。作者推荐的方法</li>
+<li>原因：把操作封装在服务器，相对更快一些。</li>
+</ul>
+<h2 id="方法8：反面方法"><a href="#方法8：反面方法" class="headerlink" title="方法8：反面方法"></a>方法8：反面方法</h2><ul>
+<li>网上有人写使用 SQL_CALC_FOUND_ROWS。没有道理，勿模仿 。</li>
+</ul>
+<p>基本上，可以推广到所有数据库，道理是一样的。但方法 5 未必能推广到其他数据库，推广的前提是，其他数据库支持 ORDER BY 操作可以利用索引直接完成排序。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/23/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-pom.xml/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/07/23/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-pom.xml/" class="post-title-link" itemprop="url">pom.xml</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-23 10:29:07" itemprop="dateCreated datePublished" datetime="2016-07-23T10:29:07+08:00">2016-07-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Maven/" itemprop="url" rel="index"><span itemprop="name">Maven</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>## 什么是pom? <br>pom作为项目对象模型。通过xml表示maven项目，使用pom.xml来实现。主要描述了项目：包括配置文件；开发者需要遵循的规则，缺陷管理系统，组织和licenses，项目的url，项目的依赖性，以及其他所有的项目相关因素。</p>
+<h2 id="pom-xml-配置文件"><a href="#pom-xml-配置文件" class="headerlink" title="pom.xml 配置文件"></a>pom.xml 配置文件</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line">&lt;project&gt;  </span><br><span class="line">    &lt;parent&gt;  </span><br><span class="line">        ...  </span><br><span class="line">    &lt;/parent&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;  </span><br><span class="line">  </span><br><span class="line">    &lt;!-- The Basics --&gt;  </span><br><span class="line">    &lt;groupId&gt;...&lt;/groupId&gt;  </span><br><span class="line">    &lt;artifactId&gt;...&lt;/artifactId&gt;  </span><br><span class="line">    &lt;version&gt;...&lt;/version&gt;  </span><br><span class="line">    &lt;packaging&gt;...&lt;/packaging&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;scm&gt;  </span><br><span class="line">        ...  </span><br><span class="line">    &lt;/scm&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;dependencies&gt;  </span><br><span class="line">        ...  </span><br><span class="line">    &lt;/dependencies&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;dependencyManagement&gt;  </span><br><span class="line">        ...  </span><br><span class="line">    &lt;/dependencyManagement&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;modules&gt;  </span><br><span class="line">        ...  </span><br><span class="line">    &lt;/modules&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;properties&gt;  </span><br><span class="line">        ...  </span><br><span class="line">    &lt;/properties&gt;  </span><br><span class="line">  </span><br><span class="line">    &lt;!-- Build Settings --&gt;  </span><br><span class="line">    &lt;build&gt;  </span><br><span class="line">        ...  </span><br><span class="line">    &lt;/build&gt;  </span><br><span class="line">    &lt;reporting&gt;  </span><br><span class="line">        ...  </span><br><span class="line">    &lt;/reporting&gt;  </span><br><span class="line">  </span><br><span class="line">    &lt;!-- More Project Information --&gt;  </span><br><span class="line">    &lt;name&gt;...&lt;/name&gt;  </span><br><span class="line">    &lt;description&gt;...&lt;/description&gt;  </span><br><span class="line">    &lt;url&gt;...&lt;/url&gt;  </span><br><span class="line">    &lt;inceptionYear&gt;...&lt;/inceptionYear&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;licenses&gt;  </span><br><span class="line">    &lt;/licenses&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;organization&gt;  </span><br><span class="line">    &lt;/organization&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;developers&gt;  </span><br><span class="line">    &lt;/developers&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;contributors&gt;  </span><br><span class="line">    &lt;/contributors&gt;  </span><br><span class="line">  </span><br><span class="line">    &lt;!-- Environment Settings --&gt;  </span><br><span class="line">    &lt;issueManagement&gt;  </span><br><span class="line">    &lt;/issueManagement&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;ciManagement&gt;  </span><br><span class="line">    &lt;/ciManagement&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;mailingLists&gt;  </span><br><span class="line">    &lt;/mailingLists&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;prerequisites&gt;  </span><br><span class="line">    &lt;/prerequisites&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;repositories&gt;  </span><br><span class="line">    &lt;/repositories&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;pluginRepositories&gt;  </span><br><span class="line">    &lt;/pluginRepositories&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;distributionManagement&gt;  </span><br><span class="line">    &lt;/distributionManagement&gt;  </span><br><span class="line">      </span><br><span class="line">    &lt;profiles&gt;  </span><br><span class="line">    &lt;/profiles&gt;  </span><br><span class="line">&lt;/project&gt;  </span><br></pre></td></tr></table></figure>
+
+
+<h2 id="maven-POM-xml详解"><a href="#maven-POM-xml详解" class="headerlink" title="maven POM.xml详解"></a>maven POM.xml详解</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br><span class="line">478</span><br><span class="line">479</span><br><span class="line">480</span><br><span class="line">481</span><br><span class="line">482</span><br><span class="line">483</span><br><span class="line">484</span><br><span class="line">485</span><br><span class="line">486</span><br><span class="line">487</span><br><span class="line">488</span><br><span class="line">489</span><br><span class="line">490</span><br><span class="line">491</span><br><span class="line">492</span><br><span class="line">493</span><br><span class="line">494</span><br><span class="line">495</span><br><span class="line">496</span><br><span class="line">497</span><br><span class="line">498</span><br><span class="line">499</span><br><span class="line">500</span><br><span class="line">501</span><br><span class="line">502</span><br><span class="line">503</span><br><span class="line">504</span><br><span class="line">505</span><br><span class="line">506</span><br><span class="line">507</span><br><span class="line">508</span><br><span class="line">509</span><br><span class="line">510</span><br><span class="line">511</span><br><span class="line">512</span><br><span class="line">513</span><br><span class="line">514</span><br><span class="line">515</span><br><span class="line">516</span><br><span class="line">517</span><br><span class="line">518</span><br><span class="line">519</span><br><span class="line">520</span><br><span class="line">521</span><br><span class="line">522</span><br><span class="line">523</span><br><span class="line">524</span><br><span class="line">525</span><br><span class="line">526</span><br><span class="line">527</span><br><span class="line">528</span><br><span class="line">529</span><br><span class="line">530</span><br><span class="line">531</span><br><span class="line">532</span><br><span class="line">533</span><br><span class="line">534</span><br><span class="line">535</span><br><span class="line">536</span><br><span class="line">537</span><br><span class="line">538</span><br><span class="line">539</span><br><span class="line">540</span><br><span class="line">541</span><br><span class="line">542</span><br><span class="line">543</span><br><span class="line">544</span><br><span class="line">545</span><br><span class="line">546</span><br><span class="line">547</span><br><span class="line">548</span><br><span class="line">549</span><br><span class="line">550</span><br><span class="line">551</span><br><span class="line">552</span><br><span class="line">553</span><br><span class="line">554</span><br><span class="line">555</span><br><span class="line">556</span><br><span class="line">557</span><br><span class="line">558</span><br><span class="line">559</span><br><span class="line">560</span><br><span class="line">561</span><br><span class="line">562</span><br><span class="line">563</span><br><span class="line">564</span><br><span class="line">565</span><br><span class="line">566</span><br><span class="line">567</span><br><span class="line">568</span><br><span class="line">569</span><br><span class="line">570</span><br><span class="line">571</span><br><span class="line">572</span><br><span class="line">573</span><br><span class="line">574</span><br><span class="line">575</span><br><span class="line">576</span><br><span class="line">577</span><br><span class="line">578</span><br><span class="line">579</span><br><span class="line">580</span><br><span class="line">581</span><br><span class="line">582</span><br><span class="line">583</span><br><span class="line">584</span><br><span class="line">585</span><br><span class="line">586</span><br><span class="line">587</span><br><span class="line">588</span><br><span class="line">589</span><br><span class="line">590</span><br><span class="line">591</span><br><span class="line">592</span><br><span class="line">593</span><br><span class="line">594</span><br><span class="line">595</span><br><span class="line">596</span><br><span class="line">597</span><br><span class="line">598</span><br><span class="line">599</span><br><span class="line">600</span><br><span class="line">601</span><br></pre></td><td class="code"><pre><span class="line">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot;     </span><br><span class="line">    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;     </span><br><span class="line">xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0http://maven.apache.org/maven-v4_0_0.xsd&quot;&gt;     </span><br><span class="line">    &lt;!--父项目的坐标。如果项目中没有规定某个元素的值，那么父项目中的对应值即为项目的默认值。 坐标包括group ID，artifact ID和 version。--&gt;    </span><br><span class="line">    &lt;parent&gt;    </span><br><span class="line">     &lt;!--被继承的父项目的构件标识符--&gt;    </span><br><span class="line">     &lt;artifactId/&gt;    </span><br><span class="line">     &lt;!--被继承的父项目的全球唯一标识符--&gt;    </span><br><span class="line">     &lt;groupId/&gt;    </span><br><span class="line">     &lt;!--被继承的父项目的版本--&gt;    </span><br><span class="line">     &lt;version/&gt;    </span><br><span class="line">     &lt;!-- 父项目的pom.xml文件的相对路径。相对路径允许你选择一个不同的路径。默认值是../pom.xml。Maven首先在构建当前项目的地方寻找父项 目的pom，其次在文件系统的这个位置（relativePath位置），然后在本地仓库，最后在远程仓库寻找父项目的pom。--&gt;    </span><br><span class="line">     &lt;relativePath/&gt;    </span><br><span class="line"> &lt;/parent&gt;    </span><br><span class="line"> &lt;!--声明项目描述符遵循哪一个POM模型版本。模型本身的版本很少改变，虽然如此，但它仍然是必不可少的，这是为了当Maven引入了新的特性或者其他模型变更的时候，确保稳定性。--&gt;       </span><br><span class="line">    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;     </span><br><span class="line">    &lt;!--项目的全球唯一标识符，通常使用全限定的包名区分该项目和其他项目。并且构建时生成的路径也是由此生成， 如com.mycompany.app生成的相对路径为：/com/mycompany/app--&gt;     </span><br><span class="line">    &lt;groupId&gt;asia.banseon&lt;/groupId&gt;     </span><br><span class="line">    &lt;!-- 构件的标识符，它和group ID一起唯一标识一个构件。换句话说，你不能有两个不同的项目拥有同样的artifact ID和groupID；在某个 特定的group ID下，artifact ID也必须是唯一的。构件是项目产生的或使用的一个东西，Maven为项目产生的构件包括：JARs，源 码，二进制发布和WARs等。--&gt;     </span><br><span class="line">    &lt;artifactId&gt;banseon-maven2&lt;/artifactId&gt;     </span><br><span class="line">    &lt;!--项目产生的构件类型，例如jar、war、ear、pom。插件可以创建他们自己的构件类型，所以前面列的不是全部构件类型--&gt;     </span><br><span class="line">    &lt;packaging&gt;jar&lt;/packaging&gt;     </span><br><span class="line">    &lt;!--项目当前版本，格式为:主版本.次版本.增量版本-限定版本号--&gt;     </span><br><span class="line">    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;     </span><br><span class="line">    &lt;!--项目的名称, Maven产生的文档用--&gt;     </span><br><span class="line">    &lt;name&gt;banseon-maven&lt;/name&gt;     </span><br><span class="line">    &lt;!--项目主页的URL, Maven产生的文档用--&gt;     </span><br><span class="line">    &lt;url&gt;http://www.baidu.com/banseon&lt;/url&gt;     </span><br><span class="line">    &lt;!-- 项目的详细描述, Maven 产生的文档用。  当这个元素能够用HTML格式描述时（例如，CDATA中的文本会被解析器忽略，就可以包含HTML标 签）， 不鼓励使用纯文本描述。如果你需要修改产生的web站点的索引页面，你应该修改你自己的索引页文件，而不是调整这里的文档。--&gt;     </span><br><span class="line">    &lt;description&gt;A maven project to study maven.&lt;/description&gt;     </span><br><span class="line">    &lt;!--描述了这个项目构建环境中的前提条件。--&gt;    </span><br><span class="line"> &lt;prerequisites&gt;    </span><br><span class="line">  &lt;!--构建该项目或使用该插件所需要的Maven的最低版本--&gt;    </span><br><span class="line">    &lt;maven/&gt;    </span><br><span class="line"> &lt;/prerequisites&gt;    </span><br><span class="line"> &lt;!--项目的问题管理系统(Bugzilla, Jira, Scarab,或任何你喜欢的问题管理系统)的名称和URL，本例为 jira--&gt;     </span><br><span class="line">    &lt;issueManagement&gt;    </span><br><span class="line">     &lt;!--问题管理系统（例如jira）的名字，--&gt;     </span><br><span class="line">        &lt;system&gt;jira&lt;/system&gt;     </span><br><span class="line">        &lt;!--该项目使用的问题管理系统的URL--&gt;    </span><br><span class="line">        &lt;url&gt;http://jira.baidu.com/banseon&lt;/url&gt;     </span><br><span class="line">    &lt;/issueManagement&gt;     </span><br><span class="line">    &lt;!--项目持续集成信息--&gt;    </span><br><span class="line"> &lt;ciManagement&gt;    </span><br><span class="line">  &lt;!--持续集成系统的名字，例如continuum--&gt;    </span><br><span class="line">  &lt;system/&gt;    </span><br><span class="line">  &lt;!--该项目使用的持续集成系统的URL（如果持续集成系统有web接口的话）。--&gt;    </span><br><span class="line">  &lt;url/&gt;    </span><br><span class="line">  &lt;!--构建完成时，需要通知的开发者/用户的配置项。包括被通知者信息和通知条件（错误，失败，成功，警告）--&gt;    </span><br><span class="line">  &lt;notifiers&gt;    </span><br><span class="line">   &lt;!--配置一种方式，当构建中断时，以该方式通知用户/开发者--&gt;    </span><br><span class="line">   &lt;notifier&gt;    </span><br><span class="line">    &lt;!--传送通知的途径--&gt;    </span><br><span class="line">    &lt;type/&gt;    </span><br><span class="line">    &lt;!--发生错误时是否通知--&gt;    </span><br><span class="line">    &lt;sendOnError/&gt;    </span><br><span class="line">    &lt;!--构建失败时是否通知--&gt;    </span><br><span class="line">    &lt;sendOnFailure/&gt;    </span><br><span class="line">    &lt;!--构建成功时是否通知--&gt;    </span><br><span class="line">    &lt;sendOnSuccess/&gt;    </span><br><span class="line">    &lt;!--发生警告时是否通知--&gt;    </span><br><span class="line">    &lt;sendOnWarning/&gt;    </span><br><span class="line">    &lt;!--不赞成使用。通知发送到哪里--&gt;    </span><br><span class="line">    &lt;address/&gt;    </span><br><span class="line">    &lt;!--扩展配置项--&gt;    </span><br><span class="line">    &lt;configuration/&gt;    </span><br><span class="line">   &lt;/notifier&gt;    </span><br><span class="line">  &lt;/notifiers&gt;    </span><br><span class="line"> &lt;/ciManagement&gt;    </span><br><span class="line"> &lt;!--项目创建年份，4位数字。当产生版权信息时需要使用这个值。--&gt;    </span><br><span class="line">    &lt;inceptionYear/&gt;    </span><br><span class="line">    &lt;!--项目相关邮件列表信息--&gt;     </span><br><span class="line">    &lt;mailingLists&gt;    </span><br><span class="line">     &lt;!--该元素描述了项目相关的所有邮件列表。自动产生的网站引用这些信息。--&gt;     </span><br><span class="line">        &lt;mailingList&gt;     </span><br><span class="line">         &lt;!--邮件的名称--&gt;    </span><br><span class="line">            &lt;name&gt;Demo&lt;/name&gt;     </span><br><span class="line">            &lt;!--发送邮件的地址或链接，如果是邮件地址，创建文档时，mailto: 链接会被自动创建--&gt;     </span><br><span class="line">            &lt;post&gt;banseon@126.com&lt;/post&gt;     </span><br><span class="line">            &lt;!--订阅邮件的地址或链接，如果是邮件地址，创建文档时，mailto: 链接会被自动创建--&gt;     </span><br><span class="line">            &lt;subscribe&gt;banseon@126.com&lt;/subscribe&gt;     </span><br><span class="line">            &lt;!--取消订阅邮件的地址或链接，如果是邮件地址，创建文档时，mailto: 链接会被自动创建--&gt;     </span><br><span class="line">            &lt;unsubscribe&gt;banseon@126.com&lt;/unsubscribe&gt;     </span><br><span class="line">            &lt;!--你可以浏览邮件信息的URL--&gt;    </span><br><span class="line">            &lt;archive&gt;http:/hi.baidu.com/banseon/demo/dev/&lt;/archive&gt;     </span><br><span class="line">        &lt;/mailingList&gt;     </span><br><span class="line">    &lt;/mailingLists&gt;     </span><br><span class="line">    &lt;!--项目开发者列表--&gt;     </span><br><span class="line">    &lt;developers&gt;     </span><br><span class="line">     &lt;!--某个项目开发者的信息--&gt;    </span><br><span class="line">        &lt;developer&gt;     </span><br><span class="line">         &lt;!--SCM里项目开发者的唯一标识符--&gt;    </span><br><span class="line">            &lt;id&gt;HELLO WORLD&lt;/id&gt;     </span><br><span class="line">            &lt;!--项目开发者的全名--&gt;    </span><br><span class="line">            &lt;name&gt;banseon&lt;/name&gt;     </span><br><span class="line">            &lt;!--项目开发者的email--&gt;    </span><br><span class="line">            &lt;email&gt;banseon@126.com&lt;/email&gt;     </span><br><span class="line">            &lt;!--项目开发者的主页的URL--&gt;    </span><br><span class="line">            &lt;url/&gt;    </span><br><span class="line">            &lt;!--项目开发者在项目中扮演的角色，角色元素描述了各种角色--&gt;    </span><br><span class="line">            &lt;roles&gt;     </span><br><span class="line">                &lt;role&gt;Project Manager&lt;/role&gt;     </span><br><span class="line">                &lt;role&gt;Architect&lt;/role&gt;     </span><br><span class="line">            &lt;/roles&gt;    </span><br><span class="line">            &lt;!--项目开发者所属组织--&gt;    </span><br><span class="line">            &lt;organization&gt;demo&lt;/organization&gt;     </span><br><span class="line">            &lt;!--项目开发者所属组织的URL--&gt;    </span><br><span class="line">            &lt;organizationUrl&gt;http://hi.baidu.com/banseon&lt;/organizationUrl&gt;     </span><br><span class="line">            &lt;!--项目开发者属性，如即时消息如何处理等--&gt;    </span><br><span class="line">            &lt;properties&gt;     </span><br><span class="line">                &lt;dept&gt;No&lt;/dept&gt;     </span><br><span class="line">            &lt;/properties&gt;    </span><br><span class="line">            &lt;!--项目开发者所在时区， -11到12范围内的整数。--&gt;    </span><br><span class="line">            &lt;timezone&gt;-5&lt;/timezone&gt;     </span><br><span class="line">        &lt;/developer&gt;     </span><br><span class="line">    &lt;/developers&gt;     </span><br><span class="line">    &lt;!--项目的其他贡献者列表--&gt;     </span><br><span class="line">    &lt;contributors&gt;    </span><br><span class="line">     &lt;!--项目的其他贡献者。参见developers/developer元素--&gt;    </span><br><span class="line">     &lt;contributor&gt;    </span><br><span class="line">   &lt;name/&gt;&lt;email/&gt;&lt;url/&gt;&lt;organization/&gt;&lt;organizationUrl/&gt;&lt;roles/&gt;&lt;timezone/&gt;&lt;properties/&gt;    </span><br><span class="line">     &lt;/contributor&gt;         </span><br><span class="line">    &lt;/contributors&gt;       </span><br><span class="line">    &lt;!--该元素描述了项目所有License列表。 应该只列出该项目的license列表，不要列出依赖项目的 license列表。如果列出多个license，用户可以选择它们中的一个而不是接受所有license。--&gt;     </span><br><span class="line">    &lt;licenses&gt;    </span><br><span class="line">     &lt;!--描述了项目的license，用于生成项目的web站点的license页面，其他一些报表和validation也会用到该元素。--&gt;     </span><br><span class="line">        &lt;license&gt;    </span><br><span class="line">         &lt;!--license用于法律上的名称--&gt;    </span><br><span class="line">            &lt;name&gt;Apache 2&lt;/name&gt;     </span><br><span class="line">            &lt;!--官方的license正文页面的URL--&gt;    </span><br><span class="line">            &lt;url&gt;http://www.baidu.com/banseon/LICENSE-2.0.txt&lt;/url&gt;     </span><br><span class="line">            &lt;!--项目分发的主要方式：    </span><br><span class="line">              repo，可以从Maven库下载    </span><br><span class="line">              manual， 用户必须手动下载和安装依赖--&gt;    </span><br><span class="line">            &lt;distribution&gt;repo&lt;/distribution&gt;     </span><br><span class="line">            &lt;!--关于license的补充信息--&gt;    </span><br><span class="line">            &lt;comments&gt;A business-friendly OSS license&lt;/comments&gt;     </span><br><span class="line">        &lt;/license&gt;     </span><br><span class="line">    &lt;/licenses&gt;     </span><br><span class="line">    &lt;!--SCM(Source Control Management)标签允许你配置你的代码库，供Maven web站点和其它插件使用。--&gt;     </span><br><span class="line">    &lt;scm&gt;     </span><br><span class="line">        &lt;!--SCM的URL,该URL描述了版本库和如何连接到版本库。欲知详情，请看SCMs提供的URL格式和列表。该连接只读。--&gt;     </span><br><span class="line">        &lt;connection&gt;     </span><br><span class="line">            scm:svn:http://svn.baidu.com/banseon/maven/banseon/banseon-maven2-trunk(dao-trunk)      </span><br><span class="line">        &lt;/connection&gt;     </span><br><span class="line">        &lt;!--给开发者使用的，类似connection元素。即该连接不仅仅只读--&gt;    </span><br><span class="line">        &lt;developerConnection&gt;     </span><br><span class="line">            scm:svn:http://svn.baidu.com/banseon/maven/banseon/dao-trunk      </span><br><span class="line">        &lt;/developerConnection&gt;    </span><br><span class="line">        &lt;!--当前代码的标签，在开发阶段默认为HEAD--&gt;    </span><br><span class="line">        &lt;tag/&gt;           </span><br><span class="line">        &lt;!--指向项目的可浏览SCM库（例如ViewVC或者Fisheye）的URL。--&gt;     </span><br><span class="line">        &lt;url&gt;http://svn.baidu.com/banseon&lt;/url&gt;     </span><br><span class="line">    &lt;/scm&gt;     </span><br><span class="line">    &lt;!--描述项目所属组织的各种属性。Maven产生的文档用--&gt;     </span><br><span class="line">    &lt;organization&gt;     </span><br><span class="line">     &lt;!--组织的全名--&gt;    </span><br><span class="line">        &lt;name&gt;demo&lt;/name&gt;     </span><br><span class="line">        &lt;!--组织主页的URL--&gt;    </span><br><span class="line">        &lt;url&gt;http://www.baidu.com/banseon&lt;/url&gt;     </span><br><span class="line">    &lt;/organization&gt;    </span><br><span class="line">    &lt;!--构建项目需要的信息--&gt;    </span><br><span class="line">    &lt;build&gt;    </span><br><span class="line">     &lt;!--该元素设置了项目源码目录，当构建项目的时候，构建系统会编译目录里的源码。该路径是相对于pom.xml的相对路径。--&gt;    </span><br><span class="line">  &lt;sourceDirectory/&gt;    </span><br><span class="line">  &lt;!--该元素设置了项目脚本源码目录，该目录和源码目录不同：绝大多数情况下，该目录下的内容 会被拷贝到输出目录(因为脚本是被解释的，而不是被编译的)。--&gt;    </span><br><span class="line">  &lt;scriptSourceDirectory/&gt;    </span><br><span class="line">  &lt;!--该元素设置了项目单元测试使用的源码目录，当测试项目的时候，构建系统会编译目录里的源码。该路径是相对于pom.xml的相对路径。--&gt;    </span><br><span class="line">  &lt;testSourceDirectory/&gt;    </span><br><span class="line">  &lt;!--被编译过的应用程序class文件存放的目录。--&gt;    </span><br><span class="line">  &lt;outputDirectory/&gt;    </span><br><span class="line">  &lt;!--被编译过的测试class文件存放的目录。--&gt;    </span><br><span class="line">  &lt;testOutputDirectory/&gt;    </span><br><span class="line">  &lt;!--使用来自该项目的一系列构建扩展--&gt;    </span><br><span class="line">  &lt;extensions&gt;    </span><br><span class="line">   &lt;!--描述使用到的构建扩展。--&gt;    </span><br><span class="line">   &lt;extension&gt;    </span><br><span class="line">    &lt;!--构建扩展的groupId--&gt;    </span><br><span class="line">    &lt;groupId/&gt;    </span><br><span class="line">    &lt;!--构建扩展的artifactId--&gt;    </span><br><span class="line">    &lt;artifactId/&gt;    </span><br><span class="line">    &lt;!--构建扩展的版本--&gt;    </span><br><span class="line">    &lt;version/&gt;    </span><br><span class="line">   &lt;/extension&gt;    </span><br><span class="line">  &lt;/extensions&gt;    </span><br><span class="line">  &lt;!--当项目没有规定目标（Maven2 叫做阶段）时的默认值--&gt;    </span><br><span class="line">  &lt;defaultGoal/&gt;    </span><br><span class="line">  &lt;!--这个元素描述了项目相关的所有资源路径列表，例如和项目相关的属性文件，这些资源被包含在最终的打包文件里。--&gt;    </span><br><span class="line">  &lt;resources&gt;    </span><br><span class="line">   &lt;!--这个元素描述了项目相关或测试相关的所有资源路径--&gt;    </span><br><span class="line">   &lt;resource&gt;    </span><br><span class="line">    &lt;!-- 描述了资源的目标路径。该路径相对target/classes目录（例如$&#123;project.build.outputDirectory&#125;）。举个例 子，如果你想资源在特定的包里(org.apache.maven.messages)，你就必须该元素设置为org/apache/maven /messages。然而，如果你只是想把资源放到源码目录结构里，就不需要该配置。--&gt;    </span><br><span class="line">    &lt;targetPath/&gt;    </span><br><span class="line">    &lt;!--是否使用参数值代替参数名。参数值取自properties元素或者文件里配置的属性，文件在filters元素里列出。--&gt;    </span><br><span class="line">    &lt;filtering/&gt;    </span><br><span class="line">    &lt;!--描述存放资源的目录，该路径相对POM路径--&gt;    </span><br><span class="line">    &lt;directory/&gt;    </span><br><span class="line">    &lt;!--包含的模式列表，例如**/*.xml.--&gt;    </span><br><span class="line">    &lt;includes/&gt;    </span><br><span class="line">    &lt;!--排除的模式列表，例如**/*.xml--&gt;    </span><br><span class="line">    &lt;excludes/&gt;    </span><br><span class="line">   &lt;/resource&gt;    </span><br><span class="line">  &lt;/resources&gt;    </span><br><span class="line">  &lt;!--这个元素描述了单元测试相关的所有资源路径，例如和单元测试相关的属性文件。--&gt;    </span><br><span class="line">  &lt;testResources&gt;    </span><br><span class="line">   &lt;!--这个元素描述了测试相关的所有资源路径，参见build/resources/resource元素的说明--&gt;    </span><br><span class="line">   &lt;testResource&gt;    </span><br><span class="line">    &lt;targetPath/&gt;&lt;filtering/&gt;&lt;directory/&gt;&lt;includes/&gt;&lt;excludes/&gt;    </span><br><span class="line">   &lt;/testResource&gt;    </span><br><span class="line">  &lt;/testResources&gt;    </span><br><span class="line">  &lt;!--构建产生的所有文件存放的目录--&gt;    </span><br><span class="line">  &lt;directory/&gt;    </span><br><span class="line">  &lt;!--产生的构件的文件名，默认值是$&#123;artifactId&#125;-$&#123;version&#125;。--&gt;    </span><br><span class="line">  &lt;finalName/&gt;    </span><br><span class="line">  &lt;!--当filtering开关打开时，使用到的过滤器属性文件列表--&gt;    </span><br><span class="line">  &lt;filters/&gt;    </span><br><span class="line">  &lt;!--子项目可以引用的默认插件信息。该插件配置项直到被引用时才会被解析或绑定到生命周期。给定插件的任何本地配置都会覆盖这里的配置--&gt;    </span><br><span class="line">  &lt;pluginManagement&gt;    </span><br><span class="line">   &lt;!--使用的插件列表 。--&gt;    </span><br><span class="line">   &lt;plugins&gt;    </span><br><span class="line">    &lt;!--plugin元素包含描述插件所需要的信息。--&gt;    </span><br><span class="line">    &lt;plugin&gt;    </span><br><span class="line">     &lt;!--插件在仓库里的group ID--&gt;    </span><br><span class="line">     &lt;groupId/&gt;    </span><br><span class="line">     &lt;!--插件在仓库里的artifact ID--&gt;    </span><br><span class="line">     &lt;artifactId/&gt;    </span><br><span class="line">     &lt;!--被使用的插件的版本（或版本范围）--&gt;    </span><br><span class="line">     &lt;version/&gt;    </span><br><span class="line">     &lt;!--是否从该插件下载Maven扩展（例如打包和类型处理器），由于性能原因，只有在真需要下载时，该元素才被设置成enabled。--&gt;    </span><br><span class="line">     &lt;extensions/&gt;    </span><br><span class="line">     &lt;!--在构建生命周期中执行一组目标的配置。每个目标可能有不同的配置。--&gt;    </span><br><span class="line">     &lt;executions&gt;    </span><br><span class="line">      &lt;!--execution元素包含了插件执行需要的信息--&gt;    </span><br><span class="line">      &lt;execution&gt;    </span><br><span class="line">       &lt;!--执行目标的标识符，用于标识构建过程中的目标，或者匹配继承过程中需要合并的执行目标--&gt;    </span><br><span class="line">       &lt;id/&gt;    </span><br><span class="line">       &lt;!--绑定了目标的构建生命周期阶段，如果省略，目标会被绑定到源数据里配置的默认阶段--&gt;    </span><br><span class="line">       &lt;phase/&gt;    </span><br><span class="line">       &lt;!--配置的执行目标--&gt;    </span><br><span class="line">       &lt;goals/&gt;    </span><br><span class="line">       &lt;!--配置是否被传播到子POM--&gt;    </span><br><span class="line">       &lt;inherited/&gt;    </span><br><span class="line">       &lt;!--作为DOM对象的配置--&gt;    </span><br><span class="line">       &lt;configuration/&gt;    </span><br><span class="line">      &lt;/execution&gt;    </span><br><span class="line">     &lt;/executions&gt;    </span><br><span class="line">     &lt;!--项目引入插件所需要的额外依赖--&gt;    </span><br><span class="line">     &lt;dependencies&gt;    </span><br><span class="line">      &lt;!--参见dependencies/dependency元素--&gt;    </span><br><span class="line">      &lt;dependency&gt;    </span><br><span class="line">       ......    </span><br><span class="line">      &lt;/dependency&gt;    </span><br><span class="line">     &lt;/dependencies&gt;         </span><br><span class="line">     &lt;!--任何配置是否被传播到子项目--&gt;    </span><br><span class="line">     &lt;inherited/&gt;    </span><br><span class="line">     &lt;!--作为DOM对象的配置--&gt;    </span><br><span class="line">     &lt;configuration/&gt;    </span><br><span class="line">    &lt;/plugin&gt;    </span><br><span class="line">   &lt;/plugins&gt;    </span><br><span class="line">  &lt;/pluginManagement&gt;    </span><br><span class="line">  &lt;!--使用的插件列表--&gt;    </span><br><span class="line">  &lt;plugins&gt;    </span><br><span class="line">   &lt;!--参见build/pluginManagement/plugins/plugin元素--&gt;    </span><br><span class="line">   &lt;plugin&gt;    </span><br><span class="line">    &lt;groupId/&gt;&lt;artifactId/&gt;&lt;version/&gt;&lt;extensions/&gt;    </span><br><span class="line">    &lt;executions&gt;    </span><br><span class="line">     &lt;execution&gt;    </span><br><span class="line">      &lt;id/&gt;&lt;phase/&gt;&lt;goals/&gt;&lt;inherited/&gt;&lt;configuration/&gt;    </span><br><span class="line">     &lt;/execution&gt;    </span><br><span class="line">    &lt;/executions&gt;    </span><br><span class="line">    &lt;dependencies&gt;    </span><br><span class="line">     &lt;!--参见dependencies/dependency元素--&gt;    </span><br><span class="line">     &lt;dependency&gt;    </span><br><span class="line">      ......    </span><br><span class="line">     &lt;/dependency&gt;    </span><br><span class="line">    &lt;/dependencies&gt;    </span><br><span class="line">    &lt;goals/&gt;&lt;inherited/&gt;&lt;configuration/&gt;    </span><br><span class="line">   &lt;/plugin&gt;    </span><br><span class="line">  &lt;/plugins&gt;    </span><br><span class="line"> &lt;/build&gt;    </span><br><span class="line"> &lt;!--在列的项目构建profile，如果被激活，会修改构建处理--&gt;    </span><br><span class="line"> &lt;profiles&gt;    </span><br><span class="line">  &lt;!--根据环境参数或命令行参数激活某个构建处理--&gt;    </span><br><span class="line">  &lt;profile&gt;    </span><br><span class="line">   &lt;!--构建配置的唯一标识符。即用于命令行激活，也用于在继承时合并具有相同标识符的profile。--&gt;    </span><br><span class="line">   &lt;id/&gt;    </span><br><span class="line">   &lt;!--自动触发profile的条件逻辑。Activation是profile的开启钥匙。profile的力量来自于它    </span><br><span class="line">   能够在某些特定的环境中自动使用某些特定的值；这些环境通过activation元素指定。activation元素并不是激活profile的唯一方式。--&gt;    </span><br><span class="line">   &lt;activation&gt;    </span><br><span class="line">    &lt;!--profile默认是否激活的标志--&gt;    </span><br><span class="line">    &lt;activeByDefault/&gt;    </span><br><span class="line">    &lt;!--当匹配的jdk被检测到，profile被激活。例如，1.4激活JDK1.4，1.4.0_2，而!1.4激活所有版本不是以1.4开头的JDK。--&gt;    </span><br><span class="line">    &lt;jdk/&gt;    </span><br><span class="line">    &lt;!--当匹配的操作系统属性被检测到，profile被激活。os元素可以定义一些操作系统相关的属性。--&gt;    </span><br><span class="line">    &lt;os&gt;    </span><br><span class="line">     &lt;!--激活profile的操作系统的名字--&gt;    </span><br><span class="line">     &lt;name&gt;Windows XP&lt;/name&gt;    </span><br><span class="line">     &lt;!--激活profile的操作系统所属家族(如 &#x27;windows&#x27;)--&gt;    </span><br><span class="line">     &lt;family&gt;Windows&lt;/family&gt;    </span><br><span class="line">     &lt;!--激活profile的操作系统体系结构 --&gt;    </span><br><span class="line">     &lt;arch&gt;x86&lt;/arch&gt;    </span><br><span class="line">     &lt;!--激活profile的操作系统版本--&gt;    </span><br><span class="line">     &lt;version&gt;5.1.2600&lt;/version&gt;    </span><br><span class="line">    &lt;/os&gt;    </span><br><span class="line">    &lt;!--如果Maven检测到某一个属性（其值可以在POM中通过$&#123;名称&#125;引用），其拥有对应的名称和值，Profile就会被激活。如果值    </span><br><span class="line">    字段是空的，那么存在属性名称字段就会激活profile，否则按区分大小写方式匹配属性值字段--&gt;    </span><br><span class="line">    &lt;property&gt;    </span><br><span class="line">     &lt;!--激活profile的属性的名称--&gt;    </span><br><span class="line">     &lt;name&gt;mavenVersion&lt;/name&gt;    </span><br><span class="line">     &lt;!--激活profile的属性的值--&gt;    </span><br><span class="line">     &lt;value&gt;2.0.3&lt;/value&gt;    </span><br><span class="line">    &lt;/property&gt;    </span><br><span class="line">    &lt;!--提供一个文件名，通过检测该文件的存在或不存在来激活profile。missing检查文件是否存在，如果不存在则激活    </span><br><span class="line">    profile。另一方面，exists则会检查文件是否存在，如果存在则激活profile。--&gt;    </span><br><span class="line">    &lt;file&gt;    </span><br><span class="line">     &lt;!--如果指定的文件存在，则激活profile。--&gt;    </span><br><span class="line">     &lt;exists&gt;/usr/local/hudson/hudson-home/jobs/maven-guide-zh-to-production/workspace/&lt;/exists&gt;    </span><br><span class="line">     &lt;!--如果指定的文件不存在，则激活profile。--&gt;    </span><br><span class="line">     &lt;missing&gt;/usr/local/hudson/hudson-home/jobs/maven-guide-zh-to-production/workspace/&lt;/missing&gt;    </span><br><span class="line">    &lt;/file&gt;    </span><br><span class="line">   &lt;/activation&gt;    </span><br><span class="line">   &lt;!--构建项目所需要的信息。参见build元素--&gt;    </span><br><span class="line">   &lt;build&gt;    </span><br><span class="line">    &lt;defaultGoal/&gt;    </span><br><span class="line">    &lt;resources&gt;    </span><br><span class="line">     &lt;resource&gt;    </span><br><span class="line">      &lt;targetPath/&gt;&lt;filtering/&gt;&lt;directory/&gt;&lt;includes/&gt;&lt;excludes/&gt;    </span><br><span class="line">     &lt;/resource&gt;    </span><br><span class="line">    &lt;/resources&gt;    </span><br><span class="line">    &lt;testResources&gt;    </span><br><span class="line">     &lt;testResource&gt;    </span><br><span class="line">      &lt;targetPath/&gt;&lt;filtering/&gt;&lt;directory/&gt;&lt;includes/&gt;&lt;excludes/&gt;    </span><br><span class="line">     &lt;/testResource&gt;    </span><br><span class="line">    &lt;/testResources&gt;    </span><br><span class="line">    &lt;directory/&gt;&lt;finalName/&gt;&lt;filters/&gt;    </span><br><span class="line">    &lt;pluginManagement&gt;    </span><br><span class="line">     &lt;plugins&gt;    </span><br><span class="line">      &lt;!--参见build/pluginManagement/plugins/plugin元素--&gt;    </span><br><span class="line">      &lt;plugin&gt;    </span><br><span class="line">       &lt;groupId/&gt;&lt;artifactId/&gt;&lt;version/&gt;&lt;extensions/&gt;    </span><br><span class="line">       &lt;executions&gt;    </span><br><span class="line">        &lt;execution&gt;    </span><br><span class="line">         &lt;id/&gt;&lt;phase/&gt;&lt;goals/&gt;&lt;inherited/&gt;&lt;configuration/&gt;    </span><br><span class="line">        &lt;/execution&gt;    </span><br><span class="line">       &lt;/executions&gt;    </span><br><span class="line">       &lt;dependencies&gt;    </span><br><span class="line">        &lt;!--参见dependencies/dependency元素--&gt;    </span><br><span class="line">        &lt;dependency&gt;    </span><br><span class="line">         ......    </span><br><span class="line">        &lt;/dependency&gt;    </span><br><span class="line">       &lt;/dependencies&gt;    </span><br><span class="line">       &lt;goals/&gt;&lt;inherited/&gt;&lt;configuration/&gt;    </span><br><span class="line">      &lt;/plugin&gt;    </span><br><span class="line">     &lt;/plugins&gt;    </span><br><span class="line">    &lt;/pluginManagement&gt;    </span><br><span class="line">    &lt;plugins&gt;    </span><br><span class="line">     &lt;!--参见build/pluginManagement/plugins/plugin元素--&gt;    </span><br><span class="line">     &lt;plugin&gt;    </span><br><span class="line">      &lt;groupId/&gt;&lt;artifactId/&gt;&lt;version/&gt;&lt;extensions/&gt;    </span><br><span class="line">      &lt;executions&gt;    </span><br><span class="line">       &lt;execution&gt;    </span><br><span class="line">        &lt;id/&gt;&lt;phase/&gt;&lt;goals/&gt;&lt;inherited/&gt;&lt;configuration/&gt;    </span><br><span class="line">       &lt;/execution&gt;    </span><br><span class="line">      &lt;/executions&gt;    </span><br><span class="line">      &lt;dependencies&gt;    </span><br><span class="line">       &lt;!--参见dependencies/dependency元素--&gt;    </span><br><span class="line">       &lt;dependency&gt;    </span><br><span class="line">        ......    </span><br><span class="line">       &lt;/dependency&gt;    </span><br><span class="line">      &lt;/dependencies&gt;    </span><br><span class="line">      &lt;goals/&gt;&lt;inherited/&gt;&lt;configuration/&gt;    </span><br><span class="line">     &lt;/plugin&gt;    </span><br><span class="line">    &lt;/plugins&gt;    </span><br><span class="line">   &lt;/build&gt;    </span><br><span class="line">   &lt;!--模块（有时称作子项目） 被构建成项目的一部分。列出的每个模块元素是指向该模块的目录的相对路径--&gt;    </span><br><span class="line">   &lt;modules/&gt;    </span><br><span class="line">   &lt;!--发现依赖和扩展的远程仓库列表。--&gt;    </span><br><span class="line">   &lt;repositories&gt;    </span><br><span class="line">    &lt;!--参见repositories/repository元素--&gt;    </span><br><span class="line">    &lt;repository&gt;    </span><br><span class="line">     &lt;releases&gt;    </span><br><span class="line">      &lt;enabled/&gt;&lt;updatePolicy/&gt;&lt;checksumPolicy/&gt;    </span><br><span class="line">     &lt;/releases&gt;    </span><br><span class="line">     &lt;snapshots&gt;    </span><br><span class="line">      &lt;enabled/&gt;&lt;updatePolicy/&gt;&lt;checksumPolicy/&gt;    </span><br><span class="line">     &lt;/snapshots&gt;    </span><br><span class="line">     &lt;id/&gt;&lt;name/&gt;&lt;url/&gt;&lt;layout/&gt;    </span><br><span class="line">    &lt;/repository&gt;    </span><br><span class="line">   &lt;/repositories&gt;    </span><br><span class="line">   &lt;!--发现插件的远程仓库列表，这些插件用于构建和报表--&gt;    </span><br><span class="line">   &lt;pluginRepositories&gt;    </span><br><span class="line">    &lt;!--包含需要连接到远程插件仓库的信息.参见repositories/repository元素--&gt;        </span><br><span class="line">    &lt;pluginRepository&gt;    </span><br><span class="line">     &lt;releases&gt;    </span><br><span class="line">      &lt;enabled/&gt;&lt;updatePolicy/&gt;&lt;checksumPolicy/&gt;    </span><br><span class="line">     &lt;/releases&gt;    </span><br><span class="line">     &lt;snapshots&gt;    </span><br><span class="line">      &lt;enabled/&gt;&lt;updatePolicy/&gt;&lt;checksumPolicy/&gt;    </span><br><span class="line">     &lt;/snapshots&gt;    </span><br><span class="line">     &lt;id/&gt;&lt;name/&gt;&lt;url/&gt;&lt;layout/&gt;    </span><br><span class="line">    &lt;/pluginRepository&gt;    </span><br><span class="line">   &lt;/pluginRepositories&gt;    </span><br><span class="line">   &lt;!--该元素描述了项目相关的所有依赖。 这些依赖组成了项目构建过程中的一个个环节。它们自动从项目定义的仓库中下载。要获取更多信息，请看项目依赖机制。--&gt;    </span><br><span class="line">   &lt;dependencies&gt;    </span><br><span class="line">    &lt;!--参见dependencies/dependency元素--&gt;    </span><br><span class="line">    &lt;dependency&gt;    </span><br><span class="line">     ......    </span><br><span class="line">    &lt;/dependency&gt;    </span><br><span class="line">   &lt;/dependencies&gt;    </span><br><span class="line">   &lt;!--不赞成使用. 现在Maven忽略该元素.--&gt;    </span><br><span class="line">   &lt;reports/&gt;       </span><br><span class="line">   &lt;!--该元素包括使用报表插件产·生报表的规范。当用户执行“mvn site”，这些报表就会运行。 在页面导航栏能看到所有报表的链接。参见reporting元素--&gt;    </span><br><span class="line">   &lt;reporting&gt;    </span><br><span class="line">    ......    </span><br><span class="line">   &lt;/reporting&gt;    </span><br><span class="line">   &lt;!--参见dependencyManagement元素--&gt;    </span><br><span class="line">   &lt;dependencyManagement&gt;    </span><br><span class="line">    &lt;dependencies&gt;    </span><br><span class="line">     &lt;!--参见dependencies/dependency元素--&gt;    </span><br><span class="line">     &lt;dependency&gt;    </span><br><span class="line">      ......    </span><br><span class="line">     &lt;/dependency&gt;    </span><br><span class="line">    &lt;/dependencies&gt;    </span><br><span class="line">   &lt;/dependencyManagement&gt;    </span><br><span class="line">   &lt;!--参见distributionManagement元素--&gt;    </span><br><span class="line">   &lt;distributionManagement&gt;    </span><br><span class="line">    ......    </span><br><span class="line">   &lt;/distributionManagement&gt;    </span><br><span class="line">   &lt;!--参见properties元素--&gt;    </span><br><span class="line">   &lt;properties/&gt;    </span><br><span class="line">  &lt;/profile&gt;    </span><br><span class="line"> &lt;/profiles&gt;    </span><br><span class="line"> &lt;!--模块（有时称作子项目） 被构建成项目的一部分。列出的每个模块元素是指向该模块的目录的相对路径--&gt;    </span><br><span class="line"> &lt;modules/&gt;    </span><br><span class="line">    &lt;!--发现依赖和扩展的远程仓库列表。--&gt;     </span><br><span class="line">    &lt;repositories&gt;     </span><br><span class="line">     &lt;!--包含需要连接到远程仓库的信息--&gt;    </span><br><span class="line">        &lt;repository&gt;    </span><br><span class="line">         &lt;!--如何处理远程仓库里发布版本的下载--&gt;    </span><br><span class="line">         &lt;releases&gt;    </span><br><span class="line">          &lt;!--true或者false表示该仓库是否为下载某种类型构件（发布版，快照版）开启。 --&gt;    </span><br><span class="line">    &lt;enabled/&gt;    </span><br><span class="line">    &lt;!--该元素指定更新发生的频率。Maven会比较本地POM和远程POM的时间戳。这里的选项是：always（一直），daily（默认，每日），interval：X（这里X是以分钟为单位的时间间隔），或者never（从不）。--&gt;    </span><br><span class="line">    &lt;updatePolicy/&gt;    </span><br><span class="line">    &lt;!--当Maven验证构件校验文件失败时该怎么做：ignore（忽略），fail（失败），或者warn（警告）。--&gt;    </span><br><span class="line">    &lt;checksumPolicy/&gt;    </span><br><span class="line">   &lt;/releases&gt;    </span><br><span class="line">   &lt;!-- 如何处理远程仓库里快照版本的下载。有了releases和snapshots这两组配置，POM就可以在每个单独的仓库中，为每种类型的构件采取不同的 策略。例如，可能有人会决定只为开发目的开启对快照版本下载的支持。参见repositories/repository/releases元素 --&gt;    </span><br><span class="line">   &lt;snapshots&gt;    </span><br><span class="line">    &lt;enabled/&gt;&lt;updatePolicy/&gt;&lt;checksumPolicy/&gt;    </span><br><span class="line">   &lt;/snapshots&gt;    </span><br><span class="line">   &lt;!--远程仓库唯一标识符。可以用来匹配在settings.xml文件里配置的远程仓库--&gt;    </span><br><span class="line">   &lt;id&gt;banseon-repository-proxy&lt;/id&gt;     </span><br><span class="line">   &lt;!--远程仓库名称--&gt;    </span><br><span class="line">            &lt;name&gt;banseon-repository-proxy&lt;/name&gt;     </span><br><span class="line">            &lt;!--远程仓库URL，按protocol://hostname/path形式--&gt;    </span><br><span class="line">            &lt;url&gt;http://192.168.1.169:9999/repository/&lt;/url&gt;     </span><br><span class="line">            &lt;!-- 用于定位和排序构件的仓库布局类型-可以是default（默认）或者legacy（遗留）。Maven 2为其仓库提供了一个默认的布局；然 而，Maven 1.x有一种不同的布局。我们可以使用该元素指定布局是default（默认）还是legacy（遗留）。--&gt;    </span><br><span class="line">            &lt;layout&gt;default&lt;/layout&gt;               </span><br><span class="line">        &lt;/repository&gt;     </span><br><span class="line">    &lt;/repositories&gt;    </span><br><span class="line">    &lt;!--发现插件的远程仓库列表，这些插件用于构建和报表--&gt;    </span><br><span class="line">    &lt;pluginRepositories&gt;    </span><br><span class="line">     &lt;!--包含需要连接到远程插件仓库的信息.参见repositories/repository元素--&gt;    </span><br><span class="line">  &lt;pluginRepository&gt;    </span><br><span class="line">   ......    </span><br><span class="line">  &lt;/pluginRepository&gt;    </span><br><span class="line"> &lt;/pluginRepositories&gt;    </span><br><span class="line">       </span><br><span class="line">    &lt;!--该元素描述了项目相关的所有依赖。 这些依赖组成了项目构建过程中的一个个环节。它们自动从项目定义的仓库中下载。要获取更多信息，请看项目依赖机制。--&gt;     </span><br><span class="line">    &lt;dependencies&gt;     </span><br><span class="line">        &lt;dependency&gt;    </span><br><span class="line">   &lt;!--依赖的group ID--&gt;    </span><br><span class="line">            &lt;groupId&gt;org.apache.maven&lt;/groupId&gt;     </span><br><span class="line">            &lt;!--依赖的artifact ID--&gt;    </span><br><span class="line">            &lt;artifactId&gt;maven-artifact&lt;/artifactId&gt;     </span><br><span class="line">            &lt;!--依赖的版本号。 在Maven 2里, 也可以配置成版本号的范围。--&gt;    </span><br><span class="line">            &lt;version&gt;3.8.1&lt;/version&gt;     </span><br><span class="line">            &lt;!-- 依赖类型，默认类型是jar。它通常表示依赖的文件的扩展名，但也有例外。一个类型可以被映射成另外一个扩展名或分类器。类型经常和使用的打包方式对应， 尽管这也有例外。一些类型的例子：jar，war，ejb-client和test-jar。如果设置extensions为 true，就可以在 plugin里定义新的类型。所以前面的类型的例子不完整。--&gt;    </span><br><span class="line">            &lt;type&gt;jar&lt;/type&gt;    </span><br><span class="line">            &lt;!-- 依赖的分类器。分类器可以区分属于同一个POM，但不同构建方式的构件。分类器名被附加到文件名的版本号后面。例如，如果你想要构建两个单独的构件成 JAR，一个使用Java 1.4编译器，另一个使用Java 6编译器，你就可以使用分类器来生成两个单独的JAR构件。--&gt;    </span><br><span class="line">            &lt;classifier&gt;&lt;/classifier&gt;    </span><br><span class="line">            &lt;!--依赖范围。在项目发布过程中，帮助决定哪些构件被包括进来。欲知详情请参考依赖机制。    </span><br><span class="line">                - compile ：默认范围，用于编译      </span><br><span class="line">                - provided：类似于编译，但支持你期待jdk或者容器提供，类似于classpath      </span><br><span class="line">                - runtime: 在执行时需要使用      </span><br><span class="line">                - test:    用于test任务时使用      </span><br><span class="line">                - system: 需要外在提供相应的元素。通过systemPath来取得      </span><br><span class="line">                - systemPath: 仅用于范围为system。提供相应的路径      </span><br><span class="line">                - optional:   当项目自身被依赖时，标注依赖是否传递。用于连续依赖时使用--&gt;     </span><br><span class="line">            &lt;scope&gt;test&lt;/scope&gt;       </span><br><span class="line">            &lt;!--仅供system范围使用。注意，不鼓励使用这个元素，并且在新的版本中该元素可能被覆盖掉。该元素为依赖规定了文件系统上的路径。需要绝对路径而不是相对路径。推荐使用属性匹配绝对路径，例如$&#123;java.home&#125;。--&gt;    </span><br><span class="line">            &lt;systemPath&gt;&lt;/systemPath&gt;     </span><br><span class="line">            &lt;!--当计算传递依赖时， 从依赖构件列表里，列出被排除的依赖构件集。即告诉maven你只依赖指定的项目，不依赖项目的依赖。此元素主要用于解决版本冲突问题--&gt;    </span><br><span class="line">            &lt;exclusions&gt;    </span><br><span class="line">             &lt;exclusion&gt;     </span><br><span class="line">                    &lt;artifactId&gt;spring-core&lt;/artifactId&gt;     </span><br><span class="line">                    &lt;groupId&gt;org.springframework&lt;/groupId&gt;     </span><br><span class="line">                &lt;/exclusion&gt;     </span><br><span class="line">            &lt;/exclusions&gt;       </span><br><span class="line">            &lt;!--可选依赖，如果你在项目B中把C依赖声明为可选，你就需要在依赖于B的项目（例如项目A）中显式的引用对C的依赖。可选依赖阻断依赖的传递性。--&gt;     </span><br><span class="line">            &lt;optional&gt;true&lt;/optional&gt;    </span><br><span class="line">        &lt;/dependency&gt;    </span><br><span class="line">    &lt;/dependencies&gt;    </span><br><span class="line">    &lt;!--不赞成使用. 现在Maven忽略该元素.--&gt;    </span><br><span class="line">    &lt;reports&gt;&lt;/reports&gt;    </span><br><span class="line">    &lt;!--该元素描述使用报表插件产生报表的规范。当用户执行“mvn site”，这些报表就会运行。 在页面导航栏能看到所有报表的链接。--&gt;    </span><br><span class="line"> &lt;reporting&gt;    </span><br><span class="line">  &lt;!--true，则，网站不包括默认的报表。这包括“项目信息”菜单中的报表。--&gt;    </span><br><span class="line">  &lt;excludeDefaults/&gt;    </span><br><span class="line">  &lt;!--所有产生的报表存放到哪里。默认值是$&#123;project.build.directory&#125;/site。--&gt;    </span><br><span class="line">  &lt;outputDirectory/&gt;    </span><br><span class="line">  &lt;!--使用的报表插件和他们的配置。--&gt;    </span><br><span class="line">  &lt;plugins&gt;    </span><br><span class="line">   &lt;!--plugin元素包含描述报表插件需要的信息--&gt;    </span><br><span class="line">   &lt;plugin&gt;    </span><br><span class="line">    &lt;!--报表插件在仓库里的group ID--&gt;    </span><br><span class="line">    &lt;groupId/&gt;    </span><br><span class="line">    &lt;!--报表插件在仓库里的artifact ID--&gt;    </span><br><span class="line">    &lt;artifactId/&gt;    </span><br><span class="line">    &lt;!--被使用的报表插件的版本（或版本范围）--&gt;    </span><br><span class="line">    &lt;version/&gt;    </span><br><span class="line">    &lt;!--任何配置是否被传播到子项目--&gt;    </span><br><span class="line">    &lt;inherited/&gt;    </span><br><span class="line">    &lt;!--报表插件的配置--&gt;    </span><br><span class="line">    &lt;configuration/&gt;    </span><br><span class="line">    &lt;!--一组报表的多重规范，每个规范可能有不同的配置。一个规范（报表集）对应一个执行目标 。例如，有1，2，3，4，5，6，7，8，9个报表。1，2，5构成A报表集，对应一个执行目标。2，5，8构成B报表集，对应另一个执行目标--&gt;    </span><br><span class="line">    &lt;reportSets&gt;    </span><br><span class="line">     &lt;!--表示报表的一个集合，以及产生该集合的配置--&gt;    </span><br><span class="line">     &lt;reportSet&gt;    </span><br><span class="line">      &lt;!--报表集合的唯一标识符，POM继承时用到--&gt;    </span><br><span class="line">      &lt;id/&gt;    </span><br><span class="line">      &lt;!--产生报表集合时，被使用的报表的配置--&gt;    </span><br><span class="line">      &lt;configuration/&gt;    </span><br><span class="line">      &lt;!--配置是否被继承到子POMs--&gt;    </span><br><span class="line">      &lt;inherited/&gt;    </span><br><span class="line">      &lt;!--这个集合里使用到哪些报表--&gt;    </span><br><span class="line">      &lt;reports/&gt;    </span><br><span class="line">     &lt;/reportSet&gt;    </span><br><span class="line">    &lt;/reportSets&gt;    </span><br><span class="line">   &lt;/plugin&gt;    </span><br><span class="line">  &lt;/plugins&gt;    </span><br><span class="line"> &lt;/reporting&gt;    </span><br><span class="line"> &lt;!-- 继承自该项目的所有子项目的默认依赖信息。这部分的依赖信息不会被立即解析,而是当子项目声明一个依赖（必须描述group ID和 artifact ID信息），如果group ID和artifact ID以外的一些信息没有描述，则通过group ID和artifact ID 匹配到这里的依赖，并使用这里的依赖信息。--&gt;    </span><br><span class="line"> &lt;dependencyManagement&gt;    </span><br><span class="line">  &lt;dependencies&gt;    </span><br><span class="line">   &lt;!--参见dependencies/dependency元素--&gt;    </span><br><span class="line">   &lt;dependency&gt;    </span><br><span class="line">    ......    </span><br><span class="line">   &lt;/dependency&gt;    </span><br><span class="line">  &lt;/dependencies&gt;    </span><br><span class="line"> &lt;/dependencyManagement&gt;       </span><br><span class="line">    &lt;!--项目分发信息，在执行mvn deploy后表示要发布的位置。有了这些信息就可以把网站部署到远程服务器或者把构件部署到远程仓库。--&gt;     </span><br><span class="line">    &lt;distributionManagement&gt;    </span><br><span class="line">        &lt;!--部署项目产生的构件到远程仓库需要的信息--&gt;    </span><br><span class="line">        &lt;repository&gt;    </span><br><span class="line">         &lt;!--是分配给快照一个唯一的版本号（由时间戳和构建流水号）？还是每次都使用相同的版本号？参见repositories/repository元素--&gt;    </span><br><span class="line">   &lt;uniqueVersion/&gt;    </span><br><span class="line">   &lt;id&gt;banseon-maven2&lt;/id&gt;     </span><br><span class="line">   &lt;name&gt;banseon maven2&lt;/name&gt;     </span><br><span class="line">            &lt;url&gt;file://$&#123;basedir&#125;/target/deploy&lt;/url&gt;     </span><br><span class="line">            &lt;layout/&gt;    </span><br><span class="line">  &lt;/repository&gt;    </span><br><span class="line">  &lt;!--构件的快照部署到哪里？如果没有配置该元素，默认部署到repository元素配置的仓库，参见distributionManagement/repository元素--&gt;     </span><br><span class="line">  &lt;snapshotRepository&gt;    </span><br><span class="line">   &lt;uniqueVersion/&gt;    </span><br><span class="line">   &lt;id&gt;banseon-maven2&lt;/id&gt;    </span><br><span class="line">            &lt;name&gt;Banseon-maven2 Snapshot Repository&lt;/name&gt;    </span><br><span class="line">            &lt;url&gt;scp://svn.baidu.com/banseon:/usr/local/maven-snapshot&lt;/url&gt;     </span><br><span class="line">   &lt;layout/&gt;    </span><br><span class="line">  &lt;/snapshotRepository&gt;    </span><br><span class="line">  &lt;!--部署项目的网站需要的信息--&gt;     </span><br><span class="line">        &lt;site&gt;    </span><br><span class="line">         &lt;!--部署位置的唯一标识符，用来匹配站点和settings.xml文件里的配置--&gt;     </span><br><span class="line">            &lt;id&gt;banseon-site&lt;/id&gt;     </span><br><span class="line">            &lt;!--部署位置的名称--&gt;    </span><br><span class="line">            &lt;name&gt;business api website&lt;/name&gt;     </span><br><span class="line">            &lt;!--部署位置的URL，按protocol://hostname/path形式--&gt;    </span><br><span class="line">            &lt;url&gt;     </span><br><span class="line">                scp://svn.baidu.com/banseon:/var/www/localhost/banseon-web      </span><br><span class="line">            &lt;/url&gt;     </span><br><span class="line">        &lt;/site&gt;    </span><br><span class="line">  &lt;!--项目下载页面的URL。如果没有该元素，用户应该参考主页。使用该元素的原因是：帮助定位那些不在仓库里的构件（由于license限制）。--&gt;    </span><br><span class="line">  &lt;downloadUrl/&gt;    </span><br><span class="line">  &lt;!--如果构件有了新的group ID和artifact ID（构件移到了新的位置），这里列出构件的重定位信息。--&gt;    </span><br><span class="line">  &lt;relocation&gt;    </span><br><span class="line">   &lt;!--构件新的group ID--&gt;    </span><br><span class="line">   &lt;groupId/&gt;    </span><br><span class="line">   &lt;!--构件新的artifact ID--&gt;    </span><br><span class="line">   &lt;artifactId/&gt;    </span><br><span class="line">   &lt;!--构件新的版本号--&gt;    </span><br><span class="line">   &lt;version/&gt;    </span><br><span class="line">   &lt;!--显示给用户的，关于移动的额外信息，例如原因。--&gt;    </span><br><span class="line">   &lt;message/&gt;    </span><br><span class="line">  &lt;/relocation&gt;    </span><br><span class="line">  &lt;!-- 给出该构件在远程仓库的状态。不得在本地项目中设置该元素，因为这是工具自动更新的。有效的值有：none（默认），converted（仓库管理员从 Maven 1 POM转换过来），partner（直接从伙伴Maven 2仓库同步过来），deployed（从Maven 2实例部 署），verified（被核实时正确的和最终的）。--&gt;    </span><br><span class="line">  &lt;status/&gt;           </span><br><span class="line">    &lt;/distributionManagement&gt;    </span><br><span class="line">    &lt;!--以值替代名称，Properties可以在整个POM中使用，也可以作为触发条件（见settings.xml配置文件里activation元素的说明）。格式是&lt;name&gt;value&lt;/name&gt;。--&gt;    </span><br><span class="line">    &lt;properties/&gt;    </span><br><span class="line">&lt;/project&gt;    </span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/23/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-setting.xml%E4%B8%8Epom.xml/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/07/23/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Maven/Maven-setting.xml%E4%B8%8Epom.xml/" class="post-title-link" itemprop="url">Maven-setting.xml与pom.xml</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-23 09:17:48" itemprop="dateCreated datePublished" datetime="2016-07-23T09:17:48+08:00">2016-07-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Maven/" itemprop="url" rel="index"><span itemprop="name">Maven</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>pom.xml位于创建的项目文件夹内，setting.xml位于maven包解压后conf文件夹内。</p>
+<h2 id="settings-xml"><a href="#settings-xml" class="headerlink" title="settings.xml"></a>settings.xml</h2><p>先来说说settings.xml，settings.xml对于maven来说相当于全局性的配置，用于所有的项目。在maven2中存在两个 settings.xml，一个位于maven2的解压目录conf下面，作为全局性配置。对于团队设置，保持一致的定义是关键，所以 maven2/conf下面的settings.xml就作为团队共同的配置文件，保证所有的团队成员都拥有相同的配置。当然对于每个成员，都需要特殊的自定义设置，如用户信息，所以另外一个settings.xml就作为本地配置。</p>
+<p>settings.xml基本结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&lt;settings xmlns=”http://maven.apache.org/POM/4.0.0″</span><br><span class="line"></span><br><span class="line">      xmlns:xsi=”http://www.w3.org/2001/XMLSchema-instance”</span><br><span class="line"></span><br><span class="line">      xsi:schemaLocation=”http://maven.apache.org/POM/4.0.0</span><br><span class="line"></span><br><span class="line">      http://maven.apache.org/xsd/settings-1.0.0.xsd”&gt;</span><br><span class="line"></span><br><span class="line">  &lt;localRepository/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;interactiveMode/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;usePluginRegistry/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;offline/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;pluginGroups/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;servers/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;mirrors/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;proxies/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;profiles/&gt;</span><br><span class="line"></span><br><span class="line">  &lt;activeProfiles/&gt;</span><br><span class="line"></span><br><span class="line">&lt;/settings&gt;</span><br></pre></td></tr></table></figure>
+
+<p>几个主要的、常用的配置因素：</p>
+<ol>
+<li><p>localRepository：表示本地库的保存位置，也就是maven2主要的jar保存位置，默认在${user.dir}/.m2/repository，如需要另外设置，就换成其他的路径，如：:\repo。</p>
+</li>
+<li><p>offline：如果不想每次编译，都去查找远程中心库，那就设置为true。当然前提是你已经下载了必须的依赖包。</p>
+</li>
+<li><p>Servers： 在POM中的 distributionManagement元素定义了开发库。然而，特定的username和pwd不能使用于pom.xml，所以通过此配置来保存server信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;servers&gt;</span><br><span class="line">  &lt;server&gt;</span><br><span class="line">    &lt;id&gt;server001&lt;/id&gt;</span><br><span class="line">    &lt;username&gt;guangyuan&lt;/username&gt;</span><br><span class="line">    &lt;password&gt;my_password&lt;/password&gt;</span><br><span class="line">    &lt;privateKey&gt;$&#123;usr.home&#125;/.ssh/id_dsa&lt;/privateKey&gt;</span><br><span class="line">    &lt;passphrase&gt;some_passphrase&lt;/passphrase&gt;</span><br><span class="line">    &lt;filePermissions&gt;664&lt;/filePermissions&gt;</span><br><span class="line">    &lt;directoryPermissions&gt;775&lt;/directoryPermissions&gt;</span><br><span class="line">    &lt;configuration&gt;&lt;/configuration&gt;</span><br><span class="line">  &lt;/server&gt;</span><br><span class="line">&lt;/servers&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>id:server 的id,用于匹配distributionManagement库id，比较重要。</li>
+<li>username, password:用于登陆此服务器的用户名和密码</li>
+<li>privateKey, passphrase：设置private key，以及passphrase</li>
+<li>filePermissions, directoryPermissions：当库文件或者目录创建后，需要使用权限进行访问。参照unix文件许可，如664和775</li>
+</ul>
+<ol start="4">
+<li>Mirrors 表示镜像库，指定库的镜像，用于增加其他库：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;mirrors&gt;</span><br><span class="line">  &lt;mirror&gt;</span><br><span class="line">    &lt;id&gt;tb_mirror&lt;/id&gt;</span><br><span class="line">    &lt;name&gt;taobao mirror&lt;/name&gt;</span><br><span class="line">    &lt;url&gt;http://downloads.planetmirror.com/pub/maven2&lt;/url&gt;</span><br><span class="line">    &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;</span><br><span class="line">  &lt;/mirror&gt;</span><br><span class="line">&lt;/mirrors&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>id,name:唯一的标志，用于区别镜像</li>
+<li>url:镜像的url</li>
+<li>mirrorOf：此镜像指向的服务id</li>
+</ul>
+<ol start="5">
+<li>Proxies 此代理设置，主要用于无法直接访问中心的库用户配置。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;proxies&gt;</span><br><span class="line">  &lt;proxy&gt;</span><br><span class="line">    &lt;id&gt;myproxy&lt;/id&gt;</span><br><span class="line">    &lt;active&gt;true&lt;/active&gt;</span><br><span class="line">    &lt;protocol&gt;http&lt;/protocol&gt;</span><br><span class="line">    &lt;host&gt;proxy.somewhere.com&lt;/host&gt;</span><br><span class="line">    &lt;port&gt;8080&lt;/port&gt;</span><br><span class="line">    &lt;username&gt;proxyuser&lt;/username&gt;</span><br><span class="line">    &lt;password&gt;somepassword&lt;/password&gt;</span><br><span class="line">    &lt;nonProxyHosts&gt;*.google.com|ibiblio.org&lt;/nonProxyHosts&gt;</span><br><span class="line">  &lt;/proxy&gt;</span><br><span class="line">&lt;/proxies&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>id:代理的标志</li>
+<li>active：是否激活代理</li>
+<li>protocol, host, port:protocol://host:port 代理</li>
+<li>username, password：用户名和密码</li>
+<li>nonProxyHosts: 不需要代理的host</li>
+</ul>
+<ol start="6">
+<li>repositories 和pluginRepositories  定义其他开发库和插件开发库。对于团队来说，肯定有自己的开发库。可以通过此配置来定义。 如下的配置，定义了本地开发库，用于release 发布。pluginRepositories 的定义与repositories类似。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;repositories&gt;</span><br><span class="line">  &lt;repository&gt;</span><br><span class="line">    &lt;id&gt;repo-local&lt;/id&gt;</span><br><span class="line">    &lt;name&gt;Internal 开发库&lt;/name&gt;</span><br><span class="line">    &lt;url&gt;http://192.168.0.2:8082/repo-local&lt;/url&gt;</span><br><span class="line">    &lt;releases&gt;</span><br><span class="line">      &lt;enabled&gt;true&lt;/enabled&gt;</span><br><span class="line">      &lt;updatePolicy&gt;never&lt;/updatePolicy&gt;</span><br><span class="line">      &lt;checksumPolicy&gt;warn&lt;/checksumPolicy&gt;</span><br><span class="line">    &lt;/releases&gt;</span><br><span class="line">    &lt;snapshots&gt;</span><br><span class="line">      &lt;enabled&gt;false&lt;/enabled&gt;</span><br><span class="line">    &lt;/snapshots&gt;</span><br><span class="line">    &lt;layout&gt;default&lt;/layout&gt;</span><br><span class="line">  &lt;/repository&gt;</span><br><span class="line">&lt;/repositories&gt;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<ul>
+<li>releases, snapshots:每个产品的版本的Release或者snapshot(注：release和snapshot的区别，release一般是比较稳定的版本，而snapshot基本上不稳定，只是作为快照）。</li>
+</ul>
+<p>关于setting.xml里的常用配置主要就是上面的这些了。事实上，在实际项目应用中，我们只需要重点理解这些配置的意思就足够了。但如果想自己开发一个项目，那么下面的这些配置说明就显得尤为重要了。</p>
+<h2 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h2><p>通过在 pom.xml 中定义 jar 包版本和依赖，能够方便的管理 jar 文件。pom作为项目对象模型。通过xml表示maven项目，使用pom.xml来实现。主要描述了项目：包括配置文件；开发者需要遵循的规则，缺陷管理系统，组织和licenses，项目的url，项目的依赖性，以及其他所有的项目相关因素。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-What's%20faster,%20SELECT%20DISTINCT%20or%20GROUP%20BY/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-What's%20faster,%20SELECT%20DISTINCT%20or%20GROUP%20BY/" class="post-title-link" itemprop="url">MySQL-语法-What's faster, SELECT DISTINCT or GROUP BY</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-07-15 17:06:17" itemprop="dateCreated datePublished" datetime="2016-07-15T17:06:17+08:00">2016-07-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/581521/whats-faster-select-distinct-or-group-by-in-mysql">http://stackoverflow.com/questions/581521/whats-faster-select-distinct-or-group-by-in-mysql</a></p>
+<p>They are essentially equivalent to each other (in fact this is how some databases implement DISTINCT under the hood).</p>
+<p>If one of them is faster, it’s going to be DISTINCT. This is because, although the two are the same, a query optimizer would have to catch the fact that your GROUP BY is not taking advantage of any group members, just their keys. DISTINCT makes this explicit, so you can get away with a slightly dumber optimizer.</p>
+<p>When in doubt, test!</p>
+<hr>
+<p>If you have an index on profession, these two are synonyms.</p>
+<p>If you don’t, then use DISTINCT.</p>
+<p>GROUP BY in MySQL sorts results. You can even do:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT u.profession FROM users u GROUP BY u.profession DESC</span><br></pre></td></tr></table></figure>
+<p>and get your professions sorted in DESC order.</p>
+<p>DISTINCT creates a temporary table and uses it for storing duplicates. GROUP BY does the same, but sortes the distinct results afterwards.</p>
+<p>So</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT DISTINCT u.profession FROM users u</span><br></pre></td></tr></table></figure>
+<p>is faster, if you don’t have an index on profession.</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/07/14/%E6%95%B0%E6%8D%AE%E5%BA%93/SQL%20Server/SQL%20Server-SELECT%20INTO%20%E5%92%8C%20INSERT%20INTO%20SELECT%20%E4%B8%A4%E7%A7%8D%E8%A1%A8%E5%A4%8D%E5%88%B6%E8%AF%AD%E5%8F%A5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -715,497 +1079,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/" class="post-title-link" itemprop="url">Redis-主从切换-sentinel（哨兵机制）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-26 19:01:27" itemprop="dateCreated datePublished" datetime="2016-06-26T19:01:27+08:00">2016-06-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="http://www.cnblogs.com/zhoujinyi/p/5569462.html">http://www.cnblogs.com/zhoujinyi/p/5569462.html</a></p>
-<h1 id="一"><a href="#一" class="headerlink" title="一"></a>一</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Redis-Sentinel 是 Redis 官方推荐的高可用性（HA）解决方案，当用 Redis 做 Master-slave 的高可用方案时，假如 master 宕机了，Redis 本身（包括它的很多客户端）都没有实现自动进行主备切换，而 Redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。</p>
-<p>它的主要功能有以下几点</p>
-<ul>
-<li>不时地监控 redis 是否按照预期良好地运行；</li>
-<li>如果发现某个 redis 节点运行出现状况，能够通知另外一个进程（例如它的客户端）；</li>
-<li>能够进行自动切换。当一个 master 节点不可用时，能够选举出 master 的多个 slave（如果有超过一个 slave 的话）中的一个来作为新的 master，其它的 slave 节点会将它所追随的 master 的地址改为被提升为 master 的 slave 的新地址。</li>
-</ul>
-<h2 id="Sentinel-支持集群"><a href="#Sentinel-支持集群" class="headerlink" title="Sentinel 支持集群"></a>Sentinel 支持集群</h2><p>很显然，只使用单个 sentinel 进程来监控 redis 集群是不可靠的，当 sentinel 进程宕掉后（sentinel 本身也有单点问题，single-point-of-failure）整个集群系统将无法按照预期的方式运行。所以有必要将 sentinel 集群，这样有几个好处：</p>
-<ul>
-<li>即使有一些 sentinel 进程宕掉了，依然可以进行 redis 集群的主备切换；</li>
-<li>如果只有一个 sentinel 进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现 redis 集群的主备切换（单点问题）;</li>
-<li>如果有多个 sentinel，redis 的客户端可以随意地连接任意一个 sentinel 来获得关于 redis 集群中的信息。</li>
-</ul>
-<h2 id="运行-Sentinel"><a href="#运行-Sentinel" class="headerlink" title="运行 Sentinel"></a>运行 Sentinel</h2><p>运行 sentinel 有两种方式：</p>
-<ol>
-<li>```<br>redis-sentinel /path/to/sentinel.conf<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2. ```</span><br><span class="line">   redis-server /path/to/sentinel.conf --sentinel</span><br></pre></td></tr></table></figure></li>
-</ol>
-<p>以上两种方式，都必须指定一个 sentinel 的配置文件 sentinel.conf，如果不指定，将无法启动 sentinel。sentinel 默认监听 26379 端口，所以运行前必须确定该端口没有被别的进程占用。</p>
-<h2 id="Sentinel-的配置"><a href="#Sentinel-的配置" class="headerlink" title="Sentinel 的配置"></a>Sentinel 的配置</h2><p>Redis 源码包中包含了一个 sentinel.conf 文件作为 sentinel 的配置文件，配置文件自带了关于各个配置项的解释。典型的配置项如下所示：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br><span class="line">sentinel down-after-milliseconds mymaster 60000</span><br><span class="line">sentinel failover-timeout mymaster 180000</span><br><span class="line">sentinel parallel-syncs mymaster 1</span><br><span class="line"></span><br><span class="line">sentinel monitor resque 192.168.1.3 6380 4</span><br><span class="line">sentinel down-after-milliseconds resque 10000</span><br><span class="line">sentinel failover-timeout resque 180000</span><br><span class="line">sentinel parallel-syncs resque 5</span><br></pre></td></tr></table></figure>
-
-<p>上面的配置项配置了两个名字分别为 mymaster 和 resque 的 master，配置文件只需要配置 master 的信息就好啦，不用配置 slave 的信息，因为 slave 能够被自动检测到（master 节点会有关于 slave 的消息）。需要注意的是，配置文件在 sentinel 运行期间是会被动态修改的，例如当发生主备切换时候，配置文件中的 master 会被修改为另外一个 slave。这样，之后 sentinel 如果重启时，就可以根据这个配置来恢复其之前所监控的 redis 集群的状态。</p>
-<p>接下来我们将一行一行地解释上面的配置项：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel monitor mymaster 127.0.0.1 6379 2</span><br></pre></td></tr></table></figure>
-<p>这一行代表 sentinel 监控的 master 的名字叫做 mymaster，地址为 127.0.0.1:6379，行尾最后的一个 2 代表什么意思呢？我们知道，网络是不可靠的，有时候一个 sentinel 会因为网络堵塞而误以为一个 master redis 已经死掉了，当 sentinel 集群式，解决这个问题的方法就变得很简单，只需要多个 sentinel 互相沟通来确认某个 master 是否真的死了，这个 2 代表，当集群中有 2 个 sentinel 认为 master 死了时，才能真正认为该 master 已经不可用了。（sentinel 集群中各个 sentinel 也有互相通信，通过 gossip 协议）。</p>
-<p>除了第一行配置，我们发现剩下的配置都有一个统一的格式:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sentinel &lt;option_name&gt; &lt;master_name&gt; &lt;option_value&gt;</span><br></pre></td></tr></table></figure>
-<p>接下来我们根据上面格式中的 option_name 一个一个来解释这些配置项：</p>
-<ul>
-<li>down-after-milliseconds<ul>
-<li>sentinel 会向 master 发送心跳 PING 来确认 master 是否存活，如果 master 在“一定时间范围”内不回应PONG 或者是回复了一个错误消息，那么这个 sentinel 会主观地（单方面地）认为这个 master 已经不可用了（subjectively down, 也简称为 SDOWN）。而这个 down-after-milliseconds 就是用来指定这个“一定时间范围”的，单位是毫秒。</li>
-<li>不过需要注意的是，这个时候 sentinel 并不会马上进行 failover 主备切换，这个 sentinel 还需要参考 sentinel 集群中其他 sentinel 的意见，如果超过某个数量的 sentinel 也主观地认为该 master 死了，那么这个 master 就会被客观地（注意哦，这次不是主观，是客观，与刚才的 subjectively down 相对，这次是 objectively down，简称为 ODOWN）认为已经死了。需要一起做出决定的 sentinel 数量在上一条配置中进行配置。</li>
-</ul>
-</li>
-<li>parallel-syncs<ul>
-<li>在发生 failover 主备切换时，这个选项指定了最多可以有多少个 slave 同时对新的 master 进行同步，这个数字越小，完成 failover 所需的时间就越长，但是如果这个数字越大，就意味着越多的 slave 因为 replication 而不可用。可以通过将这个值设为 1 来保证每次只有一个 slave 处于不能处理命令请求的状态。</li>
-</ul>
-</li>
-<li>其他配置项在 sentinel.conf 中都有很详细的解释。</li>
-</ul>
-<p>所有的配置都可以在运行时用命令 SENTINEL SET command 动态修改。</p>
-<hr>
-<p>转自：<a target="_blank" rel="noopener" href="https://blog.csdn.net/yswKnight/article/details/78158540">https://blog.csdn.net/yswKnight/article/details/78158540</a></p>
-<h1 id="二"><a href="#二" class="headerlink" title="二"></a>二</h1><h2 id="什么是哨兵机制"><a href="#什么是哨兵机制" class="headerlink" title="什么是哨兵机制?"></a>什么是哨兵机制?</h2><p>Redis 的哨兵（sentinel）系统用于管理多个 Redis 服务器，该系统执行以下三个任务:</p>
-<ol>
-<li>监控（Monitoring）：哨兵（sentinel）会不断地检查你的 Master 和 Slave 是否运作正常。</li>
-<li>提醒（Notification）：当被监控的某个 Redis 出现问题时，哨兵（sentinel）可以通过 API 向管理员或者其他应用程序发送通知。</li>
-<li>自动故障迁移（Automatic failover）：当一个 Master 不能正常工作时，哨兵（sentinel）会开始一次自动故障迁移操作，它会将失效 Master 的其中一个 Slave 升级为新的 Master，并让失效 Master 的其他 Slave 改为复制新的 Master；当客户端试图连接失效的 Master 时，集群也会向客户端返回新 Master 的地址，使得集群可以使用 Master 代替失效 Master。</li>
-</ol>
-<p>哨兵（sentinel）是一个分布式系统，你可以在一个架构中运行多个哨兵（sentinel）进程，这些进程使用流言协议（gossip protocols）来接收关于 Master 是否下线的信息，并使用投票协议（agreement protocols）来决定是否执行自动故障迁移，以及选择哪个 Slave 作为新的 Master。</p>
-<p>哨兵（sentinel）会向其它哨兵（sentinel）、master、slave 定时发送消息，以确认对方是否”活”着，如果发现对方在指定时间（可配置）内未回应，则暂时认为对方已挂（所谓的”主观认为宕机” Subjective Down，简称 sdown）.</p>
-<p>若“哨兵群”中的多数 sentinel，都报告某一 master 没响应，系统才认为该 master “彻底死亡”（即:客观上的真正down 机，Objective Down，简称 odown），通过一定的 vote 算法，从剩下的 slave 节点中，选一台提升为 master，然后自动修改相关配置。</p>
-<p>虽然哨兵（sentinel）释出为一个单独的可执行文件 redis-sentinel，但实际上它只是一个运行在特殊模式下的 Redis 服务器，你可以在启动一个普通 Redis 服务器时通过给定 <code>--sentinel</code> 选项来启动哨兵（sentinel）。</p>
-<p>哨兵（sentinel）的一些设计思路和 zookeeper 非常类似<br><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/1.png" alt="1"></p>
-<h2 id="哨兵模式的配置修改"><a href="#哨兵模式的配置修改" class="headerlink" title="哨兵模式的配置修改"></a>哨兵模式的配置修改</h2><p>实现步骤:</p>
-<ol>
-<li>拷贝到 etc 目录<ul>
-<li><code>cp sentinel.conf  /usr/local/redis/etc</code></li>
-</ul>
-</li>
-<li>修改 sentinel.conf 配置文件<ul>
-<li>sentinel monitor mymast  192.168.110.133 6379 1  #主节点 名称 IP 端口号 选举次数</li>
-<li><code>#配置主服务器的密码(如没设置密码，可以省略)</code></li>
-<li><code>sentinel auth-pass mymaster 123456</code></li>
-</ul>
-</li>
-<li>修改心跳检测 5000 毫秒<ul>
-<li><code>sentinel down-after-milliseconds mymaster 5000</code></li>
-</ul>
-</li>
-<li>做多多少合格节点<ul>
-<li><code>sentinel parallel-syncs mymaster 2</code></li>
-</ul>
-</li>
-<li>启动哨兵模式<ul>
-<li><code>./redis-server /usr/local/redis/etc/sentinel.conf --sentinel &amp;</code></li>
-</ul>
-</li>
-<li>停止哨兵模式</li>
-</ol>
-<p>注意：</p>
-<ol>
-<li>当启动哨兵模式之后，如果你的 master 服务器宕机之后，哨兵自动会在从 redis 服务器里面投票选举一个 master 主服务器出来；这个主服务器也可以进行读写操作！</li>
-<li>如果之前宕机的主服务器已经修好，可以正式运行了。那么这个服务器只能进行读的操作，会自动跟随由哨兵选举出来的新服务器！</li>
-<li>大家可以进入 <code>./redis-cli</code>，输入 info，查看你的状态信息；</li>
-</ol>
-<p><img src="/2016/06/26/%E6%95%B0%E6%8D%AE%E5%BA%93/Redis/Redis-%E4%B8%BB%E4%BB%8E%E5%88%87%E6%8D%A2-sentinel%EF%BC%88%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6%EF%BC%89/2.png" alt="2"></p>
-<h2 id="哨兵（sentinel）总结"><a href="#哨兵（sentinel）总结" class="headerlink" title="哨兵（sentinel）总结"></a>哨兵（sentinel）总结</h2><h3 id="Sentinel-的作用："><a href="#Sentinel-的作用：" class="headerlink" title="Sentinel 的作用："></a>Sentinel 的作用：</h3><ol>
-<li>Master 状态监测</li>
-<li>如果Master 异常，则会进行 Master-slave 转换，将其中一个 Slave 作为 Master，将之前的 Master 作为Slave </li>
-<li>Master-Slave 切换后，master_redis.conf、slave_redis.conf 和 sentinel.conf 的内容都会发生改变，即 master_redis.conf 中会多一行 slaveof 的配置，sentinel.conf 的监控目标会随之调换 </li>
-</ol>
-<h3 id="Sentinel-的工作方式"><a href="#Sentinel-的工作方式" class="headerlink" title="Sentinel 的工作方式:"></a>Sentinel 的工作方式:</h3><ol>
-<li>每个 Sentinel 以每秒钟一次的频率向它所知的 Master，Slave 以及其他 Sentinel 实例发送一个 PING 命令。</li>
-<li>如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel 标记为主观下线。 </li>
-<li>如果一个 Master 被标记为主观下线，则正在监视这个 Master 的所有 Sentinel 要以每秒一次的频率确认 Master 的确进入了主观下线状态。 </li>
-<li>当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认 Master 的确进入了主观下线状态， 则 Master 会被标记为客观下线 。</li>
-<li>在一般情况下，每个 Sentinel 会以每 10 秒一次的频率向它已知的所有 Master，Slave发送 INFO 命令。</li>
-<li>当 Master 被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次 。</li>
-<li>若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 </li>
-<li>若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/19/%E8%AF%AD%E8%A8%80/PHP/Lumen-%E9%97%AE%E9%A2%98-NotFoundHttpException/" class="post-title-link" itemprop="url">Lumen-问题-NotFoundHttpException</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-19 09:10:48" itemprop="dateCreated datePublished" datetime="2016-06-19T09:10:48+08:00">2016-06-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/PHP/" itemprop="url" rel="index"><span itemprop="name">PHP</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>The problem was solved by changing the</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$app-&gt;run();</span><br></pre></td></tr></table></figure>
-<p>in /public/index.php to</p>
-<p>$request = Illuminate\Http\Request::capture();</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$app-&gt;run($request);</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E5%BF%AB%E6%8D%B7%E9%94%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/17/%E5%B7%A5%E5%85%B7/IntelliJ/IntelliJ-%E5%BF%AB%E6%8D%B7%E9%94%AE/" class="post-title-link" itemprop="url">IntelliJ-快捷键</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-17 17:29:48" itemprop="dateCreated datePublished" datetime="2016-06-17T17:29:48+08:00">2016-06-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="keymaps为Mac-OS-X-10-5"><a href="#keymaps为Mac-OS-X-10-5" class="headerlink" title="keymaps为Mac OS X 10.5+"></a>keymaps为Mac OS X 10.5+</h2><h3 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h3><ul>
-<li>跳到下一步(Step Over 相当于eclipse的f6)：<code>F8</code> (Win)</li>
-<li>进入到代码(Step Into 相当于eclipse的f5)：<code>F7</code> (Win)</li>
-<li>跳过：<code>F9</code> (Win)</li>
-<li>运行到光标处：<code>Alt + F9</code> (Win)</li>
-</ul>
-<h3 id="搜索、查看"><a href="#搜索、查看" class="headerlink" title="搜索、查看"></a>搜索、查看</h3><ul>
-<li><p>查看上下步：<code>command + alt + 左右方向键</code> (Mac)、 <code>ctrl + alt + 左右方向键</code> (Win)</p>
-</li>
-<li><p>跳转到上次编辑的地方：<code>command + shift + backspace</code> (Mac)、 <code>ctrl + shift + backspace</code> (Win)</p>
-</li>
-<li><p>查看类中的方法和属性：<code>command + F12</code> (Mac)、 <code>ctrl + F12</code> (Win)</p>
-</li>
-<li><p>通过类名打开类：<code>command + o</code> (Mac)、 <code>ctrl + n</code> (Win)</p>
-</li>
-<li><p>通过文件名打开文件：<code>command + shift + o</code> (Mac)、 <code>ctrl + shift + n</code> (Win)</p>
-</li>
-<li><p>列出最近查看的文件列表：<code>command + e</code> (Mac)、 <code>ctrl + e</code> (Win)</p>
-</li>
-<li><p>最近修改文件列表：<code>shift + command + e</code> (Mac)、 <code>ctrl + shift + e</code> (Win)</p>
-</li>
-<li><p>全局搜索：<code>double shift</code> (Mac)</p>
-</li>
-<li><p>查看文档：<code>ctrl + j</code> (Mac)</p>
-</li>
-</ul>
-<h4 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h4><ul>
-<li>显示当前文件的结构：<code>ctrl + F12</code> (Win)</li>
-</ul>
-<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><ul>
-<li><p>查看当前方法的声明：<code>alt + q</code> (Win)</p>
-</li>
-<li><p>查看方法的引用：<code>command + b</code> (Mac)</p>
-</li>
-<li><p>查看方法的super方法：<code>command + u</code> (Mac)</p>
-</li>
-<li><p>查看接口方法的实现：<code>command + alt + b</code> (Mac)</p>
-</li>
-<li><p>查询方法super、继承关系图（Call Hierarchy）：<code>command + shift + h</code> (Mac)</p>
-</li>
-<li><p>查看调用的方法申明：<code>option + space</code> (Mac)</p>
-</li>
-</ul>
-<h4 id="类"><a href="#类" class="headerlink" title="类"></a>类</h4><ul>
-<li><p>查询类super、继承关系树图（Type Hierarchy）：<code>ctrl + h</code> (Mac)</p>
-</li>
-<li><p>查看类的层次结构图（Diagram）：<code>command + alt + shift + u</code> (Mac)、<code>ctrl + alt + shift + u</code> (Win)</p>
-</li>
-<li><p>查看类的子类：<code>ctrl + alt + b</code> (Win)</p>
-</li>
-<li><p>查看类的夫类：<code>ctrl + alt + p</code> (Win)</p>
-</li>
-<li><p>搜索对象被引用的地方：<code>alt + F7</code> (Mac &amp; Win)</p>
-</li>
-<li><p>搜索对象在当前文件被引用的地方：<code>command + F7</code> (Mac)、 <code>ctrl + F7</code> (Win)</p>
-</li>
-<li><p>跳到大括号的开头结尾：<code>ctrl + [或者]</code> (Win)</p>
-</li>
-</ul>
-<h3 id="编辑"><a href="#编辑" class="headerlink" title="编辑"></a>编辑</h3><ul>
-<li><p>删除行：<code>command + delete</code> (Mac)、 <code>ctrl + y</code> (Win)</p>
-</li>
-<li><p>向下插入新行：<code>command + shift + enter</code> (Mac)、 <code>shift + enter</code> (Win)</p>
-</li>
-<li><p>向上插入新行：<code>command + alt + enter</code> (Mac)、 <code>ctrl + alt + enter</code> (Win)</p>
-</li>
-<li><p>向上下移动当前行：<code>shift + alt + 上下方向键</code> (Mac &amp; Win)</p>
-</li>
-<li><p>注释：<code>command + ／</code> (Mac)、 <code>ctrl + /</code> (Win)</p>
-</li>
-<li><p>错误内容提示：<code>alt + enter</code> (Mac &amp; Win)</p>
-</li>
-<li><p>格式化代码：<code>command + alt + l</code> (Mac)、 <code>ctrl + alt + l</code> (Win)</p>
-</li>
-<li><p>剪切当前行：<code>command + x</code> (Mac)、 <code>ctrl + x</code> (Win)</p>
-</li>
-<li><p>复制当前行：<code>command + c</code> (Mac)、 <code>ctrl + c</code> (Win)</p>
-</li>
-<li><p>将当前行复制到到下一行：<code>command + d</code> (Mac)、 <code>ctrl + d</code> (Win)</p>
-</li>
-<li><p>粘贴：<code>command + v</code> (Mac)、 <code>ctrl + v</code> (Win)</p>
-</li>
-<li><p>将选择的内容转换大小写：<code>command + shift + u</code> (Mac)、 <code>ctrl + shift + u</code> (Win)</p>
-</li>
-<li><p>代码模版：<code>ctrl + j</code> (Win)</p>
-</li>
-<li><p>整合两行：<code>ctrl + shift + j</code> (Win)</p>
-</li>
-<li><p>撤销：<code>ctrl + z</code> (Win)</p>
-</li>
-<li><p>取消撤销：<code>ctrl + shift + z</code> (Win)</p>
-</li>
-<li><p>get\set\构造方法等生成：<code>alt + Insert</code> (Win)</p>
-</li>
-<li><p>自动导入包、删除多余的包：<code>alt + ctrl + o</code> (Mac)</p>
-</li>
-<li><p>大小写切换：<code>ctrl + shift + u</code> (Win)</p>
-</li>
-</ul>
-<hr>
-<ul>
-<li>psvm：public static void main</li>
-<li>sout：System.out.println</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">HTML-报头Accept与Content-Type的区别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-06-17 14:32:58" itemprop="dateCreated datePublished" datetime="2016-06-17T14:32:58+08:00">2016-06-17</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/HTTP/" itemprop="url" rel="index"><span itemprop="name">HTTP</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ol>
-<li>Accept属于请求头， Content-Type属于实体头。</li>
-</ol>
-<p>  Http报头分为通用报头，请求报头，响应报头和实体报头。</p>
-<p>  请求方的http报头结构：通用报头|请求报头|实体报头</p>
-<p>  响应方的http报头结构：通用报头|响应报头|实体报头</p>
-<ol start="2">
-<li>Accept代表发送端（客户端）希望接受的数据类型。</li></ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/06/17/%E8%AF%AD%E8%A8%80/web/HTTP-%E6%8A%A5%E5%A4%B4Accept%E4%B8%8EContent-Type%E7%9A%84%E5%8C%BA%E5%88%AB/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1277,7 +1150,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1290,7 +1163,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1325,7 +1198,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

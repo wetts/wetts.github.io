@@ -188,6 +188,522 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/" class="post-title-link" itemprop="url">Storm.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-12 16:46:00" itemprop="dateCreated datePublished" datetime="2020-06-12T16:46:00+08:00">2020-06-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="流计算概述"><a href="#流计算概述" class="headerlink" title="流计算概述"></a>流计算概述</h2><h3 id="静态数据和流数据"><a href="#静态数据和流数据" class="headerlink" title="静态数据和流数据"></a>静态数据和流数据</h3><p>科从概念上而言，流数据（或数据流）是指在时间分布和数量上无限的一系列动态数据集合体；数据记录是流数据的最小组成单元。流数据具有如下特征：</p>
+<ol>
+<li>数据快速持续到达，潜在大小也许是无穷无尽的。</li>
+<li>数据来源众多，格式复杂。</li>
+<li>数据量大，但是不十分关注存储，一旦流数据中的某个元素经过处理，要么被丢弃，要么被归档存储。</li>
+<li>注重数据的整体价值，不过分关注个别数据。</li>
+<li>数据顺序颠倒，或者不完整，系统无法控制将要处理的新到达的数据元素的顺序。</li>
+</ol>
+<h3 id="批量计算和实时计算"><a href="#批量计算和实时计算" class="headerlink" title="批量计算和实时计算"></a>批量计算和实时计算</h3><p>对静态数据和流数据的处理，对应着两种截然不同的计算模式：批量计算和实时计算。</p>
+<p>批量计算以“静态数据”为对象，可以在很充裕的时间内对海量数据进行批量处理，计算得到有价值的信息。Hadoop就是典型的批处理模型，由 HDFS 和 HBase 存放大量的静态数据，由 MapReduce 负贵对海量数据执行批量计算。</p>
+<p>流数据则不适合采用批量计算，因为流数据不适合用传统的关系模型建模，不能把源源不断的流数据保存到数据库中，流数据被处理后，一部分进入数据库成为静态数据，其他部分则直接被丢弃。传统的关系数据库通常用于满足信息实时交互处理需求，比如零售系统和银行系统，每次有一笔业务发生，用户通过和关系数据库系统进行交互，就可以把相应记录写人磁盘，并支持对记录进行随机读写操作。但是，关系数据库并不是为存储快速、连续到达的流数据而设计的，不支持连续处理，把这类数据库用于流数据处理，不仅成本高，而且效率低。</p>
+<p>流数据必须采用实时计算，实时计算最重要的一个需求是能够实时得到计算结果，一般要求响应时间为秒级。当只需要处理少量数据时，实时计算并不是问题；但是，在大数据时代，不仅数据格式复杂、来源众多，而且数据量巨大，这就对实时计算提出了很大的挑战。因此，针对流数据的实时计算-流计算，应运而生。</p>
+<h3 id="流计算的概念"><a href="#流计算的概念" class="headerlink" title="流计算的概念"></a>流计算的概念</h3><p>总的来说，流计算秉承一个基本理念，即数据的价值随着时间的流逝而降低。因此，当事件出现时就应该立即进行处理，而不是缓存起来进行批量处理。为了及时处理流数据，就需要一个低延迟、可扩展、高可靠的处理引擎。对于一个流计算系统来说，它应达到如下需求。</p>
+<ol>
+<li>高性能。处理大数据的基本要求，如每秒处理几十万条数据。</li>
+<li>海量式。支持 TB 级甚至是 PB 级的数据规模。</li>
+<li>实时性。必须保证一个较低的延迟时间，达到秒级别，甚至是毫秒级别。</li>
+<li>分布式。支持大数据的基本架构，必须能够平滑扩展。</li>
+<li>易用性。能够快速进行开发和部署。</li>
+<li>可靠性。能可靠地处理流数据。</li>
+</ol>
+<p>针对不同的应用场景，相应的流计算系统会有不同的需求，但是针对海量数据的流计算，无论在数据采集、数据处理中都应达到秒级别的要求。</p>
+<h3 id="流计算与-Hadoop"><a href="#流计算与-Hadoop" class="headerlink" title="流计算与 Hadoop"></a>流计算与 Hadoop</h3><p>Hadoop 设计的初衷是面向大规模数据的批量处理，在使用 MapReduce 处理大规模文件时，一个大文件会被分解成许多个块分发到不同的机器上，每台机器并行运行 MapReduce 任务，最后对结果进行汇总输出。有时候，完成一个任务甚至要经过多轮的迭代。很显然，这种批量任务处理方式在时间延迟方面是无法满足流计算的实时响应需求的。这时，我们可能很自然地会想到一种“变通”的方案来降低批处理的时间延迟-将基于 MapReduce 的批量处理转为小批量处理，将输人数据切成小的片段，每隔一个周期就启动一次 MapReduce 作业。但是这种方案会存在以下问题。</p>
+<ol>
+<li>切分成小的片段，虽然可以降低延迟，但是也增加了任务处理的附加开销，而且还要处理片段之间的依赖关系，因为一个片段可能需要用到前一个片段的计算结果。</li>
+<li>需要对 MapReduce 进行改造以支持流式处理，Reduce 阶段的结果不能直接输出，而是保存在内存中。这种做法会大大增加 MapReduce 框架的复杂度，导致系统难以维护和扩展。</li>
+<li>降低了用户程序的可伸缩性，因为用户必须要使用 MapReduce 接口来定义流式作业。</li>
+</ol>
+<p>总之，流数据处理和批量数据处理是两种截然不同的数据处理模式，MapReduce 是专门面向静态数据的批量处理的，内部各种实现机制都为批处理做了高度优化，不适合用于处理持续到达的动态数据。</p>
+<h2 id="流计算的处理流程"><a href="#流计算的处理流程" class="headerlink" title="流计算的处理流程"></a>流计算的处理流程</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/%E4%BC%A0%E7%BB%9F%E7%9A%84%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.png" alt="传统的数据处理流程"></p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/%E6%B5%81%E8%AE%A1%E7%AE%97%E7%9A%84%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.png" alt="流计算的数据处理流程"></p>
+<h3 id="数据实时采集"><a href="#数据实时采集" class="headerlink" title="数据实时采集"></a>数据实时采集</h3><p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E7%B3%BB%E7%BB%9F%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84.png" alt="数据采集系统基本架构"></p>
+<ul>
+<li>Agent：主动采集数据，并把数据推送到 Colletor 部分。</li>
+<li>Collector：接收多个 Agent 的数据，并实现有序、可靠、高性能的转发。</li>
+<li>Store：存储 Collecter 转发过来的数据。</li>
+</ul>
+<p>但对于流计算，一般在 Store 部分不进行数据的存储，而是将采集的数据直接发送给流计算平台进行实时计算。</p>
+<h3 id="数据实时计算"><a href="#数据实时计算" class="headerlink" title="数据实时计算"></a>数据实时计算</h3><p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/%E6%95%B0%E6%8D%AE%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97%E7%9A%84%E6%B5%81%E7%A8%8B.png" alt="数据实时计算的流程"></p>
+<h3 id="实时查询服务"><a href="#实时查询服务" class="headerlink" title="实时查询服务"></a>实时查询服务</h3><p>流计算的第三个阶段是实时查询服务，经由流计算框架得出的结果可供用户进行实时查询、展示或储存。传统的数据处理流程，用户需要主动发出查询才能获得想要的结果。而在流处理流程中，实时查询服务可以不断更新结果，并将用户所需的结果实时推送给用户。虽然通过对传统的数据处理系统进行定时查询也可以实现不断更新结果和结果推送，但通过这样的方式获取的结果仍然是根据过去某一时 刻的数据得到的结果，与实时结果有着本质的区别。</p>
+<p>由此可见，流处理系统与传统的数据处理系统有如下不同之处。</p>
+<ol>
+<li>流处理系统处理的是实时的数据，而传统的数据处理系统处理的是预先存储好的静态数据。</li>
+<li>用户通过流处理系统获取的是实时结果，而通过传统的数据处理系统获取的是过去某时刻的结果。并且，流处理系统无需用户主动发出查询，实时查询服务可以主动将实时结果推送给用户。</li>
+</ol>
+<h2 id="开源流计算框架-Storm"><a href="#开源流计算框架-Storm" class="headerlink" title="开源流计算框架 Storm"></a>开源流计算框架 Storm</h2><h3 id="Storm-的设计思想"><a href="#Storm-的设计思想" class="headerlink" title="Storm 的设计思想"></a>Storm 的设计思想</h3><h4 id="Streams"><a href="#Streams" class="headerlink" title="Streams"></a>Streams</h4><p>在 Storm 对流数据 Streams 的抽象描述中，流数据是一个无限的 Tuple 序列（Tuple 即元组，是元素的有序列表，每一个 Tuple 就是一个值列表，列表中的每个值都有一个名称，并且该值可以是基本类型、字符类型、字节数组等，也可以是其他可序列化的类型）。这些 Tuple 序列会以分布式的方式并行地创建和处理。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Streams.png" alt="Streams"></p>
+<h4 id="Spouts"><a href="#Spouts" class="headerlink" title="Spouts"></a>Spouts</h4><p>Storm 认为每个 Stream 都有一个源头，并把这个源头抽象为 Spouts。Spouts 会从外部读取流数据并持续发出 Tuple。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Spouts.png" alt="Spouts"></p>
+<h4 id="Bolts"><a href="#Bolts" class="headerlink" title="Bolts"></a>Bolts</h4><p>Storm 将 Streams 的状态转换过程抽象为 Bolts。Bolts 既可以处理 Tuple，也可以将处理后的 Tuple 作为新的 Streams 发送给其他 Bolts 对 Tuple 的处理逻辑都被封装 在Bolts中，可执行过滤、聚合、查询等操作。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Bolts.png" alt="Bolts"></p>
+<h4 id="Topology"><a href="#Topology" class="headerlink" title="Topology"></a>Topology</h4><p>Storm 将 Spouts 和 Bolts 组成的网络抽象成 Topology。Topology 是 Storm 中最高层次的抽象概念，它可以被提交到 Storm 集群执行。一个 Topology 就是一个流转换图，图中节点是一个 Spout 或 Bolt，图中的边则表示 Bolt 订阅了哪个 Stream。当 Spout 或者 Bolt 发送元组时，它会把元组发送到每个订阅了该 Stream 的 Bolt 上进行处理。</p>
+<p>在 Topology 的具体实现上，Storm 中的 Topology 定义仅仅是一些 Thrift 结构体（Thrift 是基于二进制的高性能的通信中间件），而 Thrift 支持各种编程语言进行定义，这样一来就可以使用各种编程语言来创建、提交 Topology。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Topology.png" alt="Topology"></p>
+<h4 id="Stream-Groupings"><a href="#Stream-Groupings" class="headerlink" title="Stream Groupings"></a>Stream Groupings</h4><p>Storm 中的 Stream Groupings 用于告知 Topology 如何在两个组件间（如 Spout 和 Bolt 之间，或者不同的 Bolt 之间）进行 Tuple 的传送。一个 Topology 中 Tuple 的流向中，箭头表示 Tuple 的流向，而圆圈则表示任务，每一个 Spout 和 Bolt 都可以有多个分布式任务，一个任务在什么时候、以什么方式发送 Tuple 就是由 Stream Groupings 来决定的。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Stream_Groupings.png" alt="Stream_Groupings"></p>
+<p>目前，Storm 中的 Stream Groupings 有如下 6 种方式。</p>
+<ol>
+<li>ShuffleGrouping：随机分组，随机分发 Stream 中的 Tuple，保证每个 Bolt 的 Task 接收 Tuple数量大致一致。</li>
+<li>FieldsGrouping：按照字段分组，保证相同字段的 Tuple 分配到同一个 Task 中。</li>
+<li>AllGrouping：广播发送，每一个 Task 都会收到所有的 Tuple。</li>
+<li>GlobalGrouping：全局分组，所有的 Tuple 都发送到同一个 Task 中。</li>
+<li>NonGrouping：不分组，和 ShuffleGrouping 类似，当前 Task 的执行会和它的被订阅者在同一个线程中执行。</li>
+<li>DireetGrouping：直接分组，直接指定由某个 Task 来执行 Tuple 的处理。</li>
+</ol>
+<h3 id="Storm-的框架设计"><a href="#Storm-的框架设计" class="headerlink" title="Storm 的框架设计"></a>Storm 的框架设计</h3><p>Storm 运行在分布式集群中，其运行任务的方式与 Hadoop 类似：在 Hadoop 上运行的是 MapReduce 作业，而在 Storm 上运行的是”Topology”。但两者的任务大不相同，其中主要的不同是一个 MapReduce 作业最终会完成计算并结束运行，而一个 Topology 将持续处理消息（直到入为终止）。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Storm%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="Storm集群架构示意图"></p>
+<p>Storm 集群采用”Mater-Worker”的节点方式，其中 Master 节点运行名为”Nimbus”的后台程序（类似 Hadoop 中的”JobTracker”）, 负责在集群范围内分发代码、为 Worker 分配任务和监测故障。而每个 Worker 节点运行名为”Supervisor”的后台程序，负责监听分配给它所在机器的工作，即根据 Nimbus 分配的任务来决定启动或停止 Worker 进程。</p>
+<p>Storm 采用了 Zookeeper 来作为分布式协调组件，负责 Nimbus 和多个 Supervisor 之间的所有协调工作（一个完整的拓扑可能被分为多个子拓扑，并由多个 Supervisor 完成）。</p>
+<p>此外，Nimbus 后台进程和 Supervisor 后台进程都是快速失败（Fail-fast）和无状态（Stateless）的，Master 节点并没有直接和 Worker 节点通信，而是借助 Zookeeper 将状态信息存放在 Zookeeper 中或本地磁盘中，以便节点故障时进行快速恢复。这意味着，若 Nimbus 进程或 Supervisor 进程终止后，一旦进程重启，它们将恢复到之前的状态并继续工作。这种设计使 Storm 极其稳定。</p>
+<p>基于这样的架构设计，Storm 的工作流程包含4个过程。</p>
+<ol>
+<li>客户端提交 Topology 到 Storm 集群中。</li>
+<li>Nimbus 将分配给 Supervisor 的任务写人 Zookeeper。</li>
+<li>Supervisor 从 Zookeeper 中获取所分配的任务，并启动 Worker 进程。</li>
+<li>Worker 进程执行具体的任务。</li>
+</ol>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Storm%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="Storm工作流程示意图"></p>
+<h2 id="Spark-Streaming"><a href="#Spark-Streaming" class="headerlink" title="Spark Streaming"></a>Spark Streaming</h2><p>Spark Streaming 是构建在 Spark 上的实时计算框架，它扩展了 Spark 处理大规模流式数据的能力。Spark Streaming 可结合批处理和交互查询，适合一些需要对历史数据和实时数据进行结合分析的应用场景。</p>
+<h3 id="Spark-Streaming-设计"><a href="#Spark-Streaming-设计" class="headerlink" title="Spark Streaming 设计"></a>Spark Streaming 设计</h3><p>Spark Streaming 是 Spark 的核心组件之一，为 Spark 提供了可拓展、高吞吐、容错的流计算能力。Spark Streaming 可整合多种输人数据源，如 Kafka、Flume、HDFS，甚至是普通的 TCP 套接字。经处理后的数据可存储至文件系统、数据库，或显示在仪表盘里。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Spark_Streaming%E6%94%AF%E6%8C%81%E7%9A%84%E8%BE%93%E5%85%A5%E3%80%81%E8%BE%93%E5%87%BA%E6%95%B0%E6%8D%AE%E6%BA%90.png" alt="Spark_Streaming支持的输入、输出数据源"></p>
+<p>Spark Streaming 的基本原理是将实时输人数据流以时间片（秒级）为单位进行拆分，然后经 Spark 引擎以类似批处理的方式处理每个时间片数据。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/Spark_Streaming%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png" alt="Spark_Streaming执行流程"></p>
+<p>Spark Streaming 最主要的抽象是 DStream（Discretized Stream，离散化数据流），表示连续不断的数据流。在内部实现上，Spark Streaming 的输人数据按照时间片（如 1s）分成一段一段的 DStream，每一段数据转换为 Spark 中的 RDD，并且对 DStream 的操作都最终转变为对相应的 RDD的操作。</p>
+<p>例如，进行单词统计时，每个时间片的数据（存储句子的 RDD）经 flatMap 操作，生成了存储单词的 RDD。整个流式计算可根据业务的需求对这些中间的结果进一步处理，或者存储到外部设备中。</p>
+<p><img src="/2020/06/12/%E5%A4%A7%E6%95%B0%E6%8D%AE/Storm/DStream.png" alt="DStream"></p>
+<h3 id="Spark-Streaming-与-Storm-的对比"><a href="#Spark-Streaming-与-Storm-的对比" class="headerlink" title="Spark Streaming 与 Storm 的对比"></a>Spark Streaming 与 Storm 的对比</h3><p>Spark Streaming 和 Storm 最大的区别在于，Spark Streaming 无法实现毫秒级的流计算，而 Storm 则可以实现毫秒级响应。</p>
+<p>Spark Streaming 无法实现毫秒级的流计算，是因为其将流数据按批处理窗口大小（通常在 0.5~2s 之间）分解为一系列批处理作业，在这个过程中会产生多个 Spark 作业，且每一段数据的处理都会经过 Spark DAG 图分解、任务调度过程，因此无法实现毫秒级相应。Spark Streaming 难以满足对实时性要求非常高（如高频实时交易）的场景，但足以胜任其他流式准实时计算场景。</p>
+<p>相比之下，Storm 处理的单位为 Tuple，只需要极小的延迟。Spark Streaming 构建在 Spark 上，一方面是因为 Spark 的低延迟执行引擎（100ms 左右）可以用于实时计算，另一方面，相比于 Storm，RDD 数据集更容易做高效的容错处理。此外，Spark Streaming 采用的小批量处理的方式使得它可以同时兼容批量和实时数据处理的逻辑和算法，因此方便了一些需要历史数据和实时数据联合分析的特定应用场合。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/" class="post-title-link" itemprop="url">神经风格迁移.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-26 18:36:28" itemprop="dateCreated datePublished" datetime="2020-05-26T18:36:28+08:00">2020-05-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB.png" alt="神经风格迁移"></p>
+<p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB2.png" alt="神经风格迁移2"></p>
+<p>$J_{\text{content}}(C,G)$</p>
+<p>第一部分被称作内容代价，这是一个关于内容图片和生成图片的函数，它是用来度量生成图片$G$的内容与内容图片$C$的内容有多相似。</p>
+<p>$J_{\text{style}}(S,G)$</p>
+<p>然后我们会把结果加上一个风格代价函数，也就是关于$S$和$G$的函数，用来度量图片$G$的风格和图片$S$的风格的相似度。</p>
+<p>$J( G) = a J_{\text{content}}( C,G) + \beta J_{\text{style}}(S,G)$</p>
+<h3 id="内容代价函数（Content-cost-function）"><a href="#内容代价函数（Content-cost-function）" class="headerlink" title="内容代价函数（Content cost function）"></a>内容代价函数（Content cost function）</h3><p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E5%86%85%E5%AE%B9%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B0.png" alt="内容代价函数"></p>
+<p>假如说，你用隐含层$l$来计算内容代价，如果$l$是个很小的数，比如用隐含层1，这个代价函数就会使你的生成图片像素上非常接近你的内容图片。然而如果你用很深的层，那么那就会问，内容图片里是否有狗，然后它就会确保生成图片里有一个狗。所以在实际中，这个层$l$在网络中既不会选的太浅也不会选的太深。因为你要自己做这周结束的编程练习，我会让你获得一些直觉，在编程练习中的具体例子里通常$l$会选择在网络的中间层，既不太浅也不很深，然后用一个预训练的卷积模型，可以是<strong>VGG网络</strong>或者其他的网络也可以。</p>
+<p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E5%86%85%E5%AE%B9%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B02.png" alt="内容代价函数2"></p>
+<p>现在你需要衡量假如有一个内容图片和一个生成图片他们在内容上的相似度，我们令这个$a^{[l][C]}$和$a^{[l][G]}$，代表这两个图片$C$和$G$的$l$层的激活函数值。如果这两个激活值相似，那么就意味着两个图片的内容相似。</p>
+<p>$J_{\text{content}}( C,G) = \frac{1}{2}|| a^{[l][C]} - a^{[l][G]}||^{2}$</p>
+<p>为两个激活值不同或者相似的程度，我们取$l$层的隐含单元的激活值，按元素相减，内容图片的激活值与生成图片相比较，然后取平方，也可以在前面加上归一化或者不加，比如$\frac{1}{2}$或者其他的，都影响不大,因为这都可以由这个超参数$a$来调整（$J(G) =a J_{\text{content}}( C,G) + \beta J_{\text{style}}(S,G)$）</p>
+<h3 id="风格代价函数（Style-cost-function）"><a href="#风格代价函数（Style-cost-function）" class="headerlink" title="风格代价函数（Style cost function）"></a>风格代价函数（Style cost function）</h3><p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E9%A3%8E%E6%A0%BC%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B0.png" alt="风格代价函数"></p>
+<p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E9%A3%8E%E6%A0%BC%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B02.png" alt="风格代价函数2"></p>
+<p><img src="/2020/05/26/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E7%A5%9E%E7%BB%8F%E9%A3%8E%E6%A0%BC%E8%BF%81%E7%A7%BB/%E9%A3%8E%E6%A0%BC%E4%BB%A3%E4%BB%B7%E5%87%BD%E6%95%B03.png" alt="风格代价函数3"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/" class="post-title-link" itemprop="url">人脸识别.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-25 19:42:35" itemprop="dateCreated datePublished" datetime="2020-05-25T19:42:35+08:00">2020-05-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Siamese-网络"><a href="#Siamese-网络" class="headerlink" title="Siamese 网络"></a>Siamese 网络</h2><p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/Siamese%E7%BD%91%E7%BB%9C.png" alt="Siamese网络"></p>
+<p>建立一个人脸识别系统的方法就是，如果你要比较两个图片的话，例如这里的第一张（编号1）和第二张图片（编号2），你要做的就是把第二张图片喂给有同样参数的同样的神经网络，然后得到一个不同的128维的向量（编号3），这个向量代表或者编码第二个图片，我要把第二张图片的编码叫做$f(x^{(2)})$。这里我用$x^{(1)}$和$x^{(2)}$仅仅代表两个输入图片，他们没必要非是第一个和第二个训练样本，可以是任意两个图片。</p>
+<p>最后如果你相信这些编码很好地代表了这两个图片，你要做的就是定义$d$，将$x^{(1)}$和$x^{(2)}$的距离定义为这两幅图片的编码之差的范数，$d( x^{( 1)},x^{( 2)}) =|| f( x^{( 1)}) - f( x^{( 2)})||_{2}^{2}$。</p>
+<h2 id="Triplet-损失"><a href="#Triplet-损失" class="headerlink" title="Triplet 损失"></a>Triplet 损失</h2><p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/Triplet%E6%8D%9F%E5%A4%B1.png" alt="Triplet损失"></p>
+<p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/Triplet%E6%8D%9F%E5%A4%B12.png" alt="Triplet损失2"></p>
+<h2 id="面部识别与二分类"><a href="#面部识别与二分类" class="headerlink" title="面部识别与二分类"></a>面部识别与二分类</h2><p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/%E9%9D%A2%E9%83%A8%E8%AF%86%E5%88%AB%E4%B8%8E%E4%BA%8C%E5%88%86%E7%B1%BB.png" alt="面部识别与二分类"></p>
+<p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/%E9%9D%A2%E9%83%A8%E8%AF%86%E5%88%AB%E4%B8%8E%E4%BA%8C%E5%88%86%E7%B1%BB2.png" alt="面部识别与二分类2"></p>
+<p><img src="/2020/05/25/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E4%BA%BA%E8%84%B8%E8%AF%86%E5%88%AB/%E9%9D%A2%E9%83%A8%E8%AF%86%E5%88%AB%E4%B8%8E%E4%BA%8C%E5%88%86%E7%B1%BB3.png" alt="面部识别与二分类3"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/" class="post-title-link" itemprop="url">Spark.md</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-22 18:37:15" itemprop="dateCreated datePublished" datetime="2020-05-22T18:37:15+08:00">2020-05-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><h3 id="Spark-简介"><a href="#Spark-简介" class="headerlink" title="Spark 简介"></a>Spark 简介</h3><p>Spark 具有如下 4 个主要特点：</p>
+<ul>
+<li>运行速度快。Spark 使用先进的 DAG（Directed Acyelic Graph，有向无环图）执行引擎，以支持循环数据流与内存计算，基于内存的执行速度可比 Hadoop MapReduce 快上百倍，基于磁盘的执行速度也能快十倍。</li>
+<li>容易使用。Spark 支持使用 Scala、Java、Python 和 R 语言进行编程，简洁的 API 设计有助于用户轻松构建并行程序，并且可以通过 Spark Shell 进行交互式编程。</li>
+<li>通用性。Spark 提供了完整而强大的技术栈，包括 SQL 查询、流式计算、机器学习和图算法组件，这些组件可以无缝整合在同一个应用中，足以应对复杂的计算。</li>
+<li>运行模式多样。Spark 可运行于独立的集群模式中，或者运行于 Hadoop 中，也可运行于 Amazon EC2 等云环境中，并且可以访问 HDFS、Cassandra、HBase、Hive等多种数据源。</li>
+</ul>
+<h3 id="Spark-与-Hadoop-的对比"><a href="#Spark-与-Hadoop-的对比" class="headerlink" title="Spark 与 Hadoop 的对比"></a>Spark 与 Hadoop 的对比</h3><p>Hadoop 虽然已成为大数据技术的事实标准，但其本身还存在诸多缺陷，最主要的缺陷是其 MapReduce 计算模型延迟过高，无法胜任实时、快速计算的需求，因而只适用于离线批处理的应用场景。</p>
+<p>Hadoop存在以下缺点：</p>
+<ul>
+<li>表达能力有限。计算都必须要转化成 Map 和 Reduce 两个操作，但这并不适合所有的情况，难以描述复杂的数据处理过程。</li>
+<li>磁盘 IO 开销大。每次执行时都需要从磁盘读取数据，并且在计算完成后需要将中间结果写人到磁盘中，IO 开销较大。</li>
+<li>延迟高。一次计算可能需要分解成一系列按顺序执行的 MapReduce 任务，任务之间的衔接由于涉及到 IO 开销，会产生较高延迟。而且，在前一个任务执行完成之前，其他任务无法开始，因此难以胜任复杂、多阶段的计算任务。</li>
+</ul>
+<p>Spark 在借鉴 Hadoop MapReduce 优点的同时，很好地解决了 MapReduce 所面临的问题。相比于 MapReduce，Spark主要具有如下优点：</p>
+<ul>
+<li>Spark 的计算模式也属于 MapReduce，但不局限于 Map 和 Reduce 操作，还提供了多种数据集操作类型，编程模型比 MapReduce 更灵活。</li>
+<li>Spark 提供了内存计算，中间结果直接放到内存中，带来了更高的迭代运算效率。</li>
+<li>Spark 基于 DAG 的任务调度执行机制，要优于 MapReduce 的迭代执行机制。</li>
+</ul>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Hadoop%E4%B8%8ESpark%E7%9A%84%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E5%AF%B9%E6%AF%94.png" alt="Hadoop与Spark的执行流程对比"></p>
+<p>Spark 最大的特点就是将计算数据、中间结果都存储在内存中，大大减少了 IO 开销，因而 Spark 更适合于迭代运算比较多的数据挖掘与机器学习运算。</p>
+<p>使用 Hadoop 进行迭代计算非常耗资源，因为每次迭代都需要从磁盘中写人、读取中间数据，IO 开销大。而 Spark 将数据载人内存后，之后的迭代计算都可以直接使用内存中的中间结果作运算，避免了从磁盘中频繁读取数据。</p>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Hadoop%E4%B8%8ESpark%E6%89%A7%E8%A1%8C%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E7%9A%84%E6%97%B6%E9%97%B4%E5%AF%B9%E6%AF%94.png" alt="Hadoop与Spark执行逻辑回归的时间对比"></p>
+<p>在实际进行开发时，使用 Hadoop 需要编写不少相对底层的代码，不够高效。相对而言，Spark 提供了多种高层次、简洁的 API。通常情况下，对于实现相同功能的应用程序，Hadoop 的代码量要比 Spark 多 2~5 倍。更重要的是，Spark 提供了实时交互式编程反馈，可以方便地验证、调整算法。</p>
+<p>尽管 Spark 相对于 Hadoop 而言具有较大优势，但 Spark 并不能完全替代 Hadoop，主要用于替代 Hadoop 中的 MapReduce 计算模型。实际上，Spark 已经很好地融入了 Hadoop 生态圈，并成为其中的重要一员，它可以借助于 YARN 实现资源调度管理，借助于 HDFS 实现分布式存储。此外，Hadoop 可以使用廉价的、异构的机器来做分布式存储与计算，但是 Spark 对硬件的要求稍高一些，对内存与 CPU 有一定的要求。</p>
+<h2 id="Spark-生态系统"><a href="#Spark-生态系统" class="headerlink" title="Spark 生态系统"></a>Spark 生态系统</h2><p>在实际应用中，大数据处理主要包括以下三个类型：</p>
+<ul>
+<li>复杂的批量数据处理：时间跨度通常在数十分钟到数小时之间。</li>
+<li>基于历史数据的交互式查询：时间跨度通常在数十秒到数分钟之间。</li>
+<li>基于实时数据流的数据处理：时间跨度通常在数百毫秒到数秒之间。</li>
+</ul>
+<p>目前，已有很多相对成熟的开源软件用于处理以上三种情景。</p>
+<ul>
+<li>可以利用 Hadoop MapReduce 来进行批量数据处理；</li>
+<li>可以用 Impala 来进行交互式查询（Impala 与 Hive 相似，但底层引擎不同，提供了实时交互式 SQL 查询）；</li>
+<li>对于流式数据处理可以采用开源流计算框架 Storm。</li>
+</ul>
+<p>一些企业可能只会涉及其中部分应用场景，只需部署相应软件即可满足业务需求，但是对于互联网公司而言，通常会同时存在以上三种场景，就需要同时部署三种不同的软件，这样做难免会带来一些问题。</p>
+<ul>
+<li>不同场景之间输人输出数据无法做到无缝共享，通常需要进行数据格式的转换。</li>
+<li>不同的软件需要不同的开发和维护团队，带来了较高的使用成本。</li>
+<li>比较难以对同一个集群中的各个系统进行统一的资源协调和分配。</li>
+</ul>
+<p>Spark 的设计遵循“一个软件栈满足不同应用场景”的理念，逐渐形成了一套完整的生态系统，既能够提供内存计算框架，也可以支持 SQL 即席查询、实时流式计算、机器学习和图计算等。Spark 可以部署在资源管理器 YARN 之上，提供一站式的大数据解决方案。因此，Spark 所提供的生态系统足以应对上述三种场景，即同时支持批处理、交互式查询和流数据处理。</p>
+<p>Spark 生态系统主要包含了 Spark Core、Spark SQL、Spark Streaming、MLlib 和 GraphX 等组件，各个组件的具体功能如下：</p>
+<ol>
+<li>Spark Core<blockquote>
+<p>Spark Core 包含 Spark 的基本功能，如内存计算、任务调度、部署模式、故障恢复、存储管理等，主要面向批数据处理。Spark 建立在统一的抽象 RDD 之上，使其可以以基本一致的方式应对不同的大数据处理场景。</p>
+</blockquote>
+</li>
+<li>Spark SQL<blockquote>
+<p>Spark SQL 允许开发人员直接处理 RDD，同时也可查询 Hive、HBase 等外部数据源。Spark SQL 的一个重要特点是其能够统一处理关系表和 RDD，使得开发人员不需要自己编写 Spark 应用程序，开发人员可以轻松地使用 SQL 命令进行查询，并进行更复杂的数据分析。</p>
+</blockquote>
+</li>
+<li>Spark Streaming<blockquote>
+<p>Spark Streaming 支持高吞吐量、可容错处理的实时流数据处理，其核心思路是将流数据分解成一系列短小的批处理作业，每个短小的批处理作业都可以使用 Spark Core 进行快速处理。Spark Streaming 支持多种数据输入源，如 Kafka、Flume 和 TCP 套接字等。</p>
+</blockquote>
+</li>
+<li>MLlib（机器学习）<blockquote>
+<p>MLlib 提供了常用机器学习算法的实现，包括聚类、分类、回归、协同过滤等，降低了机器学习的门槛，开发人员只要具备一定的理论知识就能进行机器学习的工作。</p>
+</blockquote>
+</li>
+<li>GraphX（图计算）<blockquote>
+<p>GraphX 是 Spark 中用于图计算的 API，可认为是 Pregel 在 Spark 上的重写及优化，GraphX 性能良好，拥有丰富的功能和运算符，能在海量数据上自如地运行复杂的图算法。</p>
+</blockquote>
+</li>
+</ol>
+<p>需要说明的是，无论是 Spark SQL、Spark Streaming、MLlib 还是 GraphX，都可以使用 Spark Core 的 API 处理问题，它们的方法几乎是通用的，处理的数据也可以共享，不同应用之间的数据可以无缝集成。</p>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF.png" alt="Spark的应用场景"></p>
+<h2 id="Spark-运行架构"><a href="#Spark-运行架构" class="headerlink" title="Spark 运行架构"></a>Spark 运行架构</h2><h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><ul>
+<li>RDD：是弹性分布式数据集（Resilient Distributed Dataset）的英文缩写，是分布式内存的一个抽象概念，提供了一种高度受限的共享内存模型。</li>
+<li>DAG：是 Directed Acyclic Graph（有向无环图）的英文缩写，反映 RDD 之间的依赖关系。</li>
+<li>Executor：是运行在工作节点（Worker Node）上的一个进程，负责运行任务，并为应用程<br>序存储数据。</li>
+<li>应用：用户编写的 Spark 应用程序。</li>
+<li>任务：运行在 Executor 上的工作单元。</li>
+<li>作业：一个作业包含多个 RDD 及作用于相应 RDD 上的各种操作。</li>
+<li>阶段：是作业的基本调度单位，一个作业会分为多组任务，每组任务被称为“阶段”，或者<br>也被称为“任务集”。</li>
+</ul>
+<h3 id="架构设计"><a href="#架构设计" class="headerlink" title="架构设计"></a>架构设计</h3><p>Spark 运行架构包括集群资源管理器（Cluster Manager）、运行作业任务的工作节点（WorkerNode）、每个应用的任务控制节点（Driver）和每个工作节点上负责具体任务的执行进程（Executor）。其中，集群资源管理器可以是 Spark 自带的资源管理器，也可以是 YARN 或 Mesos 等资源管理框架。</p>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E8%BF%90%E8%A1%8C%E6%9E%B6%E6%9E%84.png" alt="Spark运行架构"></p>
+<p>与 Hadoop MapReduce 计算框架相比，Spark 所采用的 Executor 有两个优点：</p>
+<ul>
+<li>一是利用多线程来执行具体的任务（Hadoop MapReduce 采用的是进程模型），减少任务的启动开销；</li>
+<li>二是 Executor 中有一个 BlockManager 存储模块，会将内存和磁盘共同作为存储设备，当需要多轮迭代计算时，可以将中间结果存储到这个存储模块里，下次需要时就可以直接读该存储模块里的数据，而不需要读写到 HDFS 等文件系统里，因而有效减少了 IO 开销；或者在交互式查询场景下，预先将表缓存到该存储系统上，从而可以提高读写 IO 性能。</li>
+</ul>
+<p>在 Spark 中，一个应用（Application）由一个任务控制节点（Driver）和若干个作业（Job）构成，一个作业由多个阶段（Stage）构成，一个阶段由多个任务（Task）组成。当执行一个应用时，任务控制节点会向集群管理器（Cluster Manager）申请资源，启动 Executor，并向 Executor 发送应用程序代码和文件，然后在 Executor 上执行任务，运行结束后执行结果会返回给任务控制节点，或者写到 HDFS 或者其他数据库中。</p>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E4%B8%AD%E5%90%84%E7%A7%8D%E6%A6%82%E5%BF%B5%E4%B9%8B%E9%97%B4%E5%AE%9A%E7%9A%84%E7%9B%B8%E4%BA%92%E5%85%B3%E7%B3%BB.png" alt="Spark中各种概念之间定的相互关系"></p>
+<h3 id="Spark-运行基本流程"><a href="#Spark-运行基本流程" class="headerlink" title="Spark 运行基本流程"></a>Spark 运行基本流程</h3><p>Spark 运行基本流程如下：</p>
+<ol>
+<li>当一个 Spark 应用被提交时，首先需要为这个应用构建起基本的运行环境，即由任务控制节点（Driver）创建一个 SparkContext，由 SparkContext 负责和资源管理器（Cluster Manager）的通信以及进行资源的申请、任务的分配和监控等。SparkContext 会向资源管理器注册并申请运行 Executor 的资源。</li>
+<li>资源管理器为 Executor 分配资源，并启动 Executor 进程，Executor 运行情况将随着“心跳”发送到资源管理器上。</li>
+<li>SparkContext 根据 RDD 的依赖关系构建 DAG 图，DAG 图提交给 DAG 调度器（DAGScheduler）进行解析，将 DAG 图分解成多个“阶段”（每个阶段都是一个任务集），并且计算出各个阶段之间的依赖关系，然后把一个个“任务集”提交给底层的任务调度器（TaskScheduler）进行处理；Executor 向 SparkContext 申请任务，任务调度器将任务分发给 Executor 运行，同时 SparkContext 将应用程序代码发放给 Executor。</li>
+<li>任务在 Executor 上运行，把执行结果反馈给任务调度器，然后反馈给 DAG 调度器，运行完毕后写人数据并释放所有资源。</li>
+</ol>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E8%BF%90%E8%A1%8C%E5%9F%BA%E6%9C%AC%E6%B5%81%E7%A8%8B%E5%9B%BE.png" alt="Spark运行基本流程图"></p>
+<p>Spark 运行架构具有以下特点：</p>
+<ol>
+<li>每个应用都有自己专属的 Executor 进程，并且该进程在应用运行期间一直驻留。Executor 进程以多线程的方式运行任务，减少了多进程任务频繁的启动开销，使得任务执行变得非常高效和可靠。</li>
+<li>Spark 运行过程与资源管理器无关，只要能够获取 Executor 进程并保持通信即可。</li>
+<li>Executor 上有一个 BlockManager 存储模块，类似于键值存储系统（把内存和磁盘共同作为存储设备），在处理迭代计算任务时，不需要把中间结果写人到 HDFS 等文件系统，而是直接放在这个存储系统上，后续有需要时就可以直接读取；在交互式查询场景下，也可以把表提前缓存到这个存储系统上，提高读写 IO 性能。</li>
+<li>任务采用了数据本地性和推测执行等优化机制。数据本地性是尽量将计算移到数据所在的节点上进行，即“计算向数据靠拢”，因为移动计算比移动数据所占的网络资源要少得多。而且，Spark 采用了延时调度机制，可以在更大的程度上实现执行过程优化。比如，拥有数据的节点当前正被其他的任务占用，那么在这种情况下是否需要将数据移动到其他的空闲节点上呢？答案是不一定。因为，如果经过预测发现当前节点结束当前任务的时间要比移动数据的时间还要少，那么调度就会等待，直到当前节点可用。</li>
+</ol>
+<h3 id="RDD-的设计与运行原理"><a href="#RDD-的设计与运行原理" class="headerlink" title="RDD 的设计与运行原理"></a>RDD 的设计与运行原理</h3><h4 id="RDD-设计背景"><a href="#RDD-设计背景" class="headerlink" title="RDD 设计背景"></a>RDD 设计背景</h4><p>在实际应用中，存在许多迭代式算法（比如机器学习、图算法等）和交互式数据挖掘工具，这些应用场景的共同之处是，不同计算阶段之间会重用中间结果，即一个阶段的输出结果会作为下一个阶段的输入。但是，目前的 MapReduce 框架都是把中间结果写人到 HDFS 中，带来了大量的数据复制、磁盘 IO 和序列化开销。虽然类似 Pregel 等图计算框架也是将结果保存在内存当中，但是这些框架只能支持一些特定的计算模式，并没有提供种通用的数据抽象。RDD 就是为了满足这种需求而出现的，它提供了一个抽象的数据架构，我们不必担心底层数据的分布式特性，只需将具体的应用逻辑表达为一系列转换处理，不同 RDD 之间的转换操作形成依赖关系，可以实现管道化，从而避免了中间结果的存储，大大降低了数据复制、磁盘 IO 和序列化开销。</p>
+<h4 id="RDD-概念"><a href="#RDD-概念" class="headerlink" title="RDD 概念"></a>RDD 概念</h4><p>一个 RDD 就是一个分布式对象集合，本质上是一个只读的分区记录集合，每个 RDD 可以分成多个分区，每个分区就是一个数据集片段，并且一个 RDD 的不同分区可以被保存到集群中不同的节点上，从而可以在集群中的不同节点上进行并行计算。RDD 提供了一种高度受限的共享内存模型，即 RDD 是只读的记录分区的集合，不能直接修改，只能基于稳定的物理存储中的数据集来创建 RDD，或者通过在其他 RDD 上执行确定的转换操作（如 map、join 和 groupBy）而创建得到新的 RDD。</p>
+<p>RDD 提供了一组丰富的操作以支持常见的数据运算，分为“行动”（Action）和“转换”（Transformation）两种类型：</p>
+<ul>
+<li>前者用于执行计算并指定输出的形式</li>
+<li>后者指定 RDD 之间的相互依赖关系。</li>
+</ul>
+<p>两类操作的主要区别是，转换操作（如map、filter、 groupBy、 join等）接受 RDD 并返回 RDD，而行动操作（如 count、collect 等）接受 RDD 但是返回非 RDD（即输出一个值或结果）。</p>
+<p>RDD提供的转换接口都非常简单，都是类似 map、filter、 groupBy、 join 等粗粒度的数据转换操作，而不是针对某个数据项的细粒度修改。因此，RDD 比较适合对于数据集中元素执行相同操作的批处理式应用，而不适合用于需要异步、细粒度状态的应用，比如 Web 应用系统、增量式的网页爬虫等。正因为这样，这种粗粒度转换接口设计，会使人直觉上认为 RDD 的功能很受限、不够强大。但是，实际上 RDD 已经被实践证明可以很好地应用于许多并行计算应用中，可以具备很多现有计算框架（如 MapReduce、SQL、 Pregel 等）的表达能力，并且可以应用于这些框架处理不了的交互式数据挖掘应用。</p>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/Spark%E7%9A%84%E8%BD%AC%E6%8D%A2%E5%92%8C%E8%A1%8C%E5%8A%A8%E6%93%8D%E4%BD%9C.png" alt="Spark的转换和行动操作"></p>
+<h4 id="RDD-特性"><a href="#RDD-特性" class="headerlink" title="RDD 特性"></a>RDD 特性</h4><ol>
+<li>高效的容错性。现有的分布式共享内存、键值存储、内存数据库等，为了实现容错，必须在集群节点之间进行数据复制或者记录日志，也就是在节点之间会发生大量的数据传输，这对于数据密集型应用而言会带来很大的开销。在 RDD 的设计中，数据只读，不可修改，如果需要修改数据，必须从父 RDD 转换到子 RDD，由此在不同 RDD 之间建立了血缘关系。所以，RDD 是一种天生具有容错机制的特殊集合，不需要通过数据冗余的方式（比如检查点）实现容错，而只需通过 RDD 父子依赖（血缘）关系重新计算得到丢失的分区来实现容错，无需回滚整个系统，这样就避免了数据复制的高开销，而且重算过程可以在不同节点之间并行进行，实现了高效的容错。此外，RDD 提供的转换操作都是一些粗粒度的操作（比如 map、filter 和 join），RDD 依赖关系只需要记录这种粗粒度的转换操作，而不需要记录具体的数据和各种细粒度操作的日志（比如对哪个数据项进行了修改），这就大大降低了数据密集型应用中的容错开销。</li>
+<li>中间结果持久化到内存。数据在内存中的多个 RDD 操作之间进行传递，不需要“落地”到磁盘上，避免了不必要的读写磁盘开销。</li>
+<li>存放的数据可以是 Java 对象，避免了不必要的对象序列化和反序列化开销。</li>
+</ol>
+<h4 id="RDD-之间的依赖关系"><a href="#RDD-之间的依赖关系" class="headerlink" title="RDD 之间的依赖关系"></a>RDD 之间的依赖关系</h4><p>RDD 中不同的操作会使得不同 RDD 中的分区产生不同的依赖。RDD 中的依赖关系分为窄依赖（Narrow Dependency）与宽依赖（Wide Dependency）。</p>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/RDD%E7%9A%84%E5%AE%BD%E4%BE%9D%E8%B5%96%E5%92%8C%E7%AA%84%E4%BE%9D%E8%B5%96.png" alt="RDD的宽依赖和窄依赖"></p>
+<p>窄依赖表现为一个父 RDD 的分区对应于一个子 RDD 的分区，或多个父 RDD 的分区对应于一个子 RDD 的分区。比如图中，RDD1 是 RDD2 的父 RDD，RDD2 是子 RDD，RDD1 的分区 1 对应于 RDD2 的一个分区（即分区 4）；再比如，RDD6 和 RDD7 都是RDD8的父RDD, RDD6 中的分区（分区 15）和 RDD7 中的分区（分区18），两者都对应于 RDD8 中的一个分区（分区 21）。</p>
+<p>宽依赖则表现为存在一个父 RDD 的一个分区对应一个子 RDD 的多个分区。比如中，RDD9 是 RDD12 的父 RDD，RDD9 中的分区 24 对应了 RDD12 中的两个分区（即分区 27 和分区 28）。</p>
+<p>总体而言，如果父 RDD 的一个分区只被一个子 RDD 的一个分区所使用就是窄依赖，否则就<br>是宽依赖。窄依赖典型的操作包括 map、filter、 union 等，宽依赖典型的操作包括groupByKey、sortByKey 等。对于连接（Join）操作，可以分为两种情况。</p>
+<ol>
+<li>对输人进行协同划分，属于窄依赖，如图所示。所谓协同划分（Co-partitioned）是指多个父 RDD 的某一分区的所有“键（Key）”落在子 RDD的同一个分区内，不会产生同一个父 RDD 的某一分区落在子 RDD 的两个分区的情况。</li>
+<li>对输人做非协同划分，属于宽依赖，如图所示。</li>
+</ol>
+<p>对于窄依赖的 RDD，可以以流水线的方式计算所有父分区，不会造成网络之间的数据混合。对于宽依赖的 RDD，则通常伴随着 Shuffle 操作，即首先需要计算好所有父分区数据，然后在节<br>点之间进行 Shuffle。</p>
+<p>Spark 的这种依赖关系设计，使其具有了天生的容错性，大大加快了 Spark 的执行速度。因为，RDD 数据集通过“血缘关系”记住了它是如何从其他 RDD 中演变过来的，血缘关系记录的是粗颗粒度的转换操作行为，当这个 RDD 的部分分区数据丢失时，它可以通过血缘关系获取足够的信息来重新运算和恢复丢失的数据分区，由此带来了性能的提升。相对而言，在两种依赖关系中，窄依赖的失败恢复更为高效，它只需要根据父 RDD 分区重新计算丢失的分区即可（不需要重新计算所有分区），而且可以并行地在不同节点上进行重新计算。而对于宽依赖而言，单个节点失效通常意味着重新计算过程会涉及多个父 RDD 分区，开销较大。此外，Spark 还提供了数据检查点和记录日志，用于持久化中间 RDD，从而使得在进行失败恢复时不需要追溯到最开始的阶段。在进行故障恢复时，Spark 会对数据检查点开销和重新计算 RDD 分区的开销进行比较，从而自动选择最优的恢复策略。</p>
+<h4 id="阶段的划分"><a href="#阶段的划分" class="headerlink" title="阶段的划分"></a>阶段的划分</h4><p>Spark 通过分析各个 RDD 的依赖关系生成了 DAG，再通过分析各个 RDD 中的分区之间的依赖关系来决定如何划分阶段，具体划分方法是：在DAG中进行反向解析，遇到宽依赖就断开，遇到窄依赖就把当前的 RDD 加入到当前的阶段中；将窄依赖尽量划分在同一个阶段中，可以实现流水线计算</p>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/RDD%E9%98%B6%E6%AE%B5%E5%88%92%E5%88%86.png" alt="RDD阶段划分"></p>
+<p>例如，根据 RDD 分区的依赖关系划分阶段，假设从 HDFS 中读入数据生成 3 个不同的 RDD（即 A、C 和 E），通过一系列转换操作后再将计算结果保存回 HDFS。对 DAG 进行解析时，在依赖图中进行反向解析，由于从 RDD A到 RDD B 的转换以及从 RDD B 和 RDD F 到 RDD G 的转换都属于宽依赖，因此在宽依赖处断开后可以得到 3 个阶段，即阶段 1、阶段 2和阶段 3。由图可以看出，在阶段 2 中，从 map 到 union 都是窄依赖，这两步操作可以形成一个流水线操作。比如，分区 7 通过 map 操作生成的分区 9，可以不用等待分区 8 到分区 10 这个转换操作的计算结束，而是继续进行 union 操作，转换得到分区 13，这样流水线执行大大提高了计算的效率。</p>
+<p>由上述论述可知，把一个 DAG 图划分成多个阶段以后，每个阶段都代表了一组关联的、相互之间没有 Shuffle 依赖关系的任务组成的任务集合。每个任务集合会被提交给任务调度器（TaskScheduler）进行处理，由任务调度器将任务分发给 Executor 运行。</p>
+<h4 id="RDD-运行过程"><a href="#RDD-运行过程" class="headerlink" title="RDD 运行过程"></a>RDD 运行过程</h4><ol>
+<li>创建 RDD 对象。</li>
+<li>SparkContext 负责计算 RDD 之间的依赖关系，构建 DAG。</li>
+<li>DAGScheduler 负责把 DAG 图分解成多个阶段，每个阶段中包含了多个任务，每个任务会被任务调度器分发给各个工作节点（Worker Node）上的 Executor 去执行。</li>
+</ol>
+<p><img src="/2020/05/22/%E5%A4%A7%E6%95%B0%E6%8D%AE/Spark/RDD%E8%BF%90%E8%A1%8C%E8%BF%87%E7%A8%8B.png" alt="RDD运行过程"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/19/%E5%B7%A5%E5%85%B7/VSCode/VSCode-%E5%BF%AB%E6%8D%B7%E9%94%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -774,441 +1290,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/" class="post-title-link" itemprop="url">Hadoop.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-10 12:58:16" itemprop="dateCreated datePublished" datetime="2020-05-10T12:58:16+08:00">2020-05-10</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Hadoop-的优化与发展"><a href="#Hadoop-的优化与发展" class="headerlink" title="Hadoop 的优化与发展"></a>Hadoop 的优化与发展</h2><h3 id="Hadoop-的局限与不足"><a href="#Hadoop-的局限与不足" class="headerlink" title="Hadoop 的局限与不足"></a>Hadoop 的局限与不足</h3><p>Hadoop1.0 的核心组件（仅指 MapReduce 和 HDFS，不包括 Hadoop 生态系统内的 Pig、Hive、HBase 等其他组件）主要存在以下不足。</p>
-<ol>
-<li>抽象层次低。需要手工编写代码来完成，有时只是为了实现一个简单的功能，也需要编写大量的代码。</li>
-<li>表达能力有限。MapReduce 把复杂分布式编程工作高度抽象到两个函数上，即 Map 和 Reduce，在降低开发人员程序开发复杂度的同时，却也带来了表达能力有限的问题，实际生产环境中的一些应用是无法用简单的 Map 和 Reduce 来完成的。</li>
-<li>开发者自己管理作业之间的依赖关系。一个作业（Job）只包含 Map 和 Reduce 两个阶段，通常的实际应用问题需要大量的作业进行协作才能顺利解决，这些作业之间往往存在复杂的依赖关系，但是 MapReduce 框架本身并没有提供相关的机制对这些依赖关系进行有效管理，只能由开发者自己管理。</li>
-<li>难以看到程序整体逻辑。用户的处理逻辑都隐藏在代码细节中，没有更高层次的抽象机制对程序整体逻辑进行设计，这就给代码理解和后期维护带来了障碍。</li>
-<li>执行迭代操作效率低。对于一些大型的机器学习、数据挖掘任务，往往需要多轮迭代才能得到结果。采用 MapReduce 实现这些算法时，每次迭代都是一次执行 Map、Reduce 任务的过程，这个过程的数据来自分布式文件系统 HDFS，本次迭代的处理结果也被存放到 HDFS 中，继续用于下一次迭代过程。反复读写 HDFS 文件中的数据，大大降低了迭代操作的效率。</li>
-<li>资源浪费。在 MapReduce 框架设计中，Reduce 任务需要等待所有 Map 任务都完成后才可以开始，造成了不必要的资源浪费。</li>
-<li>实时性差。只适用于离线批数据处理，无法支持交互式数据处理、实时数据处理。</li>
-</ol>
-<h3 id="针对-Hadoop-的改进与提升"><a href="#针对-Hadoop-的改进与提升" class="headerlink" title="针对 Hadoop 的改进与提升"></a>针对 Hadoop 的改进与提升</h3><p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/Hadoop1%E5%88%B02.png" alt="Hadoop1到2"></p>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/Hadoop%E7%A5%9E%E6%80%81%E7%B3%BB%E7%BB%9F.png" alt="Hadoop神态系统"></p>
-<h2 id="HDFS2-0-的新特性"><a href="#HDFS2-0-的新特性" class="headerlink" title="HDFS2.0 的新特性"></a>HDFS2.0 的新特性</h2><p>相对于之前的 HDFS1.0 而言，HDFS2.0 增加了 HDFS HA 和 HDFS 联邦等新特性。</p>
-<h3 id="HDFS-HA"><a href="#HDFS-HA" class="headerlink" title="HDFS HA"></a>HDFS HA</h3><p>对于分布式文件系统 HDFS 而言，名称节点（NameNode）是系统的核心节点，存储了各类元数据信息，并负责管理文件系统的命名空间和客户端对文件的访问。但是，在 HDFS1.0 中，只存在一个名称节点，一旦这个唯一的名称节点发生故障，就会导致整个集群变得不可用，这就是常说的“单点故障问题”。虽然 HDFS1.0 中存在一个“第二名称节点（Secondary NameNode）”，但是第二名称节点并不是名称节点的备用节点，它与名称节点有着不同的职责，其主要功能是周期性地从名称节点获取命名空间镜像文件（FsImage）和修改日志（EditLog），进行合并后再发送给名称节点，替换掉原来的 FsImage，以防止日志文件 EditLog 过大，导致名称节点失败恢复时消<br>耗过多时间。合并后的命名空间镜像文件 FsImage 在第二名称节点中也保存一份，当名称节点失效的时候，可以使用第二名称节点中的 FsImage 进行恢复。</p>
-<p>由于第二名称节点无法提供“热备份”功能，即在名称节点发生故障的时候，系统无法实时切换到第二名称节点立即对外提供服务，仍然需要进行停机恢复，因此 HDFS1.0 的设计是存在单点故障问题的。为了解决单点故障问题，HDFS2.0 采用了 HA（High Availability）架构。在一个典型的 HA 集群中，一般设置两个名称节点，其中一个名称节点处于“活跃（Active）”状态，另一个处于“待命（Standby）”状态。处于活跃状态的名称节点负责对外处理所有客户端的请求，而处于待命状态的名称节点则作为备用节点，保存了足够多的系统元数据，当名称节点出现故障时提供快速恢复能力。也就是说，在 HDFS HA 中，处于待命状态的名称节点提供了“热备份”，一旦活跃名称节点出现故障，就可以立即切换到待命名称节点，不会影响到系统的正常对外服务。</p>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS%20HA.png" alt="HDFS HA"></p>
-<p>由于待命名称节点是活跃名称节点的“热备份”，因此活跃名称节点的状态信息必须实时同步到待命名称节点。两种名称节点的状态同步，可以借助于一个共享存储系统来实现，比如 NFS（Network File Systerm）、QJM（Quorum Jourmal Manager）或者 Zookeeper。活跃名称节点将更新数据写人到共享存储系统，待命名称节点会一直监听该系统，一旦发现有新的写人，就立即从公共存储系统中读取这些数据并加载到自己的内存中，从而保证与活跃名称节点状态完全同步。</p>
-<p>此外，名称节点中保存了数据块（Block）到实际存储位置的映射信息，即每个数据块是由哪个数据节点存储的。当一个数据节点加入 HDFS 集群时，它会把自己所包含的数据块列表报告给名称节点，此后会通过“心跳”的方式定期执行这种告知操作，以确保名称节点的块映射是最新的。因此，为了实现故障时的快速切换，必须保证待命名称节点一直包含最新的集群中各个块的位置信息。为了做到这一点，需要给数据节点配置两个名称节点的地址（即活跃名称节点和待命名称节点），并把块的位置信息和心跳信息同时发送到这两个名称节点。为了防止出现“两个管家”现象，HA 还要保证任何时刻都只有一个名称节点处于活跃状态，否则，如果有两个名称节点处于活跃状态，HDFS 集群中出现“两个管家”，就会导致数据丢失或者其他异常，这个任务是由 Zookeeper 来实现的，Zookeeper 可以确保任意时刻只有一个名称节点提供对外服务。</p>
-<h3 id="HDFS-联邦"><a href="#HDFS-联邦" class="headerlink" title="HDFS 联邦"></a>HDFS 联邦</h3><h4 id="HDFS1-0-中存在的问题"><a href="#HDFS1-0-中存在的问题" class="headerlink" title="HDFS1.0 中存在的问题"></a>HDFS1.0 中存在的问题</h4><p>HDFS1.0 采用单名称节点的设计，不仅会带来单点故障问题，还存在可扩展性、性能和隔离性等问题。在可扩展性方面，名称节点把整个 HDFS 文件系统中的元数据信息都保存在自己的内存中，HDFS1.0 中只有一个名称节点，不可以水平扩展，而单个名称节点的内存空间是有上限的，这限制了系统中数据块、文件和目录的数目。是否可以通过纵向扩展的方式（即为单个名称节点增加更多的 CPU、内存等资源）解决这个问题呢？答案是否定的。纵向扩展带来的第一个问题就是，会带来过长的系统启动时间，比如一个具有 50 GB 内存的 HDFS 启动一次大概需要消耗 30min~2h，单纯增大内存空间只会让系统启动时间变得更长。其次，当在内存空间清理时发生错误，就会导致整个 HDFS 集群宕机。</p>
-<p>在系统整体性能方面，整个 HDFS 文件系统的性能会受限于单个名称节点的吞吐量。在隔离性方面，单个名称节点难以提供不同程序之间的隔离性，一个程序可能会影响其他运行的程序（比如一个程序消耗过多资源导致其他程序无法顺利运行）。HDFS HA 虽然提供了两个名称节点，但是在某个时刻也只会有一个名称节点处于活跃状态，另个则处于待命状态。因而，HDFS HA 在本质上还是单名称节点，只是通过“热备份”设计方式解决了单点故障问题，并没有解决可扩展性、系统性能和隔离性三个方面的问题。</p>
-<h4 id="HDFS-联邦的设计"><a href="#HDFS-联邦的设计" class="headerlink" title="HDFS 联邦的设计"></a>HDFS 联邦的设计</h4><p>HDFS 联邦可以很好地解决上述三个方面的问题。在 HDFS 联邦中，设计了多个相互独立的名称节点，使得 HDFS 的命名服务能够水平扩展，这些名称节点分别进行各自命名空间和块的管理，相互之间是联邦关系，不需要彼此协调。HDFS 联邦并不是真正的分布式设计，但是采用这种简单的“联合”设计方式，在实现和管理复杂性方面，都要远低于真正的分布式设计，而且可以快速满足需求。在兼容性方面，HDFS 联邦具有良好的向后兼容性，可以无缝地支持单名称节点架构中的配置。所以，原有针对单名称节点的部署配置，不需要作任何修改就可以继续工作。</p>
-<p>HDFS 联邦中的名称节点提供了命名空间和块管理功能。在 HDFS 联邦中，所有名称节点会共享底层的数据节点存储资源。每个数据节点要向集群中所有的名称节点注册，并周期性地向名称节点发送“心跳”和块信息，报告自已的状态，同时也会处理来自名称节点的指令。</p>
-<p>HDFS1.0 只有一个命名空间，这个命名空间使用底层数据节点全部的块。与 HDFS1.0 不同的是，HDFS 联邦拥有多个独立的命名空间，其中，每一个命名空间管理属于自己的一组块，这些属于同一个命名空间的块构成一个“块池”（Block Pool）。每个数据节点会为多个块池提供块的存储。可以看出，数据节点是一个物理概念，而块池则属于逻辑概念，一个块池是一组块的逻辑集合，块池中的各个块实际上是存储在各个不同的数据节点中的。因此，HDFS 联邦中的一个名称节点失效，也不会影响到与它相关的数据节点继续为其他名称节点提供服务。</p>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/HDFS%E8%81%94%E9%82%A6%E6%9E%B6%E6%9E%84.png" alt="HDFS联邦架构"></p>
-<h4 id="HDFS-联邦的访问方式"><a href="#HDFS-联邦的访问方式" class="headerlink" title="HDFS 联邦的访问方式"></a>HDFS 联邦的访问方式</h4><p>对于 HDFS 联邦中的多个命名空间，可以采用客户端挂载表（Client Side Mount Table）方式进行数据共享和访问。每个阴影三角形代表一个独立的命名空间，上方空白三角形表示从客户方向去访问下面子命名空间。客户可以访问不同的挂载点来访问不同的子命名空间。这就是 HDFS 联邦中命名空间管理的基本原理，即把各个命名空间挂载到全局“挂载表”（Mount-table）中，实现数据全局共享；同样地，命名空间挂载到个人的挂载表中，就成为应用程序可见的命名空间。</p>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8C%82%E8%BD%BD%E8%A1%A8%E6%96%B9%E5%BC%8F%E8%AE%BF%E9%97%AE%E5%A4%9A%E4%B8%AA%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4.png" alt="客户端挂载表方式访问多个命名空间"></p>
-<h4 id="HDFS-联邦相对于-HDFS1-0-的优势"><a href="#HDFS-联邦相对于-HDFS1-0-的优势" class="headerlink" title="HDFS 联邦相对于 HDFS1.0 的优势"></a>HDFS 联邦相对于 HDFS1.0 的优势</h4><p>采用 HDFS 联邦的设计方式，可解决单名称节点存在的以下 3 个问题。</p>
-<ol>
-<li>HDFS 集群可扩展性。多个名称节点各自分管一部分目录，使得个集群可以扩展到更多节点，不再像 HDFS1.0 中那样由于内存的限制制约文件存储数目。</li>
-<li>性能更高效。多个名称节点管理不同的数据，且同时对外提供服务，将为用户提供更高的读写吞吐率。</li>
-<li>良好的隔离性。用户可根据需要将不同业务数据交由不同名称节点管理，这样不同业务之间影响很小。</li>
-</ol>
-<p>需要注意的是，HDFS 联邦并不能解决单点故障问题，也就是说，每个名称节点都存在单点故障问题，需要为每个名称节点部署一个后备名称节点，以应对名称节点宕机后对业务产生的影响。</p>
-<h2 id="新一代资源管理调度框架-YARN"><a href="#新一代资源管理调度框架-YARN" class="headerlink" title="新一代资源管理调度框架 YARN"></a>新一代资源管理调度框架 YARN</h2><h3 id="MapReduce1-0-的缺陷"><a href="#MapReduce1-0-的缺陷" class="headerlink" title="MapReduce1.0 的缺陷"></a>MapReduce1.0 的缺陷</h3><p>MapReduce1.0 采用 Master/Slave 架构设计，包括二个 JobTracker 和若干个 TaskTracker，前者负责作业的调度和资源的管理，后者负责执行 JobTracker 指派的具体任务。这种架构设计具有一些很难克服的缺陷，具体如下。</p>
-<ol>
-<li>存在单点故障。由 JobTracker 负责所有 MapReduce 作业的调度，而系统中只有一个 JobTracker，因此会存在单点故障问题，即这个唯一的 JobTracker 出现故障就会导致系统不可用。</li>
-<li>JobTracker“大包大揽”导致任务过重。JobTracker 既要负责作业的调度和失败恢复，又要负责资源管理分配。执行过多的任务，需要消耗大量的资源，例如，当存在非常多的 MapReduce 任务时，JobTracker 需要巨大的内存开销，这也潜在地增加了 JobTracker 失败的风险。正因如此，业内普遍总结出 MapReduce1.0 支持主机数目的上限为 4000 个。</li>
-<li>容易出现内存溢出。在 TaskTracker 端，资源的分配并不考虑 CPU、内存的实际使用情况，而只是根据 MapReduce 任务的个数来分配资源，当两个具有较大内存消耗的任务被分配到同一个 TaskTracker 上时，很容易发生内存溢出的情况。</li>
-<li>资源划分不合理。资源（CPU、内存）被强制等量划分成多个“槽”（Slot），槽又被进一步划分为 Map 槽和 Reduce 槽两种，分别供 Map 任务和 Reduce 任务使用，彼此之间不能使用分配给对方的槽，也就是说，当 Map 任务已经用完 Map 槽时，即使系统中还有大量剩余的 Reduce 槽，也不能拿来运行 Map 任务，反之亦然。这就意味着，当系统中只存在单一 Map 任务或 Reduce 任务时，会造成资源的浪费。</li>
-</ol>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/MapReduce1.png" alt="MapReduce1"></p>
-<h3 id="YARN-设计思路"><a href="#YARN-设计思路" class="headerlink" title="YARN 设计思路"></a>YARN 设计思路</h3><p>为了克服 MapReduce1.0 版本的缺陷，Hadoop2.0 以后的版本对其核心子项目 MapReduce1.0 的体系结构进行了重新设计，生成了 MapReduce2.0 和 YARN（Yet Another Resource Negotiator）。YARN 架构设计基本思路就是“放权”，即不让 JobTracker 这一个组件承担过多的功能，把原 JobTracker 三大功能（资源管理、任务调度和任务监控）进行拆分，分别交给不同的新组件去处理。重新设计后得到的 YARN 包括 ResourceManager 、ApplicationMaster 和 NodeManager，其中，由 ResourceManager 负责资源管理，由 ApplicationMaster 负责任务调度和监控，由 NodeManager 负责执行原 TaskTracker 的任务。通过这种“放权”的设计，大大降低了 JobTracker 的负担，提升了系统运行的效率和稳定性。</p>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF.png" alt="YARN架构设计思路"></p>
-<p>在 Hadoop1.0 中，其核心子项目 MapReduce1.0 既是一个计算框架，也是一个资源管理调度框架。到了 Hadoop2.0 以后，MapReduce1.0 中的资源管理调度功能被单独分离出来形成了 YARN，它是一个纯粹的资源管理调度框架，而不是一个计算框架；而被剥离了资源管理调度功能的 MapReduce 框架就变成了 MapReduce2.0，它是运行在 YARN 之上的一个纯粹的计算框架，不再自己负责资源调度管理服务，而是由 YARN 为其提供资源管理调度服务。</p>
-<h3 id="YARN-体系架构"><a href="#YARN-体系架构" class="headerlink" title="YARN 体系架构"></a>YARN 体系架构</h3><p>YARN 体系结构中包含了三个组件：ResourceManager、ApplicationMaster 和 NodeManager。</p>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84.png" alt="YARN体系架构"></p>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E5%90%84%E4%B8%AA%E7%BB%84%E4%BB%B6%E7%9A%84%E5%8A%9F%E8%83%BD.png" alt="YARN各个组件的功能"></p>
-<p>ResourceManager（RM）是一个全局的资源管理器，负责整个系统的资源管理和分配，主要包括两个组件，即调度器（Scheduler）和应用程序管理器（Applications Manager）。调度器主要负责资源管理和分配，不再负责跟踪和监控应用程序的执行状态，也不负责执行失败恢复，因为这些任务都已经交给 ApplicationMaster 组件来负责。调度器接收来自 ApplicationMaster 的应用程序资源请求，并根据容量、队列等限制条件（如每个队列分配一定的资源，最多执行一定数量的作业等)，把集群中的资源以“容器”的形式分配给提出申请的应用程序，容器的选择通常会考虑应用程序所要处理的数据的位置，进行就近选择，从而实现“计算向数据靠拢”。在 MapReduce1.0 中，资源分配的单位是“槽”，而在 YARN 中是以容器（Container）作为动态资源分配单位，每个容器中都封装了一定数量的 CPU、内存、磁盘等资源，从而限定每个应用程序可以使用的资源量。同时，在 YARN 中调度器被设计成是一个可插拔的组件，YARN 不仅自身提供了许多种直接可用的调度器，也允许用户根据自己的需求重新设计调度器。应用程序管理器负责系统中所有应用程序的管理工作，主要包括应用程序提交、与调度器协商资源以启动 ApplicationMaster、 监控 ApplicationMaster 运行状态并在失败时重新启动等。</p>
-<p>在 Hadoop 平台上，用户的应用程序是以作业（Job）的形式提交的，然后一个作业会被分解成多个任务（包括 Map 任务和 Reduce 任务）进行分布式执行。ResourceManager 接收用户提交的作业，按照作业的上下文信息以及从 NodeManager 收集来的容器状态信息，启动调度过程，为用户作业启动一个 ApplicationMaster。</p>
-<p>ApplicationMaster 的主要功能是: </p>
-<ol>
-<li>当用户作业提交时，ApplicationMaster 与 ResourceManager 协商获取资源，ResourceManager 会以容器的形式为 ApplicationMaster 分配资源；</li>
-<li>把获得的资源进步分配给内部的各个任务（Map 任务或 Reduce 任务），实现资源的“二次分配”；</li>
-<li>与 NodeManager 保持交互通信进行应用程序的启动、运行、监控和停止，监控申请到的资源的使用情况，对所有任务的执行进度和状态进行监控，并在任务发生失败时执行失败恢复（即重新申请资源重启任务）；</li>
-<li>定时向 ResourceManager 发送“心跳”消息，报告资源的使用情况和应用的进度信息；</li>
-<li>当作业完成时，ApplicationMaster 向 ResourceManager 注销容器，执行周期完成。</li>
-</ol>
-<p>NodeManager 是驻留在一个 YARN 集群中的每个节点上的代理，主要负责容器生命周期管理，监控每个容器的资源（CPU、内存等）使用情况，跟踪节点健康状况，并以“心跳”的方式与 ResourceManager 保持通信，向 ResourceManager 汇报作业的资源使用情况和每个容器的运行状态，同时，它还要接收来自 ApplicationMaster 的启动/停止容器的各种请求。需要说明的是，NodeManager 主要负责管理抽象的容器，只处理与容器相关的事情，而不具体负责每个任务（Map 任务或 Reduce 任务）自身状态的管理，因为这些管理工作是由 ApplicationMaster 完成的，ApplicationMaster 会通过不断与 NodeManager 通信来掌握各个任务的执行状态。</p>
-<p>在集群部署方面，YARN 的各个组件是和 Hadoop 集群中的其他组件进行统一部署的。YARN 的 ResourceManager 组件和 HDFS 的名称节点（NameNode）部署在一个节点上，YARN 的 ApplicationMaster 及 NodeManager 是和 HDFS 的数据节点（DataNode）部署在一-起的。YARN 中的容器代表了 CPU、内存、网络等计算资源，它也是和 HDFS 的数据节点一起的。</p>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E5%92%8CHadoop%E5%B9%B3%E5%8F%B0%E5%85%B6%E4%BB%96%E7%BB%84%E4%BB%B6%E7%9A%84%E7%BB%9F%E4%B8%80%E9%83%A8%E7%BD%B2.png" alt="YARN和Hadoop平台其他组件的统一部署"></p>
-<h3 id="YARN-工作流程"><a href="#YARN-工作流程" class="headerlink" title="YARN 工作流程"></a>YARN 工作流程</h3><p>在 YARN 框架中执行一个 MapReduce 程序时，从提交到完成需要经历如下8个步骤。</p>
-<ol>
-<li>用户编写客户端应用程序，向 YARN 提交应用程序，提交的内容包括 ApplicationMaster 程序、启动 ApplicationMaster 的命令、用户程序等。</li>
-<li>YARN 中的 ResourceManager 负责接收和处理来自客户端的请求。接到客户端应用程序请求后，ResourceManager 里面的调度器会为应用程序分配一个容器。同时，ResourceManager 的应用程序管理器会与该容器所在的 NodeManager 通信，为该应用程序在该容器中启动一个 ApplicationMaster。</li>
-<li>ApplicationMaster 被创建后会首先向 ResourceManager 注册，从而使得用户可以通过 ResourceManager 来直接查看应用程序的运行状态。接下来的步骤4~7是具体的应用程序执行步骤。</li>
-<li>ApplicationMaster 采用轮询的方式通过 RPC 协议向 ResourceManager 申请资源。</li>
-<li>ResourceManager 以“容器”的形式向提出申请的 ApplicationMaster 分配资源，一旦 ApplicationMaster 申请到资源后，就会与该容器所在的 NodeManager 进行通信，要求它启动任务。</li>
-<li>当 ApplicationMaster 要求容器启动任务时，它会为任务设置好运行环境（包括环境变量、JAR 包、二进制程序等），然后将任务启动命令写到一个脚本中，最后通过在容器中运行该脚本来启动任务。</li>
-<li>各个任务通过某个 RPC 协议向 ApplicationMaster 汇报自己的状态和进度，让 AplicationMater 可以随时掌握各个任务的运行状态，从而可以在任务失败时重新启动任务。</li>
-<li>应用程序运行完成后，ApplicationMaster 向 ResourceManager 的应用程序管理器注销并关闭自己。若 ApplicationMaster 因故失败，ResourceManager 中的应用程序管理器会监测到失败的情形，然后将其重新启动，直到所有的任务执行完毕。</li>
-</ol>
-<p><img src="/2020/05/10/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hadoop/YARN%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png" alt="YARN的工作流程"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/" class="post-title-link" itemprop="url">Hive.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-08 18:32:49" itemprop="dateCreated datePublished" datetime="2020-05-08T18:32:49+08:00">2020-05-08</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><h3 id="数据仓库概念"><a href="#数据仓库概念" class="headerlink" title="数据仓库概念"></a>数据仓库概念</h3><p>数据仓库的体系结构通常包含四个层次：数据源、数据存储和管理、数据服务、数据应用，具体如下：</p>
-<ul>
-<li>数据源：是数据仓库的数据来源，包括了外部数据、现有业务系统和文档资料等；</li>
-<li>数据集成：完成数据的抽取、清洗、转换和加载任务，数据源中的数据采用 ETL 工具以固定的周期加载到数据仓库中；</li>
-<li>数据存储和管理：这一层次主要涉及对数据的存储和管理，包括数据仓库、数据集市、数据仓库检测、运行与维护工具和元数据管理等；</li>
-<li>数据服务：为前端工具和应用提供数据服务，可以直接从数据仓库中获取数据供前端应用使用，也可以通过 OLAP（Online Analytical Processing）服务器为前端应用提供更加复杂的数据服务。OLAP 服务器提供了不同聚集粒度的多维数据集合，使得应用不需要直接访问数据仓库中的底层细节数据，大大减少了数据计算量，提高了查询响应速度。OLAP 服务器还支持针对多维数据集的上钻、下探、切片、切块和旋转等操作，增强了多维数据分析能力；</li>
-<li>数据应用：这一层次直接面向最终用户，包括数据查询工具、自由报表工具、数据分析工具、数据挖掘工具和各类应用系统。</li>
-</ul>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84.png" alt="数据仓库体系结构"></p>
-<h3 id="Hive-简介"><a href="#Hive-简介" class="headerlink" title="Hive 简介"></a>Hive 简介</h3><p>Hive 是一个构建于 Hadoop 顶层的数据仓库工具，依赖 HDFS 来存储数据，依赖 MapReduce 来处理数据。Hive 定义了简单的类似 SQL 的查询语言 HiveQL，它与大部分 SQL 语法兼容，但是，并不完全支持 SQL 标准，比如，HiveSQL 不支持更新操作，也不支持索引和事务，它的子查询和连接操作也存在很多局限。</p>
-<h3 id="Hive-与-Hadoop-生态系统中其他组件的关系"><a href="#Hive-与-Hadoop-生态系统中其他组件的关系" class="headerlink" title="Hive 与 Hadoop 生态系统中其他组件的关系"></a>Hive 与 Hadoop 生态系统中其他组件的关系</h3><p>HDFS 作为高可靠的底层存储，用来存储海量数据；MapReduce 对这些海量数据进行批处理，实现高性能计算；Hive 架构在 MapReduce、HDFS 之上，其自身并不存储和处理数据，需要分别借助于 HDFS 和 MapReduce 实现数据的存储和处理，用 HiveQL 语句编写的处理逻辑，最终都要转化为 MapReduce 任务来运行；Pig 可以作为 Hive 的替代工具，是一种数据流语言和运行环境，适合用于在 Hadoop 平台上查询半结构化数据集，常用于 ETL 过程的一部分，即将外部数据装载到 Hadoop 集群中，然后转换为用户需要的数据格式；HBase 是一个面向列的、分布式的、可伸缩的数据库，它可以提供数据的实时访问功能，而 Hive 只能处理静态数据，主要是 BI 报表数据，就设计初衷而言，在 Hadoop 上设计 Hive，是为了减少复杂 MapReduce 应用程序的编写工作，在 Hadoop 上设计 HBase 则是为了实现对数据的实时访问，所以，HBase 与 Hive 的功能是互补的，它实现了 Hive 不能提供的功能。</p>
-<h3 id="Hive-与传统数据库的对比"><a href="#Hive-与传统数据库的对比" class="headerlink" title="Hive 与传统数据库的对比"></a>Hive 与传统数据库的对比</h3><p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/Hive%E4%B8%8E%E4%BC%A0%E7%BB%9F%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AF%B9%E6%AF%94.png" alt="Hive与传统数据库的对比"></p>
-<h2 id="Hive-系统架构"><a href="#Hive-系统架构" class="headerlink" title="Hive 系统架构"></a>Hive 系统架构</h2><p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/Hive%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84.png" alt="Hive系统架构"></p>
-<p>Hive 主要由以下三个模块组成：用户接口模块、驱动模块以及元数据存储模块。</p>
-<p>用户接口模块包括 CLI、HWI、JDBC、ODBC、Thrift Server 等，用来实现外部应用对 Hive 的访问。</p>
-<ul>
-<li>CLI 是 Hive 自带的一个命令行界面</li>
-<li>HWI 是 Hive 的一个简单网页界面</li>
-<li>JDBC、ODBC 以及 Thrift Server 可以向用户提供进行编程访问的接口<ul>
-<li>Thrift Server 是基于 Thrift 软件框架开发的，它提供 Hive 的 RPC 通信接口</li>
-</ul>
-</li>
-</ul>
-<p>驱动模块（Driver）包括编译器、优化器、执行器等，负责把 HiveSQL 语句转换成一系列 MapReduce 作业，所有命令和查询都会进入到驱动模块，通过该模块对输入进行解析编译，对计算过程进行优化，然后按照指定的步骤执行。</p>
-<p>元数据存储模块（Metastore）是一个独立的关系型数据库，通常是与 MySQL 数据库连接后创建的一个 MySQL 实例，也可以是 Hive 自带的 derby 数据库实例。元数据存储模块中主要保存表模式和其他系统元数据，如表的名称、表的列及其属性、表的分区及其属性、表的属性、表中数据所在位置信息等。</p>
-<h2 id="Hive-工作原理"><a href="#Hive-工作原理" class="headerlink" title="Hive 工作原理"></a>Hive 工作原理</h2><p>Hive 可以快速实现简单的 MapReduce 统计，主要是通过自身组件把 HiveQL 语句转换成 MapReduce 任务来实现的。</p>
-<h3 id="SQL-语句转换成-MapReduce-作业的基本原理"><a href="#SQL-语句转换成-MapReduce-作业的基本原理" class="headerlink" title="SQL 语句转换成 MapReduce 作业的基本原理"></a>SQL 语句转换成 MapReduce 作业的基本原理</h3><h4 id="用-MapReduce-实现连接操作"><a href="#用-MapReduce-实现连接操作" class="headerlink" title="用 MapReduce 实现连接操作"></a>用 MapReduce 实现连接操作</h4><p>假设参与连接（join）的两个表分别为用户表 User 和订单表 Order，User 表有两个属性，即 uid 和 name，Order 表也有两个属性，即 uid 和 orderid，它们的连接键为公共属性 uid。这里对两个表执行连接操作，得到用户的订单号与用户名的对应关系，具体的 SQL 语句命令如下：<code>select name, orderid from user u join order o on u.uid=o.uid;</code></p>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/%E7%94%A8MapReduce%E5%AE%9E%E7%8E%B0%E8%BF%9E%E6%8E%A5%E6%93%8D%E4%BD%9C%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86.png" alt="用MapReduce实现连接操作的基本原理"></p>
-<p>首先，在 Map 阶段， User 表以 uid 为键（key），以 name 和表的标记位（这里 User 的标记位记为 1）为值（value）进行 Map 操作，把表中记录转化成生成一系列键值对的形式。同样地，Order 表以 uid 为键，以 orderid 和表的标记位（这里表 Order 的标记位记为 2）为值进行 Map 操作，把表中 记录转化成生成一系列键值对的形式。比如，User 表中记录 <code>(1,Lily)</code> 转化为键值对 <code>(1,&lt;1,Lily&gt;)</code>，其中，括号中的第一个“1”是 uid 的值，第二个“1”是表 User 的标记位，用来标识这个键值对来自 User 表；再比如，Order 表中记录 <code>(1,101)</code> 转化为键值对 <code>(1,&lt;2,101&gt;)</code>，其中，“2”是表 Order 的标记位，用来标识这个键值对来自 Order 表。</p>
-<p>接着，在 Shuffle 阶段，把 User 表和 Order 表生成的键值对按键值进行哈希，然后传送给对应的 Reduce 机器执行，比如键值对 <code>(1,&lt;1,Lily&gt;)</code>、<code>(1,&lt;2,101&gt;)</code> 和 <code>(1,&lt;2,102&gt;)</code> 传送到同一台 Reduce 机器上，键值对 <code>(2,&lt;1,Tom&gt;)</code> 和 <code>(2,&lt;2,103&gt;)</code> 传送到另一台 Reduce 机器上。当 Reduce 机器接收这些键值对时，还需要按表的标记位对这些键值对进行排序，以优化连接操作。</p>
-<p>最后，在 Reduce 阶段，对同一台 Reduce 机器上的键值对，根据“值”（value）中的表标记位，对来自 User 和 Order 这两个表的数据进行笛卡尔积连接操作，以生成最终的连接结果。比如，键值对 <code>(1,&lt;1,Lily&gt;)</code> 与键值对 <code>(1,&lt;2,101&gt;)</code> 和 <code>(1,&lt;2,102&gt;)</code> 的连接结果分别为 <code>(Lily ,101&gt;)</code> 和 <code>(Lily, 102)</code>，键值对 <code>(2,&lt;1,Tom&gt;)</code> 和键值对 <code>(2,&lt;2,103&gt;)</code> 的连接结果为 <code>(Tom, 103)</code>。</p>
-<h4 id="用-MapReduce-实现分组操作"><a href="#用-MapReduce-实现分组操作" class="headerlink" title="用 MapReduce 实现分组操作"></a>用 MapReduce 实现分组操作</h4><p>假设分数表 Score 具有两个属性，即 rank（排名）和 level（级别），这里存在一个分组（Group By）操作，其功能是把表 Score 的不同片段按照 rank 和 level 的组合值进行合并，计算不同 rank 和 level 的组合值分别有几条记录。具体的 SQL 语句命令如下：<code>select rank, level ,count(*) as value from score group by rank, level;</code></p>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/%E7%94%A8MapReduce%E5%AE%9E%E7%8E%B0%E5%88%86%E7%BB%84%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86.png" alt="用MapReduce实现分组操作的实现原理"></p>
-<p>首先，在 Map 阶段，对表 Score 进行 Map 操作，生成一系列键值对，对于每个键值对，其键为 <code>&lt;rank,level&gt;</code>，值为“拥有该 <code>&lt;rank,value&gt;</code> 组合值的记录的条数”。比如，Score 表的第一片段中有两条记录 <code>(A,1)</code>，所以，记录 <code>(A,1)</code> 转化为键值对 <code>(&lt;A,1&gt;,2)</code>，Score 表的第二片段中只有一条记录 <code>(A,1)</code>，所以，记录 <code>(A,1)</code> 转化为键值对 <code>(&lt;A,1&gt;,1)</code>。</p>
-<p>接着，在 Shuffle 阶段，对 Score 表生成的键值对，按照“键”的值进行哈希，然后根据哈希结果传送给对应的 Reduce 机器去执行，比如键值 对 <code>(&lt;A,1&gt;,2)</code> 和 <code>(&lt;A,1&gt;,1)</code> 传送到同一台 Reduce 机器上，键值对 <code>(&lt;B,2&gt;,1)</code> 传送到另一台 Reduce 机器上。然后，Reduce 机器对接收到的这些键值对，按“键”的值进行排序。</p>
-<p>最后，在 Reduce 阶段，对于 Reduce 机器上的这些键值对，把具有相同键的所有键值对的“值”进行累加，生成分组的最终结果，比如，在同一台 Reduce 机器上的键值对 <code>(&lt;A,1&gt;,2)</code> 和 <code>(&lt;A,1&gt;,1&gt;)</code> Reduce 后的输出结果为 <code>(&lt;A,1&gt;,3)</code>，<code>(&lt;B,2&gt;,1)</code> 的 Reduce 后的输出结果为 <code>(&lt;B,2&gt;,1)</code>。</p>
-<h3 id="Hive-中-SQL-查询转换成-MapReduce-作业的过程"><a href="#Hive-中-SQL-查询转换成-MapReduce-作业的过程" class="headerlink" title="Hive 中 SQL 查询转换成 MapReduce 作业的过程"></a>Hive 中 SQL 查询转换成 MapReduce 作业的过程</h3><p>当用户向 Hive 输入一段命令或查询（即 HiveQL 语句）时，Hive 需要与 Hadoop 交互工作来完成该操作。该命令或查询首先进入到驱动模块，由驱动模块中的编译器进行解析编译，并由优化器对该操作进行优化计算，然后交给执行器去执行。执行器通常的任务是启动一个或多个 MapReduce 任务，有时也不需要启动 MapReduce 任务，比如，执行包含 <code>*</code> 的操作时（如 <code>select * from 表</code>），就是全表扫描，选择所有的属性和所有的元组，不存在投影和选择操作，因此，不需要执行 Map 和 Reduce 操作。</p>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/Hive%E4%B8%ADSQL%E6%9F%A5%E8%AF%A2%E7%9A%84MapReduce%E4%BD%9C%E4%B8%9A%E8%BD%AC%E5%8C%96%E8%BF%87%E7%A8%8B.png" alt="Hive中SQL查询的MapReduce作业转化过程"></p>
-<p>在 Hive 中，用户通过命令行 CLI 或其他 Hive 访问工具，向 Hive 输入一段命令或查询以后，SQL 查询被 Hive 自动转化为 MapReduce 作业，具体步骤如下：</p>
-<ol>
-<li>由 Hive 驱动模块中的编译器——Antlr 语言识别工具，对用户输入的 SQL 语言进行词法和语法解析，将 SQL 语句转化为抽象语法树（AST Tree）的形式；</li>
-<li>对该抽象语法树进行遍历，进一步转化成 QueryBlock 查询单元。因为抽象语法树的结构仍很复杂，不方便直接翻译为 MapReduce 算法程序，所以，Hive 把抽象语法树进一步转化为 QueryBlock，其中，QueryBlock 是一条最基本的 SQL 语法组成单元，包括输入源、计算过程和输出三个部分；</li>
-<li>再对 QueryBlock 进行遍历，生成 OperatorTree（操作树）。其中，OperatorTree 由很多逻辑操作符组成，如 TableScanOperator、SelectOperator、FilterOperator、JoinOperator、 GroupByOperator 和 ReduceSinkOperator 等。这些逻辑操作符可以在 Map 阶段和 Reduce 阶 段完成某一特定操作；</li>
-<li>通过 Hive 驱动模块中的逻辑优化器对 OperatorTree 进行优化，变换 OperatorTree 的形式，合并多余的操作符，从而减少 MapReduce 任务数量以及 Shuffle 阶段的数据量；</li>
-<li>对优化后的 OperatorTree 进行遍历，根据 OperatorTree 中的逻辑操作符生成需要执行的 MapReduce 任务；</li>
-<li>启动 Hive 驱动模块中的物理优化器，对生成的 MapReduce 任务进行优化，生成最终的 MapReduce 任务执行计划；</li>
-<li>最后由 Hive 驱动模块中的执行器，对最终的 MapReduce 任务进行执行输出。</li>
-</ol>
-<p>需要说明的是，Hive 驱动模块中的执行器执行最终的 MapReduce 任务时，Hive 本身是不会生成 MapReduce 算法程序的，它需要通过一个表示“Job 执行计划”的 XML 文件，来驱动执行内置的、原生的 Mapper 和 Reducer 模块。Hive 通过和 JobTracker 通信来初始化 MapReduce 任务，而不需要直接部署在 JobTracker 所在的管理节点上执行。通常在大型集群上，会有专门的网关机来部署 Hive 工具。这些网关机的作用主要是远程操作和管理节点上的 JobTracker 通信来执行任务。Hive 要处理的数据文件通常存储在 HDFS 上，HDFS 由名称节点（NameNode）来管理。</p>
-<h2 id="Hive-HA-基本原理"><a href="#Hive-HA-基本原理" class="headerlink" title="Hive HA 基本原理"></a>Hive HA 基本原理</h2><p>Hive 的功能十分强大，可以支持采用 SQL 方式查询 Hadoop 平台上的数据，但是，在实际应用中，Hive 也暴露出不稳定的问题，在极少数情况下，甚至会出现端口不响应或者进程丢失的问题。Hive HA（High Availability）的出现，就是为了解决这类问题。</p>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/Hive/HiveHA%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86.png" alt="HiveHA基本原理"></p>
-<p>在 Hive HA 中，在 Hadoop 集群上构建的数据仓库是由多个 Hive 实例进行管理的，这些 Hive 实例被纳入到一个资源池中，并由 HAProxy 提供一个统一的对外接口。客户端的查询请求首先访问 HAProxy，由 HAProxy 对访问请求进行转发。HAProxy 收到请求后，会轮询资源池里可用的 Hive 实例，执行逻辑可用性测试，如果某个 Hive 实例逻辑可用，就会把客户端的访问请求转发到该 Hive 实例上，如果该 Hive 实例逻辑不可用，就把它放入黑名单，并继续从资源池中取出下一个 Hive 实例进行逻辑可用性测试。对于黑名单中的 Hive 实例，HiveHA 会每隔一段时间进行统一处理，首先尝试重启该 Hive 实例，如果重启成功，就再次把它放入到资源池中。由于采用 HAProxy 提供统一的对外访问接口，因此，对于程序开发人员来说，可以把它认为是一台超强“Hive”。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/" class="post-title-link" itemprop="url">MapReduce.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-08 18:18:06" itemprop="dateCreated datePublished" datetime="2020-05-08T18:18:06+08:00">2020-05-08</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hadoop/" itemprop="url" rel="index"><span itemprop="name">Hadoop</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><h3 id="模型简介"><a href="#模型简介" class="headerlink" title="模型简介"></a>模型简介</h3><p>在 MapReduce 中，一个存储在分布式文件系统中的大规模数据集会被切分成许多独立的小数据块，这些小数据块可以被多个 Map 任务并行处理。MapReduce 框架会为每个 Map 任务输入一个数据子集，Map 任务生成的结果会继续作为 Reduce 任务的输人，最终由 Reduce 任务输出最后结果，并写入分布式文件系统。</p>
-<p>特别注意：适合用 MapReduce 来传护理的数据集需要满足一个前提条件：待处理的数据集可以分解成许多小的数据集，而且每一个小数据集都可以完全并行地进行处理。</p>
-<p>MapReduce 设计的一个理念就是“计算向数据靠拢”，而不是“数据向计算靠拢”，因为移动数据需要大量的网络传输开销，尤其是在大规模数据环境下，这种开销尤为惊人，所以，移动计算要比移动数据更加经济。本着这个理念，在一个集群中，只要有可能，MapReduce 框架就会将 Map 程序就近地在 HDFS 数据所在的节点运行，即将计算节点和存储节点放在一起运行，从而减少了节点间的数据移动开销。</p>
-<h2 id="MapReduce-的工作流程"><a href="#MapReduce-的工作流程" class="headerlink" title="MapReduce 的工作流程"></a>MapReduce 的工作流程</h2><h3 id="工作流程概述"><a href="#工作流程概述" class="headerlink" title="工作流程概述"></a>工作流程概述</h3><p>MapReduce的 核心思想可以用“分而治之”来描述，也就是把一个大的数据集拆分成多个小数据块在多台机器上并行处理，也就是说，一个大的 MapReduce 作业，首先会被拆分成许多个 Map 任务在多台机器上并行执行，每个 Map 任务通常运行在数据存储的节点上，这样，计算和数据就可以放在一起运行，不需要额外的数据传输开销。当 Map 任务结束后，会生成以 <code>&lt;key,value&gt;</code> 形式表示的许多中间结果。然后，这些中间结果会被分发到多个 Reduce 任务在多台机器上并行执行，具有相同 key 的 <code>&lt;key,value&gt;</code> 会被发送到同个 Reduce 任务那里，Reduce 任务会对中间结果进行汇总计算得到最后结果，并输出到分布式文件系统中。</p>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png" alt="工作流程"></p>
-<p>需要指出的是，不同的 Map 任务之间不会进行通信，不同的 Reduce 任务之间也不会发生任何信息交换；用户不能显式地从一台机器向另台机器发送消息，所有的数据交换都是通过 MapReduce 框架自身去实现的。</p>
-<p>在 MapReduce 的整个执行过程中，Map 任务的输人文件、Reduce 任务的处理结果都是保存在分布式文件系统中的，而 Map 任务处理得到的中间结果则保存在本地存储中（如磁盘）。另外，只有当 Map 处理全部结束后， Reduce 过程才能开始；只有 Map 需要考虑数据局部性，实现“计算向数据靠拢”，而 Reduce 则无需考虑数据局部性。</p>
-<h3 id="各个执行阶段"><a href="#各个执行阶段" class="headerlink" title="各个执行阶段"></a>各个执行阶段</h3><ol>
-<li>MapReduce 框架使用 InputFormat 模块做 Map 前的预处理，比如验证输人的格式是否符合输人定义；然后，将输人文件切分为逻辑上的多个 InputSplit，InputSplit 是 MapReduce 对文件进行处理和运算的输人单位，只是一个逻辑概念，每个 InputSplit 并没有对文件进行实际切割，只是记录了要处理的数据的位置和长度。</li>
-<li>因为 InputSplit 是逻辑切分而非物理切分，所以还需要通过 RecordReader（RR）根据 InputSplit 中的信息来处理 InputSplit 中的具体记录，加载数据并转换为适合 Map 任务读取的键值对，输人给 Map 任务。</li>
-<li>Map 任务会根据用户自定义的映射规则，输出一系列的 <code>&lt;key,value&gt;</code> 作为中间结果。</li>
-<li>为了让 Reduce 可以并行处理 Map 的结果，需要对 Map 的输出进行一定的分区（Portition）、排序（Sort）、合并（Combine）、归并（Merge）等操作，得到 <code>&lt;key, value-list&gt;</code> 形式的中间结果，再交给对应的 Reduce 进行处理，这个过程称为 Shufle。从无序的 <code>&lt;key,value&gt;</code> 到有序的 <code>&lt;key, value-list&gt;</code>，这个过程用 Shuffle（洗牌）来称呼是非常形象的。</li>
-<li>Reduce 以一系列 <code>&lt;key, value-list&gt;</code> 中间结果作为输人，执行用户定义的逻辑，输出结果给 OutputFormat 模块。</li>
-<li>OutputFormat 模块会验证输出目录是否已经存在以及输出结果类型是否符合配置文件中的配置类型，如果都满足，就输出 Reduce 的结果到分布式文件系统。</li>
-</ol>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/MapReduce%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E4%B8%AD%E7%9A%84%E5%90%84%E4%B8%AA%E6%89%A7%E8%A1%8C%E9%98%B6%E6%AE%B5.png" alt="MapReduce工作流程中的各个执行阶段"></p>
-<h3 id="Shuffle-过程详解"><a href="#Shuffle-过程详解" class="headerlink" title="Shuffle 过程详解"></a>Shuffle 过程详解</h3><h4 id="Shuffle-过程简介"><a href="#Shuffle-过程简介" class="headerlink" title="Shuffle 过程简介"></a>Shuffle 过程简介</h4><p>所谓 Shuffle，是指对 Map 输出结果进行分区、排序、合并等处理并交给 Reduce 的过程。因此，Shuffle 过程分为 Map 端的操作和 Reduce 端的操作。</p>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/Shuffle%E8%BF%87%E7%A8%8B.png" alt="Shuffle过程"></p>
-<h4 id="Map-端的-Shuffle-过程"><a href="#Map-端的-Shuffle-过程" class="headerlink" title="Map 端的 Shuffle 过程"></a>Map 端的 Shuffle 过程</h4><p>Map 的输出结果首先被写入缓存，当缓存满时，就启动溢写操作，把缓存中的数据写入磁盘文件，并清空缓存。当启动溢写操作时，首先需要把缓存中的数据进行分区，然后对每个分区的数据进行排序（Sort）和合并（Combine），之后再写人磁盘文件。每次溢写操作会生成一个新的磁盘文件，随着 Map 任务的执行，磁盘中就会生成多个溢写文件。在 Map 任务全部结束之前，这些溢写文件会被归并（Merge）成一个大的磁盘文件，然后通知相应的 Reduce 任务来领取属于自己处理的数据。</p>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/Map%E7%AB%AF%E7%9A%84Shuffle%E8%BF%87%E7%A8%8B.png" alt="Map端的Shuffle过程"></p>
-<h5 id="输入数据和执行-Map-任务"><a href="#输入数据和执行-Map-任务" class="headerlink" title="输入数据和执行 Map 任务"></a>输入数据和执行 Map 任务</h5><p>Map 任务的输入数据一般保存在分布式文件系统（如 GFS 或 HDFS）的文件块中，这些文件块的格式是任意的，可以是文档，也可以是二进制格式的。Map 任务接受 <code>&lt;key, value&gt;</code>作为输入后，按一定的映射规则转换成一批 <code>&lt;key, value&gt;</code> 进行输出。</p>
-<h5 id="写入缓存"><a href="#写入缓存" class="headerlink" title="写入缓存"></a>写入缓存</h5><p>每个 Map 任务都会被分配一个缓存，Map 的输出结果不是立即写入磁盘，而是首先写人缓存。在缓存中积累一定数量的 Map 输出结果以后，再一次性批量写人磁盘，这样可以大大减少对磁盘 I/O 的影响。因为，磁盘包含机械部件，它是通过磁头移动和盘片的转动来寻址定位数据的，每次寻址的开销很大，如果每个 Map 输出结果都直接写人磁盘，会引入很多次寻址开销，而一次性批量写入，就只需要一次寻址、连续写入，大大降低了开销。需要注意的是，在写入缓存之前，key 与 value 值都会被序列化成字节数组。</p>
-<h5 id="溢写（分区、排序和合并）"><a href="#溢写（分区、排序和合并）" class="headerlink" title="溢写（分区、排序和合并）"></a>溢写（分区、排序和合并）</h5><p>提供给 MapReduce 的缓存的容量是有限的，默认大小是 100 MB。随着 Map 任务的执行，缓存中 Map 结果的数量会不断增加，很快就会占满整个缓存。这时，就必须启动溢写（Spill）操作，把缓存中的内容一次性写人磁盘，并清空缓存。溢写的过程通常是由另外个单独的后台线程来完成的，不会影响 Map 结果往缓存写人，但是为了保证 Map 结果能够不停地持续写入缓存，不受溢写过程的影响，就必须让缓存中一直有可用的空间，不能等到全部占满才启动溢写过程，所以一般会设置一个溢写比例，如0.8，也就是说，当 100 MB 大小的缓存被填满 80 MB 数据时，就启动溢写过程，把已经写人的 80 MB 数据写人磁盘，剩余 20 MB 空间供 Map 结果继续写人。</p>
-<p>但是，在溢写到磁盘之前，缓存中的数据首先会被分区（Partition）。缓存中的数据是 <code>&lt;key, value&gt;</code> 形式的键值对，这些键值对最终需要交给不同的 Reduce 任务进行并行处理。MapReduce 通过 Partitioner 接口对这些键值对进行分区，默认采用的分区方式是采用 Hash 函数对 key 进行哈希后再用 Reduce 任务的数量进行取模，可以表示成 <code>hash(key) mod R</code>，其中 R 表示 Reduce 任务的数量，这样，就可以把 Map 输出结果均匀地分配给这 R 个Reduce 任务去并行处理了。当然，MapReduce 也允许用户通过重载 Partitioner 接口来自定义分区方式。</p>
-<p>对于每个分区内的所有键值对，后台线程会根据 key 对它们进行内存排序（Sort），排序是 MapReduce 的默认操作。排序结束后，还包含一个可选的合并（Combine）操作。如果用户事先没有定义 Combiner 函数，就不用进行合并操作。如果用户事先定义了 Combiner 函数，则这个时候会执行合并操作，从而减少需要溢写到磁盘的数据量。</p>
-<p>所谓“合并”，是指将那些具有相同 key 的 <code>&lt;key,value&gt;</code> 的 value 加起来。比如，有两个键值对 <code>&lt;“xmu&quot; 1&gt;</code> 和 <code>&lt;“xmu” 1&gt;</code>，经过合并操作以后就可以得到一个键值对 <code>&lt;“xmu” 2&gt;</code>，减少了键值对的数量。这里需要注意，Map 端的这种合并操作，其实和 Reduce 的功能相似，但是由于这个操作发生在 Map 端，所以我们只能称之为“合并”，从而有别于 Reduce。不过，并非所有场合都可以使用 Combiner，因为 Combiner 的输出是 Reduce 任务的输人，Combiner 绝不能改变 Reduce 任务最终的计算结果，一般而言，累加、最大值等场景可以使用合并操作。</p>
-<p>经过分区、排序以及可能发生的合并操作之后，这些缓存中的键值对就可以被写人磁盘，并清空缓存。每次溢写操作都会在磁盘中生成一个新的溢写文件，写人溢写文件中的所有键值对都是经过分区和排序的。</p>
-<h5 id="文件归并"><a href="#文件归并" class="headerlink" title="文件归并"></a>文件归并</h5><p>每次溢写操作都会在磁盘中生成一个新的溢写文件，随着 MapReduce 任务的进行，磁盘中的溢写文件数量会越来越多。当然，如果 Map 输出结果很少，磁盘上只会存在一个溢写文件，但是通常都会存在多个溢写文件。最终，在 Map 任务全部结束之前，系统会对所有溢写文件中的数据进行归并（Merge），生成一个大的溢写文件，这个大的溢写文件中的所有键值对也是经过分区和排序的。</p>
-<p>所谓“归并”，是指对于具有相同 key 的键值对会被归并成一个新的键值对。具体而言，对于若千个具有相同 key 的键值对 $&lt;k_1,v_1&gt;, &lt;k_1,v_2&gt; ….. &lt;k_1,v_n&gt;$ 会被归并成一个新的键值对 $&lt;k_1, &lt;v_1,v_2,…,v_n&gt;$。</p>
-<p>另外，进行文件归并时，如果磁盘中已经生成的溢写文件的数量超过参数 min.num.spills.for.combine 的值时（默认值是 3，用户可以修改这个值），那么，就可以再次运行 Combiner，对数据进行合并操作，从而减少写人磁盘的数据量。但是，如果磁盘中只有一两个溢写文件时，执行合并操作就会“得不偿失”，因为执行合并操作本身也需要代价，因此不会运行 Combiner。</p>
-<p>经过上述4个步骤以后，Map 端的 Shuffle 过程全部完成，最终生成的一个大文件会被存放在本地磁盘上。这个大文件中的数据是被分区的，不同的分区会被发送到不同的 Reduce 任务进行并行处理。JobTracker 会一直监测 Map 任务的执行，当监测到一个 Map 任务完成后，就会立即通知相关的 Reduce 任务来“领取”数据，然后开始 Reduce 端的 Shuffle 过程。</p>
-<h4 id="Reduce-端的-Shuffle-过程"><a href="#Reduce-端的-Shuffle-过程" class="headerlink" title="Reduce 端的 Shuffle 过程"></a>Reduce 端的 Shuffle 过程</h4><p>Reduce 任务从 Map 端的不同 Map 机器领回属于自己处理的那部分数据，然后对数据进行归并（Merge）后交给 Reduce 处理。</p>
-<p><img src="/2020/05/08/%E5%A4%A7%E6%95%B0%E6%8D%AE/MapReduce/Reduce%E7%AB%AF%E7%9A%84Shuffle%E8%BF%87%E7%A8%8B.png" alt="Reduce端的Shuffle过程"></p>
-<h5 id="“领取”数据"><a href="#“领取”数据" class="headerlink" title="“领取”数据"></a>“领取”数据</h5><p>Map 端的 Shuffle 过程结束后，所有 Map 输出结果都保存在 Map 机器的本地磁盘上，Reduce 任务需要把这些数据“领取”（Fetch）回来存放到自己所在机器的本地磁盘上。因此，在每个 Reduce 任务真正开始之前，它大部分时间都在从 Map 端把属于自己处理的那些分区的数据“领取”过来。每个 Reduce 任务会不断地通过 RPC 向 JobTracker 询问 Map 任务是否已经完成；JobTracker 监测到一个 Map 任务完成后，就会通知相关的 Reduce 任务来“领取”数据；一旦一个 Reduce 任务收到 JobTracker 的通知，它就会到该 Map 任务所在机器上把属于自已处理的分区数据领取到本地磁盘中。一般系统中会存在多个 Map 机器，因此 Reduce 任务会使用多个线程同时从多个 Map 机器领回数据。</p>
-<h5 id="归并数据"><a href="#归并数据" class="headerlink" title="归并数据"></a>归并数据</h5><p>从Map端领回的数据会首先被存放在 Reduce 任务所在机器的缓存中，如果缓存被占满，就会像 Map 端一样被溢写到磁盘中。由于在 Shuffle 阶段 Reduce 任务还没有真正开始执行，因此，这时可以把内存的大部分空间分配给 Shuffle 过程作为缓存。需要注意的是，系统中一般存在多个 Map 机器，Reduce 任务会从多个 Map 机器领回属于自己处理的那些分区的数据，因此缓存中的数据是来自不同的 Map 机器的，一般会存在很多可以合并（Combine）的键值对。当溢写过程启动时，具有相同 key 的键值对会被归并（Merge），如果用户定义了 Combiner，则归并后的数据还可以执行合并操作，减少写人磁盘的数据量。每个溢写过程结束后，都会在磁盘中生成一个溢写文件，因此磁盘上会存在多个溢写文件。最终，当所有的 Map 端数据都已经被领回时，和 Map 端类似，多个溢写文件会被归并成开个大文件，归并的时候还会对键值对进行排序，从而使得最终大文件中的键值对都是有序的。当然，在数据很少的情形下，缓存可以存储所有数据，就不需要把数据溢写到磁盘，而是直接在内存中执行归并操作，然后直接输出给 Reduce 任务。</p>
-<p>需要说明的是，把磁盘上的多个溢写文件归并成一个大文件可能需要执行多轮归并操作。每轮归并操作可以归并的文件数量是由参数 io.sort.factor 的值来控制的（默认值是 10，可以修改）。假设磁盘中生成了 50 个溢写文件，每轮可以归并 10 个溢写文件，则需要经过 5 轮归并，得到 5 个归并后的大文件。</p>
-<h5 id="把数据输人给-Reduce-任务"><a href="#把数据输人给-Reduce-任务" class="headerlink" title="把数据输人给 Reduce 任务"></a>把数据输人给 Reduce 任务</h5><p>磁盘中经过多轮归并后得到的若干个大文件，不会继续归并成一个新的大文件，而是直接输入给 Reduce 任务，这样可以减少磁盘读写开销。由此，整个 Shuffle 过程顺利结束。接下来，Reduce 任务会执行 Reduce 函数中定义的各种映射，输出最终结果，并保存到分布式文件系统中（比如 GFS 或 HDFS）。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/" class="post-title-link" itemprop="url">数据增强.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-05 23:39:37" itemprop="dateCreated datePublished" datetime="2020-05-05T23:39:37+08:00">2020-05-05</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">机器视觉</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>最简单的数据扩充方法就是垂直镜像对称，假如，训练集中有这张图片，然后将其翻转得到右边的图像。对大多数计算机视觉任务，左边的图片是猫，然后镜像对称仍然是猫，如果镜像操作保留了图像中想识别的物体的前提下，这是个很实用的数据扩充技巧。</li>
-<li>另一个经常使用的技巧是随机裁剪，给定一个数据集，然后开始随机裁剪，可能修剪这个（编号1），选择裁剪这个（编号2），这个（编号3），可以得到不同的图片放在数据集中，你的训练集中有不同的裁剪。随机裁剪并不是一个完美的数据扩充的方法，如果你随机裁剪的那一部分（红色方框标记部分，编号4），这部分看起来不像猫。但在实践中，这个方法还是很实用的，随机裁剪构成了很大一部分的真实图片。</li>
-<li>镜像对称和随机裁剪是经常被使用的。当然，理论上，你也可以使用旋转，剪切（shearing：此处并非裁剪的含义，图像仅水平或垂直坐标发生变化）图像，可以对图像进行这样的扭曲变形，引入很多形式的局部弯曲等等。当然使用这些方法并没有坏处，尽管在实践中，因为太复杂了所以使用的很少。</li>
-</ul>
-<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/%E9%9A%8F%E6%9C%BA%E8%A3%81%E5%89%AA.png" alt="随机裁剪"></p>
-<ul>
-<li>第二种经常使用的方法是彩色转换，有这样一张图片，然后给R、G和B三个通道上加上不同的失真值。</li>
-</ul>
-<p><img src="/2020/05/05/artificial_intelligence/%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89/%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA/%E8%89%B2%E5%BD%A9%E8%BD%AC%E6%8D%A2.png" alt="色彩转换"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1280,7 +1361,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1293,7 +1374,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1328,7 +1409,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

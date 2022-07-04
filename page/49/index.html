@@ -188,6 +188,391 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/11/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-PS1%E3%80%81PS2%E3%80%81PS3%E3%80%81PS4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/11/03/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-PS1%E3%80%81PS2%E3%80%81PS3%E3%80%81PS4/" class="post-title-link" itemprop="url">Linux-配置-PS1、PS2、PS3、PS4</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-11-03 17:21:58" itemprop="dateCreated datePublished" datetime="2015-11-03T17:21:58+08:00">2015-11-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://os.51cto.com/art/201205/334954.htm">http://os.51cto.com/art/201205/334954.htm</a></p>
+<h2 id="PS1——默认提示符"><a href="#PS1——默认提示符" class="headerlink" title="PS1——默认提示符"></a>PS1——默认提示符</h2><p>如下所示，可以通过修改Linux下的默认提示符，使其更加实用。在下面的例子中，默认的PS1的值是<code>\s-\v\$</code>,显示出了shell的名称的版本。我们通过修改，可以使其显示用户名、主机名和当前工作目录。</p>
+<ul>
+<li><code>\d</code> ：代表日期，格式为weekday month date，例如：”Mon Aug 1”</li>
+<li><code>\H</code> ：完整的主机名称。例如：我的机器名称为：fc4.linux，则这个名称就是fc4.linux</li>
+<li><code>\h</code> ：仅取主机的第一个名字，如上例，则为fc4，.linux则被省略</li>
+<li><code>\t</code> ：显示时间为24小时格式，如：HH：MM：SS</li>
+<li><code>\T</code> ：显示时间为12小时格式</li>
+<li><code>\A</code> ：显示时间为24小时格式：HH：MM</li>
+<li><code>\u</code> ：当前用户的账号名称</li>
+<li><code>\v</code> ：BASH的版本信息</li>
+<li><code>\w</code> ：完整的工作目录名称。家目录会以 ~代替</li>
+<li><code>\W</code> ：利用basename取得工作目录名称，所以只会列出最后一个目录</li>
+<li><code>\#</code> ：下达的第几个命令</li>
+<li><code>\$</code> ：提示字符，如果是root时，提示符为：# ，普通用户则为：$</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">前景</th>
+<th align="center">背景</th>
+<th align="center">颜色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">30</td>
+<td align="center">40</td>
+<td align="center">黑色</td>
+</tr>
+<tr>
+<td align="center">31</td>
+<td align="center">41</td>
+<td align="center">红色</td>
+</tr>
+<tr>
+<td align="center">32</td>
+<td align="center">42</td>
+<td align="center">绿色</td>
+</tr>
+<tr>
+<td align="center">33</td>
+<td align="center">43</td>
+<td align="center">黄色</td>
+</tr>
+<tr>
+<td align="center">34</td>
+<td align="center">44</td>
+<td align="center">蓝色</td>
+</tr>
+<tr>
+<td align="center">35</td>
+<td align="center">45</td>
+<td align="center">紫红色</td>
+</tr>
+<tr>
+<td align="center">36</td>
+<td align="center">46</td>
+<td align="center">青蓝色</td>
+</tr>
+<tr>
+<td align="center">37</td>
+<td align="center">47</td>
+<td align="center">白色</td>
+</tr>
+</tbody></table>
+<p><code>\[\e[37;40m\][\[\e[32;40m\]\u\[\e[37;40m\]@\h \[\e[36;40m\]\w\[\e[0m\]]\n$</code><br>[用户名@计算机名 当前路径]</p>
+<h2 id="PS2——再谈提示符"><a href="#PS2——再谈提示符" class="headerlink" title="PS2——再谈提示符"></a>PS2——再谈提示符</h2><p>一个非常长的命令可以通过在末尾加<code>\</code>使其分行显示。多行命令的默认提示符是<code>&gt;</code>。 我们可以通过修改PS2，将提示符修改为”continue-&gt;” 。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; myisamchk --silent --force --fast --update-state \</span><br><span class="line">&gt; --key_buffer_size=512M --sort_buffer_size=512M \</span><br><span class="line">&gt; --read_buffer_size=4M --write_buffer_size=4M \</span><br><span class="line">&gt; /var/lib/mysql/bugs/*.MYI</span><br></pre></td></tr></table></figure>
+<p>[注: 这里使用 “&gt;” 作为默认提示符]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; export PS2=&quot;continue-&gt; &quot;</span><br><span class="line">ramesh@dev-db ~&gt; myisamchk --silent --force --fast --update-state \</span><br><span class="line">continue-&gt; --key_buffer_size=512M --sort_buffer_size=512M \</span><br><span class="line">continue-&gt; --read_buffer_size=4M --write_buffer_size=4M \</span><br><span class="line">continue-&gt; /var/lib/mysql/bugs/*.MYI</span><br></pre></td></tr></table></figure>
+<p>[注: 与上面类似，用 “continue-&gt; “ 作提示符]</p>
+<p>当用<code>\</code>使长命令分行显示，我发现非常易读。当然我也见过有的人不喜欢分行显示命令</p>
+<h2 id="PS3——Shell脚本中使用select时的提示符"><a href="#PS3——Shell脚本中使用select时的提示符" class="headerlink" title="PS3——Shell脚本中使用select时的提示符"></a>PS3——Shell脚本中使用select时的提示符</h2><p>你可以像下面示范的那样，用环境变量PS3定制shell脚本的select提示：</p>
+<p>不使用PS3的脚本输出:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps3.sh</span><br><span class="line">select i in mon tue wed exit</span><br><span class="line">do</span><br><span class="line">    case $i in</span><br><span class="line">        mon) echo &quot;Monday&quot;;;</span><br><span class="line">        tue) echo &quot;Tuesday&quot;;;</span><br><span class="line">        wed) echo &quot;Wednesday&quot;;;</span><br><span class="line">        exit) exit;;</span><br><span class="line">    esac</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; ./ps3.sh</span><br><span class="line">1) mon</span><br><span class="line">2) tue</span><br><span class="line">3) wed</span><br><span class="line">4) exit</span><br><span class="line">#? 1</span><br><span class="line">Monday</span><br><span class="line">#? 4</span><br></pre></td></tr></table></figure>
+<p>[注: 缺省的提示符是 #?]</p>
+<p>使用PS3的脚本输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps3.sh</span><br><span class="line">PS3=&quot;Select a day (1-4): &quot;</span><br><span class="line">select i in mon tue wed exit</span><br><span class="line">do</span><br><span class="line">    case $i in</span><br><span class="line">        mon) echo &quot;Monday&quot;;;</span><br><span class="line">        tue) echo &quot;Tuesday&quot;;;</span><br><span class="line">        wed) echo &quot;Wednesday&quot;;;</span><br><span class="line">        exit) exit;;</span><br><span class="line">    esac</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; ./ps3.sh</span><br><span class="line">1) mon</span><br><span class="line">2) tue</span><br><span class="line">3) wed</span><br><span class="line">4) exit</span><br><span class="line">Select a day (1-4): 1</span><br><span class="line">Monday</span><br><span class="line">Select a day (1-4): 4</span><br></pre></td></tr></table></figure>
+<p>[注: 设置了PS3变量后，命令提示符已经成为 “Select a day (1-4):”]</p>
+<h2 id="PS4——PS4-“set-x”用来修改跟踪输出的前缀"><a href="#PS4——PS4-“set-x”用来修改跟踪输出的前缀" class="headerlink" title="PS4——PS4-“set -x”用来修改跟踪输出的前缀"></a>PS4——PS4-“set -x”用来修改跟踪输出的前缀</h2><p>如果你像下面那样在调试模式下的脚本中，PS4环境变量可以定制提示信息：</p>
+<p>没有设置PS4时的shell脚本输出:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps4.sh</span><br><span class="line"></span><br><span class="line">set –x</span><br><span class="line">echo &quot;PS4 demo script&quot;</span><br><span class="line">ls -l /etc/ | wc –l du -sh ~</span><br><span class="line"></span><br><span class="line">ramesh@dev-db ~&gt; ./ps4.sh</span><br><span class="line">    ++ echo &#x27;PS4 demo script&#x27;</span><br><span class="line">PS4 demo script</span><br><span class="line">++ ls -l /etc/</span><br><span class="line">++ wc –l</span><br><span class="line">243</span><br><span class="line">++ du -sh /home/ramesh</span><br><span class="line">48K /home/ramesh</span><br></pre></td></tr></table></figure>
+<p>[注: 当使用sex -x跟踪输出时的提示符为 ++]<br>设置PS4后的脚本输出:</p>
+<p>PS4在ps.sh中定义了下面两个变量</p>
+<ul>
+<li>$0 显示当前的脚本名</li>
+<li>$LINENO 显示的当前的行号<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">ramesh@dev-db ~&gt; cat ps4.sh</span><br><span class="line">export PS4=&#x27;$0.$LINENO+ &#x27;</span><br><span class="line">set -x</span><br><span class="line">echo &quot;PS4 demo script&quot;</span><br><span class="line">ls -l /etc/ | wc -l</span><br><span class="line">du -sh ~</span><br><span class="line"></span><br><span class="line">ramesh@dev-db ~&gt; ./ps4.sh</span><br><span class="line">../ps4.sh.3+ echo &#x27;PS4 demo script&#x27;</span><br><span class="line">PS4 demo script</span><br><span class="line">../ps4.sh.4+ ls -l /etc/</span><br><span class="line">../ps4.sh.4+ wc -l</span><br><span class="line">243</span><br><span class="line">../ps4.sh.5+ du -sh /home/ramesh</span><br><span class="line">48K /home/ramesh</span><br></pre></td></tr></table></figure>
+[注: 使用PS4后使 “{script-name}.{line-number}+” 成为set –x的命令提示符]</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Android-问题-Eclipse创建Android项目时，会多出一个appcompat_v7的问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-10-13 10:07:29" itemprop="dateCreated datePublished" datetime="2015-10-13T10:07:29+08:00">2015-10-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Eclipse创建Android项目时，会多出一个appcompat-v7的问题"><a href="#Eclipse创建Android项目时，会多出一个appcompat-v7的问题" class="headerlink" title="Eclipse创建Android项目时，会多出一个appcompat_v7的问题"></a>Eclipse创建Android项目时，会多出一个appcompat_v7的问题</h1><hr>
+<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>使用eclipse创建一个Android项目时，发现project列表中会多创建出一个appcompat_v7项目，再创建一个Android项目时，又会再多出一个appcompat_v7_2，如果再次创建，会以此类推地创建出appcompat_v7_x格式的“多余项目”出来（此情况在ADT升级为22.6.x版本后出现，22.3.x前的版本不会有）</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/10/13/%E8%AF%AD%E8%A8%80/Android/Android-%E9%97%AE%E9%A2%98-Eclipse%E5%88%9B%E5%BB%BAAndroid%E9%A1%B9%E7%9B%AE%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%A4%9A%E5%87%BA%E4%B8%80%E4%B8%AAappcompat_v7%E7%9A%84%E9%97%AE%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">Android-SDK-SDK文档目录结构</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-10-12 14:41:54" itemprop="dateCreated datePublished" datetime="2015-10-12T14:41:54+08:00">2015-10-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="android-SDK-文档目录结构"><a href="#android-SDK-文档目录结构" class="headerlink" title="android SDK 文档目录结构"></a>android SDK 文档目录结构</h1><ol>
+<li><p>add-ons 这里面保存着附加库，比如google Maps，当然你如果安装了OPhone SDK，这里也会有一些类库在里面。</p>
+</li>
+<li><p>docs 这里面是Android SDK API参考文档，所有的API都可以在这里查到。</p></li></ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/10/12/%E8%AF%AD%E8%A8%80/Android/Android-SDK-SDK%E6%96%87%E6%A1%A3%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/09/27/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2015/09/27/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/" class="post-title-link" itemprop="url">Linux-配置-防火墙</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-09-27 16:12:57" itemprop="dateCreated datePublished" datetime="2015-09-27T16:12:57+08:00">2015-09-27</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">系统</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="关闭开启"><a href="#关闭开启" class="headerlink" title="关闭开启"></a>关闭开启</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1) 重启后生效</span><br><span class="line">开启： chkconfig iptables on</span><br><span class="line">关闭： chkconfig iptables off</span><br><span class="line"></span><br><span class="line">2) 即时生效，重启后失效</span><br><span class="line">开启： service iptables start</span><br><span class="line">关闭： service iptables stop</span><br><span class="line">重启： service iptables restart</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2015/09/27/%E7%B3%BB%E7%BB%9F%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8/%E7%B3%BB%E7%BB%9F/Linux/Linux-%E9%85%8D%E7%BD%AE-%E9%98%B2%E7%81%AB%E5%A2%99/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/09/22/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E8%AF%AD%E6%B3%95-ON%20DUPLICATE%20KEY%20UPDATE%E3%80%81REPLACE%20INTO%E7%9A%84%E5%8C%BA%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -355,14 +740,48 @@
 <blockquote>
 <p>从最强到最弱，不同的可到达性级别反映了对象的生命周期。在操作上，可将它们定义如下：</p>
 </blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2015/09/19/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%85%B6%E4%BB%96/Java-API-%E5%BC%95%E7%94%A8/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+<blockquote>
+<ul>
+<li>如果某一线程可以不必遍历所有引用对象而直接到达一个对象，则该对象是强可到达对象。新创建的对象对于创建它的线程而言是强可到达对象。</li>
+<li>如果一个对象不是强可到达对象，但通过遍历某一软引用可以到达它，则该对象是 软可到达 对象。</li>
+<li>如果一个对象既不是强可到达对象，也不是软可到达对象，但通过遍历弱引用可以到达它，则该对象是弱可到达对象。当清除对某一弱可到达对象的弱引用时，便可以终止此对象了。</li>
+<li>如果一个对象既不是强可到达对象，也不是软可到达对象或弱可到达对象，它已经终止，并且某个虚引用在引用它，则该对象是虚可到达对象。</li>
+<li>最后，当不能以上述任何方法到达某一对象时，该对象是不可到达 对象，因此可以回收此对象。</li>
+</ul>
+</blockquote>
+<p>-</p>
+<ul>
+<li><p>强引用<br>如果一个对象具有强引用，那就类似于必不可少的生活用品，垃圾回收器绝不会回收它。当内存空间不足，Java 虚拟机宁愿抛出 OutOfMemoryError 错误，使程序异常终止，也不会靠随意回收具有强引用的对象来解决内存不足问题。</p>
+</li>
+<li><p>软引用（SoftReference）<br>如果一个对象只具有软引用，那就类似于可有可物的生活用品。如果内存空间足够，垃圾回收器就不会回收它，如果内存空间不足了，就会回收这些对象的内存。只要垃圾回收器没有回收它，该对象就可以被程序使用。软引用可用来实现内存敏感的高速缓存。  </p>
+</li>
+</ul>
+<p>软引用可以和一个引用队列（ReferenceQueue）联合使用，如果软引用所引用的对象被垃圾回收，Java虚拟机就会把这个软引用加入到与之关联的引用队列中。</p>
+<ul>
+<li>弱引用（WeakReference）<br>如果一个对象只具有弱引用，那就类似于可有可物的生活用品。弱引用与软引用的区别在于：只具有弱引用的对象拥有更短暂的生命周期。在垃圾回收器线程扫描它所管辖的内存区域的过程中，一旦发现了只具有弱引用的对象，不管当前内存空间足够与否，都会回收它的内存。不过，由于垃圾回收器是一个优先级很低的线程，因此不一定会很快发现那些只具有弱引用的对象。</li>
+</ul>
+<p>弱引用可以和一个引用队列（ReferenceQueue）联合使用，如果弱引用所引用的对象被垃圾回收，Java 虚拟机就会把这个弱引用加入到与之关联的引用队列中。</p>
+<ul>
+<li>虚引用（PhantomReference）<br>“虚引用”顾名思义，就是形同虚设，与其他几种引用都不同，虚引用并不会决定对象的生命周期。如果一个对象仅持有虚引用，那么它就和没有任何引用一样，在任何时候都可能被垃圾回收。  </li>
+</ul>
+<p>虚引用主要用来跟踪对象被垃圾回收的活动。虚引用与软引用和弱引用的一个区别在于：虚引用必须和引用队列（ReferenceQueue）联合使用。当垃圾回收器准备回收一个对象时，如果发现它还有虚引用，就会在回收对象的内存之前，把这个虚引用加入到与之关联的引用队列中。程序可以通过判断引用队列中是否已经加入了虚引用，来了解被引用的对象是否将要被垃圾回收。程序如果发现某个虚引用已经被加入到引用队列，那么就可以在所引用的对象的内存被回收之前采取必要的行动。</p>
+<p>-</p>
+<h4 id="利用软引用和弱引用来避免-OOM"><a href="#利用软引用和弱引用来避免-OOM" class="headerlink" title="利用软引用和弱引用来避免 OOM"></a>利用软引用和弱引用来避免 OOM</h4><ul>
+<li>假如有一个应用需要读取大量的本地图片，如果每次读取图片都从硬盘读取，则会严重影响性能，但是如果全部加载到内存当中，又有可能造成内存溢出，此时使用软引用可以解决这个问题。</li>
+<li>设计思路是：用一个HashMap来保存图片的路径和相应图片对象关联的软引用之间的映射关系，在内存不足时，JVM会自动回收这些缓存图片对象所占用的空间，从而有效地避免了OOM的问题。在Android开发中对于大量图片下载会经常用到。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">private Map&lt;String, SoftReference&lt;Bitmap&gt;&gt; imageCache = new HashMap&lt;String, SoftReference&lt;Bitmap&gt;&gt;();</span><br><span class="line">public void addBitmapToCache(String path) &#123;  </span><br><span class="line">  // 强引用的Bitmap对象  </span><br><span class="line">  Bitmap bitmap = BitmapFactory.decodeFile(path);  </span><br><span class="line">  // 软引用的Bitmap对象  </span><br><span class="line">  SoftReference&lt;Bitmap&gt; softBitmap = new SoftReference&lt;Bitmap&gt;(bitmap);  </span><br><span class="line">  // 添加该对象到Map中使其缓存  </span><br><span class="line">  imageCache.put(path, softBitmap);  </span><br><span class="line">&#125;  </span><br><span class="line">public Bitmap getBitmapByPath(String path) &#123;  </span><br><span class="line">  // 从缓存中取软引用的Bitmap对象  </span><br><span class="line">  SoftReference&lt;Bitmap&gt; softBitmap = imageCache.get(path);  </span><br><span class="line">  // 判断是否存在软引用  </span><br><span class="line">  if (softBitmap == null) &#123;  </span><br><span class="line">    return null;  </span><br><span class="line">  &#125;  </span><br><span class="line">  // 取出Bitmap对象，如果由于内存不足Bitmap被回收，将取得空  </span><br><span class="line">  Bitmap bitmap = softBitmap.get();  </span><br><span class="line">  return bitmap;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>-</p>
+<h4 id="WeakHashMap"><a href="#WeakHashMap" class="headerlink" title="WeakHashMap"></a>WeakHashMap</h4><ul>
+<li>在Java集合中有一种特殊的Map类型：WeakHashMap， 在这种 Map 中存放了键对象的弱引用，当一个键对象被垃圾回收，那么相应的值对象的引用会从 Map 中删除。WeakHashMap 能够节约存储空间，可用来缓存那些非必须存在的数据。</li>
+</ul>
+<h5 id="WeakHashMap-案例"><a href="#WeakHashMap-案例" class="headerlink" title="WeakHashMap 案例"></a>WeakHashMap 案例</h5><ul>
+<li> 无意识对象保留最常见的原因是使用 Map 将元数据与临时对象（transient object）相关联。假定一个对象具有中等生命周期，比分配它的那个方法调用的生命周期长，但是比应用程序的生命周期短，如客户机的套接字连接。需要将一些元数据与这个套接字关联，如生成连接的用户的标识。在创建Socket时是不知道这些信息的，并且不能将数据添加到 Socket 对象上，因为不能控制 Socket 类或者它的子类。</li>
+<li>  这种方法的问题是元数据的生命周期需要与套接字的生命周期挂钩，但是除非准确地知道什么时候程序不再需要这个套接字，并记住从 Map 中删除相应的映射，否则，Socket 和 User 对象将会永远留在 Map 中，远远超过响应了请求和关闭套接字的时间。这会阻止 Socket 和 User 对象被垃圾收集，即使应用程序不会再使用它们。这些对象留下来不受控制，很容易造成程序在长时间运行后内存爆满。除了最简单的情况，在几乎所有情况下找出什么时候 Socket 不再被程序使用是一件很烦人和容易出错的任务，需要人工对内存进行管理。</li>
+<li>在Java集合中有一种特殊的Map类型 WeakHashMap，在这种Map中存放了键对象的弱引用，当一个键对象被垃圾回收器回收时，那么相应的值对象的引用会从 Map 中删除。WeakHashMap 能够节约存储空间，可用来缓存那些非必须存在的数据。关于 Map 接口的一般用法。</li>
+</ul>
+
       
     </div>
 
@@ -653,564 +1072,24 @@
 
       
           <p>转自：<a target="_blank" rel="noopener" href="http://www.iteye.com/topic/1116193">http://www.iteye.com/topic/1116193</a></p>
-<h2 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h2><p>在JDK1.5 之前，我们定义常量都是： public static fianl…. 。现在好了，有了枚举，可以把相关的常量分组到一个枚举类型里，而且枚举提供了比常量更多的方法。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;  </span><br><span class="line">  RED, GREEN, BLANK, YELLOW  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<h2 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h2><p>在JDK1.5 之前，我们定义常量都是：<code>public static fianl....</code>。现在好了，有了枚举，可以把相关的常量分组到一个枚举类型里，而且枚举提供了比常量更多的方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;</span><br><span class="line">  RED, GREEN, BLANK, YELLOW</span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
 
 <h2 id="switch"><a href="#switch" class="headerlink" title="switch"></a>switch</h2><p>JDK1.6之前的switch语句只支持int,char,enum类型，使用枚举，能让我们的代码可读性更强。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">enum Signal &#123;  </span><br><span class="line">    GREEN, YELLOW, RED  </span><br><span class="line">&#125;  </span><br><span class="line">public class TrafficLight &#123;  </span><br><span class="line">    Signal color = Signal.RED;  </span><br><span class="line">    public void change() &#123;  </span><br><span class="line">        switch (color) &#123;  </span><br><span class="line">        case RED:  </span><br><span class="line">            color = Signal.GREEN;  </span><br><span class="line">            break;  </span><br><span class="line">        case YELLOW:  </span><br><span class="line">            color = Signal.RED;  </span><br><span class="line">            break;  </span><br><span class="line">        case GREEN:  </span><br><span class="line">            color = Signal.YELLOW;  </span><br><span class="line">            break;  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">enum Signal &#123;  </span><br><span class="line">    GREEN, YELLOW, RED  </span><br><span class="line">&#125;  </span><br><span class="line">public class TrafficLight &#123;  </span><br><span class="line">    Signal color = Signal.RED;  </span><br><span class="line">    public void change() &#123;  </span><br><span class="line">        switch (color) &#123;  </span><br><span class="line">        case RED:  </span><br><span class="line">            color = Signal.GREEN;  </span><br><span class="line">            break;  </span><br><span class="line">        case YELLOW:  </span><br><span class="line">            color = Signal.RED;  </span><br><span class="line">            break;  </span><br><span class="line">        case GREEN:  </span><br><span class="line">            color = Signal.YELLOW;  </span><br><span class="line">            break;  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
 
-<h2 id="向枚举中添加新方法"><a href="#向枚举中添加新方法" class="headerlink" title="向枚举中添加新方法"></a>向枚举中添加新方法</h2><p>如果打算自定义自己的方法，那么必须在enum实例序列的最后添加一个分号。而且 Java 要求必须先定义 enum 实例。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    // 普通方法  </span><br><span class="line">    public static String getName(int index) &#123;  </span><br><span class="line">        for (Color c : Color.values()) &#123;  </span><br><span class="line">            if (c.getIndex() == index) &#123;  </span><br><span class="line">                return c.name;  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;  </span><br><span class="line">        return null;  </span><br><span class="line">    &#125;  </span><br><span class="line">    // get set 方法  </span><br><span class="line">    public String getName() &#123;  </span><br><span class="line">        return name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public void setName(String name) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public int getIndex() &#123;  </span><br><span class="line">        return index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public void setIndex(int index) &#123;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<h2 id="向枚举中添加新方法"><a href="#向枚举中添加新方法" class="headerlink" title="向枚举中添加新方法"></a>向枚举中添加新方法</h2><p>如果打算自定义自己的方法，那么必须在enum实例序列的最后添加一个分号。而且 Java 要求必须先定义 enum 实例。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    // 普通方法  </span><br><span class="line">    public static String getName(int index) &#123;  </span><br><span class="line">        for (Color c : Color.values()) &#123;  </span><br><span class="line">            if (c.getIndex() == index) &#123;  </span><br><span class="line">                return c.name;  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;  </span><br><span class="line">        return null;  </span><br><span class="line">    &#125;  </span><br><span class="line">    // get set 方法  </span><br><span class="line">    public String getName() &#123;  </span><br><span class="line">        return name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public void setName(String name) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public int getIndex() &#123;  </span><br><span class="line">        return index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    public void setIndex(int index) &#123;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
 
 <h2 id="覆盖枚举的方法"><a href="#覆盖枚举的方法" class="headerlink" title="覆盖枚举的方法"></a>覆盖枚举的方法</h2><p>下面给出一个toString()方法覆盖的例子。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    //覆盖方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public String toString() &#123;  </span><br><span class="line">        return this.index+&quot;_&quot;+this.name;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public enum Color &#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">    //覆盖方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public String toString() &#123;  </span><br><span class="line">        return this.index+&quot;_&quot;+this.name;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
 
-<h2 id="实现接口"><a href="#实现接口" class="headerlink" title="实现接口"></a>实现接口</h2><p>所有的枚举都继承自java.lang.Enum类。由于Java 不支持多继承，所以枚举对象不能再继承其他类。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public interface Behaviour &#123;  </span><br><span class="line">    void print();  </span><br><span class="line">    String getInfo();  </span><br><span class="line">&#125;  </span><br><span class="line">public enum Color implements Behaviour&#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">//接口方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public String getInfo() &#123;  </span><br><span class="line">        return this.name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    //接口方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public void print() &#123;  </span><br><span class="line">        System.out.println(this.index+&quot;:&quot;+this.name);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<h2 id="实现接口"><a href="#实现接口" class="headerlink" title="实现接口"></a>实现接口</h2><p>所有的枚举都继承自java.lang.Enum类。由于Java 不支持多继承，所以枚举对象不能再继承其他类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public interface Behaviour &#123;  </span><br><span class="line">    void print();  </span><br><span class="line">    String getInfo();  </span><br><span class="line">&#125;  </span><br><span class="line">public enum Color implements Behaviour&#123;  </span><br><span class="line">    RED(&quot;红色&quot;, 1), GREEN(&quot;绿色&quot;, 2), BLANK(&quot;白色&quot;, 3), YELLO(&quot;黄色&quot;, 4);  </span><br><span class="line">    // 成员变量  </span><br><span class="line">    private String name;  </span><br><span class="line">    private int index;  </span><br><span class="line">    // 构造方法  </span><br><span class="line">    private Color(String name, int index) &#123;  </span><br><span class="line">        this.name = name;  </span><br><span class="line">        this.index = index;  </span><br><span class="line">    &#125;  </span><br><span class="line">//接口方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public String getInfo() &#123;  </span><br><span class="line">        return this.name;  </span><br><span class="line">    &#125;  </span><br><span class="line">    //接口方法  </span><br><span class="line">    @Override  </span><br><span class="line">    public void print() &#123;  </span><br><span class="line">        System.out.println(this.index+&quot;:&quot;+this.name);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
 
-<h2 id="使用接口组织枚举"><a href="#使用接口组织枚举" class="headerlink" title="使用接口组织枚举"></a>使用接口组织枚举</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public interface Food &#123;  </span><br><span class="line">    enum Coffee implements Food&#123;  </span><br><span class="line">        BLACK_COFFEE,DECAF_COFFEE,LATTE,CAPPUCCINO  </span><br><span class="line">    &#125;  </span><br><span class="line">    enum Dessert implements Food&#123;  </span><br><span class="line">        FRUIT, CAKE, GELATO  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<h2 id="使用接口组织枚举"><a href="#使用接口组织枚举" class="headerlink" title="使用接口组织枚举"></a>使用接口组织枚举</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public interface Food &#123;  </span><br><span class="line">    enum Coffee implements Food&#123;  </span><br><span class="line">        BLACK_COFFEE,DECAF_COFFEE,LATTE,CAPPUCCINO  </span><br><span class="line">    &#125;  </span><br><span class="line">    enum Dessert implements Food&#123;  </span><br><span class="line">        FRUIT, CAKE, GELATO  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
 
 <h2 id="关于枚举集合的使用"><a href="#关于枚举集合的使用" class="headerlink" title="关于枚举集合的使用"></a>关于枚举集合的使用</h2><p>java.util.EnumSet和java.util.EnumMap是两个枚举集合。EnumSet保证集合中的元素不重复；EnumMap中的 key是enum类型，而value则可以是任意类型。关于这个两个集合的使用就不在这里赘述，可以参考JDK文档。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/08/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AE%BE%E7%BD%AE-Oracle_XE%E4%BF%AE%E6%94%B9HTTP%E7%9B%91%E5%90%AC%E7%A8%8B%E5%BA%8F%E7%AB%AF%E5%8F%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/08/05/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AE%BE%E7%BD%AE-Oracle_XE%E4%BF%AE%E6%94%B9HTTP%E7%9B%91%E5%90%AC%E7%A8%8B%E5%BA%8F%E7%AB%AF%E5%8F%A3/" class="post-title-link" itemprop="url">Oracle-设置-Oracle_XE修改HTTP监听程序端口</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-08-05 10:02:35" itemprop="dateCreated datePublished" datetime="2015-08-05T10:02:35+08:00">2015-08-05</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>打开 SQL*Plus 控制台。用 sys 或者 system 登陆。然后运行： </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">begin</span><br><span class="line">  dbms_xdb.sethttpport(&#x27;8088&#x27;);</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
-<p>这样就把端口设置为 8088 了。 </p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/21/%E5%B7%A5%E5%85%B7/git/git-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/07/21/%E5%B7%A5%E5%85%B7/git/git-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">git-常用命令</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-07-21 16:36:44" itemprop="dateCreated datePublished" datetime="2015-07-21T16:36:44+08:00">2015-07-21</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><p><code>git config --global user.name &quot;Your Name&quot;</code></p>
-</li>
-<li><p><code>git config --global user.email &quot;email@example.com&quot;</code></p>
-</li>
-<li><p><code>git reflog</code> : 查看命令历史，以便确定要回到未来的哪个版本</p>
-</li>
-<li><p><code>git --version</code>: 查看Git版本</p>
-</li>
-<li><p><code>git config -l</code>: 查看git所有配置项</p>
-</li>
-</ul>
-<h3 id="start-a-working-area"><a href="#start-a-working-area" class="headerlink" title="start a working area"></a>start a working area</h3><ul>
-<li><code>git init</code>: 初始化一个Git仓库（Create an empty Git repository or reinitialize an existing one）</li>
-<li><code>git clone</code>: Clone a repository into a new directory</li>
-</ul>
-<h3 id="work-on-the-current-change"><a href="#work-on-the-current-change" class="headerlink" title="work on the current change"></a>work on the current change</h3><ul>
-<li><code>git add &lt;files&gt;</code>: Add file contents to the index</li>
-<li><code>git reset</code>: 跳转版本（Reset current HEAD to the specified state）<blockquote>
-<p>用HEAD表示当前版本，上一个版本就是HEAD^，上上一个版本就是HEAD^^，当然往上100个版本写100个^比较容易数不过来，所以写成HEAD~100<br>用命令 <code>git reset HEAD file</code> 可以把暂存区的修改撤销掉（unstage），重新放回工作区</p>
-</blockquote>
-</li>
-<li><code>git rm &lt;file&gt;</code>: Remove files from the working tree and from the index（用于删除一个文件）</li>
-</ul>
-<h3 id="grow-mark-and-tweak-your-common-history"><a href="#grow-mark-and-tweak-your-common-history" class="headerlink" title="grow, mark and tweak your common history"></a>grow, mark and tweak your common history</h3><ul>
-<li><code>git commit</code>: Record changes to the repository</li>
-<li><code>git diff &lt;file&gt;</code>: 查看difference，显示的格式正是Unix通用的diff格式（Show changes between commits, commit and working tree, etc）</li>
-<li><code>git checkout</code>: Switch branches or restore working tree files<blockquote>
-<p>命令<code>git checkout -- readme.txt</code>意思就是，把readme.txt文件在工作区的修改全部撤销，这里有两种情况：<br>一种是readme.txt自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；<br>一种是readme.txt已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。<br>总之，就是让这个文件回到最近一次git commit或git add时的状态。</p>
-</blockquote>
-</li>
-<li><code>git branch</code>: List, create, or delete branches</li>
-</ul>
-<h3 id="examine-the-history-and-state"><a href="#examine-the-history-and-state" class="headerlink" title="examine the history and state"></a>examine the history and state</h3><ul>
-<li><code>git status</code>: 可以让我们时刻掌握仓库当前的状态（Show the working tree status）</li>
-<li><code>git log</code>: 显示从最近到最远的提交日志（Show commit logs）<blockquote>
-<p><code>git log --pretty=oneline</code>: 一行输出</p>
-</blockquote>
-</li>
-</ul>
-<hr>
-<h3 id="git-结构"><a href="#git-结构" class="headerlink" title="git 结构"></a>git 结构</h3><p>工作区 add 暂存区 commit 本地版本库 push 远程库</p>
-<h3 id="创建版本库"><a href="#创建版本库" class="headerlink" title="创建版本库"></a>创建版本库</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git init</span><br><span class="line">git add readme.txt</span><br><span class="line">git commit -m &quot;wrote a readme file&quot;</span><br></pre></td></tr></table></figure>
-
-<h3 id="查看状态"><a href="#查看状态" class="headerlink" title="查看状态"></a>查看状态</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git status</span><br><span class="line">git diff readme.txt</span><br></pre></td></tr></table></figure>
-
-<h3 id="回退"><a href="#回退" class="headerlink" title="回退"></a>回退</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git log</span><br><span class="line">git log --pretty=oneline #查看git版本记录</span><br><span class="line">git reset --hard HEAD^</span><br><span class="line">git reflog #查看git操作日志</span><br></pre></td></tr></table></figure>
-
-<h3 id="撤销修改"><a href="#撤销修改" class="headerlink" title="撤销修改"></a>撤销修改</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -- readme.txt</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>命令<code>git checkout -- readme.txt</code>意思就是，把readme.txt文件在工作区的修改全部撤销，这里有两种情况：</p>
-<ol>
-<li>readme.txt自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；</li>
-<li>readme.txt已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。</li>
-</ol>
-</blockquote>
-<blockquote>
-<p>总之，就是让这个文件回到最近一次git commit或git add时的状态。<br><em><strong>checkout是将暂存库还原到工作区</strong></em></p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset HEAD readme.txt</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>git reset命令既可以回退版本，也可以把暂存区的修改回退到工作区。当我们用HEAD时，表示最新的版本。</p>
-</blockquote>
-<blockquote>
-<p><em><strong>reset是将版本库还原到暂存区</strong></em></p>
-</blockquote>
-<p>场景1：当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令 <code>git checkout -- file</code>。</p>
-<p>场景2：当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令 <code>git reset HEAD file</code>，就回到了场景1，第二步按场景1操作。</p>
-<p>场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考版本回退一节，不过前提是没有推送到远程库。</p>
-<p><code>git checkout</code> 其实是用版本库里的版本替换工作区的版本，无论工作区是修改还是删除，都可以“一键还原”。</p>
-<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm test.txt</span><br></pre></td></tr></table></figure>
-
-<p>命令git rm用于删除一个文件。如果一个文件已经被提交到版本库，那么你永远不用担心误删，但是要小心，你只能恢复文件到最新版本，你会丢失最近一次提交后你修改的内容。</p>
-<h3 id="修改"><a href="#修改" class="headerlink" title="修改"></a>修改</h3><p>每次修改，如果不add到暂存区，那就不会加入到commit中。</p>
-<h3 id="创建远程库"><a href="#创建远程库" class="headerlink" title="创建远程库"></a>创建远程库</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail@example.com&quot;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>如果一切顺利的话，可以在用户主目录里找到.ssh目录，里面有id_rsa和id_rsa.pub两个文件，这两个就是SSH Key的秘钥对，id_rsa是私钥，不能泄露出去，id_rsa.pub是公钥，可以放心地告诉任何人</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote add origin git@github.com:michaelliao/learngit.git</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>把上面的 michaelliao 替换成你自己的 GitHub 账户名，否则，你在本地关联的就是我的远程库，关联没有问题，但是你以后推送是推不上去的，因为你的 SSH Key 公钥不在我的账户列表中。<br>添加后，远程库的名字就是 origin，这是 Git 默认的叫法，也可以改成别的，但是 origin 这个名字一看就知道是远程库。</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push -u origin master</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>把本地库的内容推送到远程，用 <code>git push</code> 命令，实际上是把当前分支 master 推送到远程。<br>由于远程库是空的，我们第一次推送 master 分支时，加上了 <code>-u</code> 参数，Git 不但会把本地的 master 分支内容推送的远程新的 master 分支，还会把本地的 master 分支和远程的 master 分支关联起来，在以后的推送或者拉取时就可以简化命令。</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin master</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h1 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h1><h3 id="克隆远程库"><a href="#克隆远程库" class="headerlink" title="克隆远程库"></a>克隆远程库</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone git@github.com:michaelliao/gitskills.git</span><br></pre></td></tr></table></figure>
-
-<p>可以加参数 <code>--depth=1</code>，depth 用于指定克隆深度，为 1 即表示只克隆最近一次 commit。</p>
-<h3 id="当add错误的时候"><a href="#当add错误的时候" class="headerlink" title="当add错误的时候"></a>当add错误的时候</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm -r --cached</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>该方法为递归删除</p>
-</blockquote>
-<blockquote>
-<p>“add”有个“-n”，可以预览会加进哪些文件</p>
-</blockquote>
-<h3 id="分支"><a href="#分支" class="headerlink" title="分支"></a>分支</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch &lt;branch名称&gt; &lt;commit版本&gt;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>根据一个特定的提交创建新分支</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b dev</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>git checkout命令加上-b参数表示创建并切换，相当于以下两条命令：</p>
-</blockquote>
-<ul>
-<li>git branch dev</li>
-<li>git checkout dev</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>git branch命令会列出所有分支，当前分支前面会标一个*号</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git add readme.txt</span><br><span class="line">git commit -m &quot;branch test&quot;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout master</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>切换回master分支</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge dev</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>git merge命令用于合并指定分支到当前分支</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d dev</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>删除dev分支</p>
-</blockquote>
-<h3 id="解决冲突"><a href="#解决冲突" class="headerlink" title="解决冲突"></a>解决冲突</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b feature1</span><br><span class="line">git add readme.txt</span><br><span class="line">git commit -m &quot;AND simple&quot;</span><br><span class="line">git checkout master</span><br><span class="line">git add readme.txt</span><br><span class="line">git commit -m &quot;&amp; simple&quot;</span><br><span class="line">git merge feature1</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>Git用&lt;&lt;&lt;&lt;&lt;&lt;&lt;，=======，&gt;&gt;&gt;&gt;&gt;&gt;&gt;标记出不同分支的内容，我们修改如下后保存</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git log --graph --pretty=oneline --abbrev-commit</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>用带参数的 <code>git log</code> 也可以看到分支的合并情况</p>
-</blockquote>
-<h3 id="删除git远程分支"><a href="#删除git远程分支" class="headerlink" title="删除git远程分支"></a>删除git远程分支</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin :test</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p><code>git push [远程名] :[分支名]</code></p>
-</blockquote>
-<blockquote>
-<p><code>git push [远程名] [本地分支]:[远程分支]</code> 语法，如<br>果省略 <code>[本地分支]</code>，那就等于是在说“在这里提取空白然后把它变成 <code>[远程分支]</code>”。</p>
-</blockquote>
-<h3 id="删除代码库中文件"><a href="#删除代码库中文件" class="headerlink" title="删除代码库中文件"></a>删除代码库中文件</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm --cached &quot;文件路径&quot;</span><br></pre></td></tr></table></figure>
-
-<p>不删除物理文件，仅将该文件从缓存中删除</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm --f &quot;文件路径&quot;</span><br></pre></td></tr></table></figure>
-
-<p>将该文件从缓存中删除，还会将物理文件删除</p>
-<h3 id="更新代码"><a href="#更新代码" class="headerlink" title="更新代码"></a>更新代码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git pull origin master</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git pull &lt;远程主机名&gt; &lt;远程分支名&gt;:&lt;本地分支名&gt;</span><br></pre></td></tr></table></figure>
-<p>比如，取回origin主机的next分支，与本地的master分支合并，需要写成下面这样。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git pull origin next:master</span><br></pre></td></tr></table></figure>
-
-<p>或者</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git fetch origin master</span><br><span class="line">git merge origin/master</span><br></pre></td></tr></table></figure>
-
-<ol>
-<li>从远程的origin仓库的master主分支更新最新的版本到origin/master分支上</li>
-<li>合并内容到本地master分支</li>
-</ol>
-<h3 id="更新代码，保留生产服务器上所做的改动"><a href="#更新代码，保留生产服务器上所做的改动" class="headerlink" title="更新代码，保留生产服务器上所做的改动"></a>更新代码，保留生产服务器上所做的改动</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git stash</span><br><span class="line">git pull</span><br><span class="line">git stash pop</span><br></pre></td></tr></table></figure>
-
-<h3 id="将缓存区内容释放恢复"><a href="#将缓存区内容释放恢复" class="headerlink" title="将缓存区内容释放恢复"></a>将缓存区内容释放恢复</h3><p><code>git stash apply</code></p>
-<p>将当前分支的最后一次缓存的内容释放出来，但是刚才的记录还存在list中</p>
-<p><code>git stash pop</code></p>
-<p>将当前分支的最后一次缓存的内容释放出来，但是刚才的记录不存在list中</p>
-<h3 id="撤销“本地的”修改（修改了文件，没有add）"><a href="#撤销“本地的”修改（修改了文件，没有add）" class="headerlink" title="撤销“本地的”修改（修改了文件，没有add）"></a>撤销“本地的”修改（修改了文件，没有add）</h3><ul>
-<li><p>场景: 一只猫从键盘上走过，无意中保存了修改，然后破坏了编辑器。不过，你还没有 commit 这些修改。你想要恢复被修改文件里的所有内容 — 就像上次 commit 的时候一模一样。</p>
-</li>
-<li><p>方法: <code>git checkout -- &lt;bad filename&gt;</code></p>
-</li>
-<li><p>原理: <code>git checkout</code> 会把工作目录里的文件修改到 Git 之前记录的某个状态。你可以提供一个你想返回的分支名或特定 SHA ，或者在缺省情况下，Git 会认为你希望 checkout 的是 HEAD，当前 checkout 分支的最后一次 commit。</p>
-</li>
-<li><p>记住：你用这种方法“撤销”的任何修改真的会完全消失。因为它们从来没有被提交过，所以之后 Git 也无法帮助我们恢复它们。你要确保自己了解你在这个操作里扔掉的东西是什么！（也许可以先利用 git diff 确认一下）</p>
-</li>
-</ul>
-<h3 id="重置“本地的”修改（修改了文件，已经add）"><a href="#重置“本地的”修改（修改了文件，已经add）" class="headerlink" title="重置“本地的”修改（修改了文件，已经add）"></a>重置“本地的”修改（修改了文件，已经add）</h3><ul>
-<li><p>场景: 你在本地提交了一些东西（还没有 push），但是所有这些东西都很糟糕，你希望撤销前面的三次提交 — 就像它们从来没有发生过一样。</p>
-</li>
-<li><p>方法: <code>git reset &lt;last good SHA&gt;</code> 或 <code>git reset --hard &lt;last good SHA&gt;</code></p>
-</li>
-<li><p>原理: git reset 会把你的代码库历史返回到指定的 SHA 状态。 这样就像是这些提交从来没有发生过。缺省情况下， git reset 会保留工作目录。这样，提交是没有了，但是修改内容还在磁盘上。这是一种安全的选择，但通常我们会希望一步就“撤销”提交以及修改内容 — 这就是 –hard 选项的功能。</p>
-</li>
-</ul>
-<h3 id="删除本地untracked文件"><a href="#删除本地untracked文件" class="headerlink" title="删除本地untracked文件"></a>删除本地untracked文件</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 删除 untracked files</span><br><span class="line">git clean -f</span><br><span class="line"></span><br><span class="line"># 连 untracked 的目录也一起删掉</span><br><span class="line">git clean -fd</span><br><span class="line"></span><br><span class="line"># 连 gitignore 的untrack 文件/目录也一起删掉 （慎用，一般这个是用来删掉编译出来的 .o之类的文件用的）</span><br><span class="line">git clean -xfd</span><br><span class="line"></span><br><span class="line"># 在用上述 git clean 前，墙裂建议加上 -n 参数来先看看会删掉哪些文件，防止重要文件被误删</span><br><span class="line">git clean -nxfd</span><br><span class="line">git clean -nf</span><br><span class="line">git clean -nfd</span><br></pre></td></tr></table></figure>
-
-<h3 id="在撤销“本地修改”之后再恢复"><a href="#在撤销“本地修改”之后再恢复" class="headerlink" title="在撤销“本地修改”之后再恢复"></a>在撤销“本地修改”之后再恢复</h3><ul>
-<li><p>场景: 你提交了几个 commit，然后用 git reset –hard 撤销了这些修改（见上一段），接着你又意识到：你希望还原这些修改！</p>
-</li>
-<li><p>方法: git reflog 和 git reset 或 git checkout</p>
-</li>
-<li><p>原理: git reflog 对于恢复项目历史是一个超棒的资源。你可以恢复几乎 任何东西 — 任何你 commit 过的东西 — 只要通过 reflog。</p>
-</li>
-</ul>
-<h3 id="撤销一个“已push”的改变"><a href="#撤销一个“已push”的改变" class="headerlink" title="撤销一个“已push”的改变"></a>撤销一个“已push”的改变</h3><ul>
-<li><p>场景: 你已经执行了 git push, 把你的修改发送到了 GitHub，现在你意识到这些 commit 的其中一个是有问题的，你需要撤销那一个 commit.</p>
-</li>
-<li><p>方法: <code>git revert &lt;SHA&gt;</code>;</p>
-</li>
-<li><p>原理: git revert 会产生一个新的 commit，它和指定 SHA 对应的 commit 是相反的（或者说是反转的）。如果原先的 commit 是“物质”，新的 commit 就是“反物质” — 任何从原先的 commit 里删除的内容会在新的 commit 里被加回去，任何在原先的 commit 里加入的内容会在新的 commit  里被删除。</p>
-</li>
-</ul>
-<h3 id="向-GitHub-上贡献代码"><a href="#向-GitHub-上贡献代码" class="headerlink" title="向 GitHub 上贡献代码"></a>向 GitHub 上贡献代码</h3><ol>
-<li>先fork下别人的代码，于是你的github上就出现了同名的项目</li>
-<li>把这个自己的项目git clone到本地，修修改改，然后push到你自己的项目里</li>
-<li>在github上你的项目页面有个按钮，叫Pull request，对 你点它就会把你的修改发到对方的项目里</li>
-</ol>
-<p>在你fork他的项目之后，如果他又更新了代码，你自己fork的项目怎么做到和原项目同步呢？</p>
-<ol>
-<li>先git clone我的代码到本地，然后修修改改</li>
-<li>然后你不是不能push到我的项目里么，你可以先在github页面上fork我的项目</li>
-<li>有了你自己的项目地址（url）之后呢，你在本地操作git remote add [sort name] [your url]，意思就是添加第二个远程仓库地址，这个仓库的“昵称”就是你刚指定的[sort name]</li>
-<li>之后push文件呢 就通过指定这个［sort name］来push到这个你自己的仓库里</li>
-</ol>
-<h3 id="查看每一行代码的作者和创建时间"><a href="#查看每一行代码的作者和创建时间" class="headerlink" title="查看每一行代码的作者和创建时间"></a>查看每一行代码的作者和创建时间</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git blame &lt;文件名&gt;</span><br></pre></td></tr></table></figure>
-
-<h3 id="针对某一时间的版本做上标记"><a href="#针对某一时间的版本做上标记" class="headerlink" title="针对某一时间的版本做上标记"></a>针对某一时间的版本做上标记</h3><p>添加tag</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -a &lt;版本&gt; -m &#x27;&lt;注释&gt;&#x27;</span><br></pre></td></tr></table></figure>
-
-<p>查看所有tag</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -l</span><br></pre></td></tr></table></figure>
-
-<p>切换到对应的标签</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout &lt;tag的版本&gt;</span><br></pre></td></tr></table></figure>
-
-<p>切换到对应的标签（如果有个同名的分枝名）</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout tags/&lt;tag的版本&gt;</span><br></pre></td></tr></table></figure>
-
-<p>删除tag</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git tag -d &lt;tag的版本&gt;</span><br></pre></td></tr></table></figure>
-
-<p>提交某一版本tag</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin &lt;tag的版本&gt;</span><br></pre></td></tr></table></figure>
-
-<p>提交所有tag</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin --tag</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/21/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-union%E3%80%81union_all%E3%80%81intersect%E3%80%81minus/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/07/21/%E6%95%B0%E6%8D%AE%E5%BA%93/Oracle/Oracle-%E8%AF%AD%E6%B3%95-union%E3%80%81union_all%E3%80%81intersect%E3%80%81minus/" class="post-title-link" itemprop="url">Oracle-语法-union、union_all、intersect、minus</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-07-21 10:54:32" itemprop="dateCreated datePublished" datetime="2015-07-21T10:54:32+08:00">2015-07-21</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>Union：对两个结果集进行并集操作，不包括重复行，同时进行默认规则的排序；</li>
-<li>Union All：对两个结果集进行并集操作，包括重复行，不进行排序；</li>
-<li>Intersect：对两个结果集进行交集操作，不包括重复行，同时进行默认规则的排序；</li>
-<li>Minus：对两个结果集进行差操作，不包括重复行，同时进行默认规则的排序。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2015/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/07/15/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E7%B4%A2%E5%BC%95/" class="post-title-link" itemprop="url">MySQL-索引</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2015-07-15 15:04:21" itemprop="dateCreated datePublished" datetime="2015-07-15T15:04:21+08:00">2015-07-15</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="普通索引"><a href="#普通索引" class="headerlink" title="普通索引"></a>普通索引</h2><p>普通索引（由关键字 KEY 或 INDEX 定义的索引）的唯一任务是加快对数据的访问速度。因此，应该只为那些最经常出现在查询条件（WHERE column = …）或排序条件（ORDER BY column）中的数据列创建索引。只要有可能，就应该选择一个数据最整齐、最紧凑的数据列（如一个整数类型的数据列）来创建索引。</p>
-<h2 id="唯一索引"><a href="#唯一索引" class="headerlink" title="唯一索引"></a>唯一索引</h2><p>普通索引允许被索引的数据列包含重复的值。比如说，因为人有可能同名，所以同一个姓名在同一个”员工个人资料”数据表里可能出现两次或更多次。</p>
-<p>如果能确定某个数据列将只包含彼此各不相同的值，在为这个数据列创建索引的时候就应该用关键字 UNIQUE 把它定义为一个唯一索引。这么做的好处：一是简化了 MySQL 对这个索引的管理工作，这个索引也因此而变得更有效率；二是 MySQL 会在有新记录插入数据表时，自动检查新记录的这个字段的值是否已经在某个记录的这个字段里出现过了；如果是， MySQL 将拒绝插入那条新记录。也就是说，唯一索引可以保证数据记录的唯一性。事实上，在许多场合，人们创建唯一索引的目的往往不是为了提高访问速度，而只是为了避免数据出现重复。</p>
-<h2 id="主索引"><a href="#主索引" class="headerlink" title="主索引"></a>主索引</h2><p>在前面已经反复多次强调过：必须为主键字段创建一个索引，这个索引就是所谓的”主索引”。主索引与唯一索引的唯一区别是：前者在定义时使用的关键字是 PRIMARY 而不是 UNIQUE。</p>
-<h2 id="外键索引"><a href="#外键索引" class="headerlink" title="外键索引"></a>外键索引</h2><p>如果为某个外键字段定义了一个外键约束条件，MySQL 就会定义一个内部索引来帮助自己以最有效率的方式去管理和使用外键约束条件。</p>
-<h2 id="复合索引"><a href="#复合索引" class="headerlink" title="复合索引"></a>复合索引</h2><p>索引可以覆盖多个数据列，如像 <code>INDEX(columnA, columnB)</code> 索引。这种索引的特点是 MySQL 可以有选择地使用一个这样的索引。如果查询操作只需要用到 columnA 数据列上的一个索引，就可以使用复合索引 <code>INDEX(columnA, columnB)</code>。不过，这种用法仅适用于在复合索引中排列在前的数据列组合。比如说，<code>INDEX(A, B, C)</code> 可以当做 A 或 <code>(A, B)</code> 的索引来使用，但不能当做 B、C 或 <code>(B, C)</code> 的索引来使用。</p>
-<h2 id="索引的长度"><a href="#索引的长度" class="headerlink" title="索引的长度"></a>索引的长度</h2><p>在为 CHAR 和 VARCHAR 类型的数据列定义索引时，可以把索引的长度限制为一个给定的字符个数（这个数字必须小于这个字段所允许的最大字符个数）。这么做的好处是可以生成一个尺寸比较小、检索速度却比较快的索引文件。在绝大多数应用里，数据库中的字符串数据大都以各种各样的名字为主，把索引的长度设置为 10~15 个字符已经足以把搜索范围缩小到很少的几条数据记录了。</p>
-<p>在为 BLOB 和 TEXT 类型的数据列创建索引时，必须对索引的长度做出限制；MySQL 所允许的最大索引长度是 255 个字符。</p>
-<h2 id="全文索引"><a href="#全文索引" class="headerlink" title="全文索引"></a>全文索引</h2><p>文本字段上的普通索引只能加快对出现在字段内容最前面的字符串（也就是字段内容开头的字符）进行检索操作。如果字段里存放的是由几个、甚至是多个单词构成的较大段文字，普通索引就没什么作用了。这种检索往往以 <code>LIKE %word%</code> 的形式出现，这对 MySQL 来说很复杂，如果需要处理的数据量很大，响应时间就会很长。</p>
-<p>这类场合正是全文索引（full-text index）可以大显身手的地方。在生成这种类型的索引时，MySQL 将把在文本中出现的所有单词创建为一份清单，查询操作将根据这份清单去检索有关的数据记录。全文索引即可以随数据表一同创建，也可以等日后有必要时再使用下面这条命令添加：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE tablename ADD FULLTEXT(column1, column2)</span><br></pre></td></tr></table></figure>
-<p>有了全文索引，就可以用SELECT查询命令去检索那些包含着一个或多个给定单词的数据记录了。下面是这类查询命令的基本语法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM tablename WHERE MATCH(column1, column2) AGAINST(&#x27;word1&#x27;, &#x27;word2&#x27;, &#x27;word3&#x27;)</span><br></pre></td></tr></table></figure>
-<p>上面这条命令将把 column1 和 column2 字段里有 word1、word2 和 word3 的数据记录全部查询出来。</p>
-<p>注解：InnoDB 数据表不支持全文索引。</p>
 
       
     </div>
@@ -1297,7 +1176,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1310,7 +1189,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1345,7 +1224,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

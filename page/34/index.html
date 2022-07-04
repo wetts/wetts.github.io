@@ -188,6 +188,387 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="post-title-link" itemprop="url">Java-API-容器-HashMap死循环</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-06 18:53:32" itemprop="dateCreated datePublished" datetime="2016-12-06T18:53:32+08:00">2016-12-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://coolshell.cn/articles/9606.html">http://coolshell.cn/articles/9606.html</a></p>
+<h2 id="问题的症状"><a href="#问题的症状" class="headerlink" title="问题的症状"></a>问题的症状</h2><p>从前我们的Java代码因为一些原因使用了HashMap这个东西，但是当时的程序是单线程的，一切都没有问题。后来，我们的程序性能有问题，所以需要变成多线程的，于是，变成多线程后到了线上，发现程序经常占了100%的CPU，查看堆栈，你会发现程序都Hang在了HashMap.get()这个方法上了，重启程序后问题消失。但是过段时间又会来。而且，这个问题在测试环境里可能很难重现。</p>
+<p>我们简单的看一下我们自己的代码，我们就知道HashMap被多个线程操作。而Java的文档说HashMap是非线程安全的，应该用ConcurrentHashMap。</p>
+<p>但是在这里我们可以来研究一下原因。</p>
+<h2 id="Hash表数据结构"><a href="#Hash表数据结构" class="headerlink" title="Hash表数据结构"></a>Hash表数据结构</h2><p>我需要简单地说一下HashMap这个经典的数据结构。</p>
+<p>HashMap通常会用一个指针数组（假设为table[]）来做分散所有的key，当一个key被加入时，会通过Hash算法通过key算出这个数组的下标i，然后就把这个&lt;key, value&gt;插到table[i]中，如果有两个不同的key被算在了同一个i，那么就叫冲突，又叫碰撞，这样会在table[i]上形成一个链表。</p>
+<p>我们知道，如果table[]的尺寸很小，比如只有2个，如果要放进10个keys的话，那么碰撞非常频繁，于是一个O(1)的查找算法，就变成了链表遍历，性能变成了O(n)，这是Hash表的缺陷（可参看《<a target="_blank" rel="noopener" href="http://coolshell.cn/articles/6424.html">Hash Collision DoS 问题</a>》）。</p>
+<p>所以，Hash表的尺寸和容量非常的重要。一般来说，Hash表这个容器当有数据要插入时，都会检查容量有没有超过设定的thredhold，如果超过，需要增大Hash表的尺寸，但是这样一来，整个Hash表里的无素都需要被重算一遍。这叫rehash，这个成本相当的大。</p>
+<p>相信大家对这个基础知识已经很熟悉了。</p>
+<h2 id="HashMap的rehash源代码"><a href="#HashMap的rehash源代码" class="headerlink" title="HashMap的rehash源代码"></a>HashMap的rehash源代码</h2><p>下面，我们来看一下Java的HashMap的源代码。</p>
+<p>Put一个Key,Value对到Hash表中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public V put(K key, V value)</span><br><span class="line">&#123;</span><br><span class="line">  ......</span><br><span class="line">  //算Hash值</span><br><span class="line">  int hash = hash(key.hashCode());</span><br><span class="line">  int i = indexFor(hash, table.length);</span><br><span class="line">  //如果该key已被插入，则替换掉旧的value （链接操作）</span><br><span class="line">  for (Entry&lt;K,V&gt; e = table[i]; e != null; e = e.next) &#123;</span><br><span class="line">    Object k;</span><br><span class="line">    if (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</span><br><span class="line">      V oldValue = e.value;</span><br><span class="line">      e.value = value;</span><br><span class="line">      e.recordAccess(this);</span><br><span class="line">      return oldValue;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  modCount++;</span><br><span class="line">  //该key不存在，需要增加一个结点</span><br><span class="line">  addEntry(hash, key, value, i);</span><br><span class="line">  return null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>检查容量是否超标</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void addEntry(int hash, K key, V value, int bucketIndex)</span><br><span class="line">&#123;</span><br><span class="line">  Entry&lt;K,V&gt; e = table[bucketIndex];</span><br><span class="line">  table[bucketIndex] = new Entry&lt;K,V&gt;(hash, key, value, e);</span><br><span class="line">  //查看当前的size是否超过了我们设定的阈值threshold，如果超过，需要resize</span><br><span class="line">  if (size++ &gt;= threshold)</span><br><span class="line">    resize(2 * table.length);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>新建一个更大尺寸的hash表，然后把数据从老的Hash表中迁移到新的Hash表中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">void resize(int newCapacity)</span><br><span class="line">&#123;</span><br><span class="line">  Entry[] oldTable = table;</span><br><span class="line">  int oldCapacity = oldTable.length;</span><br><span class="line">  ......</span><br><span class="line">  //创建一个新的Hash Table</span><br><span class="line">  Entry[] newTable = new Entry[newCapacity];</span><br><span class="line">  //将Old Hash Table上的数据迁移到New Hash Table上</span><br><span class="line">  transfer(newTable);</span><br><span class="line">  table = newTable;</span><br><span class="line">  threshold = (int)(newCapacity * loadFactor);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>迁移的源代码，注意高亮处：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">void transfer(Entry[] newTable)</span><br><span class="line">&#123;</span><br><span class="line">  Entry[] src = table;</span><br><span class="line">  int newCapacity = newTable.length;</span><br><span class="line">  //下面这段代码的意思是：</span><br><span class="line">  //  从OldTable里摘一个元素出来，然后放到NewTable中</span><br><span class="line">  for (int j = 0; j &lt; src.length; j++) &#123;</span><br><span class="line">    Entry&lt;K,V&gt; e = src[j];</span><br><span class="line">    if (e != null) &#123;</span><br><span class="line">      src[j] = null;</span><br><span class="line">      do &#123;</span><br><span class="line">          Entry&lt;K,V&gt; next = e.next;</span><br><span class="line">          int i = indexFor(e.hash, newCapacity);</span><br><span class="line">          e.next = newTable[i];</span><br><span class="line">          newTable[i] = e;</span><br><span class="line">          e = next;</span><br><span class="line">      &#125; while (e != null);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>好了，这个代码算是比较正常的。而且没有什么问题。</p>
+<h2 id="正常的ReHash的过程"><a href="#正常的ReHash的过程" class="headerlink" title="正常的ReHash的过程"></a>正常的ReHash的过程</h2><p>画了个图做了个演示。</p>
+<ul>
+<li>我假设了我们的hash算法就是简单的用key mod 一下表的大小（也就是数组的长度）。</li>
+<li>最上面的是old hash 表，其中的Hash表的size=2, 所以key = 3, 7, 5，在mod 2以后都冲突在table[1]这里了。</li>
+<li>接下来的三个步骤是Hash表 resize成4，然后所有的&lt;key,value&gt; 重新rehash的过程</li>
+</ul>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap01.png" alt="HashMap01"></p>
+<h2 id="并发下的Rehash"><a href="#并发下的Rehash" class="headerlink" title="并发下的Rehash"></a>并发下的Rehash</h2><h3 id="1）假设我们有两个线程。我用红色和浅蓝色标注了一下。"><a href="#1）假设我们有两个线程。我用红色和浅蓝色标注了一下。" class="headerlink" title="1）假设我们有两个线程。我用红色和浅蓝色标注了一下。"></a>1）假设我们有两个线程。我用红色和浅蓝色标注了一下。</h3><p>我们再回头看一下我们的 transfer代码中的这个细节：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">do &#123;</span><br><span class="line">    Entry&lt;K,V&gt; next = e.next; // &lt;--假设线程一执行到这里就被调度挂起了</span><br><span class="line">    int i = indexFor(e.hash, newCapacity);</span><br><span class="line">    e.next = newTable[i];</span><br><span class="line">    newTable[i] = e;</span><br><span class="line">    e = next;</span><br><span class="line">&#125; while (e != null);</span><br></pre></td></tr></table></figure>
+<p>而我们的线程二执行完成了。于是我们有下面的这个样子。</p>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap02.png" alt="HashMap02"></p>
+<p>注意，因为Thread1的 e 指向了key(3)，而next指向了key(7)，其在线程二rehash后，指向了线程二重组后的链表。我们可以看到链表的顺序被反转后。</p>
+<h3 id="2）线程一被调度回来执行。"><a href="#2）线程一被调度回来执行。" class="headerlink" title="2）线程一被调度回来执行。"></a>2）线程一被调度回来执行。</h3><p>先是执行 newTalbe[i] = e;</p>
+<p>然后是e = next，导致了e指向了key(7)，</p>
+<p>而下一次循环的next = e.next导致了next指向了key(3)</p>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap03.png" alt="HashMap03"></p>
+<h3 id="3）一切安好。"><a href="#3）一切安好。" class="headerlink" title="3）一切安好。"></a>3）一切安好。</h3><p>线程一接着工作。把key(7)摘下来，放到newTable[i]的第一个，然后把e和next往下移。</p>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap04.png" alt="HashMap04"></p>
+<h3 id="4）环形链接出现。"><a href="#4）环形链接出现。" class="headerlink" title="4）环形链接出现。"></a>4）环形链接出现。</h3><p>e.next = newTable[i] 导致  key(3).next 指向了 key(7)</p>
+<p>注意：此时的key(7).next 已经指向了key(3)， 环形链表就这样出现了。</p>
+<p><img src="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-HashMap%E6%AD%BB%E5%BE%AA%E7%8E%AF/HashMap05.png" alt="HashMap05"></p>
+<p>于是，当我们的线程一调用到，HashTable.get(11)时，悲剧就出现了——Infinite Loop。</p>
+<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2><p>有人把这个问题报给了Sun，不过Sun不认为这个是一个问题。因为HashMap本来就不支持并发。要并发就用ConcurrentHashmap</p>
+<p><a target="_blank" rel="noopener" href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6423457">http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6423457</a></p>
+<p>我在这里把这个事情记录下来，只是为了让大家了解并体会一下并发环境下的危险。</p>
+<p>参考：<a target="_blank" rel="noopener" href="http://mailinator.blogspot.com/2009/06/beautiful-race-condition.html">http://mailinator.blogspot.com/2009/06/beautiful-race-condition.html</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-Java%E4%B8%AD%E7%9A%84Copy-On-Write%E5%AE%B9%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/06/%E8%AF%AD%E8%A8%80/Java/basic_Java/API/%E5%AE%B9%E5%99%A8/Java-API-%E5%AE%B9%E5%99%A8-Java%E4%B8%AD%E7%9A%84Copy-On-Write%E5%AE%B9%E5%99%A8/" class="post-title-link" itemprop="url">Java-API-容器-Java中的Copy-On-Write容器</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-06 18:16:01" itemprop="dateCreated datePublished" datetime="2016-12-06T18:16:01+08:00">2016-12-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://ifeve.com/java-copy-on-write/">http://ifeve.com/java-copy-on-write/</a></p>
+<p>Copy-On-Write简称COW，是一种用于程序设计中的优化策略。其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。从JDK1.5开始Java并发包里提供了两个使用CopyOnWrite机制实现的并发容器,它们是CopyOnWriteArrayList和CopyOnWriteArraySet。CopyOnWrite容器非常有用，可以在非常多的并发场景中使用到。</p>
+<h3 id="什么是CopyOnWrite容器"><a href="#什么是CopyOnWrite容器" class="headerlink" title="什么是CopyOnWrite容器"></a>什么是CopyOnWrite容器</h3><p>CopyOnWrite容器即写时复制的容器。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。这样做的好处是我们可以对CopyOnWrite容器进行并发的读，而不需要加锁，因为当前容器不会添加任何元素。所以CopyOnWrite容器也是一种读写分离的思想，读和写不同的容器。</p>
+<h3 id="CopyOnWriteArrayList的实现原理"><a href="#CopyOnWriteArrayList的实现原理" class="headerlink" title="CopyOnWriteArrayList的实现原理"></a>CopyOnWriteArrayList的实现原理</h3><p>在使用CopyOnWriteArrayList之前，我们先阅读其源码了解下它是如何实现的。以下代码是向ArrayList里添加元素，可以发现在添加的时候是需要加锁的，否则多线程写的时候会Copy出N个副本出来。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public boolean add(T e) &#123;</span><br><span class="line">  final ReentrantLock lock = this.lock;</span><br><span class="line">  lock.lock();</span><br><span class="line">  try &#123;</span><br><span class="line">    Object[] elements = getArray();</span><br><span class="line">    int len = elements.length;</span><br><span class="line">    // 复制出新数组</span><br><span class="line">    Object[] newElements = Arrays.copyOf(elements, len + 1);</span><br><span class="line">    // 把新元素添加到新数组里</span><br><span class="line">    newElements[len] = e;</span><br><span class="line">    // 把原数组引用指向新数组</span><br><span class="line">    setArray(newElements);</span><br><span class="line">    return true;</span><br><span class="line">  &#125; finally &#123;</span><br><span class="line">    lock.unlock();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">final void setArray(Object[] a) &#123;</span><br><span class="line">  array = a;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>读的时候不需要加锁，如果读的时候有多个线程正在向ArrayList添加数据，读还是会读到旧的数据，因为写的时候不会锁住旧的ArrayList。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public E get(int index) &#123;</span><br><span class="line">  return get(getArray(), index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>JDK中并没有提供CopyOnWriteMap，我们可以参考CopyOnWriteArrayList来实现一个，基本代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">import java.util.Collection;</span><br><span class="line">import java.util.Map;</span><br><span class="line">import java.util.Set;</span><br><span class="line"></span><br><span class="line">public class CopyOnWriteMap&lt;K, V&gt; implements Map&lt;K, V&gt;, Cloneable &#123;</span><br><span class="line">  private volatile Map&lt;K, V&gt; internalMap;</span><br><span class="line"></span><br><span class="line">  public CopyOnWriteMap() &#123;</span><br><span class="line">    internalMap = new HashMap&lt;K, V&gt;();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public V put(K key, V value) &#123;</span><br><span class="line">    synchronized (this) &#123;</span><br><span class="line">      Map&lt;K, V&gt; newMap = new HashMap&lt;K, V&gt;(internalMap);</span><br><span class="line">      V val = newMap.put(key, value);</span><br><span class="line">      internalMap = newMap;</span><br><span class="line">      return val;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public V get(Object key) &#123;</span><br><span class="line">    return internalMap.get(key);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void putAll(Map&lt;? extends K, ? extends V&gt; newData) &#123;</span><br><span class="line">    synchronized (this) &#123;</span><br><span class="line">      Map&lt;K, V&gt; newMap = new HashMap&lt;K, V&gt;(internalMap);</span><br><span class="line">      newMap.putAll(newData);</span><br><span class="line">      internalMap = newMap;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现很简单，只要了解了CopyOnWrite机制，我们可以实现各种CopyOnWrite容器，并且在不同的应用场景中使用。</p>
+<h3 id="CopyOnWrite的应用场景"><a href="#CopyOnWrite的应用场景" class="headerlink" title="CopyOnWrite的应用场景"></a>CopyOnWrite的应用场景</h3><p>CopyOnWrite并发容器用于读多写少的并发场景。比如白名单，黑名单，商品类目的访问和更新场景，假如我们有一个搜索网站，用户在这个网站的搜索框中，输入关键字搜索内容，但是某些关键字不允许被搜索。这些不能被搜索的关键字会被放在一个黑名单当中，黑名单每天晚上更新一次。当用户搜索时，会检查当前关键字在不在黑名单当中，如果在，则提示不能搜索。实现代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">package com.ifeve.book;</span><br><span class="line"></span><br><span class="line">import java.util.Map;</span><br><span class="line">import com.ifeve.book.forkjoin.CopyOnWriteMap;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 黑名单服务</span><br><span class="line"> *</span><br><span class="line"> * @author fangtengfei</span><br><span class="line"> *</span><br><span class="line"> */</span><br><span class="line">public class BlackListServiceImpl &#123;</span><br><span class="line">  private static CopyOnWriteMap&lt;String, Boolean&gt; blackListMap = new CopyOnWriteMap&lt;String, Boolean&gt;(1000);</span><br><span class="line"></span><br><span class="line">  public static boolean isBlackList(String id) &#123;</span><br><span class="line">    return blackListMap.get(id) == null ? false : true;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public static void addBlackList(String id) &#123;</span><br><span class="line">    blackListMap.put(id, Boolean.TRUE);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  /**</span><br><span class="line">   * 批量添加黑名单</span><br><span class="line">   *</span><br><span class="line">   * @param ids</span><br><span class="line">   */</span><br><span class="line">  public static void addBlackList(Map&lt;String,Boolean&gt; ids) &#123;</span><br><span class="line">    blackListMap.putAll(ids);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码很简单，但是使用CopyOnWriteMap需要注意两件事情：</p>
+<ol>
+<li>减少扩容开销。根据实际需要，初始化CopyOnWriteMap的大小，避免写时CopyOnWriteMap扩容的开销。</li>
+<li>使用批量添加。因为每次添加，容器每次都会进行复制，所以减少添加次数，可以减少容器的复制次数。如使用上面代码里的addBlackList方法。</li>
+</ol>
+<h3 id="CopyOnWrite的缺点"><a href="#CopyOnWrite的缺点" class="headerlink" title="CopyOnWrite的缺点"></a>CopyOnWrite的缺点</h3><p>CopyOnWrite容器有很多优点，但是同时也存在两个问题，即内存占用问题和数据一致性问题。所以在开发的时候需要注意一下。</p>
+<h4 id="内存占用问题。"><a href="#内存占用问题。" class="headerlink" title="内存占用问题。"></a>内存占用问题。</h4><p>因为CopyOnWrite的写时复制机制，所以在进行写操作的时候，内存里会同时驻扎两个对象的内存，旧的对象和新写入的对象（注意:在复制的时候只是复制容器里的引用，只是在写的时候会创建新对象添加到新容器里，而旧容器的对象还在使用，所以有两份对象内存）。如果这些对象占用的内存比较大，比如说200M左右，那么再写入100M数据进去，内存就会占用300M，那么这个时候很有可能造成频繁的Yong GC和Full GC。之前我们系统中使用了一个服务由于每晚使用CopyOnWrite机制更新大对象，造成了每晚15秒的Full GC，应用响应时间也随之变长。</p>
+<h4 id="针对内存占用问题。"><a href="#针对内存占用问题。" class="headerlink" title="针对内存占用问题。"></a>针对内存占用问题。</h4><p>可以通过压缩容器中的元素的方法来减少大对象的内存消耗，比如，如果元素全是10进制的数字，可以考虑把它压缩成36进制或64进制。或者不使用CopyOnWrite容器，而使用其他的并发容器，如ConcurrentHashMap。</p>
+<h4 id="数据一致性问题。"><a href="#数据一致性问题。" class="headerlink" title="数据一致性问题。"></a>数据一致性问题。</h4><p>CopyOnWrite容器只能保证数据的最终一致性，不能保证数据的实时一致性。所以如果你希望写入的的数据，马上能读到，请不要使用CopyOnWrite容器。</p>
+<p>关于C++的STL中，曾经也有过Copy-On-Write的玩法，参见陈皓的《C++ STL String类中的Copy-On-Write》，后来，因为有很多线程安全上的事，就被去掉了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/06/%E5%B7%A5%E5%85%B7/%E4%B8%AD%E9%97%B4%E4%BB%B6/RPC/RPC%E3%80%81WebService%E3%80%81RMI%E3%80%81JMS%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/06/%E5%B7%A5%E5%85%B7/%E4%B8%AD%E9%97%B4%E4%BB%B6/RPC/RPC%E3%80%81WebService%E3%80%81RMI%E3%80%81JMS%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">RPC、WebService、RMI、JMS的区别</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-06 15:03:29" itemprop="dateCreated datePublished" datetime="2016-12-06T15:03:29+08:00">2016-12-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://blog.csdn.net/shan9liang/article/details/8995023">http://blog.csdn.net/shan9liang/article/details/8995023</a></p>
+<h2 id="RPC（Remote-Procedure-Call-Protocol）"><a href="#RPC（Remote-Procedure-Call-Protocol）" class="headerlink" title="RPC（Remote Procedure Call Protocol）"></a>RPC（Remote Procedure Call Protocol）</h2><p>RPC 使用 C/S 方式，采用 http 协议，发送请求到服务器，等待服务器返回结果。这个请求包括一个参数集和一个文本集，通常形成“classname.methodname”形式。优点是跨语言跨平台，C 端、S 端有更大的独立性，缺点是不支持对象，无法在编译器检查错误，只能在运行期检查。</p>
+<h2 id="Web-Service"><a href="#Web-Service" class="headerlink" title="Web Service"></a>Web Service</h2><p>Web Service 提供的服务是基于 web 容器的，底层使用 http 协议，类似一个远程的服务提供者，比如天气预报服务，对各地客户端提供天气预报，是一种请求应答的机制，是跨系统跨平台的。就是通过一个 servlet，提供服务出去。</p>
+<p>首先客户端从服务器得到 WebService 的 WSDL，同时在客户端声称一个代理类（Proxy Class）这个代理类负责与 WebService 服务器进行 Request 和Response 当一个数据（XML 格式的）被封装成 SOAP 格式的数据流发送到服务器端的时候，就会生成一个进程对象并且把接收到这个 Request 的 SOAP 包进行解析，然后对事物进行处理，处理结束以后再对这个计算结果进行 SOAP 包装，然后把这个包作为一个 Response 发送给客户端的代理类（Proxy Class），同样地，这个代理类也对这个 SOAP 包进行解析处理，继而进行后续操作。这就是 WebService 的一个运行过程。</p>
+<p>Web Service 大体上分为 5 个层次:</p>
+<ol>
+<li>Http 传输信道</li>
+<li>XML 的数据格式</li>
+<li>SOAP 封装格式</li>
+<li>WSDL 的描述方式</li>
+<li>UDDI UDDI 是一种目录服务，企业可以使用它对 Webservices 进行注册和搜索</li>
+</ol>
+<h2 id="RMI-（Remote-Method-Invocation）"><a href="#RMI-（Remote-Method-Invocation）" class="headerlink" title="RMI （Remote Method Invocation）"></a>RMI （Remote Method Invocation）</h2><p>RMI 采用stubs 和 skeletons 来进行远程对象（remote object）的通讯。stub 充当远程对象的客户端代理，有着和远程对象相同的远程接口，远程对象的调用实际是通过调用该对象的客户端代理对象 stub 来完成的，通过该机制 RMI 就好比它是本地工作，采用 tcp/ip 协议，客户端直接调用服务端上的一些方法。优点是强类型，编译期可检查错误，缺点是只能基于 Java 语言，客户机与服务器紧耦合。</p>
+<h2 id="JMS（Java-Messaging-Service）"><a href="#JMS（Java-Messaging-Service）" class="headerlink" title="JMS（Java Messaging Service）"></a>JMS（Java Messaging Service）</h2><p>JMS 是 Java 的消息服务，JMS 的客户端之间可以通过JMS服务进行异步的消息传输。JMS 支持两种消息模型：Point-to-Point（P2P）和 Publish/Subscribe（Pub/Sub），即点对点和发布订阅模型。</p>
+<hr>
+<p>几者的区别与联系</p>
+<h3 id="1、RPC-与-RMI"><a href="#1、RPC-与-RMI" class="headerlink" title="1、RPC 与 RMI"></a>1、RPC 与 RMI</h3><p>（1）RPC 跨语言，而 RMI只支持Java。</p>
+<p>（2）RMI 调用远程对象方法，允许方法返回 Java 对象以及基本数据类型，而RPC 不支持对象的概念，传送到 RPC 服务的消息由外部数据表示（External Data Representation, XDR）语言表示，这种语言抽象了字节序类和数据类型结构之间的差异。只有由 XDR 定义的数据类型才能被传递， 可以说 RMI 是面向对象方式的 Java RPC 。</p>
+<p>（3）在方法调用上，RMI 中，远程接口使每个远程方法都具有方法签名。如果一个方法在服务器上执行，但是没有相匹配的签名被添加到这个远程接口上，那么这个新方法就不能被RMI客户方所调用。</p>
+<p>在 RPC 中，当一个请求到达 RPC 服务器时，这个请求就包含了一个参数集和一个文本值，通常形成“classname.methodname”的形式。这就向 RPC 服务器表明，被请求的方法在为 “classname”的类中，名叫“methodname”。然后 RPC 服务器就去搜索与之相匹配的类和方法，并把它作为那种方法参数类型的输入。这里的参数类型是与 RPC 请求中的类型是匹配的。一旦匹配成功，这个方法就被调用了，其结果被编码后返回客户方。</p>
+<h3 id="2、JMS-和-RMI"><a href="#2、JMS-和-RMI" class="headerlink" title="2、JMS 和 RMI"></a>2、JMS 和 RMI</h3><p>采用 JMS 服务，对象是在物理上被异步从网络的某个 JVM 上直接移动到另一个 JVM 上（是消息通知机制）</p>
+<p>而 RMI 对象是绑定在本地 JVM 中，只有函数参数和返回值是通过网络传送的（是请求应答机制）。</p>
+<p>RMI 一般都是同步的，也就是说，当 client 调用 Server 的一个方法的时候，需要等到对方的返回，才能继续执行 client 端，这个过程调用本地方法感觉上是一样的，这也是 RMI 的一个特点。</p>
+<p>JMS 一般只是一个点发出一个 Message 到 Message Server，发出之后一般不会关心谁用了这个 message。<br>所以，一般 RMI 的应用是紧耦合，JMS 的应用相对来说是松散耦合应用。</p>
+<h3 id="3、Webservice-与-RMI"><a href="#3、Webservice-与-RMI" class="headerlink" title="3、Webservice 与 RMI"></a>3、Webservice 与 RMI</h3><p>RMI 是在 tcp 协议上传递可序列化的 java 对象，只能用在 java 虚拟机上，绑定语言，客户端和服务端都必须是 java</p>
+<p>webservice 没有这个限制，webservice 是在 http 协议上传递 xml 文本文件，与语言和平台无关。</p>
+<h3 id="4、Webservice-与-JMS"><a href="#4、Webservice-与-JMS" class="headerlink" title="4、Webservice 与 JMS"></a>4、Webservice 与 JMS</h3><p>Webservice 专注于远程服务调用，jms 专注于信息交换。</p>
+<p>大多数情况下 Webservice 是两系统间的直接交互（Consumer &lt;–&gt; Producer），而大多数情况下 jms 是三方系统交互（Consumer &lt;- Broker -&gt; Producer）。当然，JMS 也可以实现 request-response 模式的通信，只要 Consumer 或 Producer 其中一方兼任 broker 即可。</p>
+<p>JMS 可以做到异步调用完全隔离了客户端和服务提供者，能够抵御流量洪峰；WebService 服务通常为同步调用，需要有复杂的对象转换，相比 SOAP，现在 JSON，rest 都是很好的 http 架构方案；（举一个例子，电子商务的分布式系统中，有支付系统和业务系统，支付系统负责用户付款，在用户在银行付款后需要通知各个业务系统，那么这个时候，既可以用同步也可以用异步，使用异步的好处就能抵御网站暂时的流量高峰，或者能应对慢消费者。）</p>
+<p>JMS 是 java 平台上的消息规范。一般 jms 消息不是一个 xml，而是一个 java 对象，很明显，jms 没考虑异构系统，说白了，JMS 就没考虑非 java 的东西。但是好在现在大多数的 jms provider（就是 JMS 的各种实现产品）都解决了异构问题。相比 WebService 的跨平台各有千秋吧。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/12/03/%E5%B7%A5%E5%85%B7/%E5%85%B6%E4%BB%96/Hexo-%E4%BD%BF%E7%94%A8%E6%9C%AC%E5%9C%B0%E5%9B%BE%E7%89%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/12/03/%E5%B7%A5%E5%85%B7/%E5%85%B6%E4%BB%96/Hexo-%E4%BD%BF%E7%94%A8%E6%9C%AC%E5%9C%B0%E5%9B%BE%E7%89%87/" class="post-title-link" itemprop="url">Hexo-使用本地图片</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-03 11:12:03" itemprop="dateCreated datePublished" datetime="2016-12-03T11:12:03+08:00">2016-12-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="http://www.tuicool.com/articles/umEBVfI">http://www.tuicool.com/articles/umEBVfI</a></p>
+<h3 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h3><p>在 hexo 中使用本地图片是件非常让人纠结的事情，在 markdown 里的图片地址似乎永远无法和最后生成的网页保持一致。</p>
+<p>这些问题使得我一度不愿意使用本地图片而选择用图床，但被移动运营商无耻的横条广告逼得打算上 https，图床只支持 http 就成了问题。</p>
+<p>hexo 下插入图片现在大概有几个方案</p>
+<h4 id="放在根目录"><a href="#放在根目录" class="headerlink" title="放在根目录"></a>放在根目录</h4><p>早期大部分的方案是把图片放在 source/img 下，然后在 markdown 里写 <code>![img](/source/img/img.png)</code> 。显然这样在本地的编辑器里完全不能正确识别图片的位置。</p>
+<h4 id="asset-image"><a href="#asset-image" class="headerlink" title="asset-image"></a>asset-image</h4><p>在 hexo 2.x 时出现的插件，后来被吸纳进 hexo 3 core ，用法的介绍见 <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/asset-folders.html">资源文件夹 | Hexo</a> 。比较尴尬的是，这种方法直接放弃了 markdown 原来的语法，使用类似 的语法，。markdown 本来有插入图片的语法不好好支持，专门用一个新的语法来插入本地图片，让我这种强迫症不太能接受。</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p><a target="_blank" rel="noopener" href="https://github.com/CodeFalling/hexo-asset-image">CodeFalling/hexo-asset-image</a></p>
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>首先确认 <code>_config.yml</code> 中有 <code>post_asset_folder:true</code>。</p>
+<p>在 hexo 目录，执行</p>
+<p><code>npm install https://github.com/CodeFalling/hexo-asset-image --save</code></p>
+<p>假设在</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">MacGesture2-Publish</span><br><span class="line">├── apppicker.jpg</span><br><span class="line">├── logo.jpg</span><br><span class="line">└── rules.jpg</span><br><span class="line">MacGesture2-Publish.md</span><br></pre></td></tr></table></figure>
+<p>这样的目录结构（目录名和文章名一致），只要使用 <code>![logo](MacGesture2-Publish/logo.jpg)</code> 就可以插入图片。</p>
+<p>生成的结构为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public/2015/10/18/MacGesture2-Publish</span><br><span class="line">├── apppicker.jpg</span><br><span class="line">├── index.html</span><br><span class="line">├── logo.jpg</span><br><span class="line">└── rules.jpg</span><br></pre></td></tr></table></figure>
+<p>同时，生成的 html 是</p>
+<p><code>&lt;img src=&quot;/2015/10/18/MacGesture2-Publish/logo.jpg&quot; alt=&quot;logo&quot;&gt;</code></p>
+<p>而不是愚蠢的</p>
+<p><code>&lt;img src=&quot;MacGesture2-Publish/logo.jpg&quot; alt=&quot;logo&quot;&gt;</code></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/29/%E8%AF%AD%E8%A8%80/Java/%E6%A1%86%E6%9E%B6%E3%80%81%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/Spring/%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/Spring-IOC-3.3-%E9%80%9A%E8%BF%87getBean%E8%8E%B7%E5%8F%96%E7%B1%BB%E7%9A%84%E5%AE%9E%E4%BE%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -624,308 +1005,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.6-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.6-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">高性能MySQL-4.6-数据库设计总结</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-27 16:52:46" itemprop="dateCreated datePublished" datetime="2016-11-27T16:52:46+08:00">2016-11-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>尽量避免过度设计，例如会导致极其复杂查询的schema设计，或者有很多列的表设计。</li>
-<li>使用小而简单的合适数据类型，除非真实数据模型中有确切的需要，否则应该尽可能地避免使用NULL值。</li>
-<li>尽量使用相同的数据类型存储相似或相关的值，尤其是要在关联条件中使用的列。</li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.6-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%80%BB%E7%BB%93/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.1-%E9%80%89%E6%8B%A9%E4%BC%98%E5%8C%96%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.1-%E9%80%89%E6%8B%A9%E4%BC%98%E5%8C%96%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" class="post-title-link" itemprop="url">高性能MySQL-4.1-选择优化的数据类型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-27 13:37:21" itemprop="dateCreated datePublished" datetime="2016-11-27T13:37:21+08:00">2016-11-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li><p>更小的通常更好<br>一般情况下，应该尽量使用可以正确存储数据的最小数据类型。更小的数据类型通常更快，因为它们占用更少的磁盘、内存和CPU缓存，并且处理时需要的CPU周期也更少。</p></li></ul>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/11/27/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/4.1-%E9%80%89%E6%8B%A9%E4%BC%98%E5%8C%96%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/1.5.6-%E8%BD%AC%E6%8D%A2%E8%A1%A8%E7%9A%84%E5%BC%95%E6%93%8E/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/1.5.6-%E8%BD%AC%E6%8D%A2%E8%A1%A8%E7%9A%84%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">高性能MySQL-1.5.6-转换表的引擎</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-26 20:21:22" itemprop="dateCreated datePublished" datetime="2016-11-26T20:21:22+08:00">2016-11-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="ALTER-TABLE"><a href="#ALTER-TABLE" class="headerlink" title="ALTER TABLE"></a>ALTER TABLE</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE mytable ENGINE = InnoDB;</span><br></pre></td></tr></table></figure>
-<p>上述语法可以适用任何存储引擎。但有一个问题：需要执行很长时间。MySQL会按行将数据从原表复制到一张新的表中，在复制期间可能会消耗系统所有的I/O能力，同时原表上会加上读锁。所以，在繁忙的表上执行此操作要特别小心。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/11/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/1.5.6-%E8%BD%AC%E6%8D%A2%E8%A1%A8%E7%9A%84%E5%BC%95%E6%93%8E/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2016/11/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/1.5-MySQL%E7%9A%84%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/11/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/1.5-MySQL%E7%9A%84%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">高性能MySQL-1.5-MySQL的存储引擎</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-11-26 19:58:11" itemprop="dateCreated datePublished" datetime="2016-11-26T19:58:11+08:00">2016-11-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在文件系统中，MySQL将每个数据库（也可以称之为schema）保存为数据目录下的一个子目录。创建表时，MySQL会在数据库子目录下创建一个和表同名的.frm文件保存表的定义。</p>
-<p>可以使用SHOW TABLE STATUS命令（在MySQL5.0以后的版本中，也可以查询INFORMATION_SCHEMA中对应的表）显式表的相关信息。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/11/26/%E9%98%85%E8%AF%BB/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/%E8%AE%A1%E7%AE%97%E6%9C%BA/%E9%AB%98%E6%80%A7%E8%83%BDMySQL%EF%BC%88%E7%AC%AC%E4%B8%89%E7%89%88%EF%BC%89/1.5-MySQL%E7%9A%84%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -997,7 +1076,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1010,7 +1089,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1045,7 +1124,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

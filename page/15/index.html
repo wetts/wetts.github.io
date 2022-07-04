@@ -188,6 +188,299 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/TCP%E3%80%81UDP%E7%BB%91%E5%AE%9A%E5%90%8C%E4%B8%80%E7%AB%AF%E5%8F%A3%E9%80%9A%E4%BF%A1%E7%9A%84%E8%A7%A3%E9%87%8A/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/07/05/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/TCP%E3%80%81UDP%E7%BB%91%E5%AE%9A%E5%90%8C%E4%B8%80%E7%AB%AF%E5%8F%A3%E9%80%9A%E4%BF%A1%E7%9A%84%E8%A7%A3%E9%87%8A/" class="post-title-link" itemprop="url">TCP、UDP绑定同一端口通信的解释</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-05 16:24:22" itemprop="dateCreated datePublished" datetime="2019-07-05T16:24:22+08:00">2019-07-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C%E4%B8%8E%E9%80%9A%E4%BF%A1/" itemprop="url" rel="index"><span itemprop="name">网络与通信</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/MY0213/p/8798926.html">https://www.cnblogs.com/MY0213/p/8798926.html</a></p>
+<p>TCP、UDP 可以绑定同一端口来进行通信：</p>
+<p>网络中可以被命名和寻址的通信端口，是操作系统可分配的一种资源。 </p>
+<p>按照 OSI 七层协议的描述，传输层与网络层在功能上的最大区别是传输层提供进程通信能力。从这个意义上讲，网络通信的最终地址就不仅仅是主机地址了，还包括可以描述进程的某种标识符。为此，TCP/IP 协议提出了协议端口（protocol port，简称端口）的概念，用于标识通信的进程。 </p>
+<p>端口是一种抽象的软件结构（包括一些数据结构和 I/O 缓冲区）。应用程序（即进程）通过系统调用与某端口建立连接（binding）后，传输层传给该端口的数据都被相应进程所接收，相应进程发给传输层的数据都通过该端口输出。在 TCP/IP 协议的实现中，端口操作类似于一般的 I/O 操作，进程获取一个端口，相当于获取本地唯一的 I/O 文件，可以用一般的读写原语访问之。 </p>
+<p>类似于文件描述符，每个端口都拥有一个叫端口号（port number）的整数型标识符，用于区别不同端口。由于 TCP/IP 传输层的两个协议 TCP 和 UDP 是完全独立的两个软件模块，因此各自的端口号也相互独立，如 TCP 有一个 255 号端口，UDP也可以有一个 255 号端口，二者并不冲突。 </p>
+<p>端口号的分配是一个重要问题。有两种基本分配方式：第一种叫全局分配，这是一种集中控制方式，由一个公认的中央机构根据用户需要进行统一分配，并将结果公布于众。第二种是本地分配，又称动态连接，即进程需要访问传输层服务时，向本地操作系统提出申请，操作系统返回一个本地唯一的端口号，进程再通过合适的系统调用将自己与该端口号联系起来（绑扎）。TCP/IP 端口号的分配中综合了上述两种方式。TCP/IP 将端口号分为两部分，少量的作为保留端口，以全局方式分配给服务进程。因此，每一个标准服务器都拥有一个全局公认的端口（即周知口，well-known port），即使在不同机器上，其端口号也相同。剩余的为自由端口，以本地方式进行分配。TCP 和 UDP 均规定，小于 256 的端口号才能作保留端口。</p>
+<p>再讨论一下，一个服务器监控一个端口，比如 80 端口，它为什么可以建立上成千上万的连接？</p>
+<p>首先， 一个 TCP 连接需要由四元组来形成，即（src_ip、src_port、dst_ip、dst_port）。当一个连接请求过来的时候，服务端调用 accept 函数，新生成一个 socket，这个 socket 所占用的本地端口依然是 80 端口。由四元组就很容易分析到了，同一个（src_ip、src_port），它所对应的（dst_ip、dst_port）可以无穷变化，这样就可以建立很多个客户端的请求了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/05/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%89%8D%E9%9D%A2%E5%8A%A0%E4%B8%8A'r'%E7%9A%84%E4%BD%9C%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/07/05/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%89%8D%E9%9D%A2%E5%8A%A0%E4%B8%8A'r'%E7%9A%84%E4%BD%9C%E7%94%A8/" class="post-title-link" itemprop="url">Python字符串前面加上'r'的作用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-05 11:15:44" itemprop="dateCreated datePublished" datetime="2019-07-05T11:15:44+08:00">2019-07-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在 Python 的 string 前面加上 <code>r</code>， 是为了告诉编译器这个 string 是个 raw string，不要转义。</p>
+<p>例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">s=r&#x27;\tt&#x27;</span><br><span class="line">print(s)</span><br><span class="line">Output:</span><br><span class="line">&#x27;\tt&#x27;</span><br><span class="line"> </span><br><span class="line">s=&#x27;\tt&#x27;</span><br><span class="line">print(s)</span><br><span class="line">Output:</span><br><span class="line">&#x27;        t&#x27;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python-dict%E5%92%8Clist%E5%AF%B9%E6%AF%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/Python-dict%E5%92%8Clist%E5%AF%B9%E6%AF%94/" class="post-title-link" itemprop="url">Python-dict和list对比</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-04 16:29:48" itemprop="dateCreated datePublished" datetime="2019-07-04T16:29:48+08:00">2019-07-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>和 list 比较，dict 有以下几个特点：</p>
+<ol>
+<li>查找和插入的速度极快，不会随着key的增加而变慢；</li>
+<li>需要占用大量的内存，内存浪费多。</li>
+</ol>
+<p>而 list 相反：</p>
+<ol>
+<li>查找和插入的时间随着元素的增加而增加；</li>
+<li>占用空间小，浪费内存很少。</li>
+</ol>
+<p>所以，dict 是用空间来换取时间的一种方法。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%A8%A1%E5%9D%97/Python%E4%B8%AD%E7%9A%84types%E6%A8%A1%E5%9D%97%E7%9A%84%E5%87%BD%E6%95%B0%E5%B8%B8%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Zhang Wetts">
+      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wetts's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/07/04/%E8%AF%AD%E8%A8%80/Python/%E6%A8%A1%E5%9D%97/Python%E4%B8%AD%E7%9A%84types%E6%A8%A1%E5%9D%97%E7%9A%84%E5%87%BD%E6%95%B0%E5%B8%B8%E9%87%8F/" class="post-title-link" itemprop="url">Python中的types模块的函数常量</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-04 11:49:55" itemprop="dateCreated datePublished" datetime="2019-07-04T11:49:55+08:00">2019-07-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>types模块中提供了四个常量</p>
+<ul>
+<li>types.FunctionType：函数</li>
+<li>types.BuiltinFunctionType：内建函数</li>
+<li>types.LambdaType：匿名函数</li>
+<li>types.GeneratorType：生成器类型</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/07/03/%E8%AF%AD%E8%A8%80/Python/%E5%AF%B9%E8%B1%A1/Python%E4%B8%AD%E7%9A%84Iterable%E5%92%8CIterator/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -658,662 +951,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">方差、协方差、标准差、均方差、均方根值、均方误差、均方根误差对比分析</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-06-04 11:54:12" itemprop="dateCreated datePublished" datetime="2019-06-04T11:54:12+08:00">2019-06-04</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="方差（Variance"><a href="#方差（Variance" class="headerlink" title="方差（Variance)"></a>方差（Variance)</h3><p>方差用于衡量随机变量或一组数据的离散程度，方差在在统计描述和概率分布中有不同的定义和计算公式。</p>
-<ol>
-<li>概率论中方差用来度量随机变量和其数学期望（即均值）之间的偏离程度；</li>
-<li>统计中的方差（样本方差）是每个样本值与全体样本均值之差的平方值的平均数，代表每个变量与总体均值间的离散程度。</li>
-</ol>
-<h4 id="概率论中计算公式"><a href="#概率论中计算公式" class="headerlink" title="概率论中计算公式"></a>概率论中计算公式</h4><p>离散型随机变量的数学期望：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E7%A6%BB%E6%95%A3%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E7%9A%84%E6%95%B0%E5%AD%A6%E6%9C%9F%E6%9C%9B.png" alt="离散型随机变量的数学期望"> </p>
-<p>连续型随机变量的数学期望：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E8%BF%9E%E7%BB%AD%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E7%9A%84%E6%95%B0%E5%AD%A6%E6%9C%9F%E6%9C%9B.png" alt="连续型随机变量的数学期望"> </p>
-<p><em>其中，pi是变量，xi发生的概率，f(x)是概率密度。</em></p>
-<p>方差：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%A6%82%E7%8E%87%E8%AE%BA%E6%96%B9%E5%B7%AE.png" alt="概率论方差"> </p>
-<h4 id="统计学中计算公式"><a href="#统计学中计算公式" class="headerlink" title="统计学中计算公式"></a>统计学中计算公式</h4><h5 id="总体方差"><a href="#总体方差" class="headerlink" title="总体方差"></a>总体方差</h5><p>总体方差，也叫做有偏估计，其实就是我们从初高中就学到的那个标准定义的方差：</p>
-<p>总体均值：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%80%BB%E4%BD%93%E5%9D%87%E5%80%BC.png" alt="总体均值"> </p>
-<p><em>其中，n表示这组数据个数，x1、x2、x3……xn表示这组数据具体数值。</em></p>
-<p>总体方差：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%80%BB%E4%BD%93%E6%96%B9%E5%B7%AE.png" alt="总体方差"> </p>
-<h5 id="样本方差"><a href="#样本方差" class="headerlink" title="样本方差"></a>样本方差</h5><p>样本方差，无偏方差，在实际情况中，总体均值是很难得到的，往往通过抽样来计算，于是有样本方差，计算公式如下：<br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%A0%B7%E6%9C%AC%E6%96%B9%E5%B7%AE.png" alt="样本方差"> </p>
-<h3 id="协方差（Covariance）"><a href="#协方差（Covariance）" class="headerlink" title="协方差（Covariance）"></a>协方差（Covariance）</h3><p>协方差在概率论和统计学中用于衡量两个变量的总体误差。而方差是协方差的一种特殊情况，即当两个变量是相同的情况。协方差表示的是两个变量的总体的误差，这与只表示一个变量误差的方差不同。 如果两个变量的变化趋势一致，也就是说如果其中一个大于自身的期望值，另外一个也大于自身的期望值，那么两个变量之间的协方差就是正值。 如果两个变量的变化趋势相反，即其中一个大于自身的期望值，另外一个却小于自身的期望值，那么两个变量之间的协方差就是负值。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%8D%8F%E6%96%B9%E5%B7%AE.png" alt="协方差"><br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%8D%8F%E6%96%B9%E5%B7%AE2.png" alt="协方差2"><br><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%8D%8F%E6%96%B9%E5%B7%AE3.png" alt="协方差3"> </p>
-<p><em>其中，E[X]与E[Y]分别为两个实数随机变量X与Y的数学期望，Cov(X,Y)为X，Y的协方差。</em></p>
-<h3 id="标准差（Standard-Deviation）"><a href="#标准差（Standard-Deviation）" class="headerlink" title="标准差（Standard Deviation）"></a>标准差（Standard Deviation）</h3><p>标准差也被称为标准偏差,在中文环境中又常称均方差，是数据偏离均值的平方和平均后的方根，用σ表示。标准差是方差的算术平方根。标准差能反映一个数据集的离散程度，只是由于方差出现了平方项造成量纲的倍数变化，无法直观反映出偏离程度，于是出现了标准差，标准偏差越小，这些值偏离平均值就越少，反之亦然。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%A0%B7%E6%9C%AC%E6%A0%87%E5%87%86%E5%B7%AE.png" alt="样本标准差"> </p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E6%80%BB%E4%BD%93%E6%A0%87%E5%87%86%E5%B7%AE.png" alt="总体标准差"> </p>
-<h3 id="均方误差（mean-square-error-MSE）"><a href="#均方误差（mean-square-error-MSE）" class="headerlink" title="均方误差（mean-square error, MSE）"></a>均方误差（mean-square error, MSE）</h3><p>均方误差是反映估计量与被估计量之间差异程度的一种度量，换句话说，参数估计值与参数真值之差的平方的期望值。MSE可以评价数据的变化程度，MSE的值越小，说明预测模型描述实验数据具有更好的精确度。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE.png" alt="均方误差"> </p>
-<h3 id="均方根误差（root-mean-squared-error，RMSE）"><a href="#均方根误差（root-mean-squared-error，RMSE）" class="headerlink" title="均方根误差（root mean squared error，RMSE）"></a>均方根误差（root mean squared error，RMSE）</h3><p>均方根误差亦称标准误差，是均方误差的算术平方根。换句话说，是观测值与真值(或模拟值)偏差(而不是观测值与其平均值之间的偏差)的平方与观测次数n比值的平方根，在实际测量中，观测次数n总是有限的，真值只能用最可信赖（最佳）值来代替。标准误差对一组测量中的特大或特小误差反映非常敏感，所以，标准误差能够很好地反映出测量的精密度。这正是标准误差在工程测量中广泛被采用的原因。因此，标准差是用来衡量一组数自身的离散程度，而均方根误差是用来衡量观测值同真值之间的偏差。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE.png" alt="均方根误差"> </p>
-<h3 id="均方根值（root-mean-square，RMES）"><a href="#均方根值（root-mean-square，RMES）" class="headerlink" title="均方根值（root-mean-square，RMES）"></a>均方根值（root-mean-square，RMES）</h3><p>均方根值也称作为方均根值或有效值，在数据统计分析中，将所有值平方求和，求其均值，再开平方，就得到均方根值。在物理学中，我们常用均方根值来分析噪声。</p>
-<p><img src="/2019/06/04/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E6%96%B9%E5%B7%AE%E3%80%81%E5%8D%8F%E6%96%B9%E5%B7%AE%E3%80%81%E6%A0%87%E5%87%86%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC%E3%80%81%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E3%80%81%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/%E5%9D%87%E6%96%B9%E6%A0%B9%E5%80%BC.png" alt="均方根值"> </p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/" class="post-title-link" itemprop="url">平均数</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-06-03 21:54:12" itemprop="dateCreated datePublished" datetime="2019-06-03T21:54:12+08:00">2019-06-03</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>有算术平均数、几何平均数、平方平均数（均方根平均数，rms）、调和平均数、加权平均数等</p>
-<h3 id="调和平均数"><a href="#调和平均数" class="headerlink" title="调和平均数"></a>调和平均数</h3><p>又称倒数平均数，是总体各统计变量倒数的算术平均数的倒数。调和平均数是平均数的一种。</p>
-<h4 id="简单调和平均数"><a href="#简单调和平均数" class="headerlink" title="简单调和平均数"></a>简单调和平均数</h4><p>简单调和平均数是算术平均数的变形，它的计算公式如下：<br><img src="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/%E8%B0%83%E5%92%8C%E5%B9%B3%E5%9D%87%E6%95%B0.png" alt="调和平均数"> </p>
-<h4 id="加权调和平均数"><a href="#加权调和平均数" class="headerlink" title="加权调和平均数"></a>加权调和平均数</h4><p>加权调和平均数是加权算术平均数的变形。它与加权算术平均数在实质上是相同的，而仅有形式上的区别，即表现为变量对称的区别、权数对称的区别和计算位置对称的区别。因而其计算公式为：<br><img src="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/%E5%8A%A0%E6%9D%83%E8%B0%83%E5%92%8C%E5%B9%B3%E5%9D%87%E6%95%B0.png" alt="加权调和平均数"> </p>
-<h3 id="几何平均数"><a href="#几何平均数" class="headerlink" title="几何平均数"></a>几何平均数</h3><p>是对各变量值的连乘积开项数次方根。</p>
-<h4 id="简单几何平均数"><a href="#简单几何平均数" class="headerlink" title="简单几何平均数"></a>简单几何平均数</h4><p><img src="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/%E5%87%A0%E4%BD%95%E5%B9%B3%E5%9D%87%E6%95%B0%E4%B8%8E%E7%AE%97%E6%9C%AF%E5%B9%B3%E5%9D%87%E6%95%B0.png" alt="几何平均数与算术平均数"> </p>
-<h4 id="加权几何平均数"><a href="#加权几何平均数" class="headerlink" title="加权几何平均数"></a>加权几何平均数</h4><p><img src="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/%E5%8A%A0%E6%9D%83%E5%87%A0%E4%BD%95%E5%B9%B3%E5%9D%87%E6%95%B0.png" alt="加权几何平均数"> </p>
-<h3 id="算术平均数"><a href="#算术平均数" class="headerlink" title="算术平均数"></a>算术平均数</h3><p>又称均值，是统计学中最基本、最常用的一种平均指标，分为简单算术平均数、加权算术平均数。它主要适用于数值型数据，不适用于品质数据。</p>
-<h4 id="简单算术平均数"><a href="#简单算术平均数" class="headerlink" title="简单算术平均数"></a>简单算术平均数</h4><p>主要用于未分组的原始数据。设一组数据为X1，X2，…，Xn，简单的算术平均数的计算公式为：<br><img src="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/%E7%AE%80%E5%8D%95%E7%AE%97%E6%9C%AF%E5%B9%B3%E5%9D%87%E6%95%B0.png" alt="简单算术平均数"> </p>
-<h4 id="加权算术平均数"><a href="#加权算术平均数" class="headerlink" title="加权算术平均数"></a>加权算术平均数</h4><p>主要用于处理经分组整理的数据。设原始数据为被分成K组，各组的组中的值为X1，X2，…，Xk，各组的频数分别为f1，f2，…，fk，加权算术平均数的计算公式为：<br><img src="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/%E5%8A%A0%E6%9D%83%E7%AE%97%E6%9C%AF%E5%B9%B3%E5%9D%87%E6%95%B0.png" alt="加权算术平均数"> </p>
-<h3 id="平方平均数"><a href="#平方平均数" class="headerlink" title="平方平均数"></a>平方平均数</h3><p>又名均方根（Root Mean Square），是指一组数据的平方的平均数的算术平方根。<br><img src="/2019/06/03/%E6%95%B0%E5%AD%A6/%E5%85%B6%E4%BB%96/%E5%B9%B3%E5%9D%87%E6%95%B0/%E5%B9%B3%E6%96%B9%E5%B9%B3%E5%9D%87%E6%95%B0.png" alt="平方平均数"> </p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/" class="post-title-link" itemprop="url">CAP定理的含义.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-01-27 23:41:49" itemprop="dateCreated datePublished" datetime="2019-01-27T23:41:49+08:00">2019-01-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2018/07/cap.html">https://www.ruanyifeng.com/blog/2018/07/cap.html</a></p>
-<p>分布式系统（distributed system）正变得越来越重要，大型网站几乎都是分布式的。</p>
-<p>分布式系统的最大难点，就是各个节点的状态如何同步。CAP 定理是这方面的基本定理，也是理解分布式系统的起点。</p>
-<p>本文介绍该定理。它其实很好懂，而且是显而易见的。下面的内容主要参考了 Michael Whittaker 的文章。</p>
-<h2 id="分布式系统的三个指标"><a href="#分布式系统的三个指标" class="headerlink" title="分布式系统的三个指标"></a>分布式系统的三个指标</h2><p><img src="/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/1.jpg" alt="1"></p>
-<p>1998年，加州大学的计算机科学家 Eric Brewer 提出，分布式系统有三个指标。</p>
-<ul>
-<li>Consistency</li>
-<li>Availability</li>
-<li>Partition tolerance</li>
-</ul>
-<p>它们的第一个字母分别是 C、A、P。</p>
-<p>Eric Brewer 说，这三个指标不可能同时做到。这个结论就叫做 CAP 定理。</p>
-<h2 id="Partition-tolerance"><a href="#Partition-tolerance" class="headerlink" title="Partition tolerance"></a>Partition tolerance</h2><p>先看 Partition tolerance，中文叫做”分区容错”。</p>
-<p>大多数分布式系统都分布在多个子网络。每个子网络就叫做一个区（partition）。分区容错的意思是，区间通信可能失败。比如，一台服务器放在中国，另一台服务器放在美国，这就是两个区，它们之间可能无法通信。</p>
-<p><img src="/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/2.png" alt="2"></p>
-<p>上图中，G1 和 G2 是两台跨区的服务器。G1 向 G2 发送一条消息，G2 可能无法收到。系统设计的时候，必须考虑到这种情况。</p>
-<p>一般来说，分区容错无法避免，因此可以认为 CAP 的 P 总是成立。CAP 定理告诉我们，剩下的 C 和 A 无法同时做到。</p>
-<h2 id="Consistency"><a href="#Consistency" class="headerlink" title="Consistency"></a>Consistency</h2><p>Consistency 中文叫做”一致性”。意思是，写操作之后的读操作，必须返回该值。举例来说，某条记录是 v0，用户向 G1 发起一个写操作，将其改为 v1。</p>
-<p><img src="/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/3.png" alt="3"></p>
-<p>接下来，用户的读操作就会得到 v1。这就叫一致性。</p>
-<p><img src="/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/4.png" alt="4"></p>
-<p>问题是，用户有可能向 G2 发起读操作，由于 G2 的值没有发生变化，因此返回的是 v0。G1 和 G2 读操作的结果不一致，这就不满足一致性了。</p>
-<p><img src="/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/5.png" alt="5"></p>
-<p>为了让 G2 也能变为 v1，就要在 G1 写操作的时候，让 G1 向 G2 发送一条消息，要求 G2 也改成 v1。</p>
-<p><img src="/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/6.png" alt="6"></p>
-<p>这样的话，用户向 G2 发起读操作，也能得到 v1。</p>
-<p><img src="/2019/01/27/%E5%B7%A5%E7%A8%8B/%E5%88%86%E5%B8%83%E5%BC%8F/CAP%E5%AE%9A%E7%90%86%E7%9A%84%E5%90%AB%E4%B9%89/7.png" alt="7"></p>
-<h2 id="Availability"><a href="#Availability" class="headerlink" title="Availability"></a>Availability</h2><p>Availability 中文叫做”可用性”，意思是只要收到用户的请求，服务器就必须给出回应。</p>
-<p>用户可以选择向 G1 或 G2 发起读操作。不管是哪台服务器，只要收到请求，就必须告诉用户，到底是 v0 还是 v1，否则就不满足可用性。</p>
-<h2 id="Consistency-和-Availability-的矛盾"><a href="#Consistency-和-Availability-的矛盾" class="headerlink" title="Consistency 和 Availability 的矛盾"></a>Consistency 和 Availability 的矛盾</h2><p>一致性和可用性，为什么不可能同时成立？答案很简单，因为可能通信失败（即出现分区容错）。</p>
-<p>如果保证 G2 的一致性，那么 G1 必须在写操作时，锁定 G2 的读操作和写操作。只有数据同步后，才能重新开放读写。锁定期间，G2 不能读写，没有可用性不。</p>
-<p>如果保证 G2 的可用性，那么势必不能锁定 G2，所以一致性不成立。</p>
-<p>综上所述，G2 无法同时做到一致性和可用性。系统设计时只能选择一个目标。如果追求一致性，那么无法保证所有节点的可用性；如果追求所有节点的可用性，那就没法做到一致性。</p>
-<h2 id="更新-2018-7-17"><a href="#更新-2018-7-17" class="headerlink" title="[更新 2018.7.17]"></a>[更新 2018.7.17]</h2><p>读者问，在什么场合，可用性高于一致性？</p>
-<p>举例来说，发布一张网页到 CDN，多个服务器有这张网页的副本。后来发现一个错误，需要更新网页，这时只能每个服务器都更新一遍。</p>
-<p>一般来说，网页的更新不是特别强调一致性。短时期内，一些用户拿到老版本，另一些用户拿到新版本，问题不会特别大。当然，所有人最终都会看到新版本。所以，这个场合就是可用性高于一致性。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://wetts.github.io/2018/12/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E9%94%81-%E5%8A%A0%E9%94%81%E5%88%86%E6%9E%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Zhang Wetts">
-      <meta itemprop="description" content="Stay Hungry, Stay Foolish. <br><br><p style="font-size:8px;">[build by hexo/next/gitalk/hexo-generator-search/LaTeX]</p>">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wetts's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2018/12/13/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/MySQL-%E9%94%81-%E5%8A%A0%E9%94%81%E5%88%86%E6%9E%90/" class="post-title-link" itemprop="url">MySQL-锁-加锁分析.md</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-12-13 07:56:21" itemprop="dateCreated datePublished" datetime="2018-12-13T07:56:21+08:00">2018-12-13</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>转自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/rjzheng/p/9950951.html">https://www.cnblogs.com/rjzheng/p/9950951.html</a></p>
-<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>大家在面试中有没遇到面试官问你下面六句Sql的区别呢</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ?</span><br><span class="line">select * from table where id &lt; ?</span><br><span class="line">select * from table where id = ? lock in share mode</span><br><span class="line">select * from table where id &lt; ? lock in share mode</span><br><span class="line">select * from table where id = ? for update</span><br><span class="line">select * from table where id &lt; ? for update</span><br></pre></td></tr></table></figure>
-
-<p>如果你能清楚的说出，这六句sql在不同的事务隔离级别下，是否加锁，加的是共享锁还是排他锁，是否存在间隙锁，那这篇文章就没有看的意义了。</p>
-<p>之所以写这篇文章是因为目前为止网上这方面的文章太片面，都只说了一半，且大多没指明隔离级别，以及<code>where</code>后跟的是否为索引条件列。在此，我就不一一列举那些有误的文章了，大家可以自行百度一下，大多都是讲不清楚。</p>
-<p>OK，要回答这个问题，先问自己三个问题</p>
-<ul>
-<li>当前事务隔离级别是什么</li>
-<li>id列是否存在索引</li>
-<li>如果存在索引是聚簇索引还是非聚簇索引呢？</li>
-</ul>
-<p>OK，开始回答</p>
-<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>本文假定读者，看过我的《MySQL（Innodb）索引的原理》。如果没看过，额，你记得三句话吧</p>
-<ul>
-<li>innodb 一定存在聚簇索引，默认以主键作为聚簇索引</li>
-<li>有几个索引，就有几棵 B+ 树（不考虑 hash 索引的情形）</li>
-<li>聚簇索引的叶子节点为磁盘上的真实数据。非聚簇索引的叶子节点还是索引，指向聚簇索引B+树。</li>
-</ul>
-<p>下面啰嗦点基础知识</p>
-<h3 id="锁类型"><a href="#锁类型" class="headerlink" title="锁类型"></a>锁类型</h3><ul>
-<li>共享锁（S锁）：假设事务T1对数据A加上共享锁，那么事务T2可以读数据A，不能修改数据A。</li>
-<li>排他锁（X锁）：假设事务T1对数据A加上排他锁，那么事务T2不能读数据A，不能修改数据A。</li>
-</ul>
-<p>我们通过 <code>update</code>、<code>delete</code> 等语句加上的锁都是行级别的锁。只有 <code>LOCK TABLE … READ</code> 和 <code>LOCK TABLE … WRITE</code> 才能申请表级别的锁。</p>
-<ul>
-<li>意向共享锁（IS锁）：一个事务在获取（任何一行/或者全表）S锁之前，一定会先在所在的表上加IS锁。</li>
-<li>意向排他锁（IX锁）：一个事务在获取（任何一行/或者全表）X锁之前，一定会先在所在的表上加IX锁。</li>
-</ul>
-<p><em><strong>意向锁存在的目的?</strong></em></p>
-<p>OK，这里说一下意向锁存在的目的。假设事务T1，用X锁来锁住了表上的几条记录，那么此时表上存在IX锁，即意向排他锁。那么此时事务T2要进行 <code>LOCK TABLE … WRITE</code> 的表级别锁的请求，可以直接根据意向锁是否存在而判断是否有锁冲突。</p>
-<h3 id="加锁算法"><a href="#加锁算法" class="headerlink" title="加锁算法"></a>加锁算法</h3><p>我的说法是来自官方文档：<code>https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html</code>。加上自己矫揉造作的见解得出。</p>
-<p>ok，记得如下三种，本文就够用了</p>
-<ul>
-<li>Record Locks：简单翻译为行锁吧。注意了，该锁是对索引记录进行加锁！锁是在加索引上而不是行上的。注意了，innodb一定存在聚簇索引，因此行锁最终都会落到聚簇索引上！</li>
-<li>Gap Locks：简单翻译为间隙锁，是对索引的间隙加锁，其目的只有一个，防止其他事物插入数据。在Read Committed隔离级别下，不会使用间隙锁。这里我对官网补充一下，隔离级别比ReadCommitted低的情况下，也不会使用间隙锁，如隔离级别为Read Uncommited时，也不存在间隙锁。当隔离级别为Repeatable Read和Serializable时，就会存在间隙锁。</li>
-<li>Next-Key Locks：这个理解为Record Lock+索引前面的Gap Lock。记住了，锁住的是索引前面的间隙！比如一个索引包含值，10，11，13和20。那么，间隙锁的范围如下<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(negative infinity, 10]</span><br><span class="line">(10, 11]</span><br><span class="line">(11, 13]</span><br><span class="line">(13, 20]</span><br><span class="line">(20, positive infinity)</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h3 id="快照读和当前读"><a href="#快照读和当前读" class="headerlink" title="快照读和当前读"></a>快照读和当前读</h3><p>最后一点基础知识了，大家坚持看完，这些是后面分析的基础！</p>
-<p>在 mysql 中 select 分为快照读和当前读，执行下面的语句</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ?;</span><br></pre></td></tr></table></figure>
-<p>执行的是快照读，读的是数据库记录的快照版本，是不加锁的。（这种说法在隔离级别为 Serializable 中不成立，后面我会补充。）</p>
-<p>那么，执行</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ? lock in share mode;</span><br></pre></td></tr></table></figure>
-<p>会对读取记录加S锁（共享锁），执行</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where id = ? for update</span><br></pre></td></tr></table></figure>
-<p>会对读取记录加X锁（排他锁），那么</p>
-<p><em><strong>加的是表锁还是行锁呢？</strong></em></p>
-<p>针对这点，我们先回忆一下事务的四个隔离级别，他们由弱到强如下所示:</p>
-<ul>
-<li>Read Uncommited(RU)：读未提交，一个事务可以读到另一个事务未提交的数据！</li>
-<li>Read Committed (RC)：读已提交，一个事务可以读到另一个事务已提交的数据!</li>
-<li>Repeatable Read (RR):可重复读，加入间隙锁，一定程度上避免了幻读的产生！注意了，只是一定程度上，并没有完全避免!我会在下一篇文章说明!另外就是记住从该级别才开始加入间隙锁(这句话记下来，后面有用到)!</li>
-<li>Serializable：串行化，该级别下读写串行化，且所有的select语句后都自动加上lock in share mode，即使用了共享锁。因此在该隔离级别下，使用的是当前读，而不是快照读。</li>
-</ul>
-<p>那么关于是表锁还是行锁，大家可以看到网上最流传的一个说法是这样的，</p>
-<blockquote>
-<p>InnoDB行锁是通过给索引上的索引项加锁来实现的，这一点MySQL与Oracle不同，后者是通过在数据块中对相应数据行加锁来实现的。 InnoDB这种行锁实现特点意味着：只有通过索引条件检索数据，InnoDB才使用行级锁，否则，InnoDB将使用表锁！</p>
-</blockquote>
-<p>这句话大家可以搜一下，都是你抄我的，我抄你的。那么，这句话本身有两处错误！</p>
-<p><strong>错误一</strong>：并不是用表锁来实现锁表的操作，而是利用了Next-Key Locks，也可以理解为是用了行锁+间隙锁来实现锁表的操作!<br>为了便于说明，我来个例子，假设有表数据如下，pId为主键索引</p>
-<table>
-<thead>
-<tr>
-<th>pId(int)</th>
-<th>name(varchar)</th>
-<th>num(int)</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>aaa</td>
-<td>100</td>
-</tr>
-<tr>
-<td>2</td>
-<td>bbb</td>
-<td>200</td>
-</tr>
-<tr>
-<td>7</td>
-<td>ccc</td>
-<td>200</td>
-</tr>
-</tbody></table>
-<p>执行语句(name列无索引)</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table where name = `aaa` for update</span><br></pre></td></tr></table></figure>
-<p>那么此时在pId=1,2,7这三条记录上存在行锁(把行锁住了)。另外，在(-∞,1)(1,2)(2,7)(7,+∞)上存在间隙锁(把间隙锁住了)。因此，给人一种整个表锁住的错觉！</p>
-<p>ps:对该结论有疑问的，可自行执行show engine innodb status;语句进行分析。</p>
-<p><strong>错误二</strong>：所有文章都不提隔离级别！</p>
-<p>注意我上面说的，之所以能够锁表，是通过行锁+间隙锁来实现的。那么，RU和RC都不存在间隙锁，这种说法在RU和RC中还能成立么？</p>
-<p>因此，该说法只在RR和Serializable中是成立的。如果隔离级别为RU和RC，无论条件列上是否有索引，都不会锁表，只锁行！</p>
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>下面来对开始的问题作出解答，假设有表如下，pId为主键索引</p>
-<table>
-<thead>
-<tr>
-<th>pId(int)</th>
-<th>name(varchar)</th>
-<th>num(int)</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>aaa</td>
-<td>100</td>
-</tr>
-<tr>
-<td>2</td>
-<td>bbb</td>
-<td>200</td>
-</tr>
-<tr>
-<td>3</td>
-<td>bbb</td>
-<td>300</td>
-</tr>
-<tr>
-<td>7</td>
-<td>ccc</td>
-<td>200</td>
-</tr>
-</tbody></table>
-<p><strong>RC/RU+条件列非索引</strong></p>
-<ol>
-<li>select * from table where num = 200<ul>
-<li>不加任何锁，是快照读。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200<ul>
-<li>不加任何锁，是快照读。</li>
-</ul>
-</li>
-<li>select * from table where num = 200 lock in share mode<ul>
-<li>当num = 200，有两条记录。这两条记录对应的pId=2，7，因此在pId=2，7的聚簇索引上加行级S锁，采用当前读。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200 lock in share mode<ul>
-<li>当num &gt; 200，有一条记录。这条记录对应的pId=3，因此在pId=3的聚簇索引上加上行级S锁，采用当前读。</li>
-</ul>
-</li>
-<li>select * from table where num = 200 for update<ul>
-<li>当num = 200，有两条记录。这两条记录对应的pId=2，7，因此在pId=2，7的聚簇索引上加行级X锁，采用当前读。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200 for update<ul>
-<li>当num &gt; 200，有一条记录。这条记录对应的pId=3，因此在pId=3的聚簇索引上加上行级X锁，采用当前读。</li>
-</ul>
-</li>
-</ol>
-<p><strong>RC/RU+条件列是聚簇索引</strong></p>
-<p>恩，大家应该知道pId是主键列，因此pId用的就是聚簇索引。此情况其实和RC/RU+条件列非索引情况是类似的。</p>
-<ol>
-<li>select * from table where pId = 2<ul>
-<li>不加任何锁，是快照读。</li>
-</ul>
-</li>
-<li>select * from table where pId &gt; 2<ul>
-<li>不加任何锁，是快照读。</li>
-</ul>
-</li>
-<li>select * from table where pId = 2 lock in share mode<ul>
-<li>在pId=2的聚簇索引上，加S锁，为当前读。</li>
-</ul>
-</li>
-<li>select * from table where pId &gt; 2 lock in share mode<ul>
-<li>在pId=3，7的聚簇索引上，加S锁，为当前读。</li>
-</ul>
-</li>
-<li>select * from table where pId = 2 for update<ul>
-<li>在pId=2的聚簇索引上，加X锁，为当前读。</li>
-</ul>
-</li>
-<li>select * from table where pId &gt; 2 for update<ul>
-<li>在pId=3，7的聚簇索引上，加X锁，为当前读。</li>
-</ul>
-</li>
-</ol>
-<p>这里，大家可能有疑问</p>
-<p><em><strong>为什么条件列加不加索引，加锁情况是一样的？</strong></em></p>
-<p>ok,其实是不一样的。在RC/RU隔离级别中，MySQL Server做了优化。在条件列没有索引的情况下，尽管通过聚簇索引来扫描全表，进行全表加锁。但是，MySQL Server层会进行过滤并把不符合条件的锁当即释放掉，因此你看起来最终结果是一样的。但是<strong>RC/RU+条件列非索引比本例多了一个释放不符合条件的锁的过程</strong>！</p>
-<p><strong>RC/RU+条件列是非聚簇索引</strong></p>
-<p>我们在num列上建上非唯一索引。此时有一棵聚簇索引(主键索引，pId)形成的B+索引树，其叶子节点为硬盘上的真实数据。以及另一棵非聚簇索引(非唯一索引，num)形成的B+索引树，其叶子节点依然为索引节点，保存了num列的字段值，和对应的聚簇索引。</p>
-<p>接下来分析开始</p>
-<ol>
-<li>select * from table where num = 200<ul>
-<li>不加任何锁，是快照读。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200<ul>
-<li>不加任何锁，是快照读。</li>
-</ul>
-</li>
-<li>select * from table where num = 200 lock in share mode<ul>
-<li>当num = 200，由于num列上有索引，因此先在 num = 200的两条索引记录上加行级S锁。接着，去聚簇索引树上查询，这两条记录对应的pId=2，7，因此在pId=2，7的聚簇索引上加行级S锁，采用当前读。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200 lock in share mode<ul>
-<li>当num &gt; 200，由于num列上有索引，因此先在符合条件的 num = 300的一条索引记录上加行级S锁。接着，去聚簇索引树上查询，这条记录对应的pId=3，因此在pId=3的聚簇索引上加行级S锁，采用当前读。</li>
-</ul>
-</li>
-<li>select * from table where num = 200 for update<ul>
-<li>当num = 200，由于num列上有索引，因此先在 num = 200的两条索引记录上加行级X锁。接着，去聚簇索引树上查询，这两条记录对应的pId=2，7，因此在pId=2，7的聚簇索引上加行级X锁，采用当前读。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200 for update<ul>
-<li>当num &gt; 200，由于num列上有索引，因此先在符合条件的 num = 300的一条索引记录上加行级X锁。接着，去聚簇索引树上查询，这条记录对应的pId=3，因此在pId=3的聚簇索引上加行级X锁，采用当前读。</li>
-</ul>
-</li>
-</ol>
-<p><strong>RR/Serializable+条件列非索引</strong></p>
-<p>RR级别需要多考虑的就是gap lock，他的加锁特征在于，无论你怎么查都是锁全表。如下所示</p>
-<p>接下来分析开始</p>
-<ol>
-<li>select * from table where num = 200<ul>
-<li>在RR级别下，不加任何锁，是快照读。</li>
-<li>在Serializable级别下，在pId = 1,2,3,7（全表所有记录）的聚簇索引上加S锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200<ul>
-<li>在RR级别下，不加任何锁，是快照读。</li>
-<li>在Serializable级别下，在pId = 1,2,3,7（全表所有记录）的聚簇索引上加S锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
-</ul>
-</li>
-<li>select * from table where num = 200 lock in share mode<ul>
-<li>在pId = 1,2,3,7（全表所有记录）的聚簇索引上加S锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200 lock in share mode<ul>
-<li>在pId = 1,2,3,7（全表所有记录）的聚簇索引上加S锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
-</ul>
-</li>
-<li>select * from table where num = 200 for update<ul>
-<li>在pId = 1,2,3,7（全表所有记录）的聚簇索引上加X锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200 for update<ul>
-<li>在pId = 1,2,3,7（全表所有记录）的聚簇索引上加X锁。并且在聚簇索引的所有间隙(-∞,1)(1,2)(2,3)(3,7)(7,+∞)加gap lock</li>
-</ul>
-</li>
-</ol>
-<p><strong>RR/Serializable+条件列是聚簇索引</strong></p>
-<p>恩，大家应该知道pId是主键列，因此pId用的就是聚簇索引。该情况的加锁特征在于，如果where后的条件为精确查询(=的情况)，那么只存在record lock。如果where后的条件为范围查询(&gt;或&lt;的情况)，那么存在的是record lock+gap lock。</p>
-<ol>
-<li>select * from table where pId = 2<ul>
-<li>在RR级别下，不加任何锁，是快照读。</li>
-<li>在Serializable级别下，是当前读，在pId=2的聚簇索引上加S锁，不存在gap lock。</li>
-</ul>
-</li>
-<li>select * from table where pId &gt; 2<ul>
-<li>在RR级别下，不加任何锁，是快照读。</li>
-<li>在Serializable级别下，是当前读，在pId=3,7的聚簇索引上加S锁。在(2,3)(3,7)(7,+∞)加上gap lock</li>
-</ul>
-</li>
-<li>select * from table where pId = 2 lock in share mode<ul>
-<li>是当前读，在pId=2的聚簇索引上加S锁，不存在gap lock。</li>
-</ul>
-</li>
-<li>select * from table where pId &gt; 2 lock in share mode<ul>
-<li>是当前读，在pId=3,7的聚簇索引上加S锁。在(2,3)(3,7)(7,+∞)加上gap lock</li>
-</ul>
-</li>
-<li>select * from table where pId = 2 for update<ul>
-<li>是当前读，在pId=2的聚簇索引上加X锁。</li>
-</ul>
-</li>
-<li>select * from table where pId &gt; 2 for update<ul>
-<li>在pId=3,7的聚簇索引上加X锁。在(2,3)(3,7)(7,+∞)加上gap lock</li>
-</ul>
-</li>
-<li>select * from table where pId = 6 [lock in share mode|for update]<ul>
-<li>注意了，pId=6是不存在的列，这种情况会在(3,7)上加gap lock。</li>
-</ul>
-</li>
-<li>select * from table where pId &gt; 18 [lock in share mode|for update]<ul>
-<li>注意了，pId&gt;18，查询结果是空的。在这种情况下，是在(7,+∞)上加gap lock。</li>
-</ul>
-</li>
-</ol>
-<p><strong>RR/Serializable+条件列是非聚簇索引</strong></p>
-<p>这里非聚簇索引，需要区分是否为唯一索引。因为如果是非唯一索引，间隙锁的加锁方式是有区别的。</p>
-<p>先说一下，唯一索引的情况。如果是唯一索引，情况和RR/Serializable+条件列是聚簇索引类似，唯一有区别的是:这个时候有两棵索引树，加锁是加在对应的非聚簇索引树和聚簇索引树上！大家可以自行推敲!</p>
-<p>下面说一下，非聚簇索引是非唯一索引的情况，他和唯一索引的区别就是通过索引进行精确查询以后，不仅存在record lock，还存在gap lock。而通过唯一索引进行精确查询后，只存在record lock，不存在gap lock。老规矩在num列建立非唯一索引</p>
-<ol>
-<li>select * from table where num = 200<ul>
-<li>在RR级别下，不加任何锁，是快照读。</li>
-<li>在Serializable级别下，是当前读，在pId=2，7的聚簇索引上加S锁，在num=200的非聚集索引上加S锁，在(100,200)(200,300)加上gap lock。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200<ul>
-<li>在RR级别下，不加任何锁，是快照读。</li>
-<li>在Serializable级别下，是当前读，在pId=3的聚簇索引上加S锁，在num=300的非聚集索引上加S锁。在(200,300)(300,+∞)加上gap lock</li>
-</ul>
-</li>
-<li>select * from table where num = 200 lock in share mode<ul>
-<li>是当前读，在pId=2，7的聚簇索引上加S锁，在num=200的非聚集索引上加S锁，在(100,200)(200,300)加上gap lock。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200 lock in share mode<ul>
-<li>是当前读，在pId=3的聚簇索引上加S锁，在num=300的非聚集索引上加S锁。在(200,300)(300,+∞)加上gap lock。</li>
-</ul>
-</li>
-<li>select * from table where num = 200 for update<ul>
-<li>是当前读，在pId=2，7的聚簇索引上加S锁，在num=200的非聚集索引上加X锁，在(100,200)(200,300)加上gap lock。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 200 for update<ul>
-<li>是当前读，在pId=3的聚簇索引上加S锁，在num=300的非聚集索引上加X锁。在(200,300)(300,+∞)加上gap lock</li>
-</ul>
-</li>
-<li>select * from table where num = 250 [lock in share mode|for update]<ul>
-<li>注意了，num=250是不存在的列，这种情况会在(200,300)上加gap lock。</li>
-</ul>
-</li>
-<li>select * from table where num &gt; 400 [lock in share mode|for update]<ul>
-<li>注意了，pId&gt;400，查询结果是空的。在这种情况下，是在(400,+∞)上加gap lock。</li>
-</ul>
-</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1385,7 +1022,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-count">686</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1398,7 +1035,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">350</span>
+        <span class="site-state-item-count">352</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1433,7 +1070,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
